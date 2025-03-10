@@ -7,28 +7,37 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simuler une authentification
     try {
-      // Ici, on simule une connexion réussie
-      // Dans une implémentation réelle, vous connecteriez ici à votre backend d'authentification
-      console.log('Tentative de connexion avec:', email);
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Pour le moment, accepte n'importe quelles données
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Rediriger vers une future page d'admin (à implémenter)
-      navigate('/');
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur le panneau d'administration",
+      });
+      
+      // Rediriger vers le tableau de bord
+      navigate('/dashboard');
     } catch (error) {
       console.error('Erreur de connexion:', error);
+      toast({
+        title: "Erreur de connexion",
+        description: "Veuillez vérifier vos identifiants.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
