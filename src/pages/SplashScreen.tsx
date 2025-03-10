@@ -41,7 +41,7 @@ const SplashScreen = () => {
             animate={{ rotate: 360 }}
             transition={{ duration: 2, ease: "easeInOut" }}
           >
-            <span className="text-white font-bold text-6xl">R</span>
+            <span className="text-white font-bold text-6xl"><img src="logo.png" alt="" /></span>
           </motion.div>
           <motion.h1 
             className="text-4xl font-bold text-white mb-2"
@@ -75,7 +75,7 @@ const SplashScreen = () => {
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 3 }}
               >
-                <span className="text-white font-bold text-4xl">R</span>
+                <span className="text-white font-bold text-4xl"><img src="logo.png" alt="" /></span>
               </motion.div>
             </div>
             

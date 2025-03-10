@@ -40,11 +40,11 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3">
           <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-xl">R</span>
+            <span className="text-white font-bold text-xl"><img src="logo.png" alt="" /></span>
           </div>
           <span className={cn(
             "font-bold text-xl transition-colors",
-            isScrolled ? "text-rwdm-blue dark:text-white" : "text-white"
+            isScrolled ? "text-rwdm-blue dark:text-white" : "text-blue"
           )}>
             RWDM Academy
           </span>
@@ -134,8 +134,8 @@ const NavLink: React.FC<NavLinkProps> = ({ to, active, scrolled, children }) => 
       active 
         ? "text-rwdm-red" 
         : scrolled 
-          ? "text-rwdm-blue/80 dark:text-white/80 hover:text-rwdm-red" 
-          : "text-white/90 hover:text-white"
+          ? "text-rwdm-blue/80 dark:text-blue/80 hover:text-rwdm-red" 
+          : "text-blue/90 hover:text-blue"
     )}
   >
     {children}

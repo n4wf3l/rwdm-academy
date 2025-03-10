@@ -47,9 +47,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="flex flex-col h-full">
           <div className="flex items-center space-x-2 p-6 border-b">
             <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
-              R
+              <img src="logo.png" alt="" />
             </div>
-            <span className="text-rwdm-blue dark:text-white font-semibold text-xl">Admin RWDM</span>
+            <span className="text-rwdm-blue dark:text-white font-semibold text-xl">Panneau d'administration</span>
           </div>
           
           <nav className="flex-1 p-4 space-y-2">
