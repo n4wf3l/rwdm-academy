@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,44 +33,30 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 };
 
 const ResponsibilityWaiverForm: React.FC = () => {
+  const [parentLastName, setParentLastName] = useState<string>("");
+  const [parentFirstName, setParentFirstName] = useState<string>("");
+  const [parentPhone, setParentPhone] = useState<string>("");
+  const [parentEmail, setParentEmail] = useState<string>("");
+  const [playerLastName, setPlayerLastName] = useState<string>("");
+  const [playerFirstName, setPlayerFirstName] = useState<string>("");
+  const [playerBirthDate, setPlayerBirthDate] = useState<Date | undefined>();
+  const [currentClub, setCurrentClub] = useState<string>("");
+  const [previousClub, setPreviousClub] = useState<string>("");
   const [signatureDate, setSignatureDate] = useState<Date | undefined>(new Date());
   const [signature, setSignature] = useState<string | null>(null);
-  const [approvalText, setApprovalText] = useState<string>("");
+  const [approvalText, setApprovalText] = useState<string>(""); // Ajout de l'état pour approvalText
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Waiver form submitted");
+    // Logic to generate PDF can be added here
   };
-  
+
+  const waiverText = `Je soussigné(e), ${parentFirstName || ""} ${parentLastName || "À REMPLIR"}, représentant légal du joueur ${playerFirstName || "À REMPLIR"} ${playerLastName || ""}, né le ${playerBirthDate ? format(playerBirthDate, "dd/MM/yyyy") : "À REMPLIR"}, et affilié au club ${currentClub || "À REMPLIR"} décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.`;
+
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up">
-      <Card className="glass-panel">
-        <CardContent className="pt-6">
-          <FormSection 
-            title="Décharge de responsabilité" 
-            subtitle="Lisez attentivement avant de signer"
-          >
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                Je soussigné(e), en tant que parent ou tuteur légal du joueur mentionné ci-dessous, 
-                déclare avoir pris connaissance et accepter les conditions et règles de fonctionnement 
-                de l'Académie RWDM. J'autorise mon enfant à participer à toutes les activités organisées 
-                par le club dans le cadre de l'Académie.
-              </p>
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mt-2">
-                Par la présente, je dégage l'Académie RWDM, ses dirigeants, entraîneurs et bénévoles de 
-                toute responsabilité en cas d'accident qui pourrait survenir à mon enfant pendant les 
-                activités, à condition que toutes les mesures de sécurité appropriées aient été prises.
-              </p>
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mt-2">
-                Je certifie que mon enfant est médicalement apte à pratiquer le football et qu'il est couvert 
-                par une assurance adaptée. Je m'engage à informer immédiatement les responsables de l'Académie 
-                de tout changement concernant son état de santé qui pourrait affecter sa participation.
-              </p>
-            </div>
-          </FormSection>
-        </CardContent>
-      </Card>
       
       <Card className="glass-panel">
         <CardContent className="pt-6">
@@ -82,22 +67,47 @@ const ResponsibilityWaiverForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <Label htmlFor="parentLastName">Nom</Label>
-                <Input id="parentLastName" className="form-input-base" required />
+                <Input 
+                  id="parentLast Name" 
+                  className="form-input-base" 
+                  value={parentLastName}
+                  onChange={(e) => setParentLastName(e.target.value)}
+                  required />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="parentFirstName">Prénom</Label>
-                <Input id="parentFirstName" className="form-input-base" required />
+                <Input 
+                  id="parentFirstName" 
+                  className="form-input-base" 
+                  value={parentFirstName}
+                  onChange={(e) => setParentFirstName(e.target.value)}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="parentPhone">Téléphone</Label>
-                <Input id="parentPhone" type="tel" className="form-input-base" required />
+                <Input 
+                  id="parentPhone" 
+                  type="tel" 
+                  className="form-input-base" 
+                  value={parentPhone}
+                  onChange={(e) => setParentPhone(e.target.value)}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="parentEmail">Email</Label>
-                <Input id="parentEmail" type="email" className="form-input-base" required />
+                <Input 
+                  id="parentEmail" 
+                  type="email" 
+                  className="form-input-base" 
+                  value={parentEmail}
+                  onChange={(e) => setParentEmail(e.target.value)}
+                  required 
+                />
               </div>
             </div>
           </FormSection>
@@ -113,12 +123,24 @@ const ResponsibilityWaiverForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <Label htmlFor="playerLastName">Nom</Label>
-                <Input id="playerLastName" className="form-input-base" required />
+                <Input 
+                  id="playerLastName" 
+                  className="form-input-base" 
+                  value={playerLastName}
+                  onChange={(e) => setPlayerLastName(e.target.value)}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="playerFirstName">Prénom</Label>
-                <Input id="playerFirstName" className="form-input-base" required />
+                <Input 
+                  id="playerFirstName" 
+                  className="form-input-base" 
+                  value={playerFirstName}
+                  onChange={(e) => setPlayerFirstName(e.target.value)}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
@@ -129,16 +151,22 @@ const ResponsibilityWaiverForm: React.FC = () => {
                       variant="outline"
                       className={cn(
                         "form-input-base justify-start text-left font-normal",
-                        "text-muted-foreground"
+                        !playerBirthDate && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      <span>Sélectionnez une date</span>
+                      {playerBirthDate ? (
+                        format(playerBirthDate, "PPP", { locale: fr })
+                      ) : (
+                        <span>Sélectionnez une date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                     <Calendar
                       mode="single"
+                      selected={playerBirthDate}
+                      onSelect={setPlayerBirthDate}
                       initialFocus
                       locale={fr}
                       className="p-3"
@@ -148,9 +176,30 @@ const ResponsibilityWaiverForm: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="playerCategory">Catégorie</Label>
-                <Input id="playerCategory" className="form-input-base" required />
+                <Label htmlFor="currentClub">Nom du club</Label>
+                <Input 
+                  id="currentClub" 
+                  className="form-input-base" 
+                  value={currentClub}
+                  onChange={(e) => setCurrentClub(e.target.value)}
+                  required 
+                />
               </div>
+            </div>
+          </FormSection>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-panel">
+        <CardContent className="pt-6">
+          <FormSection 
+            title="Décharge de responsabilité" 
+            subtitle="Lisez attentivement avant de signer"
+          >
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {waiverText}
+              </p>
             </div>
           </FormSection>
         </CardContent>

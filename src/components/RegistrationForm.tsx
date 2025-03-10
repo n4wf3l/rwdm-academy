@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,16 +20,7 @@ const SEASONS = [`${CURRENT_YEAR-1}/${CURRENT_YEAR}`, `${CURRENT_YEAR}/${CURRENT
 const POSITIONS = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
 const CATEGORIES = ["U6", "U7", "U8", "U9", "U10", "U11", "U12", "U13", "U14", "U15", "U16", "U17", "U18", "U19", "U21"];
 
-interface FormSection {
-  title: string;
-  subtitle?: string;
-}
-
-const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({ 
-  title, 
-  subtitle, 
-  children 
-}) => {
+const FormSection = ({ title, subtitle, children }) => {
   return (
     <div className="space-y-4">
       <div>
@@ -42,7 +32,7 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
   );
 };
 
-const RegistrationForm: React.FC = () => {
+const RegistrationForm = () => {
   const [birthDate, setBirthDate] = useState<Date | undefined>();
   const [imageConsent, setImageConsent] = useState<boolean>(false);
   const [signature, setSignature] = useState<string | null>(null);
@@ -52,7 +42,9 @@ const RegistrationForm: React.FC = () => {
     console.log("Form submitted");
     // Handle form submission
   };
-  
+
+  const currentDate = format(new Date(), "dd/MM/yyyy");
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up">
       <Card className="glass-panel">
@@ -135,6 +127,31 @@ const RegistrationForm: React.FC = () => {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="postalCode">Code postal</Label>
+                <Input id="postalCode" className="form-input-base" required />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">Ville</Label>
+                <Input id="city" className="form-input-base" required />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input id="phone" className="form-input-base" type="tel" required />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gsm">GSM</Label>
+                <Input id="gsm" className="form-input-base" type="tel" required />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" className="form-input-base" type="email" required />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="currentClub">Club actuel</Label>
                 <Input id="currentClub" className="form-input-base" />
               </div>
@@ -195,9 +212,16 @@ const RegistrationForm: React.FC = () => {
                     </Select>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="parent1Name">Nom complet</Label>
-                    <Input id="parent1Name" className="form-input-base" required />
+                  <div className="grid grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="parent1LastName">Nom</Label>
+                      <Input id="parent1LastName" className="form-input-base" required />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="parent1FirstName">Prénom</Label>
+                      <Input id="parent1FirstName" className="form-input-base" required />
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
@@ -208,6 +232,21 @@ const RegistrationForm: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="parent1Email">Email</Label>
                     <Input id="parent1Email" className="form-input-base" type="email" required />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="parent1Address">Adresse</Label>
+                    <Input id="parent1Address" className="form-input-base" required />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="parent1PostalCode">Code postal</Label>
+                    <Input id="parent1PostalCode" className="form-input-base" required />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="parent1Gsm">GSM</Label>
+                    <Input id="parent1Gsm" className="form-input-base" type="tel" required />
                   </div>
                 </div>
               </div>
@@ -231,9 +270,16 @@ const RegistrationForm: React.FC = () => {
                     </Select>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="parent2Name">Nom complet</Label>
-                    <Input id="parent2Name" className="form-input-base" />
+                  <div className="grid grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="parent2LastName">Nom</Label>
+                      <Input id="parent2LastName" className="form-input-base" />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="parent2FirstName">Prénom</Label>
+                      <Input id="parent2FirstName" className="form-input-base" />
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
@@ -245,6 +291,21 @@ const RegistrationForm: React.FC = () => {
                     <Label htmlFor="parent2Email">Email</Label>
                     <Input id="parent2Email" className="form-input-base" type="email" />
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="parent2Address">Adresse</Label>
+                    <Input id="parent2Address" className="form-input-base" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="parent2PostalCode">Code postal</Label>
+                    <Input id="parent2PostalCode" className="form-input-base" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="parent2Gsm">GSM</Label>
+                    <Input id="parent2Gsm" className="form-input-base" type="tel" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -255,28 +316,16 @@ const RegistrationForm: React.FC = () => {
       <Card className="glass-panel">
         <CardContent className="pt-6">
           <FormSection 
-            title="Autorisations" 
-            subtitle="Veuillez indiquer les autorisations que vous accordez"
+            title="Consentement à l'image" 
+            subtitle="Veuillez donner votre consentement pour l'utilisation d'images"
           >
-            <div className="flex items-start space-x-2">
+            <div className="flex items-center space-x-2">
               <Checkbox 
                 id="imageConsent" 
-                checked={imageConsent}
-                onCheckedChange={(checked) => {
-                  setImageConsent(checked as boolean);
-                }}
+                checked={imageConsent} 
+                onChange={() => setImageConsent(!imageConsent)} 
               />
-              <div className="grid gap-1.5 leading-none">
-                <label
-                  htmlFor="imageConsent"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Autorisation d'utilisation d'image
-                </label>
-                <p className="text-sm text-muted-foreground">
-                  J'autorise le RWDM à utiliser les photos et vidéos du joueur pour la communication du club.
-                </p>
-              </div>
+              <Label htmlFor="imageConsent">J'accepte que des photos de mon enfant soient prises et utilisées à des fins promotionnelles.</Label>
             </div>
           </FormSection>
         </CardContent>
@@ -286,24 +335,16 @@ const RegistrationForm: React.FC = () => {
         <CardContent className="pt-6">
           <FormSection 
             title="Signature" 
-            subtitle="Veuillez signer le formulaire pour confirmer votre inscription"
+            subtitle="Veuillez signer ci-dessous"
           >
-            <SignaturePad 
-              onChange={setSignature}
-              placeholder="Signez ici pour valider l'inscription"
-            />
+            <SignaturePad onChange={setSignature} />
+            <p className="text-sm text-gray-500 mt-2">Date : {currentDate}</p>
           </FormSection>
         </CardContent>
       </Card>
       
-      <div className="flex justify-center">
-        <Button 
-          type="submit" 
-          disabled={!signature}
-          className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
-        >
-          Soumettre l'inscription
-        </Button>
+      <div className="flex justify-end">
+        <Button type="submit">Soumettre</Button>
       </div>
     </form>
   );

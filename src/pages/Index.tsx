@@ -40,10 +40,10 @@ const Index = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3">
-              Académie RWDM
+              RWDM Academy
             </h1>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Bienvenue sur la plateforme officielle d'inscription de l'Académie RWDM. 
+              Bienvenue sur la plateforme officielle d'inscription de la RWDM Academy. 
               Veuillez sélectionner le type de formulaire que vous souhaitez compléter.
             </p>
           </motion.div>
@@ -68,7 +68,7 @@ const Index = () => {
       <footer className="py-6 px-4 mt-8 glass-panel">
         <div className="container mx-auto text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} Académie RWDM. Tous droits réservés.
+            &copy; {new Date().getFullYear()} RWDM Academy. Tous droits réservés.
           </p>
         </div>
       </footer>

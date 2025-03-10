@@ -37,11 +37,11 @@ const SplashScreen = () => {
           className="text-center"
         >
           <motion.div 
-            className="h-40 w-40 rounded-full bg-rwdm-red flex items-center justify-center mb-8 mx-auto shadow-lg"
+            className="h-40 w-40 rounded-full flex items-center justify-center mb-8 mx-auto shadow-lg"
             animate={{ rotate: 360 }}
             transition={{ duration: 2, ease: "easeInOut" }}
           >
-            <span className="text-white font-bold text-6xl"><img src="logo.png" alt="" /></span>
+            <span className="text-white font-bold text-6xl"><img src="logo.png" alt="" width="80px"/></span>
           </motion.div>
           <motion.h1 
             className="text-4xl font-bold text-white mb-2"
@@ -71,11 +71,12 @@ const SplashScreen = () => {
           <Card className="bg-white/10 backdrop-blur-lg shadow-xl border-white/20">
             <div className="p-5 flex justify-center">
               <motion.div 
-                className="h-24 w-24 rounded-full bg-rwdm-red flex items-center justify-center mb-2"
+                className="h-24 w-24 rounded-full flex items-center justify-center mb-2"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ repeat: Infinity, duration: 3 }}
               >
-                <span className="text-white font-bold text-4xl"><img src="logo.png" alt="" /></span>
+  <img src="logo.png" alt="Logo" width="55" />
+
               </motion.div>
             </div>
             
@@ -86,26 +87,36 @@ const SplashScreen = () => {
               </h2>
               
               <div className="grid grid-cols-1 gap-3">
+              <Button 
+  onClick={() => {
+    handleLanguageSelect('fr'); // Sélectionner la langue
+    navigate("/"); // Rediriger vers la page d'accueil
+  }}
+  className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
+  size="lg"
+>
+  Français
+</Button>
+
                 <Button 
-                  onClick={() => handleLanguageSelect('fr')}
+                    onClick={() => {
+                      handleLanguageSelect('nl'); // Sélectionner la langue
+                      navigate("/"); // Rediriger vers la page d'accueil
+                    }}
                   className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
                   size="lg"
                 >
-                  <span className="mr-2">🇫🇷</span> Français
+                  Nederlands
                 </Button>
                 <Button 
-                  onClick={() => handleLanguageSelect('nl')}
+                    onClick={() => {
+                      handleLanguageSelect('en'); 
+                      navigate("/");
+                    }}
                   className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
                   size="lg"
                 >
-                  <span className="mr-2">🇧🇪</span> Nederlands
-                </Button>
-                <Button 
-                  onClick={() => handleLanguageSelect('en')}
-                  className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
-                  size="lg"
-                >
-                  <span className="mr-2">🇬🇧</span> English
+                  English
                 </Button>
               </div>
             </CardContent>

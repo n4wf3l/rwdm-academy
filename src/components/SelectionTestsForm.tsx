@@ -36,7 +36,7 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 };
 
 const NOYAUX = ["U6", "U7", "U8", "U9", "U10", "U11", "U12", "U13", "U14", "U15", "U16", "U17", "U18", "U19", "U21"];
-
+const POSITIONS = ["Gardien", "Défenseur", "Milieu de terrain", "Attaquant"];
 const SelectionTestsForm: React.FC = () => {
   const [testStartDate, setTestStartDate] = useState<Date | undefined>();
   const [testEndDate, setTestEndDate] = useState<Date | undefined>();
@@ -141,109 +141,129 @@ const SelectionTestsForm: React.FC = () => {
       </Card>
       
       <Card className="glass-panel">
-        <CardContent className="pt-6">
-          <FormSection 
-            title="Informations du joueur" 
-            subtitle="Veuillez remplir toutes les informations concernant le joueur"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Nom</Label>
-                <Input id="lastName" className="form-input-base" required />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Prénom</Label>
-                <Input id="firstName" className="form-input-base" required />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="birthDate">Date de naissance</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "form-input-base justify-start text-left font-normal",
-                        "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      <span>Sélectionnez une date</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-                    <Calendar
-                      mode="single"
-                      initialFocus
-                      locale={fr}
-                      className="p-3"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="currentClub">Club actuel</Label>
-                <Input id="currentClub" className="form-input-base" required />
-              </div>
-              
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Input id="address" className="form-input-base" required />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input id="phone" type="tel" className="form-input-base" required />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" className="form-input-base" required />
-              </div>
-            </div>
-          </FormSection>
-        </CardContent>
-      </Card>
+  <CardContent className="pt-6">
+    <FormSection 
+      title="Informations du joueur" 
+      subtitle="Veuillez remplir toutes les informations concernant le joueur"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Nom</Label>
+          <Input id="lastName" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="firstName">Prénom</Label>
+          <Input id="firstName" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="birthDate">Date de naissance</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "form-input-base justify-start text-left font-normal",
+                  "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                <span>Sélectionnez une date</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+              <Calendar
+                mode="single"
+                initialFocus
+                locale={fr}
+                className="p-3"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="phone">Téléphone (GSM)</Label>
+          <Input id="phone" type="tel" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="currentClub">Club actuel</Label>
+          <Input id="currentClub" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="previousClub">Club précédent</Label>
+          <Input id="previousClub" className="form-input-base" />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="position">Position</Label>
+          <Select required>
+            <SelectTrigger className="form-input-base">
+              <SelectValue placeholder="Sélectionnez une position" />
+            </SelectTrigger>
+            <SelectContent>
+              {POSITIONS.map((position) => (
+                <SelectItem key={position} value={position}>{position}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </FormSection>
+  </CardContent>
+</Card>
       
-      <Card className="glass-panel">
-        <CardContent className="pt-6">
-          <FormSection 
-            title="Informations des responsables légaux" 
-            subtitle="Veuillez remplir les informations concernant les responsables légaux du joueur"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="parentName">Nom du parent/tuteur</Label>
-              <Input id="parentName" className="form-input-base" required />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="parentRelation">Relation</Label>
-              <Select defaultValue="père">
-                <SelectTrigger className="form-input-base">
-                  <SelectValue placeholder="Sélectionnez la relation" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="père">Père</SelectItem>
-                  <SelectItem value="mère">Mère</SelectItem>
-                  <SelectItem value="tuteur">Tuteur légal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="parentPhone">Téléphone</Label>
-              <Input id="parentPhone" type="tel" className="form-input-base" required />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="parentEmail">Email</Label>
-              <Input id="parentEmail" type="email" className="form-input-base" required />
-            </div>
-          </FormSection>
-        </CardContent>
-      </Card>
+<Card className="glass-panel">
+  <CardContent className="pt-6">
+    <FormSection 
+      title="Informations des responsables légaux" 
+      subtitle="Veuillez remplir les informations concernant les responsables légaux du joueur"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-2">
+          <Label htmlFor="parentLastName">Nom</Label>
+          <Input id="parentLastName" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="parentFirstName">Prénom</Label>
+          <Input id="parentFirstName" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="parentPhone">Téléphone (GSM)</Label>
+          <Input id="parentPhone" type="tel" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="parentEmail">Email</Label>
+          <Input id="parentEmail" type="email" className="form-input-base" required />
+        </div>
+        
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="parentRelation">Relation</Label>
+          <Select defaultValue="parent">
+            <SelectTrigger className="form-input-base">
+              <SelectValue placeholder="Sélectionnez la relation" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="parent">Parent</SelectItem>
+              <SelectItem value="representant">Représentant</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </FormSection>
+  </CardContent>
+</Card>
       
       <Card className="glass-panel">
         <CardContent className="pt-6">
