@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   className?: string;
@@ -21,24 +22,30 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         </div>
         
         <div className="flex items-center space-x-3">
-          <a 
-            href="#" 
+          <Link 
+            to="/" 
+            className="text-sm font-medium text-rwdm-blue/70 dark:text-white/70 hover:text-rwdm-blue dark:hover:text-white transition-colors"
+          >
+            Accueil
+          </Link>
+          <Link 
+            to="#" 
             className="text-sm font-medium text-rwdm-blue/70 dark:text-white/70 hover:text-rwdm-blue dark:hover:text-white transition-colors"
           >
             À propos
-          </a>
-          <a 
-            href="#" 
+          </Link>
+          <Link 
+            to="#" 
             className="text-sm font-medium text-rwdm-blue/70 dark:text-white/70 hover:text-rwdm-blue dark:hover:text-white transition-colors"
           >
             Contact
-          </a>
-          <a 
-            href="#"
+          </Link>
+          <Link 
+            to="/auth"
             className="ml-4 py-1.5 px-4 bg-rwdm-blue text-white rounded-full text-sm font-medium button-transition hover:bg-rwdm-blue/90"
           >
-            Admin
-          </a>
+            Authentification
+          </Link>
         </div>
       </div>
     </header>

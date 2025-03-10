@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { FormType } from './FormSelector';
 import AnimatedTransition from './AnimatedTransition';
 import RegistrationForm from './RegistrationForm';
+import SelectionTestsForm from './SelectionTestsForm';
+import AccidentReportForm from './AccidentReportForm';
+import ResponsibilityWaiverForm from './ResponsibilityWaiverForm';
 
 interface FormWrapperProps {
   formType: FormType;
@@ -26,23 +29,11 @@ const FormWrapper: React.FC<FormWrapperProps> = ({ formType }) => {
       case 'registration':
         return <RegistrationForm />;
       case 'selection-tests':
-        return (
-          <div className="flex items-center justify-center h-64 text-center p-8 animate-slide-up">
-            <p className="text-gray-500">Le formulaire d'inscription aux tests de sélection sera disponible prochainement.</p>
-          </div>
-        );
+        return <SelectionTestsForm />;
       case 'accident-report':
-        return (
-          <div className="flex items-center justify-center h-64 text-center p-8 animate-slide-up">
-            <p className="text-gray-500">Le formulaire de déclaration d'accident sera disponible prochainement.</p>
-          </div>
-        );
+        return <AccidentReportForm />;
       case 'responsibility-waiver':
-        return (
-          <div className="flex items-center justify-center h-64 text-center p-8 animate-slide-up">
-            <p className="text-gray-500">Le formulaire de décharge de responsabilité sera disponible prochainement.</p>
-          </div>
-        );
+        return <ResponsibilityWaiverForm />;
       default:
         return null;
     }
