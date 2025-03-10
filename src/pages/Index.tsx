@@ -1,12 +1,77 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState, useEffect } from 'react';
+import Navbar from '../components/Navbar';
+import FormSelector, { FormType } from '../components/FormSelector';
+import FormWrapper from '../components/FormWrapper';
+import AnimatedTransition from '../components/AnimatedTransition';
+import { motion } from 'framer-motion';
 
 const Index = () => {
+  const [currentForm, setCurrentForm] = useState<FormType>('registration');
+  const [pageLoaded, setPageLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Simulate a page load animation
+    const timer = setTimeout(() => {
+      setPageLoaded(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const handleFormChange = (formType: FormType) => {
+    setCurrentForm(formType);
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
+      <Navbar />
+      
+      <main className="container mx-auto px-4 pt-28 pb-20">
+        <AnimatedTransition
+          show={pageLoaded}
+          animateIn="animate-slide-down"
+          animateOut="animate-fade-out"
+          className="text-center mb-12"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3">
+              Académie RWDM
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Bienvenue sur la plateforme officielle d'inscription de l'Académie RWDM. 
+              Veuillez sélectionner le type de formulaire que vous souhaitez compléter.
+            </p>
+          </motion.div>
+        </AnimatedTransition>
+        
+        <AnimatedTransition
+          show={pageLoaded}
+          animateIn="animate-slide-up"
+          animateOut="animate-fade-out"
+          duration={600}
+          className="mb-10"
+        >
+          <FormSelector 
+            currentForm={currentForm} 
+            onSelectForm={handleFormChange} 
+          />
+        </AnimatedTransition>
+        
+        <FormWrapper formType={currentForm} />
+      </main>
+      
+      <footer className="py-6 px-4 mt-8 glass-panel">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} Académie RWDM. Tous droits réservés.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
