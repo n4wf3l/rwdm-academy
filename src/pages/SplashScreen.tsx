@@ -3,13 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Globe } from 'lucide-react';
 
 const SplashScreen = () => {
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Afficher le sélecteur de langue après animation du splash screen
+    // Show language selector after splash screen animation
     const timer = setTimeout(() => {
       setShowLanguageSelector(true);
     }, 2000);
@@ -18,9 +20,9 @@ const SplashScreen = () => {
   }, []);
 
   const handleLanguageSelect = (language: 'fr' | 'nl' | 'en') => {
-    // On pourrait stocker la langue dans localStorage ou context
+    // Store selected language in localStorage
     localStorage.setItem('preferredLanguage', language);
-    // Naviguer vers la page d'accueil après sélection de la langue
+    // Navigate to home page after language selection
     navigate('/');
   };
 
@@ -35,7 +37,7 @@ const SplashScreen = () => {
           className="text-center"
         >
           <motion.div 
-            className="h-40 w-40 rounded-full bg-rwdm-red flex items-center justify-center mb-8 mx-auto"
+            className="h-40 w-40 rounded-full bg-rwdm-red flex items-center justify-center mb-8 mx-auto shadow-lg"
             animate={{ rotate: 360 }}
             transition={{ duration: 2, ease: "easeInOut" }}
           >
@@ -59,36 +61,55 @@ const SplashScreen = () => {
           </motion.p>
         </motion.div>
       ) : (
-        // Language selector
+        // Enhanced language selector
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="max-w-md w-full bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-lg"
+          className="max-w-md w-full"
         >
-          <h2 className="text-2xl font-bold text-white text-center mb-8">
-            Choisissez votre langue
-          </h2>
-          <div className="grid grid-cols-1 gap-4">
-            <Button 
-              onClick={() => handleLanguageSelect('fr')}
-              className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6"
-            >
-              Français
-            </Button>
-            <Button 
-              onClick={() => handleLanguageSelect('nl')}
-              className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6"
-            >
-              Nederlands
-            </Button>
-            <Button 
-              onClick={() => handleLanguageSelect('en')}
-              className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6"
-            >
-              English
-            </Button>
-          </div>
+          <Card className="bg-white/10 backdrop-blur-lg shadow-xl border-white/20">
+            <div className="p-5 flex justify-center">
+              <motion.div 
+                className="h-24 w-24 rounded-full bg-rwdm-red flex items-center justify-center mb-2"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ repeat: Infinity, duration: 3 }}
+              >
+                <span className="text-white font-bold text-4xl">R</span>
+              </motion.div>
+            </div>
+            
+            <CardContent className="p-6 pt-0">
+              <h2 className="text-2xl font-bold text-white text-center mb-6 flex items-center justify-center gap-2">
+                <Globe className="h-5 w-5" /> 
+                <span>Sélectionnez votre langue</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 gap-3">
+                <Button 
+                  onClick={() => handleLanguageSelect('fr')}
+                  className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
+                  size="lg"
+                >
+                  <span className="mr-2">🇫🇷</span> Français
+                </Button>
+                <Button 
+                  onClick={() => handleLanguageSelect('nl')}
+                  className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
+                  size="lg"
+                >
+                  <span className="mr-2">🇧🇪</span> Nederlands
+                </Button>
+                <Button 
+                  onClick={() => handleLanguageSelect('en')}
+                  className="bg-white text-rwdm-blue hover:bg-white/90 text-lg py-6 flex items-center justify-center rounded-xl font-medium shadow-sm transition-all hover:shadow-md"
+                  size="lg"
+                >
+                  <span className="mr-2">🇬🇧</span> English
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       )}
     </div>
