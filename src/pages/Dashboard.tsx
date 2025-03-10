@@ -308,7 +308,7 @@ const Dashboard = () => {
                                   <SelectValue placeholder="Assigner à" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="">Non assigné</SelectItem>
+                                  <SelectItem value="none">Non assigné</SelectItem>
                                   {MOCK_ADMINS.map((admin) => (
                                     <SelectItem key={admin.id} value={admin.id}>
                                       {admin.name}
