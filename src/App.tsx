@@ -8,8 +8,6 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import Planning from "./pages/Planning";
 import Members from "./pages/Members";
