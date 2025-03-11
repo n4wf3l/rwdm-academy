@@ -162,7 +162,7 @@ const Contact = () => {
               <h2 className="text-2xl font-semibold mb-4">Comment nous trouver</h2>
               <div className="rounded-lg overflow-hidden h-96 bg-gray-200">
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2518.8869568045434!2d4.315825676936116!3d50.85851895957444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c3f1602bee97%3A0x28c219371063c3e6!2sStade%20Edmond%20Machtens!5e0!3m2!1sfr!2sbe!4v1715606841337!5m2!1sfr!2sbe" 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2518.8869568045434!2d4.315825676936116!3d50.85851895957444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c3f1602bee97%3A0x28c219371063c3e6!2sStade%20Edmond%20Machtens!5e0!3m2!1sfr!2sbe!4v1715606841337!5m2!1sfr!2sbe&maptype=satellite&style=dark" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0 }} 

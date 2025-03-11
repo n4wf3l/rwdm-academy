@@ -3,6 +3,46 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const teamMembers = [
+  {
+    name: "Jean Dupont",
+    role: "Directeur Sportif",
+    image: "/placeholder.svg",
+    bio: "Plus de 15 ans d'expérience dans la formation de jeunes talents.",
+  },
+  {
+    name: "Marie Lambert",
+    role: "Coordinatrice Technique",
+    image: "/placeholder.svg",
+    bio: "Ancienne joueuse professionnelle avec une passion pour le développement des jeunes.",
+  },
+  {
+    name: "Ahmed Benali",
+    role: "Entraîneur Principal",
+    image: "/placeholder.svg",
+    bio: "Diplômé UEFA Pro avec une approche innovante de la formation.",
+  },
+  {
+    name: "Sophie Dubois",
+    role: "Responsable Administrative",
+    image: "/placeholder.svg",
+    bio: "Assure la bonne gestion quotidienne de l'académie.",
+  },
+  {
+    name: "Thomas Verhaeghe",
+    role: "Préparateur Physique",
+    image: "/placeholder.svg",
+    bio: "Spécialiste en développement athlétique des jeunes sportifs.",
+  },
+  {
+    name: "Luc Vandermeiren",
+    role: "Entraîneur des Gardiens",
+    image: "/placeholder.svg",
+    bio: "Ancien gardien professionnel dédié à la formation des futures stars.",
+  }
+];
 
 const About = () => {
   return (
@@ -20,7 +60,7 @@ const About = () => {
             À propos de RWDM Academy
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Découvrez notre histoire, notre mission et notre engagement envers le développement des jeunes talents.
+            Découvrez notre histoire, notre mission et notre équipe dédiée au développement des jeunes talents.
           </p>
         </motion.div>
         
@@ -99,6 +139,36 @@ const About = () => {
             </CardContent>
           </Card>
         </motion.div>
+        
+        <div className="mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-rwdm-blue dark:text-white mb-8 text-center">
+            Notre Équipe
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {teamMembers.map((member, index) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 * index }}
+              >
+                <Card className="h-full glass-panel hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <CardContent className="p-6 flex flex-col items-center text-center">
+                    <Avatar className="h-24 w-24 mb-4 border-2 border-rwdm-red">
+                      <AvatarImage src={member.image} alt={member.name} />
+                      <AvatarFallback className="bg-rwdm-blue text-white text-lg">
+                        {member.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
+                    <p className="text-rwdm-red font-medium mb-3">{member.role}</p>
+                    <p className="text-gray-600 dark:text-gray-300">{member.bio}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </main>
       
       <footer className="py-6 px-4 mt-8 glass-panel">
