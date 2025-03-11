@@ -1,15 +1,29 @@
+<<<<<<< HEAD
 import React from "react";
 import Navbar from "../components/Navbar";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Clock, Info } from "lucide-react";
+=======
+
+import React from 'react';
+import Navbar from '../components/Navbar';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Mail, Phone, MapPin, Clock, Info } from 'lucide-react';
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
 
 const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
       <Navbar />
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
       <main className="container mx-auto px-4 pt-28 pb-20">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -21,11 +35,18 @@ const Contact = () => {
             Contactez-nous
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+<<<<<<< HEAD
             Vous avez des questions? N'hésitez pas à nous contacter. Notre
             équipe est là pour vous aider.
           </p>
         </motion.div>
 
+=======
+            Vous avez des questions? N'hésitez pas à nous contacter. Notre équipe est là pour vous aider.
+          </p>
+        </motion.div>
+        
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -35,6 +56,7 @@ const Contact = () => {
           >
             <Card className="h-full glass-panel">
               <CardContent className="p-6">
+<<<<<<< HEAD
                 <h2 className="text-2xl font-semibold mb-6">
                   Envoyez-nous un message
                 </h2>
@@ -47,6 +69,13 @@ const Contact = () => {
                       >
                         Nom
                       </label>
+=======
+                <h2 className="text-2xl font-semibold mb-6">Envoyez-nous un message</h2>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium mb-1">Nom</label>
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                       <input
                         type="text"
                         id="name"
@@ -55,12 +84,16 @@ const Contact = () => {
                       />
                     </div>
                     <div>
+<<<<<<< HEAD
                       <label
                         htmlFor="email"
                         className="block text-sm font-medium mb-1"
                       >
                         Email
                       </label>
+=======
+                      <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                       <input
                         type="email"
                         id="email"
@@ -70,12 +103,16 @@ const Contact = () => {
                     </div>
                   </div>
                   <div>
+<<<<<<< HEAD
                     <label
                       htmlFor="subject"
                       className="block text-sm font-medium mb-1"
                     >
                       Sujet
                     </label>
+=======
+                    <label htmlFor="subject" className="block text-sm font-medium mb-1">Sujet</label>
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                     <input
                       type="text"
                       id="subject"
@@ -84,12 +121,16 @@ const Contact = () => {
                     />
                   </div>
                   <div>
+<<<<<<< HEAD
                     <label
                       htmlFor="message"
                       className="block text-sm font-medium mb-1"
                     >
                       Message
                     </label>
+=======
+                    <label htmlFor="message" className="block text-sm font-medium mb-1">Message</label>
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                     <textarea
                       id="message"
                       rows={5}
@@ -104,7 +145,11 @@ const Contact = () => {
               </CardContent>
             </Card>
           </motion.div>
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -119,15 +164,24 @@ const Contact = () => {
                     <div>
                       <h3 className="font-medium mb-1">Notre adresse</h3>
                       <p className="text-gray-600 dark:text-gray-300">
+<<<<<<< HEAD
                         Stade Edmond Machtens
                         <br />
                         Avenue Charles Malis 61
                         <br />
+=======
+                        Stade Edmond Machtens<br />
+                        Avenue Charles Malis 61<br />
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                         1080 Molenbeek-Saint-Jean
                       </p>
                     </div>
                   </div>
+<<<<<<< HEAD
 
+=======
+                  
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                   <div className="flex items-start space-x-3">
                     <Mail className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
@@ -137,7 +191,11 @@ const Contact = () => {
                       </p>
                     </div>
                   </div>
+<<<<<<< HEAD
 
+=======
+                  
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                   <div className="flex items-start space-x-3">
                     <Phone className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
@@ -147,28 +205,45 @@ const Contact = () => {
                       </p>
                     </div>
                   </div>
+<<<<<<< HEAD
 
+=======
+                  
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                   <div className="flex items-start space-x-3">
                     <Clock className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
                       <h3 className="font-medium mb-1">Heures d'ouverture</h3>
                       <p className="text-gray-600 dark:text-gray-300">
+<<<<<<< HEAD
                         Lundi - Vendredi: 9h - 17h
                         <br />
                         Samedi: 9h - 12h
                         <br />
+=======
+                        Lundi - Vendredi: 9h - 17h<br />
+                        Samedi: 9h - 12h<br />
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                         Dimanche: Fermé
                       </p>
                     </div>
                   </div>
+<<<<<<< HEAD
 
+=======
+                  
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                   <div className="flex items-start space-x-3">
                     <Info className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
                       <h3 className="font-medium mb-1">Informations</h3>
                       <p className="text-gray-600 dark:text-gray-300">
+<<<<<<< HEAD
                         N° TVA: BE0123456789
                         <br />
+=======
+                        N° TVA: BE0123456789<br />
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                         N° d'entreprise: 0123.456.789
                       </p>
                     </div>
@@ -178,7 +253,11 @@ const Contact = () => {
             </Card>
           </motion.div>
         </div>
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -186,6 +265,7 @@ const Contact = () => {
         >
           <Card className="glass-panel">
             <CardContent className="p-6">
+<<<<<<< HEAD
               <h2 className="text-2xl font-semibold mb-4">
                 Comment nous trouver
               </h2>
@@ -197,6 +277,17 @@ const Contact = () => {
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
+=======
+              <h2 className="text-2xl font-semibold mb-4">Comment nous trouver</h2>
+              <div className="rounded-lg overflow-hidden h-96 bg-gray-200">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2518.8869568045434!2d4.315825676936116!3d50.85851895957444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c3f1602bee97%3A0x28c219371063c3e6!2sStade%20Edmond%20Machtens!5e0!3m2!1sfr!2sbe!4v1715606841337!5m2!1sfr!2sbe&maptype=satellite&style=dark" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen 
+                  loading="lazy" 
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
                   referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
               </div>
@@ -204,12 +295,20 @@ const Contact = () => {
           </Card>
         </motion.div>
       </main>
+<<<<<<< HEAD
 
       <footer className="py-6 px-4 mt-8 glass-panel">
         <div className="container mx-auto text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             &copy; {new Date().getFullYear()} RWDM Academy. Tous droits
             réservés.
+=======
+      
+      <footer className="py-6 px-4 mt-8 glass-panel">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} RWDM Academy. Tous droits réservés.
+>>>>>>> 59d4167e9be2de4c8b636fff0f8ddc005cfe385f
           </p>
         </div>
       </footer>

@@ -26,6 +26,11 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu when changing routes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const isActivePath = (path: string) => location.pathname === path;
@@ -85,7 +90,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           <Link
             to="/auth"
             className={cn(
-              "py-2 px-6 rounded-full text-sm font-medium transition-all",
+              "py-2 px-6 rounded-full text-sm font-medium transition-all button-transition",
               "bg-rwdm-red text-white hover:bg-rwdm-red/90 shadow-md hover:shadow-lg"
             )}
           >
@@ -120,15 +125,29 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             >
               Accueil
             </MobileNavLink>
-            <MobileNavLink to="#about" active={false} onClick={toggleMenu}>
-              À propos
+            <MobileNavLink
+              to="/about"
+              active={isActivePath("/about")}
+              onClick={toggleMenu}
+            >
+              <div className="flex items-center gap-2">
+                <Info size={18} />
+                <span>À propos</span>
+              </div>
             </MobileNavLink>
-            <MobileNavLink to="#contact" active={false} onClick={toggleMenu}>
-              Contact
+            <MobileNavLink
+              to="/contact"
+              active={isActivePath("/contact")}
+              onClick={toggleMenu}
+            >
+              <div className="flex items-center gap-2">
+                <Mail size={18} />
+                <span>Contact</span>
+              </div>
             </MobileNavLink>
             <Link
               to="/auth"
-              className="py-3 w-full rounded-lg bg-rwdm-red text-white text-center font-medium"
+              className="py-3 w-full rounded-lg bg-rwdm-red text-white text-center font-medium button-transition flex items-center justify-center"
               onClick={toggleMenu}
             >
               Espace Admin
@@ -168,7 +187,7 @@ const NavLink: React.FC<NavLinkProps> = ({
     {active && (
       <motion.div
         layoutId="activeIndicator"
-        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-rwdm-red"
+        className="absolute -bottom-1 left-3 right-3 h-0.5 bg-rwdm-red"
       />
     )}
   </Link>
