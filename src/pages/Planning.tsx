@@ -1,14 +1,27 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { ArrowLeft, Calendar as CalendarIcon, Clock, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  ArrowLeft, 
+  Calendar as CalendarIcon, 
+  Clock, 
+  User, 
+  Plus,
+  Mail
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Types pour notre planning
 type AppointmentType = 'registration' | 'selection-tests' | 'accident-report' | 'responsibility-waiver' | 'other';
@@ -20,6 +33,7 @@ interface Appointment {
   personName: string;
   adminName: string;
   notes?: string;
+  email?: string;
 }
 
 // Données fictives pour notre démo
@@ -30,7 +44,8 @@ const MOCK_APPOINTMENTS: Appointment[] = [
     type: "registration",
     personName: "Lucas Dubois",
     adminName: "Sophie Dupont",
-    notes: "Premier rendez-vous pour l'inscription"
+    notes: "Premier rendez-vous pour l'inscription",
+    email: "lucas.dubois@example.com"
   },
   {
     id: "APP-002",
@@ -38,7 +53,8 @@ const MOCK_APPOINTMENTS: Appointment[] = [
     type: "selection-tests",
     personName: "Emma Petit",
     adminName: "Thomas Martin",
-    notes: "Préparation aux tests de la semaine prochaine"
+    notes: "Préparation aux tests de la semaine prochaine",
+    email: "emma.petit@example.com"
   },
   {
     id: "APP-003",
@@ -46,7 +62,8 @@ const MOCK_APPOINTMENTS: Appointment[] = [
     type: "accident-report",
     personName: "Noah Lambert",
     adminName: "Elise Bernard",
-    notes: "Suivi de la déclaration d'accident du 10/08"
+    notes: "Suivi de la déclaration d'accident du 10/08",
+    email: "noah.lambert@example.com"
   },
   {
     id: "APP-004",
@@ -54,7 +71,8 @@ const MOCK_APPOINTMENTS: Appointment[] = [
     type: "responsibility-waiver",
     personName: "Chloé Moreau",
     adminName: "Michael Lambert",
-    notes: "Signature de la décharge pour le tournoi"
+    notes: "Signature de la décharge pour le tournoi",
+    email: "chloe.moreau@example.com"
   },
   {
     id: "APP-005",
@@ -62,8 +80,23 @@ const MOCK_APPOINTMENTS: Appointment[] = [
     type: "other",
     personName: "Louis Lefevre",
     adminName: "Sophie Dupont",
-    notes: "Discussion sur le programme d'entraînement"
+    notes: "Discussion sur le programme d'entraînement",
+    email: "louis.lefevre@example.com"
   }
+];
+
+// Heures disponibles pour les rendez-vous
+const AVAILABLE_TIMES = [
+  '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'
+];
+
+// Admins disponibles
+const AVAILABLE_ADMINS = [
+  { id: "1", name: "Sophie Dupont" },
+  { id: "2", name: "Thomas Martin" },
+  { id: "3", name: "Elise Bernard" },
+  { id: "4", name: "Michael Lambert" }
 ];
 
 // Traduction des types de rendez-vous
@@ -110,9 +143,61 @@ const sortAppointmentsByTime = (appointments: Appointment[]) => {
   return [...appointments].sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 
+// Fonction pour générer un nouvel ID de rendez-vous
+const generateAppointmentId = (appointments: Appointment[]) => {
+  const lastId = appointments.length > 0 
+    ? parseInt(appointments[appointments.length - 1].id.split('-')[1]) 
+    : 0;
+  const newIdNumber = (lastId + 1).toString().padStart(3, '0');
+  return `APP-${newIdNumber}`;
+};
+
+// Fonction pour vérifier si un créneau horaire est disponible
+const isTimeSlotAvailable = (appointments: Appointment[], date: Date, time: string) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  const timeSlotDate = new Date(date);
+  timeSlotDate.setHours(hours, minutes, 0, 0);
+  
+  return !appointments.some(appointment => {
+    const appointmentTime = appointment.date.getTime();
+    const slotTime = timeSlotDate.getTime();
+    return appointmentTime === slotTime;
+  });
+};
+
+// Fonction pour obtenir les créneaux disponibles pour une date
+const getAvailableTimeSlotsForDate = (appointments: Appointment[], date: Date) => {
+  return AVAILABLE_TIMES.filter(time => isTimeSlotAvailable(appointments, date, time));
+};
+
 const Planning = () => {
-  const [appointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>(MOCK_APPOINTMENTS);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [newAppointmentDate, setNewAppointmentDate] = useState<Date | undefined>(new Date());
+  const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
+  const [newAppointmentType, setNewAppointmentType] = useState<AppointmentType>('registration');
+  const [newAppointmentPerson, setNewAppointmentPerson] = useState('');
+  const [newAppointmentEmail, setNewAppointmentEmail] = useState('');
+  const [newAppointmentAdmin, setNewAppointmentAdmin] = useState('');
+  const [newAppointmentNotes, setNewAppointmentNotes] = useState('');
+  
+  const location = useLocation();
+  const { toast } = useToast();
+
+  // Vérifier si nous avons été redirigés depuis la page dashboard avec une demande d'inscription validée
+  useEffect(() => {
+    if (location.state?.scheduleAppointment && location.state?.request) {
+      const request = location.state.request;
+      setNewAppointmentPerson(request.name);
+      setNewAppointmentEmail(request.email);
+      setNewAppointmentType(request.type as AppointmentType);
+      setNewAppointmentNotes(`Rendez-vous suite à la validation de la demande ${request.id}`);
+      
+      // Ouvrir le modal de planification
+      setIsScheduleModalOpen(true);
+    }
+  }, [location.state]);
   
   // Grouper les rendez-vous par jour
   const appointmentsByDay = groupAppointmentsByDay(appointments);
@@ -122,10 +207,79 @@ const Planning = () => {
   const appointmentsForSelectedDate = appointmentsByDay[selectedDateStr] || [];
   const sortedAppointments = sortAppointmentsByTime(appointmentsForSelectedDate);
   
+  // Créneaux disponibles pour la date sélectionnée du nouveau rendez-vous
+  const availableTimeSlots = newAppointmentDate 
+    ? getAvailableTimeSlotsForDate(appointments, newAppointmentDate)
+    : [];
+
   // Fonction pour déterminer si une date a des rendez-vous
   const hasAppointmentsOnDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return !!appointmentsByDay[dateStr] && appointmentsByDay[dateStr].length > 0;
+  };
+
+  // Ajouter un nouveau rendez-vous
+  const addAppointment = () => {
+    if (!newAppointmentDate || !newAppointmentTime || !newAppointmentAdmin || !newAppointmentPerson) {
+      toast({
+        title: "Champs manquants",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Création de la date avec l'heure sélectionnée
+    const [hours, minutes] = newAppointmentTime.split(':').map(Number);
+    const appointmentDate = new Date(newAppointmentDate);
+    appointmentDate.setHours(hours, minutes, 0, 0);
+    
+    // Création du nouveau rendez-vous
+    const newAppointment: Appointment = {
+      id: generateAppointmentId(appointments),
+      date: appointmentDate,
+      type: newAppointmentType,
+      personName: newAppointmentPerson,
+      adminName: AVAILABLE_ADMINS.find(admin => admin.id === newAppointmentAdmin)?.name || '',
+      notes: newAppointmentNotes,
+      email: newAppointmentEmail
+    };
+    
+    // Ajout du rendez-vous à la liste
+    setAppointments(prev => [...prev, newAppointment]);
+    
+    // Redirection vers la date du nouveau rendez-vous
+    setSelectedDate(appointmentDate);
+    
+    // Fermeture du modal
+    setIsScheduleModalOpen(false);
+    
+    // Notification de confirmation
+    toast({
+      title: "Rendez-vous créé",
+      description: `Le rendez-vous a été planifié pour le ${format(appointmentDate, 'dd/MM/yyyy')} à ${newAppointmentTime}.`,
+    });
+    
+    // Simulation d'envoi d'email
+    toast({
+      title: "Email envoyé",
+      description: `Un email de confirmation a été envoyé à ${newAppointmentEmail}.`,
+      variant: "default"
+    });
+    
+    // Réinitialisation des champs
+    resetAppointmentForm();
+  };
+  
+  // Réinitialiser le formulaire
+  const resetAppointmentForm = () => {
+    setNewAppointmentDate(new Date());
+    setNewAppointmentTime('');
+    setNewAppointmentType('registration');
+    setNewAppointmentPerson('');
+    setNewAppointmentEmail('');
+    setNewAppointmentAdmin('');
+    setNewAppointmentNotes('');
   };
 
   return (
@@ -138,6 +292,13 @@ const Planning = () => {
           </div>
           
           <div className="flex gap-2">
+            <Button 
+              className="bg-rwdm-blue"
+              onClick={() => setIsScheduleModalOpen(true)}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter un rendez-vous
+            </Button>
             <Link to="/dashboard">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -194,6 +355,17 @@ const Planning = () => {
                 <div className="text-center py-12 text-gray-500">
                   <CalendarIcon className="mx-auto h-12 w-12 opacity-30 mb-2" />
                   <p>Aucun rendez-vous pour cette date.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => {
+                      setNewAppointmentDate(selectedDate);
+                      setIsScheduleModalOpen(true);
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Ajouter un rendez-vous à cette date
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -208,6 +380,12 @@ const Planning = () => {
                                 <Clock className="h-4 w-4" />
                                 <span>{format(appointment.date, 'HH:mm')}</span>
                               </div>
+                              {appointment.email && (
+                                <div className="flex items-center gap-2 text-gray-600 mt-1">
+                                  <Mail className="h-4 w-4" />
+                                  <span>{appointment.email}</span>
+                                </div>
+                              )}
                             </div>
                             <div>
                               {getAppointmentBadge(appointment.type)}
@@ -236,6 +414,143 @@ const Planning = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Modal pour ajouter un rendez-vous */}
+      <Dialog open={isScheduleModalOpen} onOpenChange={setIsScheduleModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Planifier un nouveau rendez-vous</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="appointmentDate">Date du rendez-vous</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left"
+                    >
+                      {newAppointmentDate ? (
+                        format(newAppointmentDate, 'dd/MM/yyyy')
+                      ) : (
+                        <span>Sélectionnez une date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={newAppointmentDate}
+                      onSelect={setNewAppointmentDate}
+                      locale={fr}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="appointmentTime">Heure du rendez-vous</Label>
+                <Select 
+                  value={newAppointmentTime} 
+                  onValueChange={setNewAppointmentTime}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une heure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTimeSlots.length > 0 ? (
+                      availableTimeSlots.map(time => (
+                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>Aucun créneau disponible</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="appointmentType">Type de rendez-vous</Label>
+              <Select 
+                value={newAppointmentType} 
+                onValueChange={(value) => setNewAppointmentType(value as AppointmentType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez un type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="registration">Inscription à l'académie</SelectItem>
+                  <SelectItem value="selection-tests">Tests de sélection</SelectItem>
+                  <SelectItem value="accident-report">Déclaration d'accident</SelectItem>
+                  <SelectItem value="responsibility-waiver">Décharge de responsabilité</SelectItem>
+                  <SelectItem value="other">Autre</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="appointmentPerson">Nom de la personne</Label>
+              <Input
+                id="appointmentPerson"
+                value={newAppointmentPerson}
+                onChange={(e) => setNewAppointmentPerson(e.target.value)}
+                placeholder="Entrez le nom complet"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="appointmentEmail">Email de contact</Label>
+              <Input
+                id="appointmentEmail"
+                type="email"
+                value={newAppointmentEmail}
+                onChange={(e) => setNewAppointmentEmail(e.target.value)}
+                placeholder="exemple@email.com"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="appointmentAdmin">Administrateur assigné</Label>
+              <Select 
+                value={newAppointmentAdmin} 
+                onValueChange={setNewAppointmentAdmin}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez un administrateur" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_ADMINS.map(admin => (
+                    <SelectItem key={admin.id} value={admin.id}>{admin.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="appointmentNotes">Notes (optionnel)</Label>
+              <Input
+                id="appointmentNotes"
+                value={newAppointmentNotes}
+                onChange={(e) => setNewAppointmentNotes(e.target.value)}
+                placeholder="Ajoutez des notes supplémentaires"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsScheduleModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button className="bg-rwdm-blue" onClick={addAppointment}>
+              Planifier le rendez-vous
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { 
   Search, 
@@ -223,6 +223,7 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<RequestType | 'all'>('all');
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // State for the details modal
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -232,13 +233,13 @@ const Dashboard = () => {
   const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
   const completedRequestsPerPage = 5;
 
-  // Filtrer les demandes selon les critères
+  // Filtrer les demandes selon les critères (exclut les demandes terminées de la liste principale)
   const filteredRequests = requests.filter(request => {
     const matchesSearch = request.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           request.id.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' ? request.status !== 'completed' : request.status === statusFilter;
     const matchesType = typeFilter === 'all' || request.type === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
@@ -295,6 +296,16 @@ const Dashboard = () => {
       title: "Statut mis à jour",
       description: `Le statut a été changé en "${statusLabels[newStatus]}".`,
     });
+
+    // Si le statut est passé à 'completed' et qu'il s'agit d'une inscription, proposer de planifier un RDV
+    const request = requests.find(r => r.id === requestId);
+    if (newStatus === 'completed' && request?.type === 'registration') {
+      toast({
+        title: "Inscription validée",
+        description: "Vous pouvez maintenant planifier un rendez-vous pour finaliser l'inscription.",
+      });
+      navigate('/planning', { state: { scheduleAppointment: true, request } });
+    }
   };
   
   // Open request details modal
