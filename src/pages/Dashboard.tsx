@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,9 +21,12 @@ import {
   User, 
   Eye,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Send,
+  FileCheck
 } from "lucide-react";
 import RequestDetailsModal, { Request, RequestType, RequestStatus } from "@/components/RequestDetailsModal";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Données fictives pour notre démo
 const MOCK_ADMINS = [
@@ -232,14 +236,26 @@ const Dashboard = () => {
   // Pagination for completed requests
   const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
   const completedRequestsPerPage = 5;
+  
+  // New states for appointment scheduling dialog
+  const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [appointmentType, setAppointmentType] = useState<'test' | 'secretariat' | null>(null);
 
-  // Filtrer les demandes selon les critères (exclut les demandes terminées de la liste principale)
+  // State for pending accident reports
+  const [pendingAccidentReportsPage, setPendingAccidentReportsPage] = useState(1);
+  const pendingAccidentReportsPerPage = 5;
+
+  // Filtrer les demandes selon les critères (exclut les demandes terminées et les accidents en attente)
   const filteredRequests = requests.filter(request => {
     const matchesSearch = request.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           request.id.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' ? request.status !== 'completed' : request.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' ? 
+                          (request.status !== 'completed' && !(request.type === 'accident-report' && request.status === 'in-progress')) : 
+                          request.status === statusFilter;
+    
     const matchesType = typeFilter === 'all' || request.type === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
@@ -248,11 +264,23 @@ const Dashboard = () => {
   // Filtrer les demandes terminées
   const completedRequests = requests.filter(request => request.status === 'completed');
   
+  // Filtrer les accidents en attente
+  const pendingAccidentReports = requests.filter(request => 
+    request.type === 'accident-report' && request.status === 'in-progress'
+  );
+  
   // Calculer la pagination pour les demandes terminées
   const totalCompletedPages = Math.ceil(completedRequests.length / completedRequestsPerPage);
   const paginatedCompletedRequests = completedRequests.slice(
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
+  );
+
+  // Calculer la pagination pour les accidents en attente
+  const totalPendingAccidentPages = Math.ceil(pendingAccidentReports.length / pendingAccidentReportsPerPage);
+  const paginatedPendingAccidents = pendingAccidentReports.slice(
+    (pendingAccidentReportsPage - 1) * pendingAccidentReportsPerPage,
+    pendingAccidentReportsPage * pendingAccidentReportsPerPage
   );
 
   // Assigner une demande à un administrateur
@@ -278,6 +306,9 @@ const Dashboard = () => {
 
   // Changer le statut d'une demande
   const updateRequestStatus = (requestId: string, newStatus: RequestStatus) => {
+    const request = requests.find(r => r.id === requestId);
+    if (!request) return;
+
     setRequests(prevRequests => 
       prevRequests.map(req => 
         req.id === requestId ? { ...req, status: newStatus } : req
@@ -297,14 +328,82 @@ const Dashboard = () => {
       description: `Le statut a été changé en "${statusLabels[newStatus]}".`,
     });
 
-    // Si le statut est passé à 'completed' et qu'il s'agit d'une inscription, proposer de planifier un RDV
-    const request = requests.find(r => r.id === requestId);
-    if (newStatus === 'completed' && request?.type === 'registration') {
-      toast({
-        title: "Inscription validée",
-        description: "Vous pouvez maintenant planifier un rendez-vous pour finaliser l'inscription.",
+    // Gérer les actions spécifiques en fonction du type de demande
+    if (newStatus === 'completed') {
+      handleCompletedRequest(request);
+    }
+  };
+  
+  // Gérer les différentes actions en fonction du type de demande complétée
+  const handleCompletedRequest = (request: Request) => {
+    switch (request.type) {
+      case 'registration':
+        // Ouvrir le dialog pour choisir entre test et rendez-vous au secrétariat
+        setCurrentRequestId(request.id);
+        setIsAppointmentDialogOpen(true);
+        break;
+        
+      case 'selection-tests':
+        // Notification pour les tests techniques
+        toast({
+          title: "Tests validés",
+          description: "Les données ont été transmises aux membres.",
+        });
+        navigate('/members', { state: { newPlayerData: request } });
+        break;
+        
+      case 'responsibility-waiver':
+        // Simple notification pour la décharge
+        toast({
+          title: "Décharge validée",
+          description: "Le document a bien été stocké.",
+        });
+        break;
+        
+      case 'accident-report':
+        // Accident en attente - rien de spécial à faire ici car déjà filtré dans la liste principale
+        toast({
+          title: "Déclaration d'accident",
+          description: "La demande a été déplacée dans les accidents en attente.",
+        });
+        break;
+    }
+  };
+  
+  // Valider définitivement un accident et l'envoyer à l'Union Belge
+  const sendAccidentToFederation = (requestId: string) => {
+    setRequests(prevRequests => 
+      prevRequests.map(req => 
+        req.id === requestId ? { ...req, status: 'completed' } : req
+      )
+    );
+    
+    toast({
+      title: "Déclaration envoyée",
+      description: "La déclaration d'accident a été transmise à l'Union Belge.",
+    });
+  };
+  
+  // Choisir le type de rendez-vous et naviguer vers la page de planning
+  const handleAppointmentTypeSelection = (type: 'test' | 'secretariat') => {
+    setAppointmentType(type);
+    const request = requests.find(r => r.id === currentRequestId);
+    
+    setIsAppointmentDialogOpen(false);
+    
+    if (request) {
+      const appointmentTitle = type === 'test' ? 
+        "Tests techniques" : 
+        "Rendez-vous au secrétariat";
+      
+      navigate('/planning', { 
+        state: { 
+          scheduleAppointment: true, 
+          request,
+          appointmentType: type,
+          appointmentTitle
+        } 
       });
-      navigate('/planning', { state: { scheduleAppointment: true, request } });
     }
   };
   
@@ -445,9 +544,11 @@ const Dashboard = () => {
                               <Select
                                 value={request.assignedTo || ''}
                                 onValueChange={(value) => assignRequest(request.id, value)}
-                                onPointerDownCapture={(e) => e.stopPropagation()}
                               >
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger 
+                                  className="w-[180px]"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <SelectValue placeholder="Assigner à" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -517,6 +618,95 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Nouvelle card pour les accidents en attente */}
+            {pendingAccidentReports.length > 0 && (
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle>Déclarations d'accident en attente ({pendingAccidentReports.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Club</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedPendingAccidents.map((request) => (
+                          <TableRow key={request.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => openRequestDetails(request)}>
+                            <TableCell className="font-medium">{request.id}</TableCell>
+                            <TableCell>{request.name}</TableCell>
+                            <TableCell>{request.date.toLocaleDateString('fr-BE')}</TableCell>
+                            <TableCell>
+                              {request.details && 'clubName' in request.details ? request.details.clubName : 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openRequestDetails(request);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    sendAccidentToFederation(request.id);
+                                  }}
+                                >
+                                  <Send className="h-4 w-4" />
+                                  <span>Envoyer à l'Union Belge</span>
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  {/* Pagination controls for pending accidents */}
+                  {pendingAccidentReports.length > pendingAccidentReportsPerPage && (
+                    <div className="flex items-center justify-between border-t px-4 py-3">
+                      <div className="text-sm text-gray-600">
+                        Page {pendingAccidentReportsPage} sur {totalPendingAccidentPages}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPendingAccidentReportsPage(prev => Math.max(prev - 1, 1))}
+                          disabled={pendingAccidentReportsPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPendingAccidentReportsPage(prev => Math.min(prev + 1, totalPendingAccidentPages))}
+                          disabled={pendingAccidentReportsPage === totalPendingAccidentPages}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             
             {/* Card pour les demandes terminées avec pagination */}
             <Card>
@@ -622,7 +812,7 @@ const Dashboard = () => {
                     <CardContent className="pt-6">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-rwdm-blue">
-                          {requests.filter(r => r.status === 'in-progress').length}
+                          {requests.filter(r => r.status === 'in-progress' && r.type !== 'accident-report').length}
                         </div>
                         <div className="text-sm text-gray-600">Demandes en cours</div>
                       </div>
@@ -642,9 +832,9 @@ const Dashboard = () => {
                     <CardContent className="pt-6">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-rwdm-blue">
-                          {requests.filter(r => !r.assignedTo).length}
+                          {requests.filter(r => r.type === 'accident-report' && r.status === 'in-progress').length}
                         </div>
-                        <div className="text-sm text-gray-600">Non assignées</div>
+                        <div className="text-sm text-gray-600">Accidents en attente</div>
                       </div>
                     </CardContent>
                   </Card>
@@ -661,6 +851,44 @@ const Dashboard = () => {
         onClose={closeRequestDetails}
         request={selectedRequest}
       />
+      
+      {/* Modal de choix du type de rendez-vous */}
+      <Dialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Choisir le type de rendez-vous</DialogTitle>
+            <DialogDescription>
+              Veuillez sélectionner le type de rendez-vous pour le joueur.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-4 py-4">
+            <Button 
+              onClick={() => handleAppointmentTypeSelection('test')}
+              className="flex items-center justify-center gap-2 h-20"
+            >
+              <FileCheck className="h-6 w-6" />
+              <span className="text-lg">Fixer un test technique</span>
+            </Button>
+            <Button 
+              onClick={() => handleAppointmentTypeSelection('secretariat')}
+              className="flex items-center justify-center gap-2 h-20"
+              variant="outline"
+            >
+              <CalendarIcon className="h-6 w-6" />
+              <span className="text-lg">Rendez-vous au secrétariat</span>
+            </Button>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsAppointmentDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
