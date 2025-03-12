@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import {
 import RequestDetailsModal, { Request, RequestType, RequestStatus } from "@/components/RequestDetailsModal";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-// Données fictives pour notre démo
 const MOCK_ADMINS = [
   { id: "1", name: "Sophie Dupont" },
   { id: "2", name: "Thomas Martin" },
@@ -36,7 +34,6 @@ const MOCK_ADMINS = [
   { id: "4", name: "Michael Lambert" },
 ];
 
-// Mock data for our demo with detailed information
 const MOCK_REQUESTS: Request[] = [
   {
     id: "REQ-001",
@@ -198,7 +195,6 @@ const MOCK_REQUESTS: Request[] = [
   }
 ];
 
-// Fonction pour traduire le type en français
 const translateRequestType = (type: RequestType): string => {
   switch (type) {
     case 'registration': return 'Inscription à l\'académie';
@@ -209,7 +205,6 @@ const translateRequestType = (type: RequestType): string => {
   }
 };
 
-// Fonction pour obtenir la couleur du badge selon le statut
 const getStatusBadge = (status: RequestStatus) => {
   switch (status) {
     case 'new': return <Badge className="bg-blue-500">Nouveau</Badge>;
@@ -229,24 +224,19 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // State for the details modal
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Pagination for completed requests
   const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
   const completedRequestsPerPage = 5;
   
-  // New states for appointment scheduling dialog
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [appointmentType, setAppointmentType] = useState<'test' | 'secretariat' | null>(null);
 
-  // State for pending accident reports
   const [pendingAccidentReportsPage, setPendingAccidentReportsPage] = useState(1);
   const pendingAccidentReportsPerPage = 5;
 
-  // Filtrer les demandes selon les critères (exclut les demandes terminées et les accidents en attente)
   const filteredRequests = requests.filter(request => {
     const matchesSearch = request.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -261,29 +251,24 @@ const Dashboard = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
   
-  // Filtrer les demandes terminées
   const completedRequests = requests.filter(request => request.status === 'completed');
   
-  // Filtrer les accidents en attente
   const pendingAccidentReports = requests.filter(request => 
     request.type === 'accident-report' && request.status === 'in-progress'
   );
   
-  // Calculer la pagination pour les demandes terminées
   const totalCompletedPages = Math.ceil(completedRequests.length / completedRequestsPerPage);
   const paginatedCompletedRequests = completedRequests.slice(
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
   );
 
-  // Calculer la pagination pour les accidents en attente
   const totalPendingAccidentPages = Math.ceil(pendingAccidentReports.length / pendingAccidentReportsPerPage);
   const paginatedPendingAccidents = pendingAccidentReports.slice(
     (pendingAccidentReportsPage - 1) * pendingAccidentReportsPerPage,
     pendingAccidentReportsPage * pendingAccidentReportsPerPage
   );
 
-  // Assigner une demande à un administrateur
   const assignRequest = (requestId: string, adminId: string) => {
     setRequests(prevRequests => 
       prevRequests.map(req => 
@@ -304,7 +289,6 @@ const Dashboard = () => {
     }
   };
 
-  // Changer le statut d'une demande
   const updateRequestStatus = (requestId: string, newStatus: RequestStatus) => {
     const request = requests.find(r => r.id === requestId);
     if (!request) return;
@@ -328,32 +312,26 @@ const Dashboard = () => {
       description: `Le statut a été changé en "${statusLabels[newStatus]}".`,
     });
 
-    // Gérer les actions spécifiques en fonction du type de demande
     if (newStatus === 'completed') {
       handleCompletedRequest(request);
     }
   };
-  
-  // Gérer les différentes actions en fonction du type de demande complétée
+
   const handleCompletedRequest = (request: Request) => {
     switch (request.type) {
       case 'registration':
-        // Ouvrir le dialog pour choisir entre test et rendez-vous au secrétariat
         setCurrentRequestId(request.id);
         setIsAppointmentDialogOpen(true);
         break;
         
       case 'selection-tests':
-        // Notification pour les tests techniques
         toast({
           title: "Tests validés",
           description: "Les données ont été transmises aux membres.",
         });
-        navigate('/members', { state: { newPlayerData: request } });
         break;
         
       case 'responsibility-waiver':
-        // Simple notification pour la décharge
         toast({
           title: "Décharge validée",
           description: "Le document a bien été stocké.",
@@ -361,7 +339,6 @@ const Dashboard = () => {
         break;
         
       case 'accident-report':
-        // Accident en attente - rien de spécial à faire ici car déjà filtré dans la liste principale
         toast({
           title: "Déclaration d'accident",
           description: "La demande a été déplacée dans les accidents en attente.",
@@ -369,8 +346,7 @@ const Dashboard = () => {
         break;
     }
   };
-  
-  // Valider définitivement un accident et l'envoyer à l'Union Belge
+
   const sendAccidentToFederation = (requestId: string) => {
     setRequests(prevRequests => 
       prevRequests.map(req => 
@@ -383,8 +359,7 @@ const Dashboard = () => {
       description: "La déclaration d'accident a été transmise à l'Union Belge.",
     });
   };
-  
-  // Choisir le type de rendez-vous et naviguer vers la page de planning
+
   const handleAppointmentTypeSelection = (type: 'test' | 'secretariat') => {
     setAppointmentType(type);
     const request = requests.find(r => r.id === currentRequestId);
@@ -406,14 +381,12 @@ const Dashboard = () => {
       });
     }
   };
-  
-  // Open request details modal
+
   const openRequestDetails = (request: Request) => {
     setSelectedRequest(request);
     setIsModalOpen(true);
   };
-  
-  // Close request details modal
+
   const closeRequestDetails = () => {
     setIsModalOpen(false);
     setSelectedRequest(null);
@@ -619,7 +592,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             
-            {/* Nouvelle card pour les accidents en attente */}
             {pendingAccidentReports.length > 0 && (
               <Card>
                 <CardHeader className="border-b">
@@ -678,7 +650,6 @@ const Dashboard = () => {
                     </Table>
                   </div>
                   
-                  {/* Pagination controls for pending accidents */}
                   {pendingAccidentReports.length > pendingAccidentReportsPerPage && (
                     <div className="flex items-center justify-between border-t px-4 py-3">
                       <div className="text-sm text-gray-600">
@@ -708,7 +679,6 @@ const Dashboard = () => {
               </Card>
             )}
             
-            {/* Card pour les demandes terminées avec pagination */}
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Demandes terminées ({completedRequests.length})</CardTitle>
@@ -761,7 +731,6 @@ const Dashboard = () => {
                   )}
                 </div>
                 
-                {/* Pagination controls */}
                 {completedRequests.length > completedRequestsPerPage && (
                   <div className="flex items-center justify-between border-t px-4 py-3">
                     <div className="text-sm text-gray-600">
@@ -845,14 +814,12 @@ const Dashboard = () => {
         </Tabs>
       </div>
       
-      {/* Request Details Modal */}
       <RequestDetailsModal 
         isOpen={isModalOpen}
         onClose={closeRequestDetails}
         request={selectedRequest}
       />
       
-      {/* Modal de choix du type de rendez-vous */}
       <Dialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
