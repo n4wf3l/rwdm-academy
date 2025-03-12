@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { Search, Filter, Clock, Check, X, Calendar as CalendarIcon, User, Eye } from "lucide-react";
+import { 
+  Search, 
+  Filter, 
+  Clock, 
+  Check, 
+  X, 
+  Calendar as CalendarIcon, 
+  User, 
+  Eye,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 import RequestDetailsModal, { Request, RequestType, RequestStatus } from "@/components/RequestDetailsModal";
 
 // Données fictives pour notre démo
@@ -217,6 +227,10 @@ const Dashboard = () => {
   // State for the details modal
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Pagination for completed requests
+  const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
+  const completedRequestsPerPage = 5;
 
   // Filtrer les demandes selon les critères
   const filteredRequests = requests.filter(request => {
@@ -229,6 +243,16 @@ const Dashboard = () => {
     
     return matchesSearch && matchesStatus && matchesType;
   });
+  
+  // Filtrer les demandes terminées
+  const completedRequests = requests.filter(request => request.status === 'completed');
+  
+  // Calculer la pagination pour les demandes terminées
+  const totalCompletedPages = Math.ceil(completedRequests.length / completedRequestsPerPage);
+  const paginatedCompletedRequests = completedRequests.slice(
+    (completedRequestsPage - 1) * completedRequestsPerPage,
+    completedRequestsPage * completedRequestsPerPage
+  );
 
   // Assigner une demande à un administrateur
   const assignRequest = (requestId: string, adminId: string) => {
@@ -480,6 +504,88 @@ const Dashboard = () => {
                     </TableBody>
                   </Table>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* Card pour les demandes terminées avec pagination */}
+            <Card>
+              <CardHeader className="border-b">
+                <CardTitle>Demandes terminées ({completedRequests.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  {paginatedCompletedRequests.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Aucune demande terminée pour le moment.
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Détails</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paginatedCompletedRequests.map((request) => (
+                          <TableRow key={request.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => openRequestDetails(request)}>
+                            <TableCell className="font-medium">{request.id}</TableCell>
+                            <TableCell>{translateRequestType(request.type)}</TableCell>
+                            <TableCell>
+                              <div>
+                                <div>{request.name}</div>
+                                <div className="text-xs text-gray-500">{request.email}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{request.date.toLocaleDateString('fr-BE')}</TableCell>
+                            <TableCell>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openRequestDetails(request);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+                
+                {/* Pagination controls */}
+                {completedRequests.length > completedRequestsPerPage && (
+                  <div className="flex items-center justify-between border-t px-4 py-3">
+                    <div className="text-sm text-gray-600">
+                      Page {completedRequestsPage} sur {totalCompletedPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCompletedRequestsPage(prev => Math.max(prev - 1, 1))}
+                        disabled={completedRequestsPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCompletedRequestsPage(prev => Math.min(prev + 1, totalCompletedPages))}
+                        disabled={completedRequestsPage === totalCompletedPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
