@@ -11,36 +11,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { Search, Filter, Clock, Check, X, Calendar as CalendarIcon, User } from "lucide-react";
-
-// Types pour notre application
-type RequestStatus = 'new' | 'assigned' | 'in-progress' | 'completed' | 'rejected';
-type RequestType = 'registration' | 'selection-tests' | 'accident-report' | 'responsibility-waiver';
-
-interface Request {
-  id: string;
-  type: RequestType;
-  name: string;
-  email: string;
-  phone: string;
-  date: Date;
-  status: RequestStatus;
-  assignedTo?: string;
-}
-
-interface Admin {
-  id: string;
-  name: string;
-}
+import { Search, Filter, Clock, Check, X, Calendar as CalendarIcon, User, Eye } from "lucide-react";
+import RequestDetailsModal, { Request, RequestType, RequestStatus } from "@/components/RequestDetailsModal";
 
 // Données fictives pour notre démo
-const MOCK_ADMINS: Admin[] = [
+const MOCK_ADMINS = [
   { id: "1", name: "Sophie Dupont" },
   { id: "2", name: "Thomas Martin" },
   { id: "3", name: "Elise Bernard" },
   { id: "4", name: "Michael Lambert" },
 ];
 
+// Mock data for our demo with detailed information
 const MOCK_REQUESTS: Request[] = [
   {
     id: "REQ-001",
@@ -49,7 +31,43 @@ const MOCK_REQUESTS: Request[] = [
     email: "lucas.dubois@example.com",
     phone: "+32 470 12 34 56",
     date: new Date(2023, 7, 15),
-    status: "new"
+    status: "new",
+    details: {
+      playerFirstName: "Lucas",
+      playerLastName: "Dubois",
+      playerBirthDate: new Date(2010, 5, 12),
+      season: "2025/2026",
+      birthPlace: "Bruxelles",
+      address: "Rue de la Loi 16",
+      postalCode: "1000",
+      city: "Bruxelles",
+      currentClub: "RSC Anderlecht",
+      position: "Milieu de terrain",
+      category: "U14",
+      primaryGuardian: {
+        type: "father",
+        firstName: "Jean",
+        lastName: "Dubois",
+        phone: "+32 470 12 34 56",
+        email: "jean.dubois@example.com",
+        address: "Rue de la Loi 16",
+        postalCode: "1000",
+        mobilePhone: "+32 470 12 34 56"
+      },
+      secondaryGuardian: {
+        type: "mother",
+        firstName: "Marie",
+        lastName: "Dubois",
+        phone: "+32 470 98 76 54",
+        email: "marie.dubois@example.com",
+        address: "Rue de la Loi 16",
+        postalCode: "1000",
+        mobilePhone: "+32 470 98 76 54"
+      },
+      imageConsent: true,
+      signatureDate: new Date(2023, 7, 15),
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
   },
   {
     id: "REQ-002",
@@ -59,7 +77,28 @@ const MOCK_REQUESTS: Request[] = [
     phone: "+32 475 23 45 67",
     date: new Date(2023, 7, 16),
     status: "assigned",
-    assignedTo: "1"
+    assignedTo: "1",
+    details: {
+      playerFirstName: "Emma",
+      playerLastName: "Petit",
+      playerBirthDate: new Date(2011, 3, 23),
+      coreGroup: "U12",
+      testPeriod: {
+        startDate: new Date(2023, 8, 1),
+        endDate: new Date(2023, 8, 15)
+      },
+      currentClub: "Standard de Liège",
+      previousClub: "RFC Liège",
+      position: "Attaquant",
+      primaryGuardian: {
+        type: "mother",
+        firstName: "Sophie",
+        lastName: "Petit",
+        phone: "+32 475 23 45 67",
+        email: "sophie.petit@example.com"
+      },
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
   },
   {
     id: "REQ-003",
@@ -69,7 +108,17 @@ const MOCK_REQUESTS: Request[] = [
     phone: "+32 478 34 56 78",
     date: new Date(2023, 7, 17),
     status: "in-progress",
-    assignedTo: "2"
+    assignedTo: "2",
+    details: {
+      playerFirstName: "Noah",
+      playerLastName: "Lambert",
+      affiliationNumber: "BE12345678",
+      clubName: "RWDM",
+      accidentDescription: "Lors de l'entraînement du 15 juillet 2023, Noah est tombé et s'est blessé à la cheville droite. Il a été transporté à l'hôpital pour des examens complémentaires qui ont révélé une entorse de grade 2.",
+      documentUrl: "#",
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png",
+      signatureDate: new Date(2023, 7, 17)
+    }
   },
   {
     id: "REQ-004",
@@ -79,7 +128,23 @@ const MOCK_REQUESTS: Request[] = [
     phone: "+32 479 45 67 89",
     date: new Date(2023, 7, 18),
     status: "completed",
-    assignedTo: "3"
+    assignedTo: "3",
+    details: {
+      playerFirstName: "Chloé",
+      playerLastName: "Moreau",
+      playerBirthDate: new Date(2009, 11, 5),
+      clubName: "KAA Gent",
+      primaryGuardian: {
+        type: "mother",
+        firstName: "Isabelle",
+        lastName: "Moreau",
+        phone: "+32 479 45 67 89",
+        email: "isabelle.moreau@example.com"
+      },
+      signatureDate: new Date(2023, 7, 18),
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png",
+      approvalText: "Lu et approuvé"
+    }
   },
   {
     id: "REQ-005",
@@ -89,7 +154,33 @@ const MOCK_REQUESTS: Request[] = [
     phone: "+32 471 56 78 90",
     date: new Date(2023, 7, 19),
     status: "rejected",
-    assignedTo: "4"
+    assignedTo: "4",
+    details: {
+      playerFirstName: "Louis",
+      playerLastName: "Lefevre",
+      playerBirthDate: new Date(2012, 2, 8),
+      season: "2025/2026",
+      birthPlace: "Gand",
+      address: "Avenue Louise 143",
+      postalCode: "1050",
+      city: "Bruxelles",
+      currentClub: "Club Brugge",
+      position: "Gardien",
+      category: "U11",
+      primaryGuardian: {
+        type: "father",
+        firstName: "Pierre",
+        lastName: "Lefevre",
+        phone: "+32 471 56 78 90",
+        email: "pierre.lefevre@example.com",
+        address: "Avenue Louise 143",
+        postalCode: "1050",
+        mobilePhone: "+32 471 56 78 90"
+      },
+      imageConsent: false,
+      signatureDate: new Date(2023, 7, 19),
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
   }
 ];
 
@@ -122,6 +213,10 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<RequestType | 'all'>('all');
   const { toast } = useToast();
+  
+  // State for the details modal
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filtrer les demandes selon les critères
   const filteredRequests = requests.filter(request => {
@@ -176,6 +271,18 @@ const Dashboard = () => {
       title: "Statut mis à jour",
       description: `Le statut a été changé en "${statusLabels[newStatus]}".`,
     });
+  };
+  
+  // Open request details modal
+  const openRequestDetails = (request: Request) => {
+    setSelectedRequest(request);
+    setIsModalOpen(true);
+  };
+  
+  // Close request details modal
+  const closeRequestDetails = () => {
+    setIsModalOpen(false);
+    setSelectedRequest(null);
   };
 
   return (
@@ -288,7 +395,7 @@ const Dashboard = () => {
                         </TableRow>
                       ) : (
                         filteredRequests.map((request) => (
-                          <TableRow key={request.id}>
+                          <TableRow key={request.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => openRequestDetails(request)}>
                             <TableCell className="font-medium">{request.id}</TableCell>
                             <TableCell>{translateRequestType(request.type)}</TableCell>
                             <TableCell>
@@ -303,6 +410,7 @@ const Dashboard = () => {
                               <Select
                                 value={request.assignedTo || ''}
                                 onValueChange={(value) => assignRequest(request.id, value)}
+                                onPointerDownCapture={(e) => e.stopPropagation()}
                               >
                                 <SelectTrigger className="w-[180px]">
                                   <SelectValue placeholder="Assigner à" />
@@ -322,7 +430,20 @@ const Dashboard = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  onClick={() => updateRequestStatus(request.id, 'in-progress')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openRequestDetails(request);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateRequestStatus(request.id, 'in-progress');
+                                  }}
                                   disabled={request.status === 'in-progress'}
                                 >
                                   <Clock className="h-4 w-4" />
@@ -331,7 +452,10 @@ const Dashboard = () => {
                                   variant="outline" 
                                   size="sm"
                                   className="text-green-600 border-green-600 hover:bg-green-100"
-                                  onClick={() => updateRequestStatus(request.id, 'completed')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateRequestStatus(request.id, 'completed');
+                                  }}
                                   disabled={request.status === 'completed'}
                                 >
                                   <Check className="h-4 w-4" />
@@ -340,7 +464,10 @@ const Dashboard = () => {
                                   variant="outline" 
                                   size="sm"
                                   className="text-red-600 border-red-600 hover:bg-red-100"
-                                  onClick={() => updateRequestStatus(request.id, 'rejected')}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateRequestStatus(request.id, 'rejected');
+                                  }}
                                   disabled={request.status === 'rejected'}
                                 >
                                   <X className="h-4 w-4" />
@@ -410,6 +537,13 @@ const Dashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Request Details Modal */}
+      <RequestDetailsModal 
+        isOpen={isModalOpen}
+        onClose={closeRequestDetails}
+        request={selectedRequest}
+      />
     </AdminLayout>
   );
 };
