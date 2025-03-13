@@ -93,7 +93,7 @@ export const MOCK_REQUESTS: Request[] = [
     email: "noah.lambert@example.com",
     phone: "+32 478 34 56 78",
     date: new Date(2023, 7, 17),
-    status: "in-progress",
+    status: "new",
     assignedTo: "2",
     details: {
       playerFirstName: "Noah",
@@ -241,7 +241,7 @@ export const MOCK_REQUESTS: Request[] = [
     email: "maxime.dupont@example.com",
     phone: "+32 472 23 45 67",
     date: new Date(2023, 8, 12),
-    status: "in-progress",
+    status: "assigned",
     assignedTo: "6",
     details: {
       playerFirstName: "Maxime",
@@ -322,7 +322,7 @@ export const MOCK_REQUESTS: Request[] = [
     email: "juliette.durand@example.com",
     phone: "+32 476 56 78 90",
     date: new Date(2023, 8, 20),
-    status: "in-progress",
+    status: "new",
     assignedTo: "1",
     details: {
       playerFirstName: "Juliette",
@@ -342,7 +342,7 @@ export const MOCK_REQUESTS: Request[] = [
     email: "thomas.lefebvre@example.com",
     phone: "+32 477 67 89 01",
     date: new Date(2023, 8, 22),
-    status: "in-progress",
+    status: "assigned",
     assignedTo: "3",
     details: {
       playerFirstName: "Thomas",

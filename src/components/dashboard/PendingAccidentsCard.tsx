@@ -23,6 +23,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
   onViewDetails,
   onSendToFederation
 }) => {
+  // Don't render the card if there are no pending accidents
   if (pendingAccidents.length === 0) {
     return null;
   }

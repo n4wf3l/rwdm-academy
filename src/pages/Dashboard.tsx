@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ const Dashboard = () => {
                           request.id.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' ? 
-                          (request.status !== 'completed' && !(request.type === 'accident-report' && request.status === 'in-progress')) : 
+                          (request.status !== 'completed') : 
                           request.status === statusFilter;
     
     const matchesType = typeFilter === 'all' || request.type === typeFilter;
@@ -115,6 +114,11 @@ const Dashboard = () => {
 
     if (newStatus === 'completed') {
       handleCompletedRequest(request);
+    } else if (request.type === 'accident-report' && newStatus === 'in-progress') {
+      toast({
+        title: "Déclaration d'accident validée",
+        description: "La déclaration a été déplacée vers les déclarations en attente.",
+      });
     }
   };
 
@@ -163,7 +167,6 @@ const Dashboard = () => {
 
   const handleAppointmentTypeSelection = (type: 'test' | 'secretariat') => {
     if (type === 'test') {
-      // Close dialog immediately for test technique
       setIsAppointmentDialogOpen(false);
       
       toast({
@@ -171,7 +174,6 @@ const Dashboard = () => {
         description: "Les données ont été transmises aux membres.",
       });
       
-      // Update the request status to completed
       if (currentRequestId) {
         setRequests(prevRequests => 
           prevRequests.map(req => 
@@ -183,7 +185,6 @@ const Dashboard = () => {
       const request = requests.find(r => r.id === currentRequestId);
       
       if (request) {
-        // Only navigate to planning for secretariat appointments
         navigate('/planning', { 
           state: { 
             scheduleAppointment: true, 
@@ -193,7 +194,6 @@ const Dashboard = () => {
           } 
         });
         
-        // Close the dialog
         setIsAppointmentDialogOpen(false);
       }
     }

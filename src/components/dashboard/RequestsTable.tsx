@@ -51,16 +51,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     );
   }
 
-  // Special handling for accident reports
-  const handleStatusUpdate = (requestId: string, newStatus: RequestStatus, request: Request) => {
-    // If this is an accident report being approved, set it to in-progress instead of completed
-    if (request.type === 'accident-report' && newStatus === 'completed') {
-      onUpdateStatus(requestId, 'in-progress');
-    } else {
-      onUpdateStatus(requestId, newStatus);
-    }
-  };
-
   return (
     <Table>
       <TableHeader>
@@ -141,10 +131,14 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   className="text-green-600 border-green-600 hover:bg-green-100"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleStatusUpdate(request.id, 'completed', request);
+                    if (request.type === 'accident-report') {
+                      // For accident reports, set to in-progress to move to pending accidents
+                      onUpdateStatus(request.id, 'in-progress');
+                    } else {
+                      onUpdateStatus(request.id, 'completed');
+                    }
                   }}
-                  disabled={request.status === 'completed' || 
-                           (request.type === 'accident-report' && request.status === 'in-progress')}
+                  disabled={request.status === 'completed'}
                 >
                   <Check className="h-4 w-4" />
                 </Button>
