@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ const MOCK_ADMINS = [
   { id: "2", name: "Thomas Martin" },
   { id: "3", name: "Elise Bernard" },
   { id: "4", name: "Michael Lambert" },
+  { id: "5", name: "Julien Verstraeten" },
+  { id: "6", name: "Marie Lejeune" },
 ];
 
 const MOCK_REQUESTS: Request[] = [
@@ -190,6 +193,154 @@ const MOCK_REQUESTS: Request[] = [
       },
       imageConsent: false,
       signatureDate: new Date(2023, 7, 19),
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
+  },
+  // Added more dummy data
+  {
+    id: "REQ-006",
+    type: "registration",
+    name: "Axel Van Damme",
+    email: "axel.vandamme@example.com",
+    phone: "+32 478 98 76 54",
+    date: new Date(2023, 8, 3),
+    status: "new",
+    details: {
+      playerFirstName: "Axel",
+      playerLastName: "Van Damme",
+      playerBirthDate: new Date(2013, 1, 15),
+      season: "2025/2026",
+      birthPlace: "Anvers",
+      address: "Rue du Commerce 78",
+      postalCode: "1040",
+      city: "Bruxelles",
+      currentClub: "Royal Antwerp FC",
+      position: "Défenseur",
+      category: "U12",
+      primaryGuardian: {
+        type: "father",
+        firstName: "Marc",
+        lastName: "Van Damme",
+        phone: "+32 478 98 76 54",
+        email: "marc.vandamme@example.com",
+        address: "Rue du Commerce 78",
+        postalCode: "1040",
+        mobilePhone: "+32 478 98 76 54"
+      },
+      imageConsent: true,
+      signatureDate: new Date(2023, 8, 3),
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
+  },
+  {
+    id: "REQ-007",
+    type: "selection-tests",
+    name: "Léa Janssens",
+    email: "lea.janssens@example.com",
+    phone: "+32 479 12 34 56",
+    date: new Date(2023, 8, 5),
+    status: "assigned",
+    assignedTo: "5",
+    details: {
+      playerFirstName: "Léa",
+      playerLastName: "Janssens",
+      playerBirthDate: new Date(2010, 7, 21),
+      coreGroup: "U15",
+      testPeriod: {
+        startDate: new Date(2023, 9, 10),
+        endDate: new Date(2023, 9, 24)
+      },
+      currentClub: "KRC Genk",
+      previousClub: "KV Mechelen",
+      position: "Milieu de terrain",
+      primaryGuardian: {
+        type: "mother",
+        firstName: "Caroline",
+        lastName: "Janssens",
+        phone: "+32 479 12 34 56",
+        email: "caroline.janssens@example.com"
+      },
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
+  },
+  {
+    id: "REQ-008",
+    type: "accident-report",
+    name: "Maxime Dupont",
+    email: "maxime.dupont@example.com",
+    phone: "+32 472 23 45 67",
+    date: new Date(2023, 8, 12),
+    status: "in-progress",
+    assignedTo: "6",
+    details: {
+      playerFirstName: "Maxime",
+      playerLastName: "Dupont",
+      affiliationNumber: "BE87654321",
+      clubName: "RWDM",
+      accidentDescription: "Pendant le match du 10 septembre 2023 contre Union Saint-Gilloise, Maxime a subi une collision avec un autre joueur. Il a ressenti une douleur vive au genou droit. L'IRM a confirmé une lésion du ligament latéral interne.",
+      documentUrl: "#",
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png",
+      signatureDate: new Date(2023, 8, 12)
+    }
+  },
+  {
+    id: "REQ-009",
+    type: "responsibility-waiver",
+    name: "Elise Martin",
+    email: "elise.martin@example.com",
+    phone: "+32 473 34 56 78",
+    date: new Date(2023, 8, 15),
+    status: "new",
+    details: {
+      playerFirstName: "Elise",
+      playerLastName: "Martin",
+      playerBirthDate: new Date(2011, 9, 17),
+      clubName: "Standard de Liège",
+      primaryGuardian: {
+        type: "father",
+        firstName: "Antoine",
+        lastName: "Martin",
+        phone: "+32 473 34 56 78",
+        email: "antoine.martin@example.com"
+      },
+      signatureDate: new Date(2023, 8, 15),
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png",
+      approvalText: "Lu et approuvé"
+    }
+  },
+  {
+    id: "REQ-010",
+    type: "registration",
+    name: "Gabriel Lemaire",
+    email: "gabriel.lemaire@example.com",
+    phone: "+32 475 45 67 89",
+    date: new Date(2023, 8, 18),
+    status: "in-progress",
+    assignedTo: "2",
+    details: {
+      playerFirstName: "Gabriel",
+      playerLastName: "Lemaire",
+      playerBirthDate: new Date(2009, 4, 29),
+      season: "2025/2026",
+      birthPlace: "Charleroi",
+      address: "Rue de la Station 22",
+      postalCode: "1200",
+      city: "Bruxelles",
+      currentClub: "Sporting Charleroi",
+      position: "Attaquant",
+      category: "U16",
+      primaryGuardian: {
+        type: "mother",
+        firstName: "Nathalie",
+        lastName: "Lemaire",
+        phone: "+32 475 45 67 89",
+        email: "nathalie.lemaire@example.com",
+        address: "Rue de la Station 22",
+        postalCode: "1200",
+        mobilePhone: "+32 475 45 67 89"
+      },
+      imageConsent: true,
+      signatureDate: new Date(2023, 8, 18),
       signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
     }
   }
@@ -361,24 +512,41 @@ const Dashboard = () => {
   };
 
   const handleAppointmentTypeSelection = (type: 'test' | 'secretariat') => {
-    setAppointmentType(type);
-    const request = requests.find(r => r.id === currentRequestId);
-    
-    setIsAppointmentDialogOpen(false);
-    
-    if (request) {
-      const appointmentTitle = type === 'test' ? 
-        "Tests techniques" : 
-        "Rendez-vous au secrétariat";
+    if (type === 'test') {
+      // Close dialog immediately for test technique
+      setIsAppointmentDialogOpen(false);
       
-      navigate('/planning', { 
-        state: { 
-          scheduleAppointment: true, 
-          request,
-          appointmentType: type,
-          appointmentTitle
-        } 
+      toast({
+        title: "Tests techniques programmés",
+        description: "Les données ont été transmises aux membres.",
       });
+      
+      // Update the request status to completed
+      if (currentRequestId) {
+        setRequests(prevRequests => 
+          prevRequests.map(req => 
+            req.id === currentRequestId ? { ...req, status: 'completed' } : req
+          )
+        );
+      }
+    } else {
+      setAppointmentType(type);
+      const request = requests.find(r => r.id === currentRequestId);
+      
+      if (request) {
+        // Only navigate to planning for secretariat appointments
+        navigate('/planning', { 
+          state: { 
+            scheduleAppointment: true, 
+            request,
+            appointmentType: type,
+            appointmentTitle: "Rendez-vous au secrétariat"
+          } 
+        });
+        
+        // Close the dialog
+        setIsAppointmentDialogOpen(false);
+      }
     }
   };
 
