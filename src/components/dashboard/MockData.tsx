@@ -168,7 +168,6 @@ export const MOCK_REQUESTS: Request[] = [
       signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
     }
   },
-  // Added more dummy data
   {
     id: "REQ-006",
     type: "registration",
@@ -314,6 +313,46 @@ export const MOCK_REQUESTS: Request[] = [
       imageConsent: true,
       signatureDate: new Date(2023, 8, 18),
       signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png"
+    }
+  },
+  {
+    id: "REQ-011",
+    type: "accident-report",
+    name: "Juliette Durand",
+    email: "juliette.durand@example.com",
+    phone: "+32 476 56 78 90",
+    date: new Date(2023, 8, 20),
+    status: "in-progress",
+    assignedTo: "1",
+    details: {
+      playerFirstName: "Juliette",
+      playerLastName: "Durand",
+      affiliationNumber: "BE45678912",
+      clubName: "RWDM",
+      accidentDescription: "Durant l'entraînement du 18 septembre 2023, Juliette a fait une chute et s'est blessée à l'épaule gauche. Une radiographie a révélé une fracture de la clavicule nécessitant une immobilisation de 6 semaines.",
+      documentUrl: "#",
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png",
+      signatureDate: new Date(2023, 8, 20)
+    }
+  },
+  {
+    id: "REQ-012",
+    type: "accident-report",
+    name: "Thomas Lefebvre",
+    email: "thomas.lefebvre@example.com",
+    phone: "+32 477 67 89 01",
+    date: new Date(2023, 8, 22),
+    status: "in-progress",
+    assignedTo: "3",
+    details: {
+      playerFirstName: "Thomas",
+      playerLastName: "Lefebvre",
+      affiliationNumber: "BE78901234",
+      clubName: "RWDM",
+      accidentDescription: "Lors du match amical du 20 septembre 2023 contre RSC Anderlecht, Thomas a reçu un coup au visage qui a causé une fracture du nez. Une intervention chirurgicale est prévue la semaine prochaine pour réaligner le cartilage nasal.",
+      documentUrl: "#",
+      signatureUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Barack_Obama_signature.svg/1280px-Barack_Obama_signature.svg.png",
+      signatureDate: new Date(2023, 8, 22)
     }
   }
 ];
