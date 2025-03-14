@@ -3,6 +3,7 @@ import Modal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Mail, Briefcase, FileText, Image } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface EditMemberModalProps {
   member: any;
@@ -17,6 +18,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const { toast } = useToast();
   const [firstName, setFirstName] = useState(member?.firstName || "");
   const [lastName, setLastName] = useState(member?.lastName || "");
   const [email, setEmail] = useState(member?.email || "");
@@ -28,8 +30,9 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     member?.profilePicture || ""
   );
   const [role, setRole] = useState(member?.role || "admin");
+  const [password, setPassword] = useState(""); // optionnel, pour mettre à jour le mot de passe
 
-  // Actualiser les états si le membre change
+  // Actualiser les états lorsque le membre change
   useEffect(() => {
     if (member) {
       setFirstName(member.firstName);
@@ -39,10 +42,26 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       setDescription(member.description);
       setProfilePicture(member.profilePicture);
       setRole(member.role);
+      setPassword("");
     }
   }, [member]);
 
-  const handleSave = (e: React.FormEvent) => {
+  // Permettre de changer l'image
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          setProfilePicture(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Fonction de sauvegarde qui effectue l'appel API PUT pour mettre à jour le membre
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const updatedMember = {
       ...member,
@@ -53,8 +72,12 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       description,
       profilePicture,
       role,
+      password: password || undefined,
     };
-    onSave(updatedMember);
+
+    // Appel de la fonction onSave passée par le parent
+    await onSave(updatedMember);
+    onClose();
   };
 
   return (
@@ -110,6 +133,15 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           />
         </div>
         <div className="flex items-center">
+          <Image className="mr-2" />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="border rounded p-2"
+          />
+        </div>
+        <div className="flex items-center">
           <span className="mr-2 font-semibold">Rôle :</span>
           <select
             value={role}
@@ -119,6 +151,15 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             <option value="admin">Admin</option>
             <option value="superadmin">Superadmin</option>
           </select>
+        </div>
+        <div className="flex items-center">
+          <span className="mr-2 font-semibold">Mot de passe :</span>
+          <Input
+            type="password"
+            placeholder="Laisser vide pour ne pas changer"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
         <Button type="submit" className="bg-rwdm-blue">
           Sauvegarder

@@ -1,49 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Book, Users, Lightbulb, Trophy, Award, Heart } from "lucide-react";
+import { Award, Book, Heart, Lightbulb, Trophy, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-const teamMembers = [
-  {
-    name: "Jean Dupont",
-    role: "Directeur Sportif",
-    image: "/placeholder.svg",
-    bio: "Plus de 15 ans d'expérience dans la formation de jeunes talents.",
-  },
-  {
-    name: "Marie Lambert",
-    role: "Coordinatrice Technique",
-    image: "/placeholder.svg",
-    bio: "Ancienne joueuse professionnelle avec une passion pour le développement des jeunes.",
-  },
-  {
-    name: "Ahmed Benali",
-    role: "Entraîneur Principal",
-    image: "/placeholder.svg",
-    bio: "Diplômé UEFA Pro avec une approche innovante de la formation.",
-  },
-  {
-    name: "Sophie Dubois",
-    role: "Responsable Administrative",
-    image: "/placeholder.svg",
-    bio: "Assure la bonne gestion quotidienne de l'académie.",
-  },
-  {
-    name: "Thomas Verhaeghe",
-    role: "Préparateur Physique",
-    image: "/placeholder.svg",
-    bio: "Spécialiste en développement athlétique des jeunes sportifs.",
-  },
-  {
-    name: "Luc Vandermeiren",
-    role: "Entraîneur des Gardiens",
-    image: "/placeholder.svg",
-    bio: "Ancien gardien professionnel dédié à la formation des futures stars.",
-  },
-];
+interface TeamMember {
+  firstName: string;
+  lastName: string;
+  profilePicture: string;
+  functionTitle: string;
+  description: string;
+  email: string;
+}
 
 const achievements = [
   { value: "45+", label: "Joueurs professionnels formés" },
@@ -53,10 +23,48 @@ const achievements = [
 ];
 
 const About = () => {
+  const { toast } = useToast();
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+
+  useEffect(() => {
+    async function fetchTeamMembers() {
+      try {
+        const response = await fetch("http://localhost:5000/api/team-members", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setTeamMembers(data);
+        } else {
+          toast({
+            title: "Erreur",
+            description:
+              data.message ||
+              "Erreur lors de la récupération des membres d'équipe.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error(
+          "Erreur lors de la récupération des membres d'équipe:",
+          error
+        );
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la récupération des membres d'équipe.",
+          variant: "destructive",
+        });
+      }
+    }
+    fetchTeamMembers();
+  }, [toast]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rwdm-lightblue/10 to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:via-rwdm-blue/10 dark:to-rwdm-blue/40">
       <Navbar />
       <main className="container mx-auto px-4 pt-28 pb-20">
+        {/* Titre et description */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -100,6 +108,7 @@ const About = () => {
             </Card>
           ))}
         </motion.div>
+
         {/* Tabs Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -169,7 +178,7 @@ const About = () => {
             <TabsContent value="mission" className="mt-0">
               <Card className="glass-panel border-0 shadow-lg">
                 <CardContent className="p-8">
-                  <div className="flex flex-col md:flex-row-reverse gap-8 items-center">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
                     <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
                       <img
                         src="/placeholder.svg"
@@ -188,10 +197,9 @@ const About = () => {
                         d'éducation et d'intégration sociale.
                       </p>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Notre approche pédagogique vise à développer non
-                        seulement les compétences techniques et tactiques, mais
-                        aussi les valeurs essentielles comme le respect,
-                        l'esprit d'équipe, la discipline et la résilience.
+                        Nous visons à offrir un encadrement de qualité pour que
+                        chaque joueur puisse réaliser son potentiel et
+                        contribuer à l'essor du football belge.
                       </p>
                     </div>
                   </div>
@@ -221,14 +229,14 @@ const About = () => {
                         une progression régulière et optimale.
                       </p>
                       <p className="mb-4 text-gray-600 dark:text-gray-300">
-                        Nos entraîneurs sont tous titulaires des diplômes requis
-                        et suivent régulièrement des formations pour rester à la
-                        pointe des méthodes d'entraînement modernes.
+                        Nos entraîneurs, tous diplômés, suivent régulièrement
+                        des formations pour rester à la pointe des méthodes
+                        d'entraînement modernes.
                       </p>
                       <p className="text-gray-600 dark:text-gray-300">
-                        La RWDM Academy se distingue également par ses
-                        infrastructures de qualité, offrant à nos jeunes joueurs
-                        les meilleures conditions pour s'épanouir et progresser.
+                        L'accent est mis sur l'éducation, le respect et le
+                        développement personnel, pour permettre à chaque joueur
+                        de s'épanouir sur et en dehors du terrain.
                       </p>
                     </div>
                   </div>
@@ -237,7 +245,8 @@ const About = () => {
             </TabsContent>
           </Tabs>
         </motion.div>
-        {/* Our Values */}
+
+        {/* Nos valeurs */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -269,7 +278,6 @@ const About = () => {
                 </p>
               </CardContent>
             </Card>
-
             <Card className="glass-panel border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <CardContent className="p-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 flex items-center justify-center bg-rwdm-red/10 rounded-full mb-4">
@@ -285,7 +293,6 @@ const About = () => {
                 </p>
               </CardContent>
             </Card>
-
             <Card className="glass-panel border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <CardContent className="p-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 flex items-center justify-center bg-rwdm-red/10 rounded-full mb-4">
@@ -303,7 +310,8 @@ const About = () => {
             </Card>
           </div>
         </motion.div>
-        {/* Team Section */}
+
+        {/* Notre équipe */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -322,38 +330,27 @@ const About = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {teamMembers.map((member, index) => (
               <motion.div
-                key={member.name}
+                key={member.email || index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 * index }}
               >
-                <Card className="group h-full glass-panel border-0 shadow-lg overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="relative overflow-hidden h-60 bg-gradient-to-r from-rwdm-red/20 to-rwdm-blue/20">
-                      <div className="absolute inset-0 bg-rwdm-blue/20 group-hover:bg-rwdm-red/20 transition-colors duration-300"></div>
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-                        <Avatar className="h-48 w-48 mb-60 border-4 border-white dark:border-rwdm-darkblue group-hover:border-rwdm-red transition-colors duration-300 shadow-lg">
-                          <AvatarImage src={member.image} alt={member.name} />
-                          <AvatarFallback className="bg-rwdm-blue text-white text-lg">
-                            {member.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                    </div>
-                    <div className="pt-16 px-6 pb-6 text-center">
-                      <h3 className="text-xl font-bold mb-1 text-rwdm-blue dark:text-white group-hover:text-rwdm-red transition-colors duration-300">
-                        {member.name}
-                      </h3>
-                      <p className="text-rwdm-red font-medium mb-3">
-                        {member.role}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {member.bio}
-                      </p>
-                    </div>
+                <Card className="group h-full glass-panel border-0 shadow-lg overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
+                  <CardContent className="p-6 text-center">
+                    <img
+                      src={member.profilePicture}
+                      alt={`${member.firstName} ${member.lastName}`}
+                      className="w-32 h-32 object-cover rounded-full mx-auto"
+                    />
+                    <h3 className="text-xl font-bold mb-1 text-rwdm-blue dark:text-white group-hover:text-rwdm-red transition-colors duration-300">
+                      {member.firstName} {member.lastName}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {member.functionTitle}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {member.description}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -361,7 +358,6 @@ const About = () => {
           </div>
         </motion.div>
       </main>
-
       <footer className="py-6 px-4 mt-8 glass-panel">
         <div className="container mx-auto text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">

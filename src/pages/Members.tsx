@@ -7,6 +7,7 @@ import EditMemberModal from "@/components/members/EditMemberModal";
 import DeleteMemberModal from "@/components/members/DeleteMemberModal"; // Import de la modale de suppression
 
 interface Member {
+  id: number; // Assurez-vous que chaque membre a un id
   firstName: string;
   lastName: string;
   email: string;
@@ -68,7 +69,7 @@ const Members = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admins/${member.email}`,
+        `http://localhost:5000/api/admins/${encodeURIComponent(member.email)}`,
         {
           method: "DELETE",
           headers: {
@@ -108,17 +109,46 @@ const Members = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEditedMember = (updatedMember: Member) => {
-    setMembers((prev) =>
-      prev.map((member) =>
-        member.email === updatedMember.email ? updatedMember : member
-      )
-    );
+  const handleSaveEditedMember = async (updatedMember: any) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/admins/${updatedMember.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updatedMember),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setMembers((prev) =>
+          prev.map((m) => (m.id === updatedMember.id ? updatedMember : m))
+        );
+        toast({
+          title: "Membre mis à jour",
+          description: "Le membre a été mis à jour avec succès.",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description:
+            data.message || "Erreur lors de la mise à jour du membre.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du membre:", error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la mise à jour du membre.",
+        variant: "destructive",
+      });
+    }
     setIsEditModalOpen(false);
-    toast({
-      title: "Membre mis à jour",
-      description: "Le membre a été mis à jour avec succès.",
-    });
   };
 
   // Gestion de la suppression : ouverture de la modale de confirmation

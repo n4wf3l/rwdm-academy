@@ -207,6 +207,87 @@ app.delete(
   }
 );
 
+// Endpoint pour récupérer les membres de l'équipe (à partir de la table "users")
+app.get("/api/team-members", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute("SELECT * FROM users");
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des membres d'équipe :",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.put(
+  "/api/admins/:id",
+  authMiddleware,
+  superAdminMiddleware,
+  async (req, res) => {
+    const { id } = req.params;
+    const {
+      firstName,
+      lastName,
+      email,
+      password, // optionnel
+      functionTitle,
+      description,
+      profilePicture,
+      role,
+    } = req.body;
+
+    // Vérifier les champs obligatoires...
+    try {
+      const connection = await mysql.createConnection(dbConfig);
+      let query = "";
+      let params = [];
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        query =
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, description = ?, profilePicture = ? WHERE id = ?";
+        params = [
+          firstName,
+          lastName,
+          email,
+          hashedPassword,
+          role,
+          functionTitle || "",
+          description || "",
+          profilePicture || "",
+          id,
+        ];
+      } else {
+        query =
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, description = ?, profilePicture = ? WHERE id = ?";
+        params = [
+          firstName,
+          lastName,
+          email,
+          role,
+          functionTitle || "",
+          description || "",
+          profilePicture || "",
+          id,
+        ];
+      }
+      const [result] = await connection.execute(query, params);
+      await connection.end();
+      if (result.affectedRows > 0) {
+        res.json({ message: "Membre mis à jour avec succès" });
+      } else {
+        res.status(404).json({ message: "Membre non trouvé" });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du membre :", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  }
+);
+
 // Lancer le serveur
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
