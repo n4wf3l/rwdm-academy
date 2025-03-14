@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,19 +13,21 @@ import { CalendarIcon, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas"
+import html2canvas from "html2canvas";
+import SpellCheckModal from "./ui/SpellCheckModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormSection {
   title: string;
   subtitle?: string;
 }
 
-
 const generatePDF = () => {
   const doc = new jsPDF();
   doc.text("Hello World", 10, 10);
   doc.save("document.pdf");
-}; 
+};
+
 const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({ 
   title, 
   subtitle, 
@@ -44,13 +45,32 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 };
 
 const AccidentReportForm: React.FC = () => {
+  const { toast } = useToast();
   const [accidentDate, setAccidentDate] = useState<Date | undefined>();
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   
+  // Ajout des états pour les champs du joueur
+  const [clubName, setClubName] = useState<string>("");
+  const [playerLastName, setPlayerLastName] = useState<string>("");
+  const [playerFirstName, setPlayerFirstName] = useState<string>("");
+  
+  // État pour le modal de vérification orthographique
+  const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Ouvrir le modal de vérification orthographique au lieu de soumettre directement
+    setIsSpellCheckOpen(true);
+  };
+
+  const finalSubmit = () => {
     console.log("Accident form submitted");
+    toast({
+      title: "Déclaration soumise avec succès",
+      description: "Votre déclaration d'accident a été envoyée.",
+    });
+    setIsSpellCheckOpen(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,76 +84,103 @@ const AccidentReportForm: React.FC = () => {
     }
   };
   
+  // Préparer les champs pour la vérification orthographique
+  const spellCheckFields = [
+    { label: "Nom du club", value: clubName },
+    { label: "Nom du joueur", value: playerLastName },
+    { label: "Prénom du joueur", value: playerFirstName }
+  ];
+  
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up">
-      <Card className="glass-panel">
-  <CardContent className="pt-6">
-    <FormSection 
-      title="Informations sur l'accident" 
-      subtitle="Veuillez fournir les informations de base concernant l'accident"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="space-y-2">
-          <Label htmlFor="accidentDate">Date de l'accident</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "form-input-base justify-start text-left font-normal w-full",
-                  !accidentDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {accidentDate ? (
-                  format(accidentDate, "PPP", { locale: fr })
-                ) : (
-                  <span>Sélectionnez une date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
-              <Calendar
-                mode="single"
-                selected={accidentDate}
-                onSelect={setAccidentDate}
-                initialFocus
-                locale={fr}
-                className="p-3"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up">
+        <Card className="glass-panel">
+          <CardContent className="pt-6">
+            <FormSection 
+              title="Informations sur l'accident" 
+              subtitle="Veuillez fournir les informations de base concernant l'accident"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="accidentDate">Date de l'accident</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "form-input-base justify-start text-left font-normal w-full",
+                          !accidentDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {accidentDate ? (
+                          format(accidentDate, "PPP", { locale: fr })
+                        ) : (
+                          <span>Sélectionnez une date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={accidentDate}
+                        onSelect={setAccidentDate}
+                        initialFocus
+                        locale={fr}
+                        className="p-3"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="clubName">Nom du club</Label>
+                  <Input 
+                    id="clubName" 
+                    className="form-input-base" 
+                    value={clubName}
+                    onChange={(e) => setClubName(e.target.value)}
+                    required 
+                  />
+                </div>
 
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="clubName">Nom du club</Label>
-          <Input id="clubName" className="form-input-base" required />
-        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="playerLastName">Nom du joueur</Label>
+                  <Input 
+                    id="playerLastName" 
+                    className="form-input-base" 
+                    value={playerLastName}
+                    onChange={(e) => setPlayerLastName(e.target.value)}
+                    required 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="playerFirstName">Prénom du joueur</Label>
+                  <Input 
+                    id="playerFirstName" 
+                    className="form-input-base" 
+                    value={playerFirstName}
+                    onChange={(e) => setPlayerFirstName(e.target.value)}
+                    required 
+                  />
+                </div>
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="playerLastName">Nom du joueur</Label>
-          <Input id="playerLastName" className="form-input-base" required />
-        </div>
+              <div className="space-y-2 mt-4">
+                <Label htmlFor="accidentDescription">Description de l'accident</Label>
+                <Textarea 
+                  id="accidentDescription" 
+                  className="form-input-base min-h-32" 
+                  placeholder="Décrivez comment l'accident s'est produit, où, quand et les conséquences immédiates..." 
+                  required 
+                />
+              </div>
+            </FormSection>
+          </CardContent>
+        </Card>
         
-        <div className="space-y-2">
-          <Label htmlFor="playerFirstName">Prénom du joueur</Label>
-          <Input id="playerFirstName" className="form-input-base" required />
-        </div>
-      </div>
-
-      <div className="space-y-2 mt-4">
-        <Label htmlFor="accidentDescription">Description de l'accident</Label>
-        <Textarea 
-          id="accidentDescription" 
-          className="form-input-base min-h-32" 
-          placeholder="Décrivez comment l'accident s'est produit, où, quand et les conséquences immédiates..." 
-          required 
-        />
-      </div>
-    </FormSection>
-  </CardContent>
-</Card>
-      
+        
 <Card className="glass-panel">
   <CardContent className="pt-6">
     <FormSection 
@@ -211,17 +258,27 @@ const AccidentReportForm: React.FC = () => {
     </FormSection>
   </CardContent>
 </Card>
-      
-      <div className="flex justify-center">
-        <Button 
-          type="submit" 
-          disabled={!signature || !pdfFile}
-          className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
-        >
-          Soumettre la déclaration
-        </Button>
-      </div>
-    </form>
+        
+        <div className="flex justify-center">
+          <Button 
+            type="submit" 
+            disabled={!signature || !pdfFile}
+            className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
+          >
+            Soumettre la déclaration
+          </Button>
+        </div>
+      </form>
+
+      {/* Modal de vérification orthographique */}
+      <SpellCheckModal
+        isOpen={isSpellCheckOpen}
+        onClose={() => setIsSpellCheckOpen(false)}
+        onConfirm={finalSubmit}
+        fields={spellCheckFields}
+        title="Vérification des informations de la déclaration"
+      />
+    </>
   );
 };
 

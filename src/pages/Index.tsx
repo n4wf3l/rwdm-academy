@@ -5,6 +5,7 @@ import FormSelector, { FormType } from '../components/FormSelector';
 import FormWrapper from '../components/FormWrapper';
 import AnimatedTransition from '../components/AnimatedTransition';
 import { motion } from 'framer-motion';
+import { Toaster } from "@/components/ui/toaster";
 
 const Index = () => {
   const [currentForm, setCurrentForm] = useState<FormType>('registration');
@@ -72,6 +73,9 @@ const Index = () => {
           </p>
         </div>
       </footer>
+      
+      {/* Ajout du Toaster pour les notifications */}
+      <Toaster />
     </div>
   );
 };
