@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,7 @@ const FormSection = ({ title, subtitle, children }) => {
 };
 
 const RegistrationForm = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [birthDate, setBirthDate] = useState<Date | undefined>();
   const [imageConsent, setImageConsent] = useState<boolean>(false);
@@ -63,6 +65,7 @@ const RegistrationForm = () => {
       description: "Votre inscription a été envoyée.",
     });
     setIsSpellCheckOpen(false);
+    navigate('/success/registration');
   };
 
   const currentDate = format(new Date(), "dd/MM/yyyy");

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,7 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 };
 
 const ResponsibilityWaiverForm: React.FC = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [parentLastName, setParentLastName] = useState<string>("");
   const [parentFirstName, setParentFirstName] = useState<string>("");
@@ -63,6 +65,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
       description: "Votre décharge de responsabilité a été envoyée.",
     });
     setIsSpellCheckOpen(false);
+    navigate('/success/responsibilityWaiver');
   };
 
   const waiverText = `Je soussigné(e), ${parentFirstName || ""} ${parentLastName || "À REMPLIR"}, représentant légal du joueur ${playerFirstName || "À REMPLIR"} ${playerLastName || ""}, né le ${playerBirthDate ? format(playerBirthDate, "dd/MM/yyyy") : "À REMPLIR"}, et affilié au club ${currentClub || "À REMPLIR"} décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.`;

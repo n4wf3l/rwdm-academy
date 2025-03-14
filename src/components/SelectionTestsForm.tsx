@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +42,7 @@ const NOYAUX = ["U6", "U7", "U8", "U9", "U10", "U11", "U12", "U13", "U14", "U15"
 const POSITIONS = ["Gardien", "Défenseur", "Milieu de terrain", "Attaquant"];
 
 const SelectionTestsForm: React.FC = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [testStartDate, setTestStartDate] = useState<Date | undefined>();
   const [testEndDate, setTestEndDate] = useState<Date | undefined>();
@@ -67,6 +70,8 @@ const SelectionTestsForm: React.FC = () => {
       description: "Votre demande de test a été envoyée.",
     });
     setIsSpellCheckOpen(false);
+    // Redirection vers la page de confirmation
+    navigate('/success/selectionTests');
   };
   
   const spellCheckFields = [

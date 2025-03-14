@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,22 +46,20 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 };
 
 const AccidentReportForm: React.FC = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [accidentDate, setAccidentDate] = useState<Date | undefined>();
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   
-  // Ajout des états pour les champs du joueur
   const [clubName, setClubName] = useState<string>("");
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   
-  // État pour le modal de vérification orthographique
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Ouvrir le modal de vérification orthographique au lieu de soumettre directement
     setIsSpellCheckOpen(true);
   };
 
@@ -71,6 +70,7 @@ const AccidentReportForm: React.FC = () => {
       description: "Votre déclaration d'accident a été envoyée.",
     });
     setIsSpellCheckOpen(false);
+    navigate('/success/accidentReport');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +84,6 @@ const AccidentReportForm: React.FC = () => {
     }
   };
   
-  // Préparer les champs pour la vérification orthographique
   const spellCheckFields = [
     { label: "Nom du club", value: clubName },
     { label: "Nom du joueur", value: playerLastName },
@@ -188,7 +187,6 @@ const AccidentReportForm: React.FC = () => {
       subtitle="Veuillez télécharger un document PDF justificatif (rapport médical, etc.)"
     >
       <div className="space-y-4">
-        {/* Section d'upload de fichier */}
         <div className="flex items-center justify-center w-full">
           <label
             htmlFor="pdfUpload"
@@ -212,7 +210,6 @@ const AccidentReportForm: React.FC = () => {
           </label>
         </div>
         
-        {/* Affichage du fichier uploadé */}
         {pdfFile && (
           <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <span className="text-sm truncate">{pdfFile.name}</span>
@@ -226,7 +223,6 @@ const AccidentReportForm: React.FC = () => {
           </div>
         )}
      
-        {/* 🔥 Intégration de MedicalReportPDF sous le bouton */}
         <div className="mt-4">
           <MedicalReportPDF />
         </div>
@@ -270,7 +266,6 @@ const AccidentReportForm: React.FC = () => {
         </div>
       </form>
 
-      {/* Modal de vérification orthographique */}
       <SpellCheckModal
         isOpen={isSpellCheckOpen}
         onClose={() => setIsSpellCheckOpen(false)}
