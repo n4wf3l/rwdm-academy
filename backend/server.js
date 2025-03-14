@@ -288,6 +288,32 @@ app.put(
   }
 );
 
+app.get("/api/admins", authMiddleware, async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(
+      "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, description, role FROM users"
+    );
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des admins :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get("/api/requests", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute("SELECT * FROM requests");
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des demandes :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 // Lancer le serveur
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);

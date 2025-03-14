@@ -14,6 +14,7 @@ import Members from "./pages/Members";
 import Documents from "./pages/Documents";
 import Graphics from "./pages/Graphics";
 import NotFound from "./pages/NotFound";
+import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,24 @@ const App = () => {
             <Route path="/documents" element={<Documents />} />
             <Route path="/graphics" element={<Graphics />} />
             <Route path="/planning" element={<Planning />} />
+            <Route
+              path="/success/responsibilityWaiver"
+              element={
+                <FormSubmissionSuccess formType="responsibilityWaiver" />
+              }
+            />
+            <Route
+              path="/success/registration"
+              element={<FormSubmissionSuccess formType="registration" />}
+            />
+            <Route
+              path="/success/selectionTests"
+              element={<FormSubmissionSuccess formType="selectionTests" />}
+            />
+            <Route
+              path="/success/accidentReport"
+              element={<FormSubmissionSuccess formType="accidentReport" />}
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
