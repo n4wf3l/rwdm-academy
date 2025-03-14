@@ -1,41 +1,62 @@
 import AdminLayout from "@/components/AdminLayout";
 import React, { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:5000/api/members-dues"; // On appelle notre proxy au lieu de l'API
+const API_MEMBERS_DUES_URL = "http://localhost:5000/api/members-dues";
+const API_TEAMS_ALL_URL = "http://localhost:5000/api/teams/all";
 
 const Graphics = () => {
-  const [data, setData] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Récupération des factures (invoices)
+    const fetchInvoices = async () => {
       try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`Erreur API: Statut ${response.status}`);
-
+        const response = await fetch(API_MEMBERS_DUES_URL);
+        if (!response.ok)
+          throw new Error(`Erreur API (invoices): Statut ${response.status}`);
         const result = await response.json();
-        console.log("Données reçues :", result);
-
         if (result && result.content) {
-          setData(result.content);
+          setInvoices(result.content);
         } else {
-          setErrorMessage("Aucune donnée reçue depuis l'API (content est vide)");
+          setErrorMessage("Aucune donnée sur les factures reçue");
         }
       } catch (error) {
-        setErrorMessage(`Erreur API: ${error.message}`);
-      } finally {
-        setLoading(false);
+        setErrorMessage(`Erreur API (invoices): ${error.message}`);
       }
     };
 
-    fetchData();
+    // Récupération de toutes les équipes
+    const fetchTeams = async () => {
+      try {
+        const response = await fetch(API_TEAMS_ALL_URL, {
+          headers: { "Accept-Language": "fr-FR" },
+        });
+        if (!response.ok)
+          throw new Error(`Erreur API (teams): Statut ${response.status}`);
+        const result = await response.json();
+        if (result && result.length > 0) {
+          setTeams(result);
+        } else {
+          setErrorMessage("Aucune donnée sur les équipes reçue");
+        }
+      } catch (error) {
+        setErrorMessage(`Erreur API (teams): ${error.message}`);
+      }
+    };
+
+    Promise.all([fetchInvoices(), fetchTeams()]).finally(() =>
+      setLoading(false)
+    );
   }, []);
 
   return (
     <AdminLayout>
       <div className="p-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-xl font-bold mb-4">📊 Membres avec paiements en attente</h2>
+        {/* Section Invoices */}
+        <h2 className="text-xl font-bold mb-4">📊 Factures en attente</h2>
         {loading && <p className="text-blue-500">Chargement des données...</p>}
         {errorMessage && <p className="text-red-500">⚠ {errorMessage}</p>}
         <div className="overflow-x-auto mt-4">
@@ -43,42 +64,79 @@ const Graphics = () => {
             <thead>
               <tr className="bg-gray-200">
                 <th className="py-2 px-4 border">Date de Facture</th>
-                <th className="py-2 px-4 border">Numéro de Facture</th>
+                <th className="py-2 px-4 border">Numéro</th>
                 <th className="py-2 px-4 border">Nom Complet</th>
-                <th className="py-2 px-4 border">ID Membre</th>
-                <th className="py-2 px-4 border">ID Paiement</th>
-                <th className="py-2 px-4 border">Nom Article</th>
-                <th className="py-2 px-4 border">Statut</th>
                 <th className="py-2 px-4 border">Montant Total</th>
                 <th className="py-2 px-4 border">Montant Payé</th>
-                <th className="py-2 px-4 border">Termes</th>
-                <th className="py-2 px-4 border">Termes Payés</th>
               </tr>
             </thead>
             <tbody>
-              {data.length > 0 ? (
-                data.map((invoice, index) => (
-                  <tr key={index} className="border">
-                    <td className="py-2 px-4 border">{invoice.invoiceDate || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.invoiceNumber || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.memberBasicDto?.fullName || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.memberBasicDto?.id || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.memberDueId || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.revenueItemName || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.status}</td>
-                    <td className="py-2 px-4 border">{invoice.totalAmount} €</td>
-                    <td className="py-2 px-4 border">{invoice.paidAmount} €</td>
-                    <td className="py-2 px-4 border">{invoice.terms || "N/A"}</td>
-                    <td className="py-2 px-4 border">{invoice.paidTerms || "N/A"}</td>
-                  </tr>
-                ))
-              ) : (
-                !loading && (
-                  <tr>
-                    <td colSpan={11} className="text-center py-4">Aucune donnée disponible</td>
-                  </tr>
-                )
-              )}
+              {invoices.length > 0
+                ? invoices.map((invoice, index) => (
+                    <tr key={index} className="border">
+                      <td className="py-2 px-4 border">
+                        {invoice.invoiceDate || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.invoiceNumber || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.memberBasicDto?.fullName || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.totalAmount} €
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.paidAmount} €
+                      </td>
+                    </tr>
+                  ))
+                : !loading && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-4">
+                        Aucune facture disponible
+                      </td>
+                    </tr>
+                  )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Section Teams */}
+        <h2 className="text-xl font-bold mt-8 mb-4">🏆 Liste des équipes</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-300">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="py-2 px-4 border">ID</th>
+                <th className="py-2 px-4 border">Nom</th>
+                <th className="py-2 px-4 border">Catégorie</th>
+                <th className="py-2 px-4 border">Niveau</th>
+                <th className="py-2 px-4 border">Genre</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.length > 0
+                ? teams.map((team, index) => (
+                    <tr key={index} className="border">
+                      <td className="py-2 px-4 border">{team.id || "N/A"}</td>
+                      <td className="py-2 px-4 border">{team.name || "N/A"}</td>
+                      <td className="py-2 px-4 border">{team.age || "N/A"}</td>
+                      <td className="py-2 px-4 border">
+                        {team.level || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {team.gender || "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                : !loading && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-4">
+                        Aucune équipe disponible
+                      </td>
+                    </tr>
+                  )}
             </tbody>
           </table>
         </div>
