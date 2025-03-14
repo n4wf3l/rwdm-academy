@@ -18,7 +18,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const SEASONS = [`${CURRENT_YEAR-1}/${CURRENT_YEAR}`, `${CURRENT_YEAR}/${CURRENT_YEAR+1}`, `${CURRENT_YEAR+1}/${CURRENT_YEAR+2}`];
 
 const POSITIONS = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
-const CATEGORIES = ["U6", "U7", "U8", "U9", "U10", "U11", "U12", "U13", "U14", "U15", "U16", "U17", "U18", "U19", "U21"];
+const CATEGORIES = ["U5", "U6", "U7", "U8", "U9"];
 
 const FormSection = ({ title, subtitle, children }) => {
   return (
@@ -134,21 +134,6 @@ const RegistrationForm = () => {
               <div className="space-y-2">
                 <Label htmlFor="city">Ville</Label>
                 <Input id="city" className="form-input-base" required />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input id="phone" className="form-input-base" type="tel" required />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gsm">GSM</Label>
-                <Input id="gsm" className="form-input-base" type="tel" required />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" className="form-input-base" type="email" required />
               </div>
 
               <div className="space-y-2">

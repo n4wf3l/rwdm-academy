@@ -1,120 +1,21 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { Search, Filter, Clock, Check, X, Calendar as CalendarIcon, User } from "lucide-react";
+import RequestDetailsModal, { Request, RequestType, RequestStatus } from "@/components/RequestDetailsModal";
 
-// Types pour notre application
-type RequestStatus = 'new' | 'assigned' | 'in-progress' | 'completed' | 'rejected';
-type RequestType = 'registration' | 'selection-tests' | 'accident-report' | 'responsibility-waiver';
-
-interface Request {
-  id: string;
-  type: RequestType;
-  name: string;
-  email: string;
-  phone: string;
-  date: Date;
-  status: RequestStatus;
-  assignedTo?: string;
-}
-
-interface Admin {
-  id: string;
-  name: string;
-}
-
-// Données fictives pour notre démo
-const MOCK_ADMINS: Admin[] = [
-  { id: "1", name: "Sophie Dupont" },
-  { id: "2", name: "Thomas Martin" },
-  { id: "3", name: "Elise Bernard" },
-  { id: "4", name: "Michael Lambert" },
-];
-
-const MOCK_REQUESTS: Request[] = [
-  {
-    id: "REQ-001",
-    type: "registration",
-    name: "Lucas Dubois",
-    email: "lucas.dubois@example.com",
-    phone: "+32 470 12 34 56",
-    date: new Date(2023, 7, 15),
-    status: "new"
-  },
-  {
-    id: "REQ-002",
-    type: "selection-tests",
-    name: "Emma Petit",
-    email: "emma.petit@example.com",
-    phone: "+32 475 23 45 67",
-    date: new Date(2023, 7, 16),
-    status: "assigned",
-    assignedTo: "1"
-  },
-  {
-    id: "REQ-003",
-    type: "accident-report",
-    name: "Noah Lambert",
-    email: "noah.lambert@example.com",
-    phone: "+32 478 34 56 78",
-    date: new Date(2023, 7, 17),
-    status: "in-progress",
-    assignedTo: "2"
-  },
-  {
-    id: "REQ-004",
-    type: "responsibility-waiver",
-    name: "Chloé Moreau",
-    email: "chloe.moreau@example.com",
-    phone: "+32 479 45 67 89",
-    date: new Date(2023, 7, 18),
-    status: "completed",
-    assignedTo: "3"
-  },
-  {
-    id: "REQ-005",
-    type: "registration",
-    name: "Louis Lefevre",
-    email: "louis.lefevre@example.com",
-    phone: "+32 471 56 78 90",
-    date: new Date(2023, 7, 19),
-    status: "rejected",
-    assignedTo: "4"
-  }
-];
-
-// Fonction pour traduire le type en français
-const translateRequestType = (type: RequestType): string => {
-  switch (type) {
-    case 'registration': return 'Inscription à l\'académie';
-    case 'selection-tests': return 'Tests de sélection';
-    case 'accident-report': return 'Déclaration d\'accident';
-    case 'responsibility-waiver': return 'Décharge de responsabilité';
-    default: return type;
-  }
-};
-
-// Fonction pour obtenir la couleur du badge selon le statut
-const getStatusBadge = (status: RequestStatus) => {
-  switch (status) {
-    case 'new': return <Badge className="bg-blue-500">Nouveau</Badge>;
-    case 'assigned': return <Badge className="bg-purple-500">Assigné</Badge>;
-    case 'in-progress': return <Badge className="bg-yellow-500">En cours</Badge>;
-    case 'completed': return <Badge className="bg-green-500">Terminé</Badge>;
-    case 'rejected': return <Badge className="bg-red-500">Rejeté</Badge>;
-    default: return <Badge>Inconnu</Badge>;
-  }
-};
+// Import our new components
+import SearchFilters from "@/components/dashboard/SearchFilters";
+import RequestsTable from "@/components/dashboard/RequestsTable";
+import CompletedRequestsCard from "@/components/dashboard/CompletedRequestsCard";
+import PendingAccidentsCard from "@/components/dashboard/PendingAccidentsCard";
+import StatisticsCard from "@/components/dashboard/StatisticsCard";
+import AppointmentDialog from "@/components/dashboard/AppointmentDialog";
+import { MOCK_ADMINS, MOCK_REQUESTS } from "@/components/dashboard/MockData";
 
 const Dashboard = () => {
   const [requests, setRequests] = useState<Request[]>(MOCK_REQUESTS);
@@ -122,20 +23,52 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<RequestType | 'all'>('all');
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
+  const completedRequestsPerPage = 5;
+  
+  const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
 
-  // Filtrer les demandes selon les critères
+  const [pendingAccidentReportsPage, setPendingAccidentReportsPage] = useState(1);
+  const pendingAccidentReportsPerPage = 5;
+
   const filteredRequests = requests.filter(request => {
     const matchesSearch = request.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           request.id.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' ? 
+                          (request.status !== 'completed') : 
+                          request.status === statusFilter;
+    
     const matchesType = typeFilter === 'all' || request.type === typeFilter;
     
     return matchesSearch && matchesStatus && matchesType;
   });
+  
+  const completedRequests = requests.filter(request => request.status === 'completed');
+  
+  const pendingAccidentReports = requests.filter(request => 
+    request.type === 'accident-report' && request.status === 'in-progress'
+  );
+  
+  const totalCompletedPages = Math.ceil(completedRequests.length / completedRequestsPerPage);
+  const paginatedCompletedRequests = completedRequests.slice(
+    (completedRequestsPage - 1) * completedRequestsPerPage,
+    completedRequestsPage * completedRequestsPerPage
+  );
 
-  // Assigner une demande à un administrateur
+  const totalPendingAccidentPages = Math.ceil(pendingAccidentReports.length / pendingAccidentReportsPerPage);
+  const paginatedPendingAccidents = pendingAccidentReports.slice(
+    (pendingAccidentReportsPage - 1) * pendingAccidentReportsPerPage,
+    pendingAccidentReportsPage * pendingAccidentReportsPerPage
+  );
+
   const assignRequest = (requestId: string, adminId: string) => {
     setRequests(prevRequests => 
       prevRequests.map(req => 
@@ -156,8 +89,10 @@ const Dashboard = () => {
     }
   };
 
-  // Changer le statut d'une demande
   const updateRequestStatus = (requestId: string, newStatus: RequestStatus) => {
+    const request = requests.find(r => r.id === requestId);
+    if (!request) return;
+
     setRequests(prevRequests => 
       prevRequests.map(req => 
         req.id === requestId ? { ...req, status: newStatus } : req
@@ -176,6 +111,102 @@ const Dashboard = () => {
       title: "Statut mis à jour",
       description: `Le statut a été changé en "${statusLabels[newStatus]}".`,
     });
+
+    if (newStatus === 'completed') {
+      handleCompletedRequest(request);
+    } else if (request.type === 'accident-report' && newStatus === 'in-progress') {
+      toast({
+        title: "Déclaration d'accident validée",
+        description: "La déclaration a été déplacée vers les déclarations en attente.",
+      });
+    }
+  };
+
+  const handleCompletedRequest = (request: Request) => {
+    switch (request.type) {
+      case 'registration':
+        setCurrentRequestId(request.id);
+        setIsAppointmentDialogOpen(true);
+        break;
+        
+      case 'selection-tests':
+        toast({
+          title: "Tests validés",
+          description: "Les données ont été transmises aux membres.",
+        });
+        break;
+        
+      case 'responsibility-waiver':
+        toast({
+          title: "Décharge validée",
+          description: "Le document a bien été stocké.",
+        });
+        break;
+        
+      case 'accident-report':
+        toast({
+          title: "Déclaration d'accident",
+          description: "La demande a été déplacée dans les accidents en attente.",
+        });
+        break;
+    }
+  };
+
+  const sendAccidentToFederation = (requestId: string) => {
+    setRequests(prevRequests => 
+      prevRequests.map(req => 
+        req.id === requestId ? { ...req, status: 'completed' } : req
+      )
+    );
+    
+    toast({
+      title: "Déclaration envoyée",
+      description: "La déclaration d'accident a été transmise à l'Union Belge.",
+    });
+  };
+
+  const handleAppointmentTypeSelection = (type: 'test' | 'secretariat') => {
+    if (type === 'test') {
+      setIsAppointmentDialogOpen(false);
+      
+      toast({
+        title: "Tests techniques programmés",
+        description: "Les données ont été transmises aux membres.",
+      });
+      
+      if (currentRequestId) {
+        setRequests(prevRequests => 
+          prevRequests.map(req => 
+            req.id === currentRequestId ? { ...req, status: 'completed' } : req
+          )
+        );
+      }
+    } else {
+      const request = requests.find(r => r.id === currentRequestId);
+      
+      if (request) {
+        navigate('/planning', { 
+          state: { 
+            scheduleAppointment: true, 
+            request,
+            appointmentType: type,
+            appointmentTitle: "Rendez-vous au secrétariat"
+          } 
+        });
+        
+        setIsAppointmentDialogOpen(false);
+      }
+    }
+  };
+
+  const openRequestDetails = (request: Request) => {
+    setSelectedRequest(request);
+    setIsModalOpen(true);
+  };
+
+  const closeRequestDetails = () => {
+    setIsModalOpen(false);
+    setSelectedRequest(null);
   };
 
   return (
@@ -204,62 +235,14 @@ const Dashboard = () => {
           </TabsList>
           
           <TabsContent value="requests" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Filtres de recherche</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <Input
-                      type="search"
-                      placeholder="Rechercher par nom, email ou ID..."
-                      className="pl-8"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Select
-                      value={statusFilter}
-                      onValueChange={(value) => setStatusFilter(value as RequestStatus | 'all')}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <Filter className="mr-2 h-4 w-4" />
-                        <SelectValue placeholder="Statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les statuts</SelectItem>
-                        <SelectItem value="new">Nouveau</SelectItem>
-                        <SelectItem value="assigned">Assigné</SelectItem>
-                        <SelectItem value="in-progress">En cours</SelectItem>
-                        <SelectItem value="completed">Terminé</SelectItem>
-                        <SelectItem value="rejected">Rejeté</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select
-                      value={typeFilter}
-                      onValueChange={(value) => setTypeFilter(value as RequestType | 'all')}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <Filter className="mr-2 h-4 w-4" />
-                        <SelectValue placeholder="Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les types</SelectItem>
-                        <SelectItem value="registration">Inscription</SelectItem>
-                        <SelectItem value="selection-tests">Tests de sélection</SelectItem>
-                        <SelectItem value="accident-report">Accident</SelectItem>
-                        <SelectItem value="responsibility-waiver">Décharge</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SearchFilters 
+              searchQuery={searchQuery}
+              statusFilter={statusFilter}
+              typeFilter={typeFilter}
+              onSearchChange={setSearchQuery}
+              onStatusFilterChange={setStatusFilter}
+              onTypeFilterChange={setTypeFilter}
+            />
             
             <Card>
               <CardHeader>
@@ -267,149 +250,52 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Assigné à</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredRequests.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                            Aucune demande ne correspond à vos critères de recherche.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        filteredRequests.map((request) => (
-                          <TableRow key={request.id}>
-                            <TableCell className="font-medium">{request.id}</TableCell>
-                            <TableCell>{translateRequestType(request.type)}</TableCell>
-                            <TableCell>
-                              <div>
-                                <div>{request.name}</div>
-                                <div className="text-xs text-gray-500">{request.email}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{request.date.toLocaleDateString('fr-BE')}</TableCell>
-                            <TableCell>{getStatusBadge(request.status)}</TableCell>
-                            <TableCell>
-                              <Select
-                                value={request.assignedTo || ''}
-                                onValueChange={(value) => assignRequest(request.id, value)}
-                              >
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Assigner à" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="none">Non assigné</SelectItem>
-                                  {MOCK_ADMINS.map((admin) => (
-                                    <SelectItem key={admin.id} value={admin.id}>
-                                      {admin.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => updateRequestStatus(request.id, 'in-progress')}
-                                  disabled={request.status === 'in-progress'}
-                                >
-                                  <Clock className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  className="text-green-600 border-green-600 hover:bg-green-100"
-                                  onClick={() => updateRequestStatus(request.id, 'completed')}
-                                  disabled={request.status === 'completed'}
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  className="text-red-600 border-red-600 hover:bg-red-100"
-                                  onClick={() => updateRequestStatus(request.id, 'rejected')}
-                                  disabled={request.status === 'rejected'}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                  <RequestsTable 
+                    requests={filteredRequests}
+                    admins={MOCK_ADMINS}
+                    onAssignRequest={assignRequest}
+                    onUpdateStatus={updateRequestStatus}
+                    onViewDetails={openRequestDetails}
+                  />
                 </div>
               </CardContent>
             </Card>
+            
+            <PendingAccidentsCard 
+              pendingAccidents={paginatedPendingAccidents}
+              page={pendingAccidentReportsPage}
+              totalPages={totalPendingAccidentPages}
+              onPageChange={setPendingAccidentReportsPage}
+              onViewDetails={openRequestDetails}
+              onSendToFederation={sendAccidentToFederation}
+            />
+            
+            <CompletedRequestsCard 
+              completedRequests={paginatedCompletedRequests}
+              page={completedRequestsPage}
+              totalPages={totalCompletedPages}
+              onPageChange={setCompletedRequestsPage}
+              onViewDetails={openRequestDetails}
+            />
           </TabsContent>
           
           <TabsContent value="stats">
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistiques des demandes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-rwdm-blue">
-                          {requests.filter(r => r.status === 'new').length}
-                        </div>
-                        <div className="text-sm text-gray-600">Nouvelles demandes</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-rwdm-blue">
-                          {requests.filter(r => r.status === 'in-progress').length}
-                        </div>
-                        <div className="text-sm text-gray-600">Demandes en cours</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-rwdm-blue">
-                          {requests.filter(r => r.status === 'completed').length}
-                        </div>
-                        <div className="text-sm text-gray-600">Demandes complétées</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-rwdm-blue">
-                          {requests.filter(r => !r.assignedTo).length}
-                        </div>
-                        <div className="text-sm text-gray-600">Non assignées</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
+            <StatisticsCard requests={requests} />
           </TabsContent>
         </Tabs>
       </div>
+      
+      <RequestDetailsModal 
+        isOpen={isModalOpen}
+        onClose={closeRequestDetails}
+        request={selectedRequest}
+      />
+      
+      <AppointmentDialog 
+        isOpen={isAppointmentDialogOpen}
+        onClose={() => setIsAppointmentDialogOpen(false)}
+        onSelectAppointmentType={handleAppointmentTypeSelection}
+      />
     </AdminLayout>
   );
 };

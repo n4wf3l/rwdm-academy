@@ -329,10 +329,10 @@ const About = () => {
               >
                 <Card className="group h-full glass-panel border-0 shadow-lg overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="relative overflow-hidden h-40 bg-gradient-to-r from-rwdm-red/20 to-rwdm-blue/20">
+                    <div className="relative overflow-hidden h-60 bg-gradient-to-r from-rwdm-red/20 to-rwdm-blue/20">
                       <div className="absolute inset-0 bg-rwdm-blue/20 group-hover:bg-rwdm-red/20 transition-colors duration-300"></div>
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-                        <Avatar className="h-24 w-24 border-4 border-white dark:border-rwdm-darkblue group-hover:border-rwdm-red transition-colors duration-300 shadow-lg">
+                        <Avatar className="h-48 w-48 mb-60 border-4 border-white dark:border-rwdm-darkblue group-hover:border-rwdm-red transition-colors duration-300 shadow-lg">
                           <AvatarImage src={member.image} alt={member.name} />
                           <AvatarFallback className="bg-rwdm-blue text-white text-lg">
                             {member.name

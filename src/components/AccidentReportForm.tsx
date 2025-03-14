@@ -104,11 +104,6 @@ const AccidentReportForm: React.FC = () => {
             </PopoverContent>
           </Popover>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="affiliationNumber">Numéro d'affiliation</Label>
-          <Input id="affiliationNumber" className="form-input-base" required />
-        </div>
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="clubName">Nom du club</Label>

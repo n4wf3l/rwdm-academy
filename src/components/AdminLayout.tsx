@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Calendar,
   LogOut,
+  File,
   Menu,
   X,
   UserCircleIcon,
@@ -105,6 +106,34 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               >
                 <UserCircleIcon className="mr-2 h-5 w-5" />
                 Membres
+              </Button>
+            </Link>
+            <Link to="/documents">
+              <Button
+                variant={isActive("/documents") ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  isActive("/documents")
+                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                    : ""
+                )}
+              >
+                <File className="mr-2 h-5 w-5" />
+                Documents
+              </Button>
+            </Link>
+            <Link to="/graphics">
+              <Button
+                variant={isActive("/graphics") ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  isActive("/graphics")
+                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                    : ""
+                )}
+              >
+                <File className="mr-2 h-5 w-5" />
+                Graphiques
               </Button>
             </Link>
           </nav>
