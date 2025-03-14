@@ -1,7 +1,9 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Member {
   firstName: string;
