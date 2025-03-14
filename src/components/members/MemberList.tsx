@@ -41,7 +41,12 @@ const MemberList: React.FC<MemberListProps> = ({
                   src={member.profilePicture}
                   alt="Avatar"
                   className="w-10 h-10 rounded-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://via.placeholder.com/150";
+                  }}
                 />
+
                 <div>
                   <div className="font-bold">
                     {member.firstName} {member.lastName}
