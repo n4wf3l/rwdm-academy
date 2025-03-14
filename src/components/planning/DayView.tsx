@@ -46,7 +46,6 @@ const DayView: React.FC<DayViewProps> = ({
               hasAppointment: "bg-rwdm-blue/20 font-bold text-rwdm-blue",
             }}
           />
-
           <div className="mt-6">
             <h3 className="font-semibold mb-2">Légende</h3>
             <div className="flex flex-col gap-2">

@@ -60,7 +60,6 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
             ))}
           </div>
         </div>
-
         <DialogFooter className="sm:justify-between">
           <Button variant="outline" onClick={onClose}>
             Modifier

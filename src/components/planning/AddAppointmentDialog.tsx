@@ -160,7 +160,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="appointmentPerson">Nom de la personne</Label>
             <Input
@@ -170,7 +169,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               placeholder="Entrez le nom complet"
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="appointmentEmail">Email de contact</Label>
             <Input
@@ -200,7 +198,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="appointmentNotes">Notes (optionnel)</Label>
             <Input

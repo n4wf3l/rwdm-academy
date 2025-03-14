@@ -60,7 +60,6 @@ const RegistrationForm = () => {
   const [birthDate, setBirthDate] = useState<Date | undefined>();
   const [imageConsent, setImageConsent] = useState<boolean>(false);
   const [signature, setSignature] = useState<string | null>(null);
-
   const [lastName, setLastName] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [parent1LastName, setParent1LastName] = useState<string>("");
@@ -133,7 +132,6 @@ const RegistrationForm = () => {
     { label: "Prénom du parent principal", value: parent1FirstName },
     { label: "Email du parent principal", value: parent1Email },
   ];
-
   if (parent2LastName || parent2FirstName || parent2Email) {
     spellCheckFields.push(
       { label: "Nom du parent secondaire", value: parent2LastName },
@@ -250,7 +248,6 @@ const RegistrationForm = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="category">Catégorie</Label>
                   <Select>
@@ -435,7 +432,6 @@ const RegistrationForm = () => {
                         onChange={(e) => setParent2Email(e.target.value)}
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="parent2Address">Adresse</Label>
                       <Input id="parent2Address" className="form-input-base" />
@@ -496,7 +492,6 @@ const RegistrationForm = () => {
             </FormSection>
           </CardContent>
         </Card>
-
         <div className="flex justify-end">
           <Button type="submit">Soumettre</Button>
         </div>

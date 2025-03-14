@@ -18,7 +18,7 @@ import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
   // Check if user has selected a language
   const hasSelectedLanguage = localStorage.getItem("preferredLanguage");
 
@@ -70,6 +70,6 @@ const App = () => {
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

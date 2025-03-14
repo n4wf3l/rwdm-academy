@@ -61,7 +61,6 @@ const ResponsibilityWaiverForm: React.FC = () => {
   );
   const [signature, setSignature] = useState<string | null>(null);
   const [approvalText, setApprovalText] = useState<string>("");
-
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent) => {

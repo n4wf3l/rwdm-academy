@@ -178,7 +178,6 @@ const SelectionTestsForm: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label>Période</Label>
                   <div className="grid grid-cols-2 gap-3">
@@ -331,7 +330,6 @@ const SelectionTestsForm: React.FC = () => {
                   <Label htmlFor="previousClub">Club précédent</Label>
                   <Input id="previousClub" className="form-input-base" />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="position">Position</Label>
                   <Select required>
