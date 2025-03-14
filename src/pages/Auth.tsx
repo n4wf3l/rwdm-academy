@@ -114,14 +114,6 @@ const Auth = () => {
           </Card>
         </motion.div>
       </main>
-      
-      <footer className="py-6 px-4 mt-8 glass-panel">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} Académie RWDM. Tous droits réservés.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };
