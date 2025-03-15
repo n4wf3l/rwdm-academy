@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-<<<<<<< HEAD
 import {
   format,
   startOfWeek,
@@ -13,36 +13,21 @@ import {
   isSameDay,
   addDays,
 } from "date-fns";
-=======
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday, isSameDay, addDays } from "date-fns";
->>>>>>> 755297edbd4001cfc89e0bfe186d82aeccfb73fd
 import { fr } from "date-fns/locale";
 import { Link, useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils"; // Added missing import
-<<<<<<< HEAD
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
   Clock,
   User,
-=======
-import { 
-  ArrowLeft, 
-  Calendar as CalendarIcon, 
-  Clock, 
-  User, 
->>>>>>> 755297edbd4001cfc89e0bfe186d82aeccfb73fd
   Plus,
   Mail,
   ChevronLeft,
   ChevronRight,
-<<<<<<< HEAD
   X,
-=======
-  X
->>>>>>> 755297edbd4001cfc89e0bfe186d82aeccfb73fd
 } from "lucide-react";
 import {
   Dialog,
@@ -53,7 +38,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-<<<<<<< HEAD
 import {
   Select,
   SelectContent,
@@ -80,17 +64,6 @@ import {
 // Import the new components we'll create
 import {
   AppointmentType,
-=======
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-// Import the new components we'll create
-import { 
-  AppointmentType, 
->>>>>>> 755297edbd4001cfc89e0bfe186d82aeccfb73fd
   Appointment,
   translateAppointmentType,
   getAppointmentBadge,
@@ -107,11 +80,7 @@ import {
   AVAILABLE_TIMES,
   AVAILABLE_ADMINS,
   START_HOUR,
-<<<<<<< HEAD
   END_HOUR,
-=======
-  END_HOUR
->>>>>>> 755297edbd4001cfc89e0bfe186d82aeccfb73fd
 } from "@/components/planning/planningUtils";
 import DayView from "@/components/planning/DayView";
 import WeekView from "@/components/planning/WeekView";
@@ -125,7 +94,6 @@ const Planning = () => {
     new Date()
   );
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-<<<<<<< HEAD
   const [isAppointmentDetailModalOpen, setIsAppointmentDetailModalOpen] =
     useState(false);
   const [selectedAppointment, setSelectedAppointment] =
@@ -143,20 +111,6 @@ const Planning = () => {
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
 
-=======
-  const [isAppointmentDetailModalOpen, setIsAppointmentDetailModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [newAppointmentDate, setNewAppointmentDate] = useState<Date | undefined>(new Date());
-  const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
-  const [newAppointmentType, setNewAppointmentType] = useState<AppointmentType>('registration');
-  const [newAppointmentPerson, setNewAppointmentPerson] = useState('');
-  const [newAppointmentEmail, setNewAppointmentEmail] = useState('');
-  const [newAppointmentAdmin, setNewAppointmentAdmin] = useState('');
-  const [newAppointmentNotes, setNewAppointmentNotes] = useState('');
-  const [currentView, setCurrentView] = useState<'day' | 'week'>('day');
-  const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
-  
->>>>>>> 755297edbd4001cfc89e0bfe186d82aeccfb73fd
   const location = useLocation();
   const { toast } = useToast();
 
