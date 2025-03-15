@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import FormSelector, { FormType } from '../components/FormSelector';
 import FormWrapper from '../components/FormWrapper';
 import AnimatedTransition from '../components/AnimatedTransition';
@@ -25,10 +26,10 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
+    <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
       <Navbar />
       
-      <main className="container mx-auto px-4 pt-28 pb-20">
+      <main className="container mx-auto px-4 pt-28 pb-20 flex-grow">
         <AnimatedTransition
           show={pageLoaded}
           animateIn="animate-slide-down"
@@ -66,13 +67,7 @@ const Index = () => {
         <FormWrapper formType={currentForm} />
       </main>
       
-      <footer className="py-6 px-4 mt-8 glass-panel">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} RWDM Academy. Tous droits réservés.
-          </p>
-        </div>
-      </footer>
+      <Footer />
       
       {/* Ajout du Toaster pour les notifications */}
       <Toaster />

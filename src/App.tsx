@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import Documents from "./pages/Documents";
 import Graphics from "./pages/Graphics";
 import NotFound from "./pages/NotFound";
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
+import Legal from "./pages/Legal";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,7 @@ function App() {
             <Route path="/documents" element={<Documents />} />
             <Route path="/graphics" element={<Graphics />} />
             <Route path="/planning" element={<Planning />} />
+            <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"
               element={
