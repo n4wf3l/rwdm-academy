@@ -18,6 +18,7 @@ import SignaturePad from "./ui/SignaturePad";
 import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
+import DatePicker from "react-datepicker";
 
 interface FormSection {
   title: string;
@@ -62,11 +63,20 @@ const ResponsibilityWaiverForm: React.FC = () => {
   const [signature, setSignature] = useState<string | null>(null);
   const [approvalText, setApprovalText] = useState<string>("");
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSpellCheckOpen(true);
   };
+
+  interface BirthDatePickerProps {
+    selectedDate: Date | null;
+    onChange: (date: Date | null) => void;
+    onCalendarOpen?: () => void;
+    onCalendarClose?: () => void;
+  }
 
   const finalSubmit = () => {
     console.log("Waiver form submitted");
@@ -160,7 +170,12 @@ const ResponsibilityWaiverForm: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="glass-panel">
+        <Card
+          className={cn(
+            "glass-panel transition-all duration-300",
+            isCalendarOpen ? "min-h-[550px]" : "min-h-[250px]"
+          )}
+        >
           <CardContent className="pt-6">
             <FormSection
               title="Informations du joueur"
@@ -189,12 +204,18 @@ const ResponsibilityWaiverForm: React.FC = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
+                {/* Gestion dynamique de l'affichage du calendrier */}
+                <div className="space-y-2 relative">
                   <Label htmlFor="birthDate">Date de naissance</Label>
                   <div className="space-y-4">
                     <BirthDatePicker
                       selectedDate={playerBirthDate}
-                      onChange={setPlayerBirthDate}
+                      onChange={(date) => {
+                        setPlayerBirthDate(date);
+                        setIsCalendarOpen(false); // Ferme le calendrier après sélection
+                      }}
+                      onCalendarOpen={() => setIsCalendarOpen(true)} // Ouvre la card
+                      onCalendarClose={() => setIsCalendarOpen(false)} // Ferme la card
                     />
                   </div>
                 </div>
@@ -256,8 +277,9 @@ const ResponsibilityWaiverForm: React.FC = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-auto p-0 pointer-events-auto"
+                      className="w-auto p-0 pointer-events-auto absolute z-[100]"
                       align="start"
+                      forceMount // Assure que le popover est toujours rendu
                     >
                       <Calendar
                         mode="single"
@@ -300,6 +322,31 @@ const ResponsibilityWaiverForm: React.FC = () => {
             </FormSection>
           </CardContent>
         </Card>
+
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="privacyPolicy"
+            checked={hasAcceptedPolicy}
+            onChange={(e) => setHasAcceptedPolicy(e.target.checked)}
+            className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
+            required
+          />
+          <label
+            htmlFor="privacyPolicy"
+            className="text-sm text-gray-700 dark:text-gray-300"
+          >
+            J'accepte la{" "}
+            <a
+              href="/legal"
+              target="_blank"
+              className="text-rwdm-blue underline"
+            >
+              politique de confidentialité
+            </a>
+            .
+          </label>
+        </div>
 
         <div className="flex justify-center">
           <Button

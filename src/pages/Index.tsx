@@ -14,13 +14,23 @@ const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
 
   // Check if user has already selected a language
+
   useEffect(() => {
+    // Vérifier si une langue a déjà été sélectionnée
     const hasSelectedLanguage = localStorage.getItem("preferredLanguage");
+
     if (hasSelectedLanguage) {
       setShowSplash(false);
+    } else {
+      // Retarder l'affichage du splash pour éviter un effet immédiat
+      setTimeout(() => {
+        setShowSplash(true);
+      }, 100);
     }
+  }, []); // Ne pas mettre [showSplash], sinon ça boucle
 
-    // Simulate a page load animation after splash screen or if language already selected
+  useEffect(() => {
+    // Démarrer l'animation de chargement après le splash
     if (!showSplash) {
       const timer = setTimeout(() => {
         setPageLoaded(true);

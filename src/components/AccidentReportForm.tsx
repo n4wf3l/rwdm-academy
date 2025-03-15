@@ -63,7 +63,7 @@ const AccidentReportForm: React.FC = () => {
   const [clubName, setClubName] = useState<string>("");
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
-
+  const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -290,6 +290,31 @@ const AccidentReportForm: React.FC = () => {
             </FormSection>
           </CardContent>
         </Card>
+
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="privacyPolicy"
+            checked={hasAcceptedPolicy}
+            onChange={(e) => setHasAcceptedPolicy(e.target.checked)}
+            className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
+            required
+          />
+          <label
+            htmlFor="privacyPolicy"
+            className="text-sm text-gray-700 dark:text-gray-300"
+          >
+            J'accepte la{" "}
+            <a
+              href="/legal"
+              target="_blank"
+              className="text-rwdm-blue underline"
+            >
+              politique de confidentialité
+            </a>
+            .
+          </label>
+        </div>
 
         <div className="flex justify-center">
           <Button
