@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +13,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import logo from "@/assets/images/logo.png";
 
 const Navbar: React.FC = () => {
   const { authUser, logout } = useAuth();
@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
       <nav className="bg-rwdm-blue dark:bg-rwdm-blue-800 p-4">
         <div className="container mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center text-white">
-            <img src={logo} alt="RWDM Academy Logo" className="h-8 mr-2" />
+            <img src="/logo.png" alt="RWDM Academy Logo" className="h-8 mr-2" />
             <span className="font-bold text-lg">RWDM Academy</span>
           </Link>
           {authUser ? (
