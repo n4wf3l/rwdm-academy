@@ -15,6 +15,10 @@ import Documents from "./pages/Documents";
 import Graphics from "./pages/Graphics";
 import NotFound from "./pages/NotFound";
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
+import Legal from "./pages/Legal";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiesPolicy from "./pages/CookiesPolicy";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +68,10 @@ function App() {
               element={<FormSubmissionSuccess formType="accidentReport" />}
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/legal" element={<Legal />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/cookies-policy" element={<CookiesPolicy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
