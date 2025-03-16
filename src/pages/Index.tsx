@@ -9,41 +9,55 @@ import { motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 
 const Index = () => {
-  const [currentForm, setCurrentForm] = useState<FormType>("registration");
+  // Restaurer la sélection du formulaire depuis localStorage (par défaut "registration")
+  const [currentForm, setCurrentForm] = useState<FormType>(
+    () => (localStorage.getItem("currentForm") as FormType) || "registration"
+  );
+
+  const [formData, setFormData] = useState<{ [key: string]: any }>(() => {
+    const savedData = localStorage.getItem("formData");
+    return savedData ? JSON.parse(savedData) : {};
+  });
+
   const [pageLoaded, setPageLoaded] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
-  // Check if user has already selected a language
-
   useEffect(() => {
-    // Vérifier si une langue a déjà été sélectionnée
     const hasSelectedLanguage = localStorage.getItem("preferredLanguage");
-
     if (hasSelectedLanguage) {
       setShowSplash(false);
     } else {
-      // Retarder l'affichage du splash pour éviter un effet immédiat
       setTimeout(() => {
         setShowSplash(true);
       }, 100);
     }
-  }, []); // Ne pas mettre [showSplash], sinon ça boucle
+  }, []);
 
   useEffect(() => {
-    // Démarrer l'animation de chargement après le splash
     if (!showSplash) {
       const timer = setTimeout(() => {
         setPageLoaded(true);
       }, 100);
-
       return () => clearTimeout(timer);
     }
   }, [showSplash]);
 
+  // Mettre à jour `localStorage` quand l'utilisateur change de formulaire
   const handleFormChange = (formType: FormType) => {
     setCurrentForm(formType);
+    localStorage.setItem("currentForm", formType);
   };
 
+  // Sauvegarde automatique des données de formulaire
+  const handleFormDataChange = (key: string, value: any) => {
+    setFormData((prev) => {
+      const updatedData = { ...prev, [key]: value };
+      localStorage.setItem("formData", JSON.stringify(updatedData));
+      return updatedData;
+    });
+  };
+
+  // Restaurer la langue sélectionnée
   const handleLanguageSelect = (language: "fr" | "nl" | "en") => {
     localStorage.setItem("preferredLanguage", language);
     setShowSplash(false);
@@ -93,7 +107,12 @@ const Index = () => {
               />
             </AnimatedTransition>
 
-            <FormWrapper formType={currentForm} />
+            {/* ✅ On passe `formData` et `handleFormDataChange` pour gérer les données */}
+            <FormWrapper
+              formType={currentForm}
+              formData={formData}
+              onFormDataChange={handleFormDataChange}
+            />
           </main>
 
           <Footer />
