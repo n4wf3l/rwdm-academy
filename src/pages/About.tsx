@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -358,14 +359,7 @@ const About = () => {
           </div>
         </motion.div>
       </main>
-      <footer className="py-6 px-4 mt-8 glass-panel">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} RWDM Academy. Tous droits
-            réservés.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

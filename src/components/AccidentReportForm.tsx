@@ -14,13 +14,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Upload } from "lucide-react";
+import { CalendarIcon, Info, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface FormSection {
   title: string;
@@ -56,15 +61,26 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 const AccidentReportForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [accidentDate, setAccidentDate] = useState<Date | undefined>();
+  const [accidentDate, setAccidentDate] = useState<Date | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-
   const [clubName, setClubName] = useState<string>("");
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date && date > new Date()) {
+      toast({
+        title: "Date invalide",
+        description: "Vous ne pouvez pas déclarer un accident dans le futur.",
+        variant: "destructive",
+      });
+    } else {
+      setAccidentDate(date || null);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +128,21 @@ const AccidentReportForm: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="accidentDate">Date de l'accident</Label>
+                  <Label
+                    htmlFor="accidentDate"
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Date de l'accident</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Vous ne pouvez pas sélectionner une date future.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -137,10 +167,11 @@ const AccidentReportForm: React.FC = () => {
                       <Calendar
                         mode="single"
                         selected={accidentDate}
-                        onSelect={setAccidentDate}
+                        onSelect={handleDateSelect}
                         initialFocus
                         locale={fr}
                         className="p-3"
+                        disabled={(date) => date > new Date()} // Bloque les dates futures
                       />
                     </PopoverContent>
                   </Popover>

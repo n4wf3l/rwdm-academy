@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ChevronDown } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,19 +15,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Calendar } from "@/components/ui/calendar";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
+import { motion } from "framer-motion";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const SEASONS = [
@@ -58,7 +58,7 @@ const RegistrationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [birthDate, setBirthDate] = useState<Date | undefined>();
-  const [imageConsent, setImageConsent] = useState<boolean>(false);
+  const [imageConsent, setImageConsent] = useState<boolean>(true);
   const [signature, setSignature] = useState<string | null>(null);
   const [lastName, setLastName] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
@@ -68,7 +68,7 @@ const RegistrationForm = () => {
   const [parent2LastName, setParent2LastName] = useState<string>("");
   const [parent2FirstName, setParent2FirstName] = useState<string>("");
   const [parent2Email, setParent2Email] = useState<string>("");
-
+  const [showSecondaryGuardian, setShowSecondaryGuardian] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
 
@@ -250,7 +250,25 @@ const RegistrationForm = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Catégorie</Label>
+                  <Label
+                    htmlFor="category"
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Catégorie</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          L'inscription n'est possible que jusqu'à U9. Pour les
+                          catégories supérieures, des tests techniques sont
+                          requis (voir deuxième formulaire).
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+
                   <Select>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez une catégorie" />
@@ -374,87 +392,116 @@ const RegistrationForm = () => {
                 <Separator />
 
                 <div>
-                  <h4 className="text-base font-medium mb-3">
+                  <button
+                    type="button"
+                    className="flex items-center justify-between w-full text-base font-medium mb-3 bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-md"
+                    onClick={() =>
+                      setShowSecondaryGuardian(!showSecondaryGuardian)
+                    }
+                  >
                     Responsable secondaire (optionnel)
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="parent2Type">Type</Label>
-                      <Select defaultValue="mère">
-                        <SelectTrigger className="form-input-base">
-                          <SelectValue placeholder="Sélectionnez le type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="père">Père</SelectItem>
-                          <SelectItem value="mère">Mère</SelectItem>
-                          <SelectItem value="tuteur">Tuteur légal</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <motion.div
+                      animate={{ rotate: showSecondaryGuardian ? 180 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <ChevronDown className="w-5 h-5" />
+                    </motion.div>
+                  </button>
 
-                    <div className="grid grid-cols-2 gap-5">
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      height: showSecondaryGuardian ? "auto" : 0,
+                      opacity: showSecondaryGuardian ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-3">
                       <div className="space-y-2">
-                        <Label htmlFor="parent2LastName">Nom</Label>
+                        <Label htmlFor="parent2Type">Type</Label>
+                        <Select defaultValue="mère">
+                          <SelectTrigger className="form-input-base">
+                            <SelectValue placeholder="Sélectionnez le type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="père">Père</SelectItem>
+                            <SelectItem value="mère">Mère</SelectItem>
+                            <SelectItem value="tuteur">Tuteur légal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                          <Label htmlFor="parent2LastName">Nom</Label>
+                          <Input
+                            id="parent2LastName"
+                            className="form-input-base"
+                            value={parent2LastName}
+                            onChange={(e) => setParent2LastName(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="parent2FirstName">Prénom</Label>
+                          <Input
+                            id="parent2FirstName"
+                            className="form-input-base"
+                            value={parent2FirstName}
+                            onChange={(e) =>
+                              setParent2FirstName(e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="parent2Phone">Téléphone</Label>
                         <Input
-                          id="parent2LastName"
+                          id="parent2Phone"
                           className="form-input-base"
-                          value={parent2LastName}
-                          onChange={(e) => setParent2LastName(e.target.value)}
+                          type="tel"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="parent2FirstName">Prénom</Label>
+                        <Label htmlFor="parent2Email">Email</Label>
                         <Input
-                          id="parent2FirstName"
+                          id="parent2Email"
                           className="form-input-base"
-                          value={parent2FirstName}
-                          onChange={(e) => setParent2FirstName(e.target.value)}
+                          type="email"
+                          value={parent2Email}
+                          onChange={(e) => setParent2Email(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="parent2Address">Adresse</Label>
+                        <Input
+                          id="parent2Address"
+                          className="form-input-base"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="parent2PostalCode">Code postal</Label>
+                        <Input
+                          id="parent2PostalCode"
+                          className="form-input-base"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="parent2Gsm">GSM</Label>
+                        <Input
+                          id="parent2Gsm"
+                          className="form-input-base"
+                          type="tel"
                         />
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="parent2Phone">Téléphone</Label>
-                      <Input
-                        id="parent2Phone"
-                        className="form-input-base"
-                        type="tel"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="parent2Email">Email</Label>
-                      <Input
-                        id="parent2Email"
-                        className="form-input-base"
-                        type="email"
-                        value={parent2Email}
-                        onChange={(e) => setParent2Email(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="parent2Address">Adresse</Label>
-                      <Input id="parent2Address" className="form-input-base" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="parent2PostalCode">Code postal</Label>
-                      <Input
-                        id="parent2PostalCode"
-                        className="form-input-base"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="parent2Gsm">GSM</Label>
-                      <Input
-                        id="parent2Gsm"
-                        className="form-input-base"
-                        type="tel"
-                      />
-                    </div>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </FormSection>
@@ -471,9 +518,9 @@ const RegistrationForm = () => {
                 <Checkbox
                   id="imageConsent"
                   checked={imageConsent}
-                  onChange={() => setImageConsent(!imageConsent)}
+                  onCheckedChange={(checked) => setImageConsent(!!checked)} // Assure un booléen
                 />
-                <Label htmlFor="imageConsent">
+                <Label htmlFor="imageConsent" className="cursor-pointer">
                   J'accepte que des photos de mon enfant soient prises et
                   utilisées à des fins promotionnelles.
                 </Label>
@@ -519,8 +566,14 @@ const RegistrationForm = () => {
           </label>
         </div>
 
-        <div className="flex justify-end">
-          <Button type="submit">Soumettre</Button>
+        <div className="flex justify-center">
+          <Button
+            type="submit"
+            disabled={!signature}
+            className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
+          >
+            Soumettre la demande de test
+          </Button>
         </div>
       </form>
 

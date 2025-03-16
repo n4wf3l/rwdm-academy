@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -75,8 +80,8 @@ const POSITIONS = ["Gardien", "Défenseur", "Milieu de terrain", "Attaquant"];
 const SelectionTestsForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [testStartDate, setTestStartDate] = useState<Date | undefined>();
-  const [testEndDate, setTestEndDate] = useState<Date | undefined>();
+  const [testStartDate, setTestStartDate] = useState<Date | null>(null);
+  const [testEndDate, setTestEndDate] = useState<Date | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [playerBirthDate, setPlayerBirthDate] = useState<Date | null>(null);
   const [birthDate, setBirthDate] = useState<Date | undefined>();
@@ -88,6 +93,61 @@ const SelectionTestsForm: React.FC = () => {
   const [parentFirstName, setParentFirstName] = useState<string>("");
   const [parentEmail, setParentEmail] = useState<string>("");
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    if (!date) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Réinitialiser à minuit
+
+    if (date < today) {
+      toast({
+        title: "Erreur",
+        description: "La date de début ne peut pas être dans le passé.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTestStartDate(date);
+
+    // Vérifier si la date de fin est antérieure à la nouvelle date de début
+    if (testEndDate && date > testEndDate) {
+      setTestEndDate(null);
+      toast({
+        title: "Erreur",
+        description: "La date de fin ne peut pas être avant la date de début.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    if (!date) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Réinitialiser à minuit
+
+    if (date < today) {
+      toast({
+        title: "Erreur",
+        description: "La date de fin ne peut pas être dans le passé.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (testStartDate && date < testStartDate) {
+      toast({
+        title: "Erreur",
+        description: "La date de fin ne peut pas être avant la date de début.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTestEndDate(date);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,7 +268,7 @@ const SelectionTestsForm: React.FC = () => {
                           <Calendar
                             mode="single"
                             selected={testStartDate}
-                            onSelect={setTestStartDate}
+                            onSelect={handleStartDateChange}
                             initialFocus
                             locale={fr}
                             className="p-3"
@@ -216,6 +276,7 @@ const SelectionTestsForm: React.FC = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
+
                     <div>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -241,7 +302,7 @@ const SelectionTestsForm: React.FC = () => {
                           <Calendar
                             mode="single"
                             selected={testEndDate}
-                            onSelect={setTestEndDate}
+                            onSelect={handleEndDateChange}
                             initialFocus
                             locale={fr}
                             className="p-3"
@@ -306,7 +367,24 @@ const SelectionTestsForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label
+                    htmlFor="email"
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Email</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Si le joueur n'a pas d'email, vous pouvez indiquer
+                          celui du responsable légal.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+
                   <Input
                     id="email"
                     type="email"
@@ -316,7 +394,6 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="currentClub">Club actuel</Label>
                   <Input
