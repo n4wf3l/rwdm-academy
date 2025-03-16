@@ -87,14 +87,77 @@ const AccidentReportForm: React.FC = () => {
     setIsSpellCheckOpen(true);
   };
 
-  const finalSubmit = () => {
-    console.log("Accident form submitted");
-    toast({
-      title: "Déclaration soumise avec succès",
-      description: "Votre déclaration d'accident a été envoyée.",
-    });
-    setIsSpellCheckOpen(false);
-    navigate("/success/accidentReport");
+  const finalSubmit = async () => {
+    if (!pdfFile) {
+      console.error("❌ Aucun fichier sélectionné !");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("pdfFile", pdfFile);
+
+      console.log(
+        "📤 Données envoyées à /api/upload :",
+        formData.get("pdfFile")
+      );
+
+      const response = await fetch("http://localhost:5000/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'upload du fichier");
+      }
+
+      const fileData = await response.json();
+      console.log("✅ Réponse API après upload :", fileData);
+
+      // ✅ Vérifie si filePath est bien récupéré
+      if (!fileData.filePath) {
+        throw new Error("Chemin du fichier non reçu !");
+      }
+
+      const requestData = {
+        type: "accident-report",
+        formData: {
+          clubName,
+          playerLastName,
+          playerFirstName,
+          accidentDate,
+          description: "Description de l'accident...",
+          filePath: fileData.filePath, // ✅ Utilisation du fichier uploadé
+        },
+      };
+
+      console.log("📤 Données envoyées à /api/requests :", requestData);
+
+      const requestResponse = await fetch(
+        "http://localhost:5000/api/requests",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      if (!requestResponse.ok) {
+        throw new Error("Erreur lors de l'envoi du formulaire");
+      }
+
+      console.log("✅ Demande envoyée avec succès !");
+      toast({
+        title: "Déclaration soumise avec succès",
+        description: "Votre déclaration d'accident a été envoyée.",
+      });
+
+      navigate("/success/accidentReport");
+    } catch (error) {
+      console.error("❌ Erreur lors de la soumission :", error);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

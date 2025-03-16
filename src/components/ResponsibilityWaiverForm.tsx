@@ -78,14 +78,111 @@ const ResponsibilityWaiverForm: React.FC = () => {
     onCalendarClose?: () => void;
   }
 
-  const finalSubmit = () => {
-    console.log("Waiver form submitted");
-    toast({
-      title: "Décharge soumise avec succès",
-      description: "Votre décharge de responsabilité a été envoyée.",
-    });
-    setIsSpellCheckOpen(false);
-    navigate("/success/responsibilityWaiver");
+  const finalSubmit = async () => {
+    try {
+      // Vérification des champs obligatoires
+      if (
+        !parentLastName ||
+        !parentFirstName ||
+        !parentPhone ||
+        !parentEmail ||
+        !playerLastName ||
+        !playerFirstName ||
+        !playerBirthDate ||
+        !currentClub ||
+        !signatureDate ||
+        !approvalText ||
+        !signature
+      ) {
+        console.error("❌ Données incomplètes avant envoi !");
+        toast({
+          title: "Erreur",
+          description: "Veuillez remplir tous les champs obligatoires.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // ✅ Étape 1 : Upload du fichier signature (Base64 en PNG)
+      let filePath = null;
+      if (signature) {
+        const formData = new FormData();
+        const blob = await fetch(signature).then((res) => res.blob());
+        formData.append("pdfFile", blob, "signature.png");
+
+        const uploadResponse = await fetch("http://localhost:5000/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const uploadError = await uploadResponse.json();
+          console.error("❌ Erreur lors de l'upload du fichier :", uploadError);
+          throw new Error(uploadError.error || "Échec de l'upload du fichier.");
+        }
+
+        const uploadData = await uploadResponse.json();
+        filePath = uploadData.filePath;
+      }
+
+      // ✅ Étape 2 : Construire les données à envoyer
+      const requestData = {
+        type: "responsibility-waiver",
+        formData: {
+          parentLastName,
+          parentFirstName,
+          parentPhone,
+          parentEmail,
+          playerLastName,
+          playerFirstName,
+          playerBirthDate: format(playerBirthDate, "yyyy-MM-dd"),
+          currentClub,
+          previousClub: previousClub || null,
+          signatureDate: format(signatureDate, "yyyy-MM-dd"),
+          approvalText,
+          signature, // Garde la signature en base64 en plus
+          filePath, // ✅ Ajout du fichier uploadé
+        },
+        assignedTo: null,
+      };
+
+      console.log(
+        "📤 Données envoyées à /api/requests :",
+        JSON.stringify(requestData, null, 2)
+      );
+
+      // ✅ Étape 3 : Envoyer les données finales avec le fichier
+      const response = await fetch("http://localhost:5000/api/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("❌ Erreur API:", errorData);
+        throw new Error(
+          errorData.error || "Erreur lors de l'envoi de la décharge"
+        );
+      }
+
+      console.log("✅ Décharge envoyée avec succès !");
+      toast({
+        title: "Décharge soumise avec succès",
+        description: "Votre décharge de responsabilité a été envoyée.",
+      });
+
+      navigate("/success/responsibilityWaiver");
+    } catch (error) {
+      console.error("❌ Erreur lors de la soumission :", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        variant: "destructive",
+      });
+    }
   };
 
   const waiverText = `Je soussigné(e), ${parentFirstName || ""} ${

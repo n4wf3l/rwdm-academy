@@ -190,15 +190,53 @@ const SelectionTestsForm: React.FC = () => {
     return age;
   }
 
-  const finalSubmit = () => {
-    console.log("Tests de sélection form submitted");
-    toast({
-      title: "Formulaire soumis avec succès",
-      description: "Votre demande de test a été envoyée.",
-    });
-    setIsSpellCheckOpen(false);
-    // Redirection vers la page de confirmation
-    navigate("/success/selectionTests");
+  const finalSubmit = async () => {
+    const requestData = {
+      type: "selection-tests", // Type de la demande
+      formData: {
+        lastName,
+        firstName,
+        playerBirthDate,
+        email,
+        parentLastName,
+        parentFirstName,
+        parentEmail,
+        testStartDate,
+        testEndDate,
+        signature,
+        createdAt: new Date().toISOString(),
+      },
+      assignedTo: null, // Assignation à un admin plus tard
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'envoi du formulaire");
+      }
+
+      toast({
+        title: "Formulaire soumis",
+        description: "Votre demande de test a été envoyée avec succès.",
+      });
+
+      setIsSpellCheckOpen(false);
+      navigate("/success/selectionTests");
+    } catch (error) {
+      console.error("Erreur lors de la soumission :", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        variant: "destructive",
+      });
+    }
   };
 
   const spellCheckFields = [

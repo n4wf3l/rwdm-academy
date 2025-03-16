@@ -1,5 +1,15 @@
 // server.js
 require("dotenv").config(); // Charger les variables d'environnement
+
+const fs = require("fs");
+const path = require("path");
+
+// Vérifier si le dossier 'uploads' existe, sinon le créer
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 console.log("DB_USER =", process.env.DB_USER);
 
 const express = require("express");
@@ -7,7 +17,7 @@ const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-
+const multer = require("multer");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -23,6 +33,16 @@ const dbConfig = {
   database: process.env.DB_NAME, // Exemple : "rwdm-academy"
 };
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Dossier où stocker les fichiers
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); // Renomme le fichier
+  },
+});
+
+const upload = multer({ storage });
 // Clé secrète pour signer les tokens JWT à partir du .env
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -88,9 +108,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// ---------------------
-// Endpoint pour créer un nouveau membre admin (accessible uniquement par superadmin)
-// ---------------------
 // Endpoint pour créer un nouveau membre admin (accessible uniquement par superadmin)
 app.post(
   "/api/admins",
@@ -302,16 +319,96 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
   }
 });
 
-app.get("/api/requests", async (req, res) => {
+app.post("/api/requests", async (req, res) => {
+  const { type, formData, assignedTo } = req.body;
+
+  console.log("📥 Données reçues dans /api/requests :", req.body);
+
+  if (!type || !formData || !formData.filePath) {
+    console.error("❌ Données incomplètes !");
+    return res.status(400).json({ error: "Données incomplètes." });
+  }
+
   try {
     const connection = await mysql.createConnection(dbConfig);
-    const [rows] = await connection.execute("SELECT * FROM requests");
+
+    const query =
+      "INSERT INTO requests (type, data, status, assigned_to) VALUES (?, ?, 'Nouveau', ?)";
+    const [result] = await connection.execute(query, [
+      type,
+      JSON.stringify(formData),
+      assignedTo || null,
+    ]);
+
     await connection.end();
+    res.status(201).json({ message: "Demande enregistrée avec succès" });
+  } catch (error) {
+    console.error("❌ Erreur lors de l'insertion :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+app.get("/api/requests", authMiddleware, async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const query = `
+        SELECT r.id, r.type, r.data, r.status, r.created_at, r.updated_at,
+               u.id AS admin_id, u.firstName AS admin_firstName, u.lastName AS admin_lastName, u.email AS admin_email
+        FROM requests r
+        LEFT JOIN users u ON r.assigned_to = u.id
+        ORDER BY r.created_at DESC
+      `;
+
+    const [rows] = await connection.execute(query);
+    await connection.end();
+
     res.json(rows);
   } catch (error) {
     console.error("Erreur lors de la récupération des demandes :", error);
-    res.status(500).json({ message: "Erreur serveur" });
+    res.status(500).json({ error: "Erreur serveur" });
   }
+});
+
+app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { status, assignedTo } = req.body;
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const query =
+      "UPDATE requests SET status = ?, assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    const [result] = await connection.execute(query, [
+      status,
+      assignedTo || null,
+      id,
+    ]);
+
+    await connection.end();
+
+    if (result.affectedRows > 0) {
+      res.json({ message: "Demande mise à jour avec succès" });
+    } else {
+      res.status(404).json({ error: "Demande non trouvée" });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de la demande :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.post("/api/upload", upload.single("pdfFile"), (req, res) => {
+  if (!req.file) {
+    console.error("❌ Aucun fichier reçu !");
+    return res.status(400).json({ error: "Aucun fichier téléchargé" });
+  }
+
+  console.log("✅ Fichier reçu :", req.file);
+
+  res.json({ filePath: `/uploads/${req.file.filename}` });
 });
 
 // Lancer le serveur

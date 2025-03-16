@@ -72,7 +72,7 @@ const RegistrationForm = () => {
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!birthDate) {
@@ -95,17 +95,59 @@ const RegistrationForm = () => {
       });
       return;
     }
+
+    // Ouvrir la vérification d'orthographe AVANT d'envoyer les données
     setIsSpellCheckOpen(true);
   };
 
-  const finalSubmit = () => {
-    console.log("Form submitted");
-    toast({
-      title: "Formulaire soumis avec succès",
-      description: "Votre inscription a été envoyée.",
-    });
-    setIsSpellCheckOpen(false);
-    navigate("/success/registration");
+  const finalSubmit = async () => {
+    const requestData = {
+      type: "registration",
+      formData: {
+        lastName,
+        firstName,
+        birthDate,
+        parent1LastName,
+        parent1FirstName,
+        parent1Email,
+        parent2LastName,
+        parent2FirstName,
+        parent2Email,
+        imageConsent,
+        signature,
+        createdAt: new Date().toISOString(),
+      },
+      assignedTo: null, // Laisse vide par défaut, un admin peut l'assigner plus tard
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'envoi du formulaire");
+      }
+
+      toast({
+        title: "Formulaire soumis",
+        description: "Votre inscription a été envoyée avec succès.",
+      });
+
+      setIsSpellCheckOpen(false);
+      navigate("/success/registration");
+    } catch (error) {
+      console.error("Erreur lors de la soumission :", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        variant: "destructive",
+      });
+    }
   };
 
   function getAge(birthDate: Date): number {
