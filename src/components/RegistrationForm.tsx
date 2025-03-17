@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,13 +20,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import SpellCheckModal from "./ui/SpellCheckModal";
-import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const SEASONS = [
@@ -34,140 +33,73 @@ const SEASONS = [
   `${CURRENT_YEAR}/${CURRENT_YEAR + 1}`,
   `${CURRENT_YEAR + 1}/${CURRENT_YEAR + 2}`,
 ];
-
 const POSITIONS = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
 const CATEGORIES = ["U5", "U6", "U7", "U8", "U9"];
 
-const FormSection = ({ title, subtitle, children }) => {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-medium text-rwdm-blue dark:text-white">
-          {title}
-        </h3>
-        {subtitle && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-        )}
-      </div>
-      {children}
+const FormSection: React.FC<{
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}> = ({ title, subtitle, children }) => (
+  <div className="space-y-4">
+    <div>
+      <h3 className="text-lg font-medium text-rwdm-blue dark:text-white">
+        {title}
+      </h3>
+      {subtitle && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+      )}
     </div>
-  );
-};
+    {children}
+  </div>
+);
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // États pour les informations du joueur
+  const [season, setSeason] = useState(SEASONS[1]);
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [birthDate, setBirthDate] = useState<Date | undefined>();
-  const [imageConsent, setImageConsent] = useState<boolean>(true);
-  const [signature, setSignature] = useState<string | null>(null);
-  const [lastName, setLastName] = useState<string>("");
-  const [firstName, setFirstName] = useState<string>("");
-  const [parent1LastName, setParent1LastName] = useState<string>("");
-  const [parent1FirstName, setParent1FirstName] = useState<string>("");
-  const [parent1Email, setParent1Email] = useState<string>("");
-  const [parent2LastName, setParent2LastName] = useState<string>("");
-  const [parent2FirstName, setParent2FirstName] = useState<string>("");
-  const [parent2Email, setParent2Email] = useState<string>("");
+  const [birthPlace, setBirthPlace] = useState("");
+  const [address, setAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
+  const [currentClub, setCurrentClub] = useState("");
+  const [position, setPosition] = useState("");
+  const [category, setCategory] = useState("");
+
+  // États pour les responsables légaux (responsable principal)
+  const [parent1Type, setParent1Type] = useState("père"); // valeur par défaut
+  const [parent1LastName, setParent1LastName] = useState("");
+  const [parent1FirstName, setParent1FirstName] = useState("");
+  const [parent1Phone, setParent1Phone] = useState("");
+  const [parent1Email, setParent1Email] = useState("");
+  const [parent1Address, setParent1Address] = useState("");
+  const [parent1PostalCode, setParent1PostalCode] = useState("");
+  const [parent1Gsm, setParent1Gsm] = useState("");
+
+  // Pour le responsable secondaire (optionnel)
+  const [parent2LastName, setParent2LastName] = useState("");
+  const [parent2FirstName, setParent2FirstName] = useState("");
+  const [parent2Email, setParent2Email] = useState("");
+  const [parent2Phone, setParent2Phone] = useState("");
+  const [parent2Address, setParent2Address] = useState("");
+  const [parent2PostalCode, setParent2PostalCode] = useState("");
+  const [parent2Gsm, setParent2Gsm] = useState("");
   const [showSecondaryGuardian, setShowSecondaryGuardian] = useState(false);
-  const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
+
+  // Autres états
+  const [imageConsent, setImageConsent] = useState(true);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [isSpellCheckOpen, setIsSpellCheckOpen] = useState(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!birthDate) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner la date de naissance du joueur.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const age = getAge(birthDate);
-
-    if (age < 4 || age > 9) {
-      toast({
-        title: "Âge non valide",
-        description:
-          "Le joueur doit avoir entre 4 ans et 9 ans pour pouvoir s'inscrire.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Ouvrir la vérification d'orthographe AVANT d'envoyer les données
-    setIsSpellCheckOpen(true);
-  };
-
-  const finalSubmit = async () => {
-    const requestData = {
-      type: "registration",
-      formData: {
-        lastName,
-        firstName,
-        birthDate,
-        parent1LastName,
-        parent1FirstName,
-        parent1Email,
-        parent2LastName,
-        parent2FirstName,
-        parent2Email,
-        imageConsent,
-        signature,
-        createdAt: new Date().toISOString(),
-      },
-      assignedTo: null, // Laisse vide par défaut, un admin peut l'assigner plus tard
-    };
-
-    try {
-      const response = await fetch("http://localhost:5000/api/requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'envoi du formulaire");
-      }
-
-      toast({
-        title: "Formulaire soumis",
-        description: "Votre inscription a été envoyée avec succès.",
-      });
-
-      setIsSpellCheckOpen(false);
-      navigate("/success/registration");
-    } catch (error) {
-      console.error("Erreur lors de la soumission :", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du formulaire.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  function getAge(birthDate: Date): number {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-
-    // Vérifier si l'anniversaire n'est pas encore passé cette année
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-
-    return age;
-  }
 
   const currentDate = format(new Date(), "dd/MM/yyyy");
 
+  // Champs pour la vérification orthographique
   const spellCheckFields = [
     { label: "Nom du joueur", value: lastName },
     { label: "Prénom du joueur", value: firstName },
@@ -183,26 +115,131 @@ const RegistrationForm = () => {
     );
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!birthDate) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner la date de naissance du joueur.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const age = getAge(birthDate);
+    if (age < 4 || age > 9) {
+      toast({
+        title: "Âge non valide",
+        description:
+          "Le joueur doit avoir entre 4 ans et 9 ans pour pouvoir s'inscrire.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSpellCheckOpen(true);
+  };
+
+  // Calcule l'âge du joueur
+  function getAge(birthDate: Date): number {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  }
+
+  const finalSubmit = async () => {
+    const requestData = {
+      type: "registration",
+      formData: {
+        season, // ex : "2025/2026"
+        lastName, // Nom du joueur
+        firstName, // Prénom du joueur
+        birthDate: birthDate ? birthDate.toISOString() : null, // Converti en ISO
+        birthPlace, // Lieu de naissance
+        address, // Adresse
+        postalCode, // Code postal
+        city, // Ville
+        currentClub, // Club actuel
+        position, // Position
+        category, // Catégorie (ex: U9)
+        parent1Type, // Type du responsable principal
+        parent1LastName, // Nom du responsable principal
+        parent1FirstName, // Prénom du responsable principal
+        parent1Phone, // Téléphone du responsable principal
+        parent1Email, // Email du responsable principal
+        parent1Address, // Adresse du responsable principal
+        parent1PostalCode, // Code postal du responsable principal
+        parent1Gsm, // GSM du responsable principal
+        parent2LastName, // Responsables secondaires (optionnel)
+        parent2FirstName,
+        parent2Email,
+        parent2Phone,
+        parent2Address,
+        parent2PostalCode,
+        parent2Gsm,
+        imageConsent,
+        signature,
+        createdAt: new Date().toISOString(),
+      },
+      assignedTo: null,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'envoi du formulaire");
+      }
+      toast({
+        title: "Formulaire soumis",
+        description: "Votre inscription a été envoyée avec succès.",
+      });
+      setIsSpellCheckOpen(false);
+      navigate("/success/registration");
+    } catch (error) {
+      console.error("Erreur lors de la soumission :", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <form
         onSubmit={handleSubmit}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
       >
+        {/* Saison d'inscription */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
               title="Saison d'inscription"
               subtitle="Veuillez sélectionner la saison pour laquelle vous souhaitez inscrire le joueur"
             >
-              <Select defaultValue={SEASONS[1]}>
+              <Select value={season} onValueChange={setSeason}>
                 <SelectTrigger className="form-input-base">
                   <SelectValue placeholder="Sélectionnez une saison" />
                 </SelectTrigger>
                 <SelectContent>
-                  {SEASONS.map((season) => (
-                    <SelectItem key={season} value={season}>
-                      {season}
+                  {SEASONS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -211,6 +248,7 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
+        {/* Informations du joueur */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -228,7 +266,6 @@ const RegistrationForm = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Prénom</Label>
                   <Input
@@ -239,86 +276,82 @@ const RegistrationForm = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="birthDate">Date de naissance</Label>
-                  <div className="space-y-4">
-                    {/* Passez la date et la fonction onChange au BirthDatePicker */}
-                    <BirthDatePicker
-                      selectedDate={birthDate ?? null}
-                      onChange={setBirthDate}
-                    />
-                  </div>
+                  <BirthDatePicker
+                    selectedDate={birthDate ?? null}
+                    onChange={setBirthDate}
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="birthPlace">Lieu de naissance</Label>
-                  <Input id="birthPlace" className="form-input-base" required />
+                  <Input
+                    id="birthPlace"
+                    className="form-input-base"
+                    onChange={(e) => setBirthPlace(e.target.value)}
+                    required
+                  />
                 </div>
-
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="address">Adresse</Label>
-                  <Input id="address" className="form-input-base" required />
+                  <Input
+                    id="address"
+                    className="form-input-base"
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Code postal</Label>
-                  <Input id="postalCode" className="form-input-base" required />
+                  <Input
+                    id="postalCode"
+                    className="form-input-base"
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    required
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="city">Ville</Label>
-                  <Input id="city" className="form-input-base" required />
+                  <Input
+                    id="city"
+                    className="form-input-base"
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="currentClub">Club actuel</Label>
-                  <Input id="currentClub" className="form-input-base" />
+                  <Input
+                    id="currentClub"
+                    className="form-input-base"
+                    onChange={(e) => setCurrentClub(e.target.value)}
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="position">Position</Label>
-                  <Select>
+                  <Select onValueChange={setPosition} value={position}>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez une position" />
                     </SelectTrigger>
                     <SelectContent>
-                      {POSITIONS.map((position) => (
-                        <SelectItem key={position} value={position}>
-                          {position}
+                      {POSITIONS.map((pos) => (
+                        <SelectItem key={pos} value={pos}>
+                          {pos}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="category"
-                    className="flex items-center space-x-1"
-                  >
-                    <span>Catégorie</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          L'inscription n'est possible que jusqu'à U9. Pour les
-                          catégories supérieures, des tests techniques sont
-                          requis (voir deuxième formulaire).
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </Label>
-
-                  <Select>
+                  <Label htmlFor="category">Catégorie</Label>
+                  <Select onValueChange={setCategory} value={category}>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -329,6 +362,7 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
+        {/* Informations des responsables légaux */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -343,7 +377,10 @@ const RegistrationForm = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="parent1Type">Type</Label>
-                      <Select defaultValue="père">
+                      <Select
+                        onValueChange={setParent1Type}
+                        value={parent1Type}
+                      >
                         <SelectTrigger className="form-input-base">
                           <SelectValue placeholder="Sélectionnez le type" />
                         </SelectTrigger>
@@ -354,7 +391,6 @@ const RegistrationForm = () => {
                         </SelectContent>
                       </Select>
                     </div>
-
                     <div className="grid grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <Label htmlFor="parent1LastName">Nom</Label>
@@ -366,7 +402,6 @@ const RegistrationForm = () => {
                           required
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="parent1FirstName">Prénom</Label>
                         <Input
@@ -378,17 +413,16 @@ const RegistrationForm = () => {
                         />
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="parent1Phone">Téléphone</Label>
                       <Input
                         id="parent1Phone"
                         className="form-input-base"
                         type="tel"
+                        onChange={(e) => setParent1Phone(e.target.value)}
                         required
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="parent1Email">Email</Label>
                       <Input
@@ -400,39 +434,37 @@ const RegistrationForm = () => {
                         required
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="parent1Address">Adresse</Label>
                       <Input
                         id="parent1Address"
                         className="form-input-base"
+                        onChange={(e) => setParent1Address(e.target.value)}
                         required
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="parent1PostalCode">Code postal</Label>
                       <Input
                         id="parent1PostalCode"
                         className="form-input-base"
+                        onChange={(e) => setParent1PostalCode(e.target.value)}
                         required
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="parent1Gsm">GSM</Label>
                       <Input
                         id="parent1Gsm"
                         className="form-input-base"
                         type="tel"
+                        onChange={(e) => setParent1Gsm(e.target.value)}
                         required
                       />
                     </div>
                   </div>
                 </div>
-
                 <Separator />
-
                 <div>
                   <button
                     type="button"
@@ -449,7 +481,6 @@ const RegistrationForm = () => {
                       <ChevronDown className="w-5 h-5" />
                     </motion.div>
                   </button>
-
                   <motion.div
                     initial={false}
                     animate={{
@@ -473,7 +504,6 @@ const RegistrationForm = () => {
                           </SelectContent>
                         </Select>
                       </div>
-
                       <div className="grid grid-cols-2 gap-5">
                         <div className="space-y-2">
                           <Label htmlFor="parent2LastName">Nom</Label>
@@ -484,7 +514,6 @@ const RegistrationForm = () => {
                             onChange={(e) => setParent2LastName(e.target.value)}
                           />
                         </div>
-
                         <div className="space-y-2">
                           <Label htmlFor="parent2FirstName">Prénom</Label>
                           <Input
@@ -497,16 +526,15 @@ const RegistrationForm = () => {
                           />
                         </div>
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="parent2Phone">Téléphone</Label>
                         <Input
                           id="parent2Phone"
                           className="form-input-base"
                           type="tel"
+                          onChange={(e) => setParent2Phone(e.target.value)}
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="parent2Email">Email</Label>
                         <Input
@@ -517,29 +545,29 @@ const RegistrationForm = () => {
                           onChange={(e) => setParent2Email(e.target.value)}
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="parent2Address">Adresse</Label>
                         <Input
                           id="parent2Address"
                           className="form-input-base"
+                          onChange={(e) => setParent2Address(e.target.value)}
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="parent2PostalCode">Code postal</Label>
                         <Input
                           id="parent2PostalCode"
                           className="form-input-base"
+                          onChange={(e) => setParent2PostalCode(e.target.value)}
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="parent2Gsm">GSM</Label>
                         <Input
                           id="parent2Gsm"
                           className="form-input-base"
                           type="tel"
+                          onChange={(e) => setParent2Gsm(e.target.value)}
                         />
                       </div>
                     </div>
@@ -550,6 +578,7 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
+        {/* Consentement à l'image */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -560,7 +589,7 @@ const RegistrationForm = () => {
                 <Checkbox
                   id="imageConsent"
                   checked={imageConsent}
-                  onCheckedChange={(checked) => setImageConsent(!!checked)} // Assure un booléen
+                  onCheckedChange={(checked) => setImageConsent(!!checked)}
                 />
                 <Label htmlFor="imageConsent" className="cursor-pointer">
                   J'accepte que des photos de mon enfant soient prises et
@@ -571,6 +600,7 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
+        {/* Signature */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection

@@ -1,11 +1,17 @@
-
-import React from 'react';
+import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
-import { Request } from "@/components/RequestDetailsModal";
-import { translateRequestType, getStatusBadge } from './RequestsTable';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ChevronLeft, ChevronRight, Eye, RotateCcw } from "lucide-react";
+import { Request, RequestStatus } from "@/components/RequestDetailsModal";
+import { translateRequestType, getStatusBadge } from "./RequestsTable";
 
 interface CompletedRequestsCardProps {
   completedRequests: Request[];
@@ -15,12 +21,38 @@ interface CompletedRequestsCardProps {
   onViewDetails: (request: Request) => void;
 }
 
+const formatRequestId = (id: string | number): string => {
+  const numericId = typeof id === "number" ? id : parseInt(id, 10);
+  return `DEM-${numericId.toString().padStart(3, "0")}`;
+};
+
+// Fonction interne pour mettre à jour le statut
+const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/requests/${requestId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Erreur lors de la mise à jour du statut");
+    }
+    console.log("Statut mis à jour avec succès pour la demande", requestId);
+    // Ici, vous pouvez déclencher un rafraîchissement des données depuis le parent
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du statut :", error);
+  }
+};
+
 const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
   completedRequests,
   page,
   totalPages,
   onPageChange,
-  onViewDetails
+  onViewDetails,
 }) => {
   return (
     <Card>
@@ -41,36 +73,57 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                   <TableHead>Type</TableHead>
                   <TableHead>Nom</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Détails</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {completedRequests.map((request) => (
-                  <TableRow 
-                    key={request.id} 
-                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" 
+                  <TableRow
+                    key={request.id}
+                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
                     onClick={() => onViewDetails(request)}
                   >
-                    <TableCell className="font-medium">{request.id}</TableCell>
+                    <TableCell className="font-medium">
+                      {formatRequestId(request.id)}
+                    </TableCell>
                     <TableCell>{translateRequestType(request.type)}</TableCell>
                     <TableCell>
                       <div>
                         <div>{request.name}</div>
-                        <div className="text-xs text-gray-500">{request.email}</div>
+                        <div className="text-xs text-gray-500">
+                          {request.email}
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell>{request.date.toLocaleDateString('fr-BE')}</TableCell>
                     <TableCell>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewDetails(request);
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      {request.date.toLocaleDateString("fr-BE")}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(request.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewDetails(request);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateStatus(request.id, "in-progress");
+                          }}
+                          disabled={request.status === "in-progress"}
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -78,7 +131,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
             </Table>
           )}
         </div>
-        
+
         {completedRequests.length > 5 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <div className="text-sm text-gray-600">

@@ -1,212 +1,359 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import RequestDetailsModal, { Request, RequestType, RequestStatus } from "@/components/RequestDetailsModal";
 
-// Import our new components
+// Types et composants
+import RequestDetailsModal, {
+  Request,
+  RequestType,
+  RequestStatus,
+} from "@/components/RequestDetailsModal";
 import SearchFilters from "@/components/dashboard/SearchFilters";
 import RequestsTable from "@/components/dashboard/RequestsTable";
 import CompletedRequestsCard from "@/components/dashboard/CompletedRequestsCard";
 import PendingAccidentsCard from "@/components/dashboard/PendingAccidentsCard";
 import StatisticsCard from "@/components/dashboard/StatisticsCard";
 import AppointmentDialog from "@/components/dashboard/AppointmentDialog";
-import { MOCK_ADMINS, MOCK_REQUESTS } from "@/components/dashboard/MockData";
+
+// Définition locale du type Admin
+export interface Admin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePicture: string;
+  functionTitle: string;
+  description: string;
+  role: string;
+  name: string;
+}
 
 const Dashboard = () => {
-  const [requests, setRequests] = useState<Request[]>(MOCK_REQUESTS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<RequestType | 'all'>('all');
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">(
+    "all"
+  );
+  const [typeFilter, setTypeFilter] = useState<RequestType | "all">("all");
   const { toast } = useToast();
   const navigate = useNavigate();
-  
-  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
+  // Pagination / modales
   const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
   const completedRequestsPerPage = 5;
-  
+  const [pendingAccidentReportsPage, setPendingAccidentReportsPage] =
+    useState(1);
+  const pendingAccidentReportsPerPage = 5;
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [pendingAccidentReportsPage, setPendingAccidentReportsPage] = useState(1);
-  const pendingAccidentReportsPerPage = 5;
+  // Récupération du token depuis le localStorage (stocké après login)
+  const token = localStorage.getItem("token");
 
-  const filteredRequests = requests.filter(request => {
-    const matchesSearch = request.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          request.id.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' ? 
-                          (request.status !== 'completed') : 
-                          request.status === statusFilter;
-    
-    const matchesType = typeFilter === 'all' || request.type === typeFilter;
-    
+  // 1) Récupérer les demandes depuis l'API
+  useEffect(() => {
+    fetchRequests();
+  }, [token]);
+
+  async function fetchRequests() {
+    try {
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch("http://localhost:5000/api/requests", {
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération des demandes");
+      }
+      const rows = await response.json();
+      console.log("✅ Rows récupérées :", rows);
+
+      // On transforme chaque ligne en un objet "Request"
+      const formattedRequests: Request[] = rows.map((req: any) => {
+        // On parse la colonne data (JSON)
+        const dataParsed = JSON.parse(req.data || "{}");
+
+        // On détermine name / email (simplifié ici)
+        let nameFromData = "inconnu";
+        let emailFromData = "Non spécifié";
+
+        switch (req.type) {
+          case "registration":
+          case "selection-tests":
+            if (dataParsed.lastName && dataParsed.firstName) {
+              nameFromData = `${dataParsed.lastName} ${dataParsed.firstName}`;
+            }
+            emailFromData =
+              dataParsed.parent1Email || dataParsed.email || "Non spécifié";
+            break;
+
+          case "accident-report":
+            if (dataParsed.playerLastName && dataParsed.playerFirstName) {
+              nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
+            }
+            emailFromData = dataParsed.email || "Non spécifié";
+            break;
+
+          case "responsibility-waiver":
+            if (dataParsed.playerLastName && dataParsed.playerFirstName) {
+              nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
+            }
+            emailFromData = dataParsed.parentEmail || "Non spécifié";
+            break;
+
+          default:
+            break;
+        }
+
+        // On stocke tout le JSON dans `details` :
+        // (ainsi RequestDetailsModal aura access à request.details)
+        return {
+          id: req.id.toString(),
+          type: req.type,
+          name: nameFromData,
+          email: emailFromData,
+          // si besoin : phone: dataParsed.phone ?? dataParsed.parent1Phone ?? null,
+          date: new Date(req.created_at),
+          status: mapDbStatus(req.status),
+          assignedTo: req.admin_id ? req.admin_id.toString() : "none",
+          details: dataParsed, // <= c'est le plus important
+        };
+      });
+
+      setRequests(formattedRequests);
+    } catch (error) {
+      console.error("Erreur API:", error);
+    }
+  }
+
+  // 2) Récupérer la liste des admins (ex: seulement superadmin)
+  useEffect(() => {
+    fetchAdmins();
+  }, [token]);
+
+  async function fetchAdmins() {
+    try {
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const response = await fetch("http://localhost:5000/api/admins", {
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération des administrateurs");
+      }
+      const data = await response.json();
+      console.log("✅ Admins récupérés :", data);
+
+      // Filtrer si besoin => superadmin
+      const onlySuperAdmins = data.filter((u: any) => u.role === "superadmin");
+
+      const formattedAdmins: Admin[] = onlySuperAdmins.map((user: any) => ({
+        id: user.id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        functionTitle: user.functionTitle,
+        description: user.description,
+        role: user.role,
+        name: `${user.firstName} ${user.lastName}`,
+      }));
+
+      setAdmins(formattedAdmins);
+    } catch (error) {
+      console.error("Erreur admins:", error);
+    }
+  }
+
+  // Convertir un statut DB => TS
+  function mapDbStatus(dbStatus: string): RequestStatus {
+    switch (dbStatus) {
+      case "Nouveau":
+        return "new";
+      case "Assigné":
+        return "assigned";
+      case "En cours":
+        return "in-progress";
+      case "Terminé":
+        return "completed";
+      case "Rejeté":
+        return "rejected";
+      default:
+        return "new";
+    }
+  }
+
+  // Convertir un statut TS => DB
+  function reverseMapStatus(tsStatus: RequestStatus): string {
+    switch (tsStatus) {
+      case "new":
+        return "Nouveau";
+      case "assigned":
+        return "Assigné";
+      case "in-progress":
+        return "En cours";
+      case "completed":
+        return "Terminé";
+      case "rejected":
+        return "Rejeté";
+      default:
+        return "Nouveau";
+    }
+  }
+
+  // 3) Filtrage local
+  const filteredRequests = requests.filter((req) => {
+    const matchesSearch =
+      req.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all"
+        ? req.status !== "completed"
+        : req.status === statusFilter;
+
+    const matchesType = typeFilter === "all" || req.type === typeFilter;
+
     return matchesSearch && matchesStatus && matchesType;
   });
-  
-  const completedRequests = requests.filter(request => request.status === 'completed');
-  
-  const pendingAccidentReports = requests.filter(request => 
-    request.type === 'accident-report' && request.status === 'in-progress'
+
+  // tri pour "completed" + pagination
+  const completedRequests = requests.filter((r) => r.status === "completed");
+  const totalCompletedPages = Math.ceil(
+    completedRequests.length / completedRequestsPerPage
   );
-  
-  const totalCompletedPages = Math.ceil(completedRequests.length / completedRequestsPerPage);
   const paginatedCompletedRequests = completedRequests.slice(
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
   );
 
-  const totalPendingAccidentPages = Math.ceil(pendingAccidentReports.length / pendingAccidentReportsPerPage);
+  // tri pour "accident-report" en cours
+  const pendingAccidentReports = requests.filter(
+    (r) => r.type === "accident-report" && r.status === "in-progress"
+  );
+  const totalPendingAccidentPages = Math.ceil(
+    pendingAccidentReports.length / pendingAccidentReportsPerPage
+  );
   const paginatedPendingAccidents = pendingAccidentReports.slice(
     (pendingAccidentReportsPage - 1) * pendingAccidentReportsPerPage,
     pendingAccidentReportsPage * pendingAccidentReportsPerPage
   );
 
-  const assignRequest = (requestId: string, adminId: string) => {
-    setRequests(prevRequests => 
-      prevRequests.map(req => 
-        req.id === requestId 
-          ? { ...req, assignedTo: adminId, status: req.status === 'new' ? 'assigned' : req.status } 
-          : req
-      )
-    );
-    
-    const request = requests.find(r => r.id === requestId);
-    const admin = MOCK_ADMINS.find(a => a.id === adminId);
-    
-    if (request && admin) {
+  // 4) Callbacks (assign / status)
+  const handleAssignRequest = async (requestId: string, adminId: string) => {
+    try {
+      // si "none", on repasse le statut => "new"
+      const newStatus: RequestStatus = adminId === "none" ? "new" : "assigned";
+      // on met à jour le statut côté serveur
+      await handleUpdateStatus(requestId, newStatus);
+
+      // ensuite, on PATCH l'assignation
+      const bodyToSend = { assignedTo: adminId === "none" ? null : adminId };
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const response = await fetch(
+        `http://localhost:5000/api/requests/${requestId}`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify(bodyToSend),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'assignation");
+      }
       toast({
         title: "Demande assignée",
-        description: `La demande de ${request.name} a été assignée à ${admin.name}.`,
+        description:
+          adminId === "none"
+            ? `La demande ${requestId} a été désassignée et repassée en "Nouveau".`
+            : `La demande ${requestId} a été assignée à l'admin ${adminId}.`,
       });
-    }
-  };
-
-  const updateRequestStatus = (requestId: string, newStatus: RequestStatus) => {
-    const request = requests.find(r => r.id === requestId);
-    if (!request) return;
-
-    setRequests(prevRequests => 
-      prevRequests.map(req => 
-        req.id === requestId ? { ...req, status: newStatus } : req
-      )
-    );
-    
-    const statusLabels: Record<RequestStatus, string> = {
-      'new': 'Nouveau',
-      'assigned': 'Assigné',
-      'in-progress': 'En cours',
-      'completed': 'Terminé',
-      'rejected': 'Rejeté'
-    };
-    
-    toast({
-      title: "Statut mis à jour",
-      description: `Le statut a été changé en "${statusLabels[newStatus]}".`,
-    });
-
-    if (newStatus === 'completed') {
-      handleCompletedRequest(request);
-    } else if (request.type === 'accident-report' && newStatus === 'in-progress') {
+      await fetchRequests();
+    } catch (error) {
+      console.error("Erreur d'assignation :", error);
       toast({
-        title: "Déclaration d'accident validée",
-        description: "La déclaration a été déplacée vers les déclarations en attente.",
+        title: "Erreur",
+        description: "Impossible d'assigner la demande.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleCompletedRequest = (request: Request) => {
-    switch (request.type) {
-      case 'registration':
-        setCurrentRequestId(request.id);
-        setIsAppointmentDialogOpen(true);
-        break;
-        
-      case 'selection-tests':
-        toast({
-          title: "Tests validés",
-          description: "Les données ont été transmises aux membres.",
-        });
-        break;
-        
-      case 'responsibility-waiver':
-        toast({
-          title: "Décharge validée",
-          description: "Le document a bien été stocké.",
-        });
-        break;
-        
-      case 'accident-report':
-        toast({
-          title: "Déclaration d'accident",
-          description: "La demande a été déplacée dans les accidents en attente.",
-        });
-        break;
+  const handleUpdateStatus = async (
+    requestId: string,
+    newStatus: RequestStatus
+  ) => {
+    try {
+      const dbStatus = reverseMapStatus(newStatus);
+      const bodyToSend = { status: dbStatus };
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const response = await fetch(
+        `http://localhost:5000/api/requests/${requestId}`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify(bodyToSend),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Erreur lors de la mise à jour du statut");
+      }
+      toast({
+        title: "Statut mis à jour",
+        description: `Le statut a été changé en "${dbStatus}".`,
+      });
+      await fetchRequests();
+    } catch (error) {
+      console.error("Erreur lors du changement de statut :", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de changer le statut de la demande.",
+        variant: "destructive",
+      });
     }
   };
 
   const sendAccidentToFederation = (requestId: string) => {
-    setRequests(prevRequests => 
-      prevRequests.map(req => 
-        req.id === requestId ? { ...req, status: 'completed' } : req
-      )
-    );
-    
+    handleUpdateStatus(requestId, "completed");
     toast({
       title: "Déclaration envoyée",
       description: "La déclaration d'accident a été transmise à l'Union Belge.",
     });
   };
 
-  const handleAppointmentTypeSelection = (type: 'test' | 'secretariat') => {
-    if (type === 'test') {
-      setIsAppointmentDialogOpen(false);
-      
-      toast({
-        title: "Tests techniques programmés",
-        description: "Les données ont été transmises aux membres.",
-      });
-      
-      if (currentRequestId) {
-        setRequests(prevRequests => 
-          prevRequests.map(req => 
-            req.id === currentRequestId ? { ...req, status: 'completed' } : req
-          )
-        );
-      }
-    } else {
-      const request = requests.find(r => r.id === currentRequestId);
-      
-      if (request) {
-        navigate('/planning', { 
-          state: { 
-            scheduleAppointment: true, 
-            request,
-            appointmentType: type,
-            appointmentTitle: "Rendez-vous au secrétariat"
-          } 
-        });
-        
-        setIsAppointmentDialogOpen(false);
-      }
-    }
-  };
-
-  const openRequestDetails = (request: Request) => {
-    setSelectedRequest(request);
+  // 5) Modales
+  const openRequestDetails = (req: Request) => {
+    setSelectedRequest(req);
     setIsModalOpen(true);
   };
-
   const closeRequestDetails = () => {
-    setIsModalOpen(false);
     setSelectedRequest(null);
+    setIsModalOpen(false);
+  };
+
+  const handleAppointmentTypeSelection = (type: "test" | "secretariat") => {
+    setIsAppointmentDialogOpen(false);
+    // ...
   };
 
   return (
@@ -214,10 +361,13 @@ const Dashboard = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">Tableau de bord</h1>
-            <p className="text-gray-600 dark:text-gray-300">Gérez les demandes et suivez leur progression</p>
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+              Tableau de bord
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Gérez les demandes et suivez leur progression
+            </p>
           </div>
-          
           <div className="flex gap-2">
             <Link to="/planning">
               <Button className="bg-rwdm-blue">
@@ -227,15 +377,15 @@ const Dashboard = () => {
             </Link>
           </div>
         </div>
-        
+
         <Tabs defaultValue="requests" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="requests">Demandes</TabsTrigger>
             <TabsTrigger value="stats">Statistiques</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="requests" className="space-y-4">
-            <SearchFilters 
+            <SearchFilters
               searchQuery={searchQuery}
               statusFilter={statusFilter}
               typeFilter={typeFilter}
@@ -243,25 +393,26 @@ const Dashboard = () => {
               onStatusFilterChange={setStatusFilter}
               onTypeFilterChange={setTypeFilter}
             />
-            
             <Card>
               <CardHeader>
-                <CardTitle>Liste des demandes ({filteredRequests.length})</CardTitle>
+                <CardTitle>
+                  Liste des demandes ({filteredRequests.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <RequestsTable 
+                  <RequestsTable
                     requests={filteredRequests}
-                    admins={MOCK_ADMINS}
-                    onAssignRequest={assignRequest}
-                    onUpdateStatus={updateRequestStatus}
+                    admins={admins}
+                    onAssignRequest={handleAssignRequest}
+                    onUpdateStatus={handleUpdateStatus}
                     onViewDetails={openRequestDetails}
                   />
                 </div>
               </CardContent>
             </Card>
-            
-            <PendingAccidentsCard 
+
+            <PendingAccidentsCard
               pendingAccidents={paginatedPendingAccidents}
               page={pendingAccidentReportsPage}
               totalPages={totalPendingAccidentPages}
@@ -269,8 +420,8 @@ const Dashboard = () => {
               onViewDetails={openRequestDetails}
               onSendToFederation={sendAccidentToFederation}
             />
-            
-            <CompletedRequestsCard 
+
+            <CompletedRequestsCard
               completedRequests={paginatedCompletedRequests}
               page={completedRequestsPage}
               totalPages={totalCompletedPages}
@@ -278,20 +429,20 @@ const Dashboard = () => {
               onViewDetails={openRequestDetails}
             />
           </TabsContent>
-          
+
           <TabsContent value="stats">
             <StatisticsCard requests={requests} />
           </TabsContent>
         </Tabs>
       </div>
-      
-      <RequestDetailsModal 
+
+      <RequestDetailsModal
         isOpen={isModalOpen}
         onClose={closeRequestDetails}
         request={selectedRequest}
       />
-      
-      <AppointmentDialog 
+
+      <AppointmentDialog
         isOpen={isAppointmentDialogOpen}
         onClose={() => setIsAppointmentDialogOpen(false)}
         onSelectAppointmentType={handleAppointmentTypeSelection}

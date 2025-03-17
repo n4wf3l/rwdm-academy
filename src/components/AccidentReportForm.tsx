@@ -69,6 +69,7 @@ const AccidentReportForm: React.FC = () => {
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
+  const [accidentDescription, setAccidentDescription] = useState<string>("");
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date && date > new Date()) {
@@ -114,11 +115,11 @@ const AccidentReportForm: React.FC = () => {
       const fileData = await response.json();
       console.log("✅ Réponse API après upload :", fileData);
 
-      // ✅ Vérifie si filePath est bien récupéré
       if (!fileData.filePath) {
         throw new Error("Chemin du fichier non reçu !");
       }
 
+      // Ajout de la signature dans l'objet requestData
       const requestData = {
         type: "accident-report",
         formData: {
@@ -126,9 +127,11 @@ const AccidentReportForm: React.FC = () => {
           playerLastName,
           playerFirstName,
           accidentDate,
-          description: "Description de l'accident...",
-          filePath: fileData.filePath, // ✅ Utilisation du fichier uploadé
+          description: accidentDescription, // à adapter selon vos besoins
+          filePath: fileData.filePath,
+          signature, // <-- Assurez-vous que cette variable contient la signature au format attendu (ex. base64)
         },
+        assignedTo: null,
       };
 
       console.log("📤 Données envoyées à /api/requests :", requestData);
@@ -157,6 +160,11 @@ const AccidentReportForm: React.FC = () => {
       navigate("/success/accidentReport");
     } catch (error) {
       console.error("❌ Erreur lors de la soumission :", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -283,6 +291,8 @@ const AccidentReportForm: React.FC = () => {
                   className="form-input-base min-h-32"
                   placeholder="Décrivez comment l'accident s'est produit, où, quand et les conséquences immédiates..."
                   required
+                  value={accidentDescription}
+                  onChange={(e) => setAccidentDescription(e.target.value)}
                 />
               </div>
             </FormSection>

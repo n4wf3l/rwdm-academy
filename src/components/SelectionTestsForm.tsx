@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, CalendarIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,37 +25,34 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
 
-interface FormSection {
+interface FormSectionProps {
   title: string;
   subtitle?: string;
+  children: React.ReactNode;
 }
-
-const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
+const FormSection: React.FC<FormSectionProps> = ({
   title,
   subtitle,
   children,
-}) => {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-medium text-rwdm-blue dark:text-white">
-          {title}
-        </h3>
-        {subtitle && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-        )}
-      </div>
-      {children}
+}) => (
+  <div className="space-y-4">
+    <div>
+      <h3 className="text-lg font-medium text-rwdm-blue dark:text-white">
+        {title}
+      </h3>
+      {subtitle && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+      )}
     </div>
-  );
-};
+    {children}
+  </div>
+);
 
 const NOYAUX = [
   "U5",
@@ -80,26 +77,39 @@ const POSITIONS = ["Gardien", "Défenseur", "Milieu de terrain", "Attaquant"];
 const SelectionTestsForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // États pour les informations sur les tests
+  const [noyau, setNoyau] = useState<string>("");
   const [testStartDate, setTestStartDate] = useState<Date | null>(null);
   const [testEndDate, setTestEndDate] = useState<Date | null>(null);
-  const [signature, setSignature] = useState<string | null>(null);
-  const [playerBirthDate, setPlayerBirthDate] = useState<Date | null>(null);
-  const [birthDate, setBirthDate] = useState<Date | undefined>();
+
+  // États pour les informations du joueur
   const [lastName, setLastName] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
+  const [playerBirthDate, setPlayerBirthDate] = useState<Date | null>(null);
+  const [phone, setPhone] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
+  const [currentClub, setCurrentClub] = useState<string>("");
+  const [previousClub, setPreviousClub] = useState<string>("");
+  const [position, setPosition] = useState<string>("");
+
+  // États pour les informations du responsable légal
   const [parentLastName, setParentLastName] = useState<string>("");
   const [parentFirstName, setParentFirstName] = useState<string>("");
   const [parentEmail, setParentEmail] = useState<string>("");
+  const [parentPhone, setParentPhone] = useState<string>("");
+  const [parentRelation, setParentRelation] = useState<string>("parent"); // "parent" ou "representant"
+
+  // Autres états
+  const [signature, setSignature] = useState<string | null>(null);
+  const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState<boolean>(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
 
+  // Gestion des dates avec vérification
   const handleStartDateChange = (date: Date | undefined) => {
     if (!date) return;
-
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Réinitialiser à minuit
-
+    today.setHours(0, 0, 0, 0);
     if (date < today) {
       toast({
         title: "Erreur",
@@ -108,10 +118,7 @@ const SelectionTestsForm: React.FC = () => {
       });
       return;
     }
-
     setTestStartDate(date);
-
-    // Vérifier si la date de fin est antérieure à la nouvelle date de début
     if (testEndDate && date > testEndDate) {
       setTestEndDate(null);
       toast({
@@ -124,10 +131,8 @@ const SelectionTestsForm: React.FC = () => {
 
   const handleEndDateChange = (date: Date | undefined) => {
     if (!date) return;
-
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Réinitialiser à minuit
-
+    today.setHours(0, 0, 0, 0);
     if (date < today) {
       toast({
         title: "Erreur",
@@ -136,7 +141,6 @@ const SelectionTestsForm: React.FC = () => {
       });
       return;
     }
-
     if (testStartDate && date < testStartDate) {
       toast({
         title: "Erreur",
@@ -145,39 +149,10 @@ const SelectionTestsForm: React.FC = () => {
       });
       return;
     }
-
     setTestEndDate(date);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!playerBirthDate) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner la date de naissance du joueur.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const age = getAge(playerBirthDate);
-
-    if (age < 4 || age > 20) {
-      toast({
-        title: "Âge non valide",
-        description:
-          "Le joueur doit avoir entre 4 ans et 20 ans pour pouvoir passer le test technique.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Si toutes les validations sont passées, ouvrir la modale de vérification
-    setIsSpellCheckOpen(true);
-  };
-
-  function getAge(birthDate: Date): number {
+  const getAge = (birthDate: Date): number => {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -188,33 +163,65 @@ const SelectionTestsForm: React.FC = () => {
       age--;
     }
     return age;
-  }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!playerBirthDate) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner la date de naissance du joueur.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const age = getAge(playerBirthDate);
+    if (age < 4 || age > 20) {
+      toast({
+        title: "Âge non valide",
+        description:
+          "Le joueur doit avoir entre 4 et 20 ans pour passer le test technique.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsSpellCheckOpen(true);
+  };
 
   const finalSubmit = async () => {
     const requestData = {
-      type: "selection-tests", // Type de la demande
+      type: "selection-tests",
       formData: {
-        lastName,
-        firstName,
-        playerBirthDate,
-        email,
-        parentLastName,
-        parentFirstName,
-        parentEmail,
-        testStartDate,
-        testEndDate,
-        signature,
+        // Informations sur les tests
+        noyau, // Ex: "U6"
+        testStartDate, // Date de début (ISO)
+        testEndDate, // Date de fin (ISO)
+        // Informations du joueur
+        lastName, // Nom du joueur
+        firstName, // Prénom du joueur
+        playerBirthDate, // Date de naissance du joueur (ISO)
+        phone, // Téléphone (GSM) du joueur
+        email, // Email du joueur
+        currentClub, // Club actuel
+        previousClub, // Club précédent
+        position, // Position du joueur
+        // Informations du responsable légal
+        parentLastName, // Nom du responsable
+        parentFirstName, // Prénom du responsable
+        parentEmail, // Email du responsable
+        parentPhone, // Téléphone (GSM) du responsable
+        parentRelation, // Relation ("parent" ou "representant")
+        // Signature
+        signature, // Signature (base64)
         createdAt: new Date().toISOString(),
       },
-      assignedTo: null, // Assignation à un admin plus tard
+      assignedTo: null,
     };
 
     try {
       const response = await fetch("http://localhost:5000/api/requests", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
       });
 
@@ -226,7 +233,6 @@ const SelectionTestsForm: React.FC = () => {
         title: "Formulaire soumis",
         description: "Votre demande de test a été envoyée avec succès.",
       });
-
       setIsSpellCheckOpen(false);
       navigate("/success/selectionTests");
     } catch (error) {
@@ -254,6 +260,7 @@ const SelectionTestsForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
       >
+        {/* Informations sur les tests */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -263,14 +270,14 @@ const SelectionTestsForm: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label htmlFor="noyau">Noyau</Label>
-                  <Select>
+                  <Select onValueChange={setNoyau}>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez un noyau" />
                     </SelectTrigger>
                     <SelectContent>
-                      {NOYAUX.map((noyau) => (
-                        <SelectItem key={noyau} value={noyau}>
-                          {noyau}
+                      {NOYAUX.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -290,13 +297,11 @@ const SelectionTestsForm: React.FC = () => {
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {testStartDate ? (
-                              format(testStartDate, "dd/MM/yyyy", {
-                                locale: fr,
-                              })
-                            ) : (
-                              <span>Date de début</span>
-                            )}
+                            {testStartDate
+                              ? format(testStartDate, "dd/MM/yyyy", {
+                                  locale: fr,
+                                })
+                              : "Date de début"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent
@@ -314,7 +319,6 @@ const SelectionTestsForm: React.FC = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
-
                     <div>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -326,11 +330,11 @@ const SelectionTestsForm: React.FC = () => {
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {testEndDate ? (
-                              format(testEndDate, "dd/MM/yyyy", { locale: fr })
-                            ) : (
-                              <span>Date de fin</span>
-                            )}
+                            {testEndDate
+                              ? format(testEndDate, "dd/MM/yyyy", {
+                                  locale: fr,
+                                })
+                              : "Date de fin"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent
@@ -355,6 +359,7 @@ const SelectionTestsForm: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Informations du joueur */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -372,7 +377,6 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Prénom</Label>
                   <Input
@@ -383,46 +387,26 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate">Date de naissance</Label>
-                  <div className="space-y-4">
-                    <BirthDatePicker
-                      selectedDate={playerBirthDate}
-                      onChange={setPlayerBirthDate}
-                    />
-                  </div>
+                  <Label htmlFor="playerBirthDate">Date de naissance</Label>
+                  <BirthDatePicker
+                    selectedDate={playerBirthDate}
+                    onChange={setPlayerBirthDate}
+                  />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone (GSM)</Label>
+                  <Label htmlFor="phone">Téléphone (GSM) du joueur</Label>
                   <Input
                     id="phone"
                     type="tel"
                     className="form-input-base"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="flex items-center space-x-1"
-                  >
-                    <span>Email</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Si le joueur n'a pas d'email, vous pouvez indiquer
-                          celui du responsable légal.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </Label>
-
+                  <Label htmlFor="email">Email du joueur</Label>
                   <Input
                     id="email"
                     type="email"
@@ -433,28 +417,34 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currentClub">Club actuel</Label>
+                  <Label htmlFor="currentClub">Club actuel du joueur</Label>
                   <Input
                     id="currentClub"
                     className="form-input-base"
+                    value={currentClub}
+                    onChange={(e) => setCurrentClub(e.target.value)}
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="previousClub">Club précédent</Label>
-                  <Input id="previousClub" className="form-input-base" />
+                  <Label htmlFor="previousClub">Club précédent du joueur</Label>
+                  <Input
+                    id="previousClub"
+                    className="form-input-base"
+                    value={previousClub}
+                    onChange={(e) => setPreviousClub(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="position">Position</Label>
-                  <Select required>
+                  <Select onValueChange={setPosition} required>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez une position" />
                     </SelectTrigger>
                     <SelectContent>
-                      {POSITIONS.map((position) => (
-                        <SelectItem key={position} value={position}>
-                          {position}
+                      {POSITIONS.map((pos) => (
+                        <SelectItem key={pos} value={pos}>
+                          {pos}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -465,6 +455,7 @@ const SelectionTestsForm: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Informations des responsables légaux */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -482,7 +473,6 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="parentFirstName">Prénom</Label>
                   <Input
@@ -493,19 +483,19 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="parentPhone">Téléphone (GSM)</Label>
+                  <Label htmlFor="parentPhone">Téléphone (GSM) du parent</Label>
                   <Input
                     id="parentPhone"
                     type="tel"
                     className="form-input-base"
+                    value={parentPhone}
+                    onChange={(e) => setParentPhone(e.target.value)}
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="parentEmail">Email</Label>
+                  <Label htmlFor="parentEmail">Email du parent</Label>
                   <Input
                     id="parentEmail"
                     type="email"
@@ -515,10 +505,12 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="parentRelation">Relation</Label>
-                  <Select defaultValue="parent">
+                  <Select
+                    onValueChange={setParentRelation}
+                    defaultValue="parent"
+                  >
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez la relation" />
                     </SelectTrigger>
@@ -533,6 +525,7 @@ const SelectionTestsForm: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Signature */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -547,6 +540,7 @@ const SelectionTestsForm: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Section réservée au secrétariat */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -562,6 +556,7 @@ const SelectionTestsForm: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Politique de confidentialité */}
         <div className="flex items-start space-x-3">
           <input
             type="checkbox"
@@ -602,7 +597,14 @@ const SelectionTestsForm: React.FC = () => {
         isOpen={isSpellCheckOpen}
         onClose={() => setIsSpellCheckOpen(false)}
         onConfirm={finalSubmit}
-        fields={spellCheckFields}
+        fields={[
+          { label: "Nom du joueur", value: lastName },
+          { label: "Prénom du joueur", value: firstName },
+          { label: "Email du joueur", value: email },
+          { label: "Nom du parent", value: parentLastName },
+          { label: "Prénom du parent", value: parentFirstName },
+          { label: "Email du parent", value: parentEmail },
+        ]}
         title="Vérification des informations pour les tests"
       />
     </>

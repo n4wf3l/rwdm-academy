@@ -319,19 +319,20 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
   }
 });
 
+// Endpoint POST /api/requests
+// Pour POST : pas besoin d'authentification
 app.post("/api/requests", async (req, res) => {
   const { type, formData, assignedTo } = req.body;
 
   console.log("📥 Données reçues dans /api/requests :", req.body);
 
-  if (!type || !formData || !formData.filePath) {
+  if (!type || !formData) {
     console.error("❌ Données incomplètes !");
     return res.status(400).json({ error: "Données incomplètes." });
   }
 
   try {
     const connection = await mysql.createConnection(dbConfig);
-
     const query =
       "INSERT INTO requests (type, data, status, assigned_to) VALUES (?, ?, 'Nouveau', ?)";
     const [result] = await connection.execute(query, [
@@ -372,19 +373,40 @@ app.get("/api/requests", authMiddleware, async (req, res) => {
 
 app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { status, assignedTo } = req.body;
+  let { status, assignedTo } = req.body;
 
   try {
     const connection = await mysql.createConnection(dbConfig);
 
-    const query =
-      "UPDATE requests SET status = ?, assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-    const [result] = await connection.execute(query, [
-      status,
-      assignedTo || null,
-      id,
-    ]);
+    // Si on assigne un admin sans fournir de status, on force le status "Assigné"
+    if (assignedTo !== undefined && status === undefined) {
+      status = "Assigné";
+    }
 
+    // Construction dynamique de la requête
+    const columnsToUpdate = [];
+    const values = [];
+
+    if (status !== undefined) {
+      columnsToUpdate.push("status = ?");
+      values.push(status);
+    }
+
+    if (assignedTo !== undefined) {
+      columnsToUpdate.push("assigned_to = ?");
+      const assignedValue = assignedTo === "none" ? null : assignedTo;
+      values.push(assignedValue);
+    }
+
+    columnsToUpdate.push("updated_at = CURRENT_TIMESTAMP");
+    const sql = `
+        UPDATE requests
+        SET ${columnsToUpdate.join(", ")}
+        WHERE id = ?
+      `;
+    values.push(id);
+
+    const [result] = await connection.execute(sql, values);
     await connection.end();
 
     if (result.affectedRows > 0) {
