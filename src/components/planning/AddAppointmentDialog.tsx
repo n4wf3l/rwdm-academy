@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -68,6 +68,81 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   availableTimeSlots,
   addAppointment,
 }) => {
+  const [admins, setAdmins] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/admins", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des administrateurs");
+        }
+
+        const data = await response.json();
+        console.log("✅ Admins récupérés :", data);
+
+        const formattedAdmins = data.map((admin: any) => ({
+          id: admin.id.toString(),
+          name: `${admin.firstName} ${admin.lastName}`,
+        }));
+
+        setAdmins(formattedAdmins);
+      } catch (error) {
+        console.error("Erreur lors du fetch des admins:", error);
+      }
+    };
+
+    fetchAdmins();
+  }, []);
+
+  const saveAppointmentToDB = async () => {
+    try {
+      if (
+        !newAppointmentDate ||
+        !newAppointmentTime ||
+        !newAppointmentType ||
+        !newAppointmentAdmin
+      ) {
+        alert("❌ Veuillez remplir tous les champs obligatoires.");
+        return;
+      }
+
+      const appointmentData = {
+        date: format(newAppointmentDate, "yyyy-MM-dd"),
+        time: newAppointmentTime,
+        type: newAppointmentType,
+        personName: newAppointmentPerson,
+        email: newAppointmentEmail,
+        adminId: newAppointmentAdmin,
+        notes: newAppointmentNotes || "",
+      };
+
+      console.log("📤 Envoi des données :", appointmentData);
+
+      const response = await fetch("http://localhost:5000/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(appointmentData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'enregistrement du rendez-vous");
+      }
+
+      alert("✅ Rendez-vous enregistré avec succès !");
+      setIsOpen(false); // Ferme le modal après succès
+    } catch (error) {
+      console.error("❌ Erreur lors de l'ajout du rendez-vous :", error);
+      alert("❌ Une erreur est survenue, veuillez réessayer.");
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px]">
@@ -190,11 +265,17 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 <SelectValue placeholder="Sélectionnez un administrateur" />
               </SelectTrigger>
               <SelectContent>
-                {AVAILABLE_ADMINS.map((admin) => (
-                  <SelectItem key={admin.id} value={admin.id}>
-                    {admin.name}
+                {admins.length > 0 ? (
+                  admins.map((admin) => (
+                    <SelectItem key={admin.id} value={admin.id}>
+                      {admin.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="" disabled>
+                    Aucun administrateur trouvé
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -212,7 +293,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Annuler
           </Button>
-          <Button className="bg-rwdm-blue" onClick={addAppointment}>
+          <Button className="bg-rwdm-blue" onClick={saveAppointmentToDB}>
             Planifier le rendez-vous
           </Button>
         </DialogFooter>

@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format, isToday, isSameDay } from "date-fns";
+import { format, isToday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -33,6 +33,26 @@ interface WeekViewProps {
   showAppointmentDetails: (appointment: Appointment) => void;
 }
 
+const filterAppointmentsForHourAndDate = (
+  appointments: Appointment[],
+  date: Date,
+  hour: number
+) => {
+  console.log("🔎 Vérification des filtres :", { date, hour, appointments });
+
+  return appointments.filter((a) => {
+    const appointmentDate = new Date(a.date);
+    const appointmentHour =
+      "time" in a ? parseInt((a as any).time.split(":")[0], 10) : -1;
+
+    return (
+      appointmentDate.getFullYear() === date.getFullYear() &&
+      appointmentDate.getMonth() === date.getMonth() &&
+      appointmentDate.getDate() === date.getDate() &&
+      appointmentHour === hour
+    );
+  });
+};
 const WeekView: React.FC<WeekViewProps> = ({
   currentWeek,
   daysOfWeek,
@@ -104,11 +124,12 @@ const WeekView: React.FC<WeekViewProps> = ({
                       {formatHour(hour)}
                     </TableCell>
                     {daysOfWeek.map((day, dayIndex) => {
-                      const appointmentsForHour = getAppointmentsForHourAndDate(
-                        appointments,
-                        day,
-                        hour
-                      );
+                      const appointmentsForHour =
+                        filterAppointmentsForHourAndDate(
+                          appointments,
+                          day,
+                          hour
+                        );
                       return (
                         <TableCell
                           key={dayIndex}
@@ -157,13 +178,14 @@ const WeekView: React.FC<WeekViewProps> = ({
                                       </div>
                                       <div className="flex justify-between items-center">
                                         <span>
-                                          {
-                                            getTimeFromDate(appointment.date)
-                                              .formattedTime
-                                          }
+                                          {appointment.type || "Type inconnu"}
                                         </span>
+
                                         <span className="text-[10px]">
-                                          {appointment.adminName.split(" ")[0]}
+                                          {appointment.adminFirstName &&
+                                          appointment.adminLastName
+                                            ? `${appointment.adminFirstName} ${appointment.adminLastName}`
+                                            : "Admin inconnu"}
                                         </span>
                                       </div>
                                     </div>

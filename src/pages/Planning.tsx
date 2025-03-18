@@ -75,7 +75,6 @@ import {
   getTimeFromDate,
   isAppointmentInHour,
   getAppointmentsForHourAndDate,
-  MOCK_APPOINTMENTS,
   AVAILABLE_TIMES,
   AVAILABLE_ADMINS,
   START_HOUR,
@@ -87,8 +86,8 @@ import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 import AppointmentDetailsDialog from "@/components/planning/AppointmentDetailsDialog";
 
 const Planning = () => {
-  const [appointments, setAppointments] =
-    useState<Appointment[]>(MOCK_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
@@ -112,6 +111,35 @@ const Planning = () => {
 
   const location = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/appointments", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des rendez-vous");
+        }
+
+        const data = await response.json();
+        console.log("✅ Rendez-vous récupérés :", data); // Vérification
+
+        setAppointments(
+          data.map((appointment: any) => ({
+            ...appointment,
+            date: new Date(appointment.date),
+            time: appointment.time,
+          }))
+        );
+      } catch (error) {
+        console.error("Erreur lors du fetch des rendez-vous :", error);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
 
   // Vérifier si nous avons été redirigés depuis la page dashboard avec une demande d'inscription validée
   useEffect(() => {
@@ -176,16 +204,21 @@ const Planning = () => {
     appointmentDate.setHours(hours, minutes, 0, 0);
 
     // Création du nouveau rendez-vous
+    const admin = AVAILABLE_ADMINS.find(
+      (admin) => admin.id === newAppointmentAdmin
+    );
+
     const newAppointment: Appointment = {
       id: generateAppointmentId(appointments),
       date: appointmentDate,
       type: newAppointmentType,
       personName: newAppointmentPerson,
-      adminName:
-        AVAILABLE_ADMINS.find((admin) => admin.id === newAppointmentAdmin)
-          ?.name || "",
+      adminName: admin ? admin.name : "",
+      adminFirstName: admin ? admin.name.split(" ")[0] : "",
+      adminLastName: admin ? admin.name.split(" ").slice(1).join(" ") : "",
       notes: newAppointmentNotes,
       email: newAppointmentEmail,
+      time: "",
     };
 
     // Ajout du rendez-vous à la liste

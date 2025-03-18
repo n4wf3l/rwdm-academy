@@ -54,6 +54,7 @@ export interface RequestsTableProps {
   onAssignRequest: (requestId: string, adminId: string) => void;
   onUpdateStatus: (requestId: string, newStatus: RequestStatus) => void;
   onViewDetails: (request: Request) => void;
+  onOpenAppointmentDialog: (request: Request) => void; // Nouvelle prop
 }
 
 /**
@@ -105,6 +106,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   onAssignRequest,
   onUpdateStatus,
   onViewDetails,
+  onOpenAppointmentDialog,
 }) => {
   if (requests.length === 0) {
     return (
@@ -197,7 +199,13 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onUpdateStatus(request.id, "in-progress");
+                      // Pour une demande d'inscription, on ouvre le modal d'entretien (AppointmentDialog)
+                      if (request.type === "registration") {
+                        onOpenAppointmentDialog(request);
+                      } else {
+                        // Sinon, on met à jour le statut normalement
+                        onUpdateStatus(request.id, "in-progress");
+                      }
                     }}
                     disabled={request.status === "in-progress"}
                   >
@@ -209,9 +217,17 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     className="text-green-600 border-green-600 hover:bg-green-100"
                     onClick={(e) => {
                       e.stopPropagation();
+                      // Condition spéciale pour "registration"
+                      if (request.type === "registration") {
+                        onOpenAppointmentDialog(request);
+                        return; // On quitte pour éviter de passer à "completed" tout de suite
+                      }
+
+                      // Condition pour "accident-report"
                       if (request.type === "accident-report") {
                         onUpdateStatus(request.id, "in-progress");
                       } else {
+                        // Tous les autres types passent en "completed"
                         onUpdateStatus(request.id, "completed");
                       }
                     }}

@@ -19,6 +19,8 @@ import CompletedRequestsCard from "@/components/dashboard/CompletedRequestsCard"
 import PendingAccidentsCard from "@/components/dashboard/PendingAccidentsCard";
 import StatisticsCard from "@/components/dashboard/StatisticsCard";
 import AppointmentDialog from "@/components/dashboard/AppointmentDialog";
+import { AppointmentType } from "@/components/planning/planningUtils";
+import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 
 // Définition locale du type Admin
 export interface Admin {
@@ -43,8 +45,6 @@ const Dashboard = () => {
   const [typeFilter, setTypeFilter] = useState<RequestType | "all">("all");
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Pagination / modales
   const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
   const completedRequestsPerPage = 5;
   const [pendingAccidentReportsPage, setPendingAccidentReportsPage] =
@@ -54,9 +54,19 @@ const Dashboard = () => {
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Récupération du token depuis le localStorage (stocké après login)
   const token = localStorage.getItem("token");
+  const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] =
+    useState(false);
+  const [newAppointmentDate, setNewAppointmentDate] = useState<
+    Date | undefined
+  >(undefined);
+  const [newAppointmentTime, setNewAppointmentTime] = useState("");
+  const [newAppointmentType, setNewAppointmentType] =
+    useState<AppointmentType>("registration");
+  const [newAppointmentPerson, setNewAppointmentPerson] = useState("");
+  const [newAppointmentEmail, setNewAppointmentEmail] = useState("");
+  const [newAppointmentAdmin, setNewAppointmentAdmin] = useState("");
+  const [newAppointmentNotes, setNewAppointmentNotes] = useState("");
 
   // 1) Récupérer les demandes depuis l'API
   useEffect(() => {
@@ -352,10 +362,40 @@ const Dashboard = () => {
   };
 
   const handleAppointmentTypeSelection = (type: "test" | "secretariat") => {
+    if (!selectedRequest) return;
+
+    if (type === "secretariat") {
+      // Ouvrir le modal AddAppointmentDialog
+      setIsAppointmentDialogOpen(false); // Fermer le premier modal
+      setIsAddAppointmentDialogOpen(true);
+
+      // Préremplir les champs avec les infos de la demande
+      setNewAppointmentPerson(selectedRequest.name);
+      setNewAppointmentEmail(selectedRequest.email);
+      setNewAppointmentType("registration");
+    } else if (type === "test") {
+      // Afficher une notification pour le test technique
+      toast({
+        title: "Test technique sélectionné",
+        description: "Un email devra être envoyé aux coordinateurs plus tard.",
+      });
+    }
+
+    // Fermer le modal AppointmentDialog après sélection
     setIsAppointmentDialogOpen(false);
-    // ...
   };
 
+  const openAppointmentDialog = (request: Request) => {
+    console.log("Ouverture du modal pour la demande", request.id, request.type);
+    // Ici, vous pouvez éventuellement vérifier que request.type === "registration"
+    setSelectedRequest(request);
+    setIsAppointmentDialogOpen(true);
+  };
+
+  const closeAppointmentDialog = () => {
+    setSelectedRequest(null);
+    setIsAppointmentDialogOpen(false);
+  };
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -407,6 +447,12 @@ const Dashboard = () => {
                     onAssignRequest={handleAssignRequest}
                     onUpdateStatus={handleUpdateStatus}
                     onViewDetails={openRequestDetails}
+                    onOpenAppointmentDialog={openAppointmentDialog} // Passer la fonction ici
+                  />
+                  <AppointmentDialog
+                    isOpen={isAppointmentDialogOpen}
+                    onClose={closeAppointmentDialog}
+                    onSelectAppointmentType={handleAppointmentTypeSelection}
                   />
                 </div>
               </CardContent>
@@ -440,6 +486,33 @@ const Dashboard = () => {
         isOpen={isModalOpen}
         onClose={closeRequestDetails}
         request={selectedRequest}
+      />
+
+      <AddAppointmentDialog
+        isOpen={isAddAppointmentDialogOpen}
+        setIsOpen={setIsAddAppointmentDialogOpen}
+        newAppointmentDate={newAppointmentDate}
+        setNewAppointmentDate={setNewAppointmentDate}
+        newAppointmentTime={newAppointmentTime}
+        setNewAppointmentTime={setNewAppointmentTime}
+        newAppointmentType={newAppointmentType}
+        setNewAppointmentType={setNewAppointmentType}
+        newAppointmentPerson={newAppointmentPerson}
+        setNewAppointmentPerson={setNewAppointmentPerson}
+        newAppointmentEmail={newAppointmentEmail}
+        setNewAppointmentEmail={setNewAppointmentEmail}
+        newAppointmentAdmin={newAppointmentAdmin}
+        setNewAppointmentAdmin={setNewAppointmentAdmin}
+        newAppointmentNotes={newAppointmentNotes}
+        setNewAppointmentNotes={setNewAppointmentNotes}
+        availableTimeSlots={["09:00", "10:00", "11:00", "14:00", "15:00"]}
+        addAppointment={() => {
+          toast({
+            title: "Rendez-vous planifié",
+            description: `Un rendez-vous a été ajouté pour ${newAppointmentPerson}.`,
+          });
+          setIsAddAppointmentDialogOpen(false);
+        }}
       />
 
       <AppointmentDialog

@@ -20,6 +20,7 @@ const cors = require("cors");
 const multer = require("multer");
 const app = express();
 const PORT = process.env.PORT || 5000;
+const router = express.Router();
 
 // Middleware pour gérer CORS et le JSON
 app.use(cors());
@@ -432,6 +433,96 @@ app.post("/api/upload", upload.single("pdfFile"), (req, res) => {
 
   res.json({ filePath: `/uploads/${req.file.filename}` });
 });
+
+// Endpoint pour ajouter un rendez-vous
+app.post("/api/appointments", async (req, res) => {
+  try {
+    const { date, time, type, personName, email, adminId, notes } = req.body;
+
+    // Vérification des données
+    if (!date || !time || !type || !personName || !email || !adminId) {
+      return res.status(400).json({ message: "Tous les champs sont requis" });
+    }
+
+    // Connexion à la base de données
+    const connection = await mysql.createConnection(dbConfig);
+
+    const sql = `
+        INSERT INTO appointments (date, time, type, person_name, email, admin_id, notes) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+
+    await connection.execute(sql, [
+      date,
+      time,
+      type,
+      personName,
+      email,
+      adminId,
+      notes,
+    ]);
+
+    await connection.end();
+
+    res.status(201).json({ message: "✅ Rendez-vous ajouté avec succès !" });
+  } catch (error) {
+    console.error("❌ Erreur serveur :", error);
+    res
+      .status(500)
+      .json({ message: "Erreur serveur lors de l'ajout du rendez-vous" });
+  }
+});
+
+app.get("/api/appointments", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(`
+        SELECT 
+          a.id, a.date, a.time, a.type, a.person_name AS personName, 
+          a.email, a.notes, u.firstName AS adminFirstName, u.lastName AS adminLastName
+        FROM appointments a
+        LEFT JOIN users u ON a.admin_id = u.id
+        ORDER BY a.date ASC, a.time ASC
+      `);
+    await connection.end();
+
+    console.log("📥 API a renvoyé :", rows); // Vérification
+    res.json(rows);
+  } catch (error) {
+    console.error(
+      "Erreur serveur lors de la récupération des rendez-vous :",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+router.post("/appointments", async (req, res) => {
+  try {
+    const { date, time, type, personName, email, adminId, notes } = req.body;
+
+    // Vérifie que tous les champs obligatoires sont remplis
+    if (!date || !time || !type || !personName || !email || !adminId) {
+      return res.status(400).json({ message: "Tous les champs sont requis" });
+    }
+
+    // Insertion en base de données
+    const sql = `
+        INSERT INTO appointments (date, time, type, person_name, email, admin_id, notes) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+    await db.query(sql, [date, time, type, personName, email, adminId, notes]);
+
+    res.status(201).json({ message: "Rendez-vous ajouté avec succès" });
+  } catch (error) {
+    console.error("Erreur serveur :", error);
+    res
+      .status(500)
+      .json({ message: "Erreur serveur lors de l'ajout du rendez-vous" });
+  }
+});
+
+module.exports = router;
 
 // Lancer le serveur
 app.listen(PORT, () => {

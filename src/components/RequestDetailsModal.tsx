@@ -408,26 +408,6 @@ const renderSelectionTestsContent = (request: Request) => {
             value={d.noyau || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
-          <Field
-            label="Date de début"
-            value={
-              d.testStartDate
-                ? format(new Date(d.testStartDate), "dd/MM/yyyy", {
-                    locale: fr,
-                  })
-                : "-"
-            }
-            icon={<CalendarIcon className="h-4 w-4" />}
-          />
-          <Field
-            label="Date de fin"
-            value={
-              d.testEndDate
-                ? format(new Date(d.testEndDate), "dd/MM/yyyy", { locale: fr })
-                : "-"
-            }
-            icon={<CalendarIcon className="h-4 w-4" />}
-          />
         </div>
       </Section>
 

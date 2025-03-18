@@ -3,7 +3,7 @@ import Modal from "@/components/ui/modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Appointment } from "@/components/planning/planningUtils"; // Utilisez l'interface importée
+import { Appointment } from "@/components/planning/planningUtils";
 
 interface AppointmentDetailsDialogProps {
   isOpen: boolean;
@@ -34,16 +34,22 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
             </p>
             <p>
               <strong>Date :</strong>{" "}
-              {format(new Date(appointment.date), "dd/MM/yyyy 'à' HH:mm")}
+              {format(new Date(appointment.date), "dd/MM/yyyy")}
+            </p>
+            <p>
+              <strong>Heure :</strong> {appointment.time}
             </p>
             <p>
               <strong>Type :</strong> {appointment.type}
             </p>
             <p>
-              <strong>Administrateur :</strong> {appointment.adminName}
+              <strong>Administrateur :</strong>{" "}
+              {appointment.adminFirstName && appointment.adminLastName
+                ? `${appointment.adminFirstName} ${appointment.adminLastName}`
+                : "Aucun administrateur assigné"}
             </p>
             <p>
-              <strong>Notes :</strong> {appointment.notes}
+              <strong>Notes :</strong> {appointment.notes || "Aucune note"}
             </p>
           </div>
         </CardContent>

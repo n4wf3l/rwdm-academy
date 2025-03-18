@@ -11,61 +11,16 @@ export type AppointmentType =
 export interface Appointment {
   id: string;
   date: Date;
+  time: string; // ✅ Ajout de time ici
   type: AppointmentType;
   personName: string;
-  adminName: string;
+  email: string;
+  adminFirstName?: string;
+  adminLastName?: string;
   notes?: string;
-  email?: string;
 }
 
 // Mock data for our demo
-export const MOCK_APPOINTMENTS: Appointment[] = [
-  {
-    id: "APP-001",
-    date: new Date(2023, 7, 15, 10, 0), // 15 août 2023, 10:00
-    type: "registration",
-    personName: "Lucas Dubois",
-    adminName: "Sophie Dupont",
-    notes: "Premier rendez-vous pour l'inscription",
-    email: "lucas.dubois@example.com",
-  },
-  {
-    id: "APP-002",
-    date: new Date(2023, 7, 15, 14, 30), // 15 août 2023, 14:30
-    type: "selection-tests",
-    personName: "Emma Petit",
-    adminName: "Thomas Martin",
-    notes: "Préparation aux tests de la semaine prochaine",
-    email: "emma.petit@example.com",
-  },
-  {
-    id: "APP-003",
-    date: new Date(2023, 7, 16, 9, 15), // 16 août 2023, 9:15
-    type: "accident-report",
-    personName: "Noah Lambert",
-    adminName: "Elise Bernard",
-    notes: "Suivi de la déclaration d'accident du 10/08",
-    email: "noah.lambert@example.com",
-  },
-  {
-    id: "APP-004",
-    date: new Date(2023, 7, 17, 11, 0), // 17 août 2023, 11:00
-    type: "responsibility-waiver",
-    personName: "Chloé Moreau",
-    adminName: "Michael Lambert",
-    notes: "Signature de la décharge pour le tournoi",
-    email: "chloe.moreau@example.com",
-  },
-  {
-    id: "APP-005",
-    date: new Date(2023, 7, 18, 15, 45), // 18 août 2023, 15:45
-    type: "other",
-    personName: "Louis Lefevre",
-    adminName: "Sophie Dupont",
-    notes: "Discussion sur le programme d'entraînement",
-    email: "louis.lefevre@example.com",
-  },
-];
 
 // Available times for appointments
 export const AVAILABLE_TIMES = [
