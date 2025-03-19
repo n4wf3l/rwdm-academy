@@ -644,7 +644,7 @@ const RegistrationForm = () => {
             disabled={!signature}
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
-            Soumettre la demande de test
+            Soumettre la demande d'inscription
           </Button>
         </div>
       </form>

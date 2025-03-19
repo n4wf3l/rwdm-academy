@@ -14,6 +14,7 @@ const { body, validationResult } = require("express-validator");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const router = express.Router();
+const crypto = require("crypto");
 
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
@@ -27,6 +28,17 @@ const loginLimiter = rateLimit({
   message: { message: "Trop de tentatives, veuillez réessayer plus tard." },
 });
 app.use("/api/login", loginLimiter);
+
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const dbPool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -149,7 +161,7 @@ app.post(
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "365d" }
       );
 
       res.cookie("token", token, {
@@ -565,6 +577,93 @@ router.post("/appointments", async (req, res) => {
 });
 
 module.exports = router;
+
+app.post("/api/forget-password", async (req, res) => {
+  const { email } = req.body;
+
+  console.log("📥 Requête reçue pour forget-password avec email:", email); // ✅ Vérification
+  try {
+    const [users] = await dbPool.execute(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+
+    console.log("🔍 Utilisateur trouvé:", users); // ✅ Vérifier si l'utilisateur est trouvé
+
+    if (users.length === 0) {
+      return res.status(400).json({ message: "Utilisateur introuvable" });
+    }
+
+    const user = users[0];
+
+    // Générer un token de reset sécurisé (valide 1h)
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expiration = new Date(Date.now() + 3600000); // 1 heure
+
+    console.log("🔑 Token généré:", resetToken); // ✅ Vérifier si le token est bien généré
+
+    // Stocker le token dans la base de données
+    await dbPool.execute(
+      "UPDATE users SET reset_token = ?, reset_expires = ? WHERE email = ?",
+      [resetToken, expiration, email]
+    );
+
+    console.log("✅ Token stocké dans la BDD"); // ✅ Vérifier si le token est bien stocké
+
+    // Construire le lien de réinitialisation
+    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    console.log("📨 Lien de réinitialisation:", resetLink); // ✅ Vérifier si le lien est bien généré
+
+    // Envoyer l'email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Réinitialisation de votre mot de passe",
+      html: `
+        <p>Bonjour ${user.firstName},</p>
+        <p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le lien ci-dessous :</p>
+        <a href="${resetLink}" target="_blank">
+          Réinitialiser mon mot de passe
+        </a>
+        <p>Ce lien expirera dans 1 heure.</p>
+      `,
+    });
+
+    console.log("📧 Email envoyé avec succès"); // ✅ Vérifier si l'email est bien envoyé
+
+    res.json({ message: "Email de réinitialisation envoyé." });
+  } catch (error) {
+    console.error("❌ Erreur serveur:", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+});
+
+app.post("/api/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const [users] = await dbPool.execute(
+      "SELECT * FROM users WHERE reset_token = ? AND reset_expires > NOW()",
+      [token]
+    );
+
+    if (users.length === 0) {
+      return res.status(400).json({ message: "Token invalide ou expiré." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await dbPool.execute(
+      "UPDATE users SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?",
+      [hashedPassword, users[0].id]
+    );
+
+    res.json({ message: "Mot de passe réinitialisé avec succès." });
+  } catch (error) {
+    console.error("Erreur:", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+});
 
 // Lancer le serveur
 app.listen(PORT, () => {

@@ -22,6 +22,8 @@ import Graphics from "./pages/Graphics";
 import NotFound from "./pages/NotFound";
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
+import ForgetPassword from "./pages/ForgetPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -87,7 +89,8 @@ function App() {
               path="/success/accidentReport"
               element={<FormSubmissionSuccess formType="accidentReport" />}
             />
-            {/* ✅ Route catch-all pour les pages 404 */}
+            <Route path="/forget-password" element={<ForgetPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
