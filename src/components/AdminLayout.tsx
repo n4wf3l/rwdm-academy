@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -19,9 +19,13 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
   return (
@@ -139,15 +143,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </nav>
 
           <div className="p-4 border-t">
-            <Link to="/">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/20"
-              >
-                <LogOut className="mr-2 h-5 w-5" />
-                Déconnexion
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/20"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-5 w-5" />
+              Déconnexion
+            </Button>
           </div>
         </div>
       </div>

@@ -18,6 +18,8 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorShake, setErrorShake] = useState(false);
+  const [errorHighlight, setErrorHighlight] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -38,7 +40,7 @@ const Auth = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Erreur lors de la connexion");
+        throw new Error(data.message || "Veuillez réessayer");
       }
 
       // Stocker le token dans le localStorage
@@ -53,6 +55,15 @@ const Auth = () => {
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Erreur de connexion:", error);
+
+      // Déclencher les effets de vibration et de surlignage rouge
+      setErrorShake(true);
+      setErrorHighlight(true);
+      setTimeout(() => {
+        setErrorShake(false);
+        setErrorHighlight(false);
+      }, 3000); // Effet actif pendant 3 secondes
+
       toast({
         title: "Erreur de connexion",
         description: error.message || "Veuillez vérifier vos identifiants.",
@@ -84,7 +95,12 @@ const Auth = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <motion.form
+                onSubmit={handleSubmit}
+                className="space-y-4"
+                animate={errorShake ? { x: [-5, 5, -5, 5, 0] } : {}}
+                transition={{ duration: 0.3 }}
+              >
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -94,6 +110,9 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className={`transition-all ${
+                      errorHighlight ? "border-red-500 ring-2 ring-red-500" : ""
+                    }`}
                   />
                 </div>
 
@@ -113,6 +132,9 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className={`transition-all ${
+                      errorHighlight ? "border-red-500 ring-2 ring-red-500" : ""
+                    }`}
                   />
                 </div>
 
@@ -123,7 +145,7 @@ const Auth = () => {
                 >
                   {isLoading ? "Connexion en cours..." : "Se connecter"}
                 </Button>
-              </form>
+              </motion.form>
 
               <div className="mt-4 text-center text-sm">
                 <p className="text-gray-500 dark:text-gray-400">

@@ -1,30 +1,68 @@
-// server.js
 require("dotenv").config(); // Charger les variables d'environnement
-
 const fs = require("fs");
 const path = require("path");
-
-// Vérifier si le dossier 'uploads' existe, sinon le créer
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-console.log("DB_USER =", process.env.DB_USER);
-
 const express = require("express");
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const multer = require("multer");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const cookieParser = require("cookie-parser");
+const { body, validationResult } = require("express-validator");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const router = express.Router();
 
 // Middleware pour gérer CORS et le JSON
-app.use(cors());
+app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*", credentials: true }));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Maximum 10 tentatives
+  message: { message: "Trop de tentatives, veuillez réessayer plus tard." },
+});
+app.use("/api/login", loginLimiter);
+
+const dbPool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// Clé secrète pour signer les tokens JWT à partir du .env
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const authMiddleware = (req, res, next) => {
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Token manquant" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Token invalide" });
+  }
+};
+
+const superAdminMiddleware = (req, res, next) => {
+  if (req.user.role !== "superadmin") {
+    return res.status(403).json({ message: "Accès réservé aux superadmins" });
+  }
+  next();
+};
 
 // Configuration de la BDD MySQL à partir des variables d'environnement
 const dbConfig = {
@@ -43,125 +81,131 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
-// Clé secrète pour signer les tokens JWT à partir du .env
-const JWT_SECRET = process.env.JWT_SECRET;
+const allowedExtensions = [".pdf", ".jpeg", ".jpg", ".png"];
 
-// Middleware pour vérifier l'authentification
-const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ message: "Token manquant" });
-
-  const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Token invalide" });
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!allowedExtensions.includes(ext)) {
+    return cb(new Error("Type de fichier non autorisé"), false);
   }
+  cb(null, true);
 };
 
-// Middleware pour vérifier le rôle superadmin
-const superAdminMiddleware = (req, res, next) => {
-  if (req.user.role !== "superadmin") {
-    return res.status(403).json({ message: "Accès réservé aux superadmins" });
-  }
-  next();
-};
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB
+});
 
 // ---------------------
 // Endpoint de connexion
 // ---------------------
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ message: "Email et mot de passe requis" });
-
-  try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [rows] = await connection.execute(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
-    await connection.end();
-
-    if (rows.length === 0) {
-      return res.status(400).json({ message: "Utilisateur introuvable" });
+app.post(
+  "/api/login",
+  [
+    body("email").isEmail().withMessage("Email invalide"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Mot de passe trop court"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log("❌ Erreur de validation:", errors.array());
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    const user = rows[0];
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res.status(400).json({ message: "Mot de passe incorrect" });
-    }
+    const { email, password } = req.body;
 
-    // Générer un token en incluant le rôle
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.json({ message: "Authentification réussie", token });
-  } catch (error) {
-    console.error("Erreur lors de la connexion :", error);
-    res.status(500).json({ message: "Erreur serveur" });
+    try {
+      const [rows] = await dbPool.execute(
+        "SELECT * FROM users WHERE email = ?",
+        [email]
+      );
+
+      if (rows.length === 0) {
+        console.log("❌ Utilisateur introuvable:", email);
+        return res.status(400).json({ message: "Utilisateur introuvable" });
+      }
+
+      const user = rows[0];
+
+      if (!user.password) {
+        console.log("❌ Erreur : le champ 'password' est NULL !");
+        return res
+          .status(500)
+          .json({ message: "Email ou mot de passe incorrect" });
+      }
+
+      const isValid = user
+        ? await bcrypt.compare(password, user.password)
+        : false;
+      if (!isValid) {
+        console.log("❌ Mot de passe incorrect");
+        return res.status(400).json({ message: "Mot de passe incorrect" });
+      }
+
+      console.log("🔑 Génération du token JWT");
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict",
+      });
+
+      res.json({ message: "Authentification réussie", token });
+    } catch (error) {
+      console.error("❌ Erreur serveur :", error);
+      res.status(500).json({
+        message: "Une erreur est survenue, veuillez réessayer plus tard.",
+      });
+    }
   }
-});
+);
 
-// Endpoint pour créer un nouveau membre admin (accessible uniquement par superadmin)
+// 🛡️ Endpoint pour créer un admin (réservé aux superadmins)
 app.post(
   "/api/admins",
   authMiddleware,
   superAdminMiddleware,
+  [
+    body("firstName").notEmpty(),
+    body("lastName").notEmpty(),
+    body("email").isEmail(),
+    body("password").isLength({ min: 6 }),
+  ],
   async (req, res) => {
-    // On attend dans le corps de la requête : firstName, lastName, email, password, functionTitle, description, profilePicture, role
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
     const {
       firstName,
       lastName,
       email,
       password,
-      functionTitle, // déjà défini ici
+      functionTitle,
       description,
       profilePicture,
       role,
     } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({
-        message:
-          "Les champs prénom, nom, email et mot de passe sont obligatoires",
-      });
-    }
-
-    // Vérifier que le rôle est admin ou superadmin si fourni
-    if (role && !["admin", "superadmin"].includes(role)) {
-      return res
-        .status(400)
-        .json({ message: "Le rôle doit être 'admin' ou 'superadmin'" });
-    }
-
     try {
-      const connection = await mysql.createConnection(dbConfig);
-
-      // Vérifier si un utilisateur avec le même email existe déjà
-      const [rows] = await connection.execute(
+      const [rows] = await dbPool.execute(
         "SELECT * FROM users WHERE email = ?",
         [email]
       );
-      if (rows.length > 0) {
-        await connection.end();
-        return res
-          .status(400)
-          .json({ message: "Un utilisateur avec cet email existe déjà" });
-      }
+      if (rows.length > 0)
+        return res.status(400).json({ message: "Cet email est déjà utilisé" });
 
-      // Hacher le mot de passe
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Insertion dans la base de données
-      // On insère la valeur de functionTitle dans la colonne "function"
-      await connection.execute(
+      await dbPool.execute(
         "INSERT INTO users (firstName, lastName, email, password, role, `function`, description, profilePicture) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
           firstName,
@@ -169,18 +213,17 @@ app.post(
           email,
           hashedPassword,
           role || "admin",
-          functionTitle || "", // Utilisez functionTitle ici
+          functionTitle || "",
           description || "",
           profilePicture || "",
         ]
       );
-      await connection.end();
 
       res
         .status(201)
         .json({ message: "Nouveau membre admin créé avec succès" });
     } catch (error) {
-      console.error("Erreur lors de la création du membre admin :", error);
+      console.error("Erreur lors de la création de l'admin :", error);
       res.status(500).json({ message: "Erreur serveur" });
     }
   }
@@ -189,9 +232,8 @@ app.post(
 // Endpoint pour récupérer tous les membres admins
 app.get("/api/admins", authMiddleware, async (req, res) => {
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    const [rows] = await connection.execute("SELECT * FROM users");
-    await connection.end();
+    const [rows] = await dbPool.execute("SELECT * FROM users");
+
     res.json(rows); // Retourne les membres sous forme de JSON
   } catch (error) {
     console.error("Erreur lors de la récupération des membres :", error);

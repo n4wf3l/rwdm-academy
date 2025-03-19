@@ -505,7 +505,7 @@ const renderSelectionTestsContent = (request: Request) => {
   );
 };
 
-/* 2) Pour "selection-tests" */
+/* 2) Pour "accident-declaration" */
 const renderAccidentReportContent = (request: Request) => {
   const d = request.details;
 

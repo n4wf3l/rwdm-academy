@@ -1,9 +1,15 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import ScrollToTop from "@/components/ScrollToTop";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -19,6 +25,16 @@ import Legal from "./pages/Legal";
 
 const queryClient = new QueryClient();
 
+const AuthRedirect = ({ children }) => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    return <Navigate to="/dashboard" replace />; // Redirige si déjà connecté
+  }
+
+  return children;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -32,8 +48,22 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+              path="/auth"
+              element={
+                <AuthRedirect>
+                  <Auth />
+                </AuthRedirect>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/members" element={<Members />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/graphics" element={<Graphics />} />
