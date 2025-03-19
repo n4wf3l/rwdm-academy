@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,8 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 /* ======================= TYPES ======================= */
 
@@ -593,115 +595,151 @@ const renderAccidentReportContent = (request: Request) => {
 /* 4) Pour "responsibility-waiver" (Décharge de responsabilité) */
 const renderResponsibilityWaiverContent = (request: Request) => {
   const d = request.details;
+  const pdfRef = useRef<HTMLDivElement>(null);
+
+  // 📌 Fonction pour générer le PDF
+  const generatePDF = async () => {
+    const input = pdfRef.current;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    // Convertir la partie HTML en image
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+    });
+    const imgData = canvas.toDataURL("image/png");
+
+    // Ajouter le logo avec proportions correctes
+    const logo = new Image();
+    logo.src = "/logo.png"; // Chemin du logo
+    logo.onload = () => {
+      const logoWidth = 30; // Largeur souhaitée
+      const logoHeight = (logo.height / logo.width) * logoWidth; // Calcul de la hauteur en conservant le ratio
+
+      pdf.addImage(
+        logo,
+        "PNG",
+        (210 - logoWidth) / 2,
+        10,
+        logoWidth,
+        logoHeight
+      ); // Centrage dynamique
+
+      // Ajouter le titre
+      pdf.setFontSize(18);
+      pdf.text("Décharge de responsabilité", 105, logoHeight + 20, {
+        align: "center",
+      });
+
+      // Ajouter le contenu du formulaire converti en image
+      pdf.addImage(imgData, "PNG", 10, logoHeight + 30, 190, 220);
+
+      // Télécharger le PDF
+      pdf.save("Decharge_Responsabilite.pdf");
+    };
+  };
+
   return (
-    <>
-      <Section title="Informations du parent/tuteur">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field
-            label="Nom"
-            value={d.parentLastName || "-"}
-            icon={<User className="h-4 w-4" />}
-          />
-          <Field
-            label="Prénom"
-            value={d.parentFirstName || "-"}
-            icon={<User className="h-4 w-4" />}
-          />
-          <Field
-            label="Téléphone"
-            value={d.parentPhone || "-"}
-            icon={<Phone className="h-4 w-4" />}
-          />
-          <Field
-            label="Email"
-            value={d.parentEmail || "-"}
-            icon={<Mail className="h-4 w-4" />}
-          />
-        </div>
-      </Section>
+    <div>
+      <Button
+        onClick={generatePDF}
+        className="block mx-auto bg-green-600 hover:bg-green-700 text-white mt-4 mb-10"
+      >
+        Générer PDF
+      </Button>
 
-      <Section title="Informations du joueur">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field
-            label="Nom"
-            value={d.playerLastName || "-"}
-            icon={<User className="h-4 w-4" />}
-          />
-          <Field
-            label="Prénom"
-            value={d.playerFirstName || "-"}
-            icon={<User className="h-4 w-4" />}
-          />
-          <Field
-            label="Date de naissance"
-            value={
-              d.playerBirthDate
-                ? format(new Date(d.playerBirthDate), "dd/MM/yyyy", {
-                    locale: fr,
-                  })
-                : "-"
-            }
-            icon={<CalendarIcon className="h-4 w-4" />}
-          />
-          <Field
-            label="Club actuel"
-            value={d.currentClub || "-"}
-            icon={<FileText className="h-4 w-4" />}
-          />
-        </div>
-      </Section>
-
-      <Section title="Décharge de responsabilité">
-        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            {`Je soussigné(e), ${d.parentFirstName || "…"} ${
-              d.parentLastName || "…"
-            }, représentant légal du joueur ${d.playerFirstName || "…"} ${
-              d.playerLastName || "…"
-            }, né(e) le ${
-              d.playerBirthDate
-                ? format(new Date(d.playerBirthDate), "dd/MM/yyyy", {
-                    locale: fr,
-                  })
-                : "…"
-            }, et affilié(e) au club ${
-              d.currentClub || "…"
-            } décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.`}
-          </p>
-        </div>
-      </Section>
-
-      <Section title="Date et confirmation">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field
-            label="Date de signature"
-            value={
-              d.signatureDate
-                ? format(new Date(d.signatureDate), "dd/MM/yyyy", {
-                    locale: fr,
-                  })
-                : "-"
-            }
-            icon={<CalendarIcon className="h-4 w-4" />}
-          />
-          <Field
-            label="Mention"
-            value={d.approvalText || "-"}
-            icon={<Check className="h-4 w-4" />}
-          />
-        </div>
-      </Section>
-
-      <Section title="Signature">
-        {d.signature ? (
-          <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 w-full max-w-sm">
-            <img src={d.signature} alt="Signature" className="w-full" />
+      {/* 📌 Zone qui sera capturée en PDF */}
+      <div ref={pdfRef} className="p-4 bg-white rounded-lg shadow-md">
+        <Section title="Informations du parent/tuteur">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field
+              label="Nom"
+              value={d.parentLastName || "-"}
+              icon={<User className="h-4 w-4" />}
+            />
+            <Field
+              label="Prénom"
+              value={d.parentFirstName || "-"}
+              icon={<User className="h-4 w-4" />}
+            />
+            <Field
+              label="Téléphone"
+              value={d.parentPhone || "-"}
+              icon={<Phone className="h-4 w-4" />}
+            />
+            <Field
+              label="Email"
+              value={d.parentEmail || "-"}
+              icon={<Mail className="h-4 w-4" />}
+            />
           </div>
-        ) : (
-          <p className="text-sm text-gray-900 dark:text-gray-100">-</p>
-        )}
-      </Section>
-    </>
+        </Section>
+
+        <Section title="Informations du joueur">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field
+              label="Nom"
+              value={d.playerLastName || "-"}
+              icon={<User className="h-4 w-4" />}
+            />
+            <Field
+              label="Prénom"
+              value={d.playerFirstName || "-"}
+              icon={<User className="h-4 w-4" />}
+            />
+            <Field
+              label="Date de naissance"
+              value={d.playerBirthDate || "-"}
+              icon={<CalendarIcon className="h-4 w-4" />}
+            />
+            <Field
+              label="Club actuel"
+              value={d.currentClub || "-"}
+              icon={<FileText className="h-4 w-4" />}
+            />
+          </div>
+        </Section>
+
+        <Section title="Décharge de responsabilité">
+          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              {`Je soussigné(e), ${d.parentFirstName || "…"} ${
+                d.parentLastName || "…"
+              }, représentant légal du joueur ${d.playerFirstName || "…"} ${
+                d.playerLastName || "…"
+              }, né(e) le ${d.playerBirthDate || "…"}, et affilié(e) au club ${
+                d.currentClub || "…"
+              } décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.`}
+            </p>
+          </div>
+        </Section>
+
+        <Section title="Date et confirmation">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field
+              label="Date de signature"
+              value={d.signatureDate || "-"}
+              icon={<CalendarIcon className="h-4 w-4" />}
+            />
+            <Field
+              label="Mention"
+              value={d.approvalText || "-"}
+              icon={<Check className="h-4 w-4" />}
+            />
+          </div>
+        </Section>
+
+        <Section title="Signature">
+          {d.signature ? (
+            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 w-full max-w-sm">
+              <img src={d.signature} alt="Signature" className="w-full" />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-900 dark:text-gray-100">-</p>
+          )}
+        </Section>
+      </div>
+    </div>
   );
 };
 
