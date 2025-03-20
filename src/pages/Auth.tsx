@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ const Auth = () => {
   const [errorHighlight, setErrorHighlight] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  const [showPassword, setShowPassword] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -117,26 +118,35 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <Link
-                      to="/forget-password"
-                      className="text-xs text-rwdm-blue hover:text-rwdm-red dark:text-blue-400 dark:hover:text-red-400 transition-colors"
-                    >
-                      Mot de passe oublié?
-                    </Link>
-                  </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className={`transition-all ${
-                      errorHighlight ? "border-red-500 ring-2 ring-red-500" : ""
-                    }`}
-                  />
-                </div>
+    <div className="flex items-center justify-between">
+      <Label htmlFor="password">Mot de passe</Label>
+      <Link
+        to="/forget-password"
+        className="text-xs text-rwdm-blue hover:text-rwdm-red dark:text-blue-400 dark:hover:text-red-400 transition-colors"
+      >
+        Mot de passe oublié?
+      </Link>
+    </div>
+    <div className="relative">
+      <Input
+        id="password"
+        type={showPassword ? "text" : "password"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        className={`w-full pr-10 transition-all ${
+          errorHighlight ? "border-red-500 ring-2 ring-red-500" : ""
+        }`}
+      />
+      <button
+        type="button"
+        className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
+  </div>
 
                 <Button
                   type="submit"

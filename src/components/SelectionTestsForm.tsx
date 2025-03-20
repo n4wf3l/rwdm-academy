@@ -317,7 +317,7 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="playerBirthDate">Date de naissance</Label>
+                  <Label htmlFor="playerBirthDate" className="mr-3">Date de naissance</Label>
                   <BirthDatePicker
                     selectedDate={playerBirthDate}
                     onChange={setPlayerBirthDate}

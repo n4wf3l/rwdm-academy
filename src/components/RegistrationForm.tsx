@@ -277,7 +277,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate">Date de naissance</Label>
+                  <Label htmlFor="birthDate" className="mr-3">Date de naissance</Label>
                   <BirthDatePicker
                     selectedDate={birthDate ?? null}
                     onChange={setBirthDate}
