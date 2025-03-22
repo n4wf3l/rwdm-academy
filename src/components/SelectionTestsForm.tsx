@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -254,6 +254,14 @@ const SelectionTestsForm: React.FC = () => {
     { label: "Email du parent", value: parentEmail },
   ];
 
+  useEffect(() => {
+    if (["U5", "U6", "U7", "U8", "U9"].includes(noyau)) {
+      setPosition("Joueur de champ (U5-U9)");
+    } else {
+      setPosition(""); // Réinitialiser si l'utilisateur choisit un autre noyau
+    }
+  }, [noyau]);
+
   return (
     <>
       <form
@@ -269,7 +277,7 @@ const SelectionTestsForm: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="noyau">Noyau</Label>
+                  <Label htmlFor="noyau">Noyau *</Label>
                   <Select onValueChange={setNoyau}>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez un noyau" />
@@ -297,7 +305,7 @@ const SelectionTestsForm: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="lastName">Nom *</Label>
                   <Input
                     id="lastName"
                     className="form-input-base"
@@ -307,7 +315,7 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
+                  <Label htmlFor="firstName">Prénom *</Label>
                   <Input
                     id="firstName"
                     className="form-input-base"
@@ -317,7 +325,9 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="playerBirthDate" className="mr-3">Date de naissance</Label>
+                  <Label htmlFor="playerBirthDate" className="mr-3">
+                    Date de naissance *
+                  </Label>
                   <BirthDatePicker
                     selectedDate={playerBirthDate}
                     onChange={setPlayerBirthDate}
@@ -331,7 +341,6 @@ const SelectionTestsForm: React.FC = () => {
                     className="form-input-base"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -342,21 +351,57 @@ const SelectionTestsForm: React.FC = () => {
                     className="form-input-base"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currentClub">Club actuel du joueur</Label>
+                  <Label
+                    htmlFor="currentClub"
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Club actuel du joueur</span>
+
+                    {/* Icône d'information avec Tooltip */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Si le joueur n'a pas de club, vous pouvez laisser
+                          vide.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+
                   <Input
                     id="currentClub"
                     className="form-input-base"
                     value={currentClub}
                     onChange={(e) => setCurrentClub(e.target.value)}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="previousClub">Club précédent du joueur</Label>
+                  <Label
+                    htmlFor="previousClub"
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Club précédent du joueur</span>
+
+                    {/* Icône d'information avec Tooltip */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Si le joueur n'a jamais joué en club, vous pouvez
+                          laisser vide.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+
                   <Input
                     id="previousClub"
                     className="form-input-base"
@@ -365,19 +410,32 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Select onValueChange={setPosition} required>
-                    <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez une position" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {POSITIONS.map((pos) => (
-                        <SelectItem key={pos} value={pos}>
-                          {pos}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="position">Position *</Label>
+                  {["U5", "U6", "U7", "U8", "U9"].includes(noyau) ? (
+                    <Input
+                      id="position"
+                      className="form-input-base bg-gray-100 text-gray-500 cursor-not-allowed"
+                      value="Joueur de champ (U5-U9)"
+                      disabled
+                    />
+                  ) : (
+                    <Select
+                      onValueChange={setPosition}
+                      value={position}
+                      required
+                    >
+                      <SelectTrigger className="form-input-base">
+                        <SelectValue placeholder="Sélectionnez une position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {POSITIONS.map((pos) => (
+                          <SelectItem key={pos} value={pos}>
+                            {pos}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
             </FormSection>
@@ -393,7 +451,7 @@ const SelectionTestsForm: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="parentLastName">Nom</Label>
+                  <Label htmlFor="parentLastName">Nom *</Label>
                   <Input
                     id="parentLastName"
                     className="form-input-base"
@@ -403,7 +461,7 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="parentFirstName">Prénom</Label>
+                  <Label htmlFor="parentFirstName">Prénom *</Label>
                   <Input
                     id="parentFirstName"
                     className="form-input-base"
@@ -413,7 +471,9 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="parentPhone">Téléphone (GSM) du parent</Label>
+                  <Label htmlFor="parentPhone">
+                    Téléphone (GSM) du parent *
+                  </Label>
                   <Input
                     id="parentPhone"
                     type="tel"
@@ -424,7 +484,7 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="parentEmail">Email du parent</Label>
+                  <Label htmlFor="parentEmail">Email du parent *</Label>
                   <Input
                     id="parentEmail"
                     type="email"
@@ -435,17 +495,20 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="parentRelation">Relation</Label>
+                  <Label htmlFor="parentRelation">Relation *</Label>
                   <Select
                     onValueChange={setParentRelation}
                     defaultValue="parent"
+                    required
                   >
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez la relation" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="parent">Parent</SelectItem>
-                      <SelectItem value="representant">Représentant</SelectItem>
+                      <SelectItem value="representant">
+                        Représentant légal
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -465,22 +528,6 @@ const SelectionTestsForm: React.FC = () => {
                 onChange={setSignature}
                 placeholder="Signez ici pour valider l'inscription aux tests"
               />
-            </FormSection>
-          </CardContent>
-        </Card>
-
-        {/* Section réservée au secrétariat */}
-        <Card className="glass-panel">
-          <CardContent className="pt-6">
-            <FormSection
-              title="Partie réservée au secrétariat"
-              subtitle="Ne pas remplir"
-            >
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  Cette section sera complétée par le secrétariat du club
-                </p>
-              </div>
             </FormSection>
           </CardContent>
         </Card>

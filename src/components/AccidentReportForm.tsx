@@ -26,10 +26,18 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select"; // Assurez-vous que ce chemin est correct
 
-interface FormSection {
+interface FormSectionProps {
   title: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const generatePDF = () => {
@@ -38,7 +46,7 @@ const generatePDF = () => {
   doc.save("document.pdf");
 };
 
-const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
+const FormSection: React.FC<FormSectionProps> = ({
   title,
   subtitle,
   children,
@@ -64,22 +72,42 @@ const AccidentReportForm: React.FC = () => {
   const [accidentDate, setAccidentDate] = useState<Date | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [clubName, setClubName] = useState<string>("");
+  const [clubName, setClubName] = useState<string>("RWDM"); // Met RWDM par défaut
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [accidentDescription, setAccidentDescription] = useState<string>("");
+  const [category, setCategory] = useState<string>(""); // État pour la catégorie
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date && date > new Date()) {
+    if (!date) return;
+
+    const today = new Date();
+    const differenceInTime = today.getTime() - date.getTime();
+    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+
+    if (date > today) {
       toast({
         title: "Date invalide",
         description: "Vous ne pouvez pas déclarer un accident dans le futur.",
         variant: "destructive",
       });
+    } else if (differenceInDays > 15) {
+      toast({
+        title: "Déclaration refusée",
+        description:
+          "Votre déclaration ne peut plus être prise en compte, car l'accident a eu lieu il y a plus de 15 jours.",
+        variant: "destructive",
+      });
     } else {
-      setAccidentDate(date || null);
+      toast({
+        title: "Déclaration valide",
+        description:
+          "Votre déclaration d'accident respecte la limite du délai de 15 jours.",
+        variant: "default",
+      });
+      setAccidentDate(date);
     }
   };
 
@@ -119,7 +147,6 @@ const AccidentReportForm: React.FC = () => {
         throw new Error("Chemin du fichier non reçu !");
       }
 
-      // Ajout de la signature dans l'objet requestData
       const requestData = {
         type: "accident-report",
         formData: {
@@ -127,9 +154,10 @@ const AccidentReportForm: React.FC = () => {
           playerLastName,
           playerFirstName,
           accidentDate,
-          description: accidentDescription, // à adapter selon vos besoins
+          description: accidentDescription,
           filePath: fileData.filePath,
-          signature, // <-- Assurez-vous que cette variable contient la signature au format attendu (ex. base64)
+          signature,
+          category, // Ajout de la catégorie dans les données envoyées
         },
         assignedTo: null,
       };
@@ -183,13 +211,32 @@ const AccidentReportForm: React.FC = () => {
     { label: "Nom du club", value: clubName },
     { label: "Nom du joueur", value: playerLastName },
     { label: "Prénom du joueur", value: playerFirstName },
+    { label: "Catégorie", value: category }, // Ajout de la catégorie pour la vérification
   ];
 
   return (
     <>
+      <Card className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up pb-6">
+        <CardContent className="pt-6">
+          <FormSection
+            title="Important"
+            subtitle={
+              <>
+                Veuillez noter que vous devez envoyer votre demande dans un
+                délai de{" "}
+                <span className="text-red-500 font-semibold">15 jours</span>{" "}
+                maximum après l'accident. Le quinzième jour est accepté. Passé
+                ce délai, la demande ne pourra plus être prise en compte.
+              </>
+            }
+            children={null}
+          />
+        </CardContent>
+      </Card>
+
       <form
         onSubmit={handleSubmit}
-        className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
+        className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up pt-6"
       >
         <Card className="glass-panel">
           <CardContent className="pt-6">
@@ -203,7 +250,7 @@ const AccidentReportForm: React.FC = () => {
                     htmlFor="accidentDate"
                     className="flex items-center space-x-1"
                   >
-                    <span>Date de l'accident</span>
+                    <span>Date de l'accident *</span>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
@@ -242,14 +289,14 @@ const AccidentReportForm: React.FC = () => {
                         initialFocus
                         locale={fr}
                         className="p-3"
-                        disabled={(date) => date > new Date()} // Bloque les dates futures
+                        disabled={(date) => date > new Date()}
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="clubName">Nom du club</Label>
+                  <Label htmlFor="clubName">Nom du club *</Label>
                   <Input
                     id="clubName"
                     className="form-input-base"
@@ -259,8 +306,24 @@ const AccidentReportForm: React.FC = () => {
                   />
                 </div>
 
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="category">Catégorie *</Label>
+                  <Select onValueChange={setCategory} required>
+                    <SelectTrigger className="form-input-base">
+                      <SelectValue placeholder="Sélectionnez une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 17 }, (_, i) => (
+                        <SelectItem key={`U${i + 5}`} value={`U${i + 5}`}>
+                          {`U${i + 5}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="playerLastName">Nom du joueur</Label>
+                  <Label htmlFor="playerLastName">Nom du joueur *</Label>
                   <Input
                     id="playerLastName"
                     className="form-input-base"
@@ -271,7 +334,7 @@ const AccidentReportForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="playerFirstName">Prénom du joueur</Label>
+                  <Label htmlFor="playerFirstName">Prénom du joueur *</Label>
                   <Input
                     id="playerFirstName"
                     className="form-input-base"
@@ -284,7 +347,7 @@ const AccidentReportForm: React.FC = () => {
 
               <div className="space-y-2 mt-4">
                 <Label htmlFor="accidentDescription">
-                  Description de l'accident
+                  Description de l'accident *
                 </Label>
                 <Textarea
                   id="accidentDescription"
@@ -373,7 +436,7 @@ const AccidentReportForm: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    "Déclaration de confidentialité"
+                    Déclaration de confidentialité
                   </a>{" "}
                   qui peut être consultée ici. Conformément à la loi RGPD, j'ai
                   le droit d'accès, de rectification, de portabilité,

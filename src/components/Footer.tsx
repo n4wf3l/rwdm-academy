@@ -1,6 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Shield, FileText, BookOpen, Cookie } from "lucide-react";
+import {
+  Shield,
+  FileText,
+  BookOpen,
+  Cookie,
+  Facebook,
+  Instagram,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -52,12 +59,27 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                   contact@rwdm-academy.be
                 </a>
               </p>
-              <p>
-                <a href="tel:+3221234567" className="hover:underline">
-                  +32 2 123 45 67
-                </a>
-              </p>
             </address>
+            <div className="flex space-x-4 mt-4">
+              <a
+                href="https://www.facebook.com/RWDMAcademy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a
+                href="https://www.instagram.com/rwdm_academy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-pink-500 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-6 w-6" />
+              </a>
+            </div>
           </div>
 
           <div className="space-y-4">

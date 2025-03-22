@@ -19,6 +19,13 @@ import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
 import DatePicker from "react-datepicker";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FormSection {
   title: string;
@@ -61,10 +68,10 @@ const ResponsibilityWaiverForm: React.FC = () => {
     new Date()
   );
   const [signature, setSignature] = useState<string | null>(null);
-  const [approvalText, setApprovalText] = useState<string>("");
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
+  const [approvalText, setApprovalText] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,13 +193,13 @@ const ResponsibilityWaiverForm: React.FC = () => {
   };
 
   const waiverText = `Je soussigné(e), ${parentFirstName || ""} ${
-    parentLastName || "À REMPLIR"
-  }, représentant légal du joueur ${playerFirstName || "À REMPLIR"} ${
-    playerLastName || ""
+    parentLastName || "[Prénom du représentant]" + " [Nom de famille]"
+  }, représentant légal du joueur ${playerFirstName || "[Prénom du joueur]"} ${
+    playerLastName || "[Nom de famille]"
   }, né le ${
-    playerBirthDate ? format(playerBirthDate, "dd/MM/yyyy") : "À REMPLIR"
+    playerBirthDate ? format(playerBirthDate, "dd/MM/yyyy") : "[JJ-MM-AAAA]"
   }, et affilié au club ${
-    currentClub || "À REMPLIR"
+    currentClub || "[Club actuel]"
   } décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.`;
 
   const spellCheckFields = [
@@ -210,6 +217,71 @@ const ResponsibilityWaiverForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
       >
+        <Card
+          className={cn(
+            "glass-panel transition-all duration-300",
+            isCalendarOpen ? "min-h-[550px]" : "min-h-[250px]"
+          )}
+        >
+          <CardContent className="pt-6">
+            <FormSection
+              title="Informations du joueur"
+              subtitle="Veuillez remplir les informations concernant le joueur"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="playerLastName">Nom *</Label>
+                  <Input
+                    id="playerLastName"
+                    className="form-input-base"
+                    value={playerLastName}
+                    onChange={(e) => setPlayerLastName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="playerFirstName">Prénom *</Label>
+                  <Input
+                    id="playerFirstName"
+                    className="form-input-base"
+                    value={playerFirstName}
+                    onChange={(e) => setPlayerFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Gestion dynamique de l'affichage du calendrier */}
+                <div className="space-y-2 relative">
+                  <Label htmlFor="birthDate">Date de naissance *</Label>
+                  <div className="space-y-4">
+                    <BirthDatePicker
+                      selectedDate={playerBirthDate}
+                      onChange={(date) => {
+                        setPlayerBirthDate(date);
+                        setIsCalendarOpen(false); // Ferme le calendrier après sélection
+                      }}
+                      onCalendarOpen={() => setIsCalendarOpen(true)} // Ouvre la card
+                      onCalendarClose={() => setIsCalendarOpen(false)} // Ferme la card
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="currentClub">Nom du club *</Label>
+                  <Input
+                    id="currentClub"
+                    className="form-input-base"
+                    value={currentClub}
+                    onChange={(e) => setCurrentClub(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            </FormSection>
+          </CardContent>
+        </Card>
+
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -267,71 +339,6 @@ const ResponsibilityWaiverForm: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card
-          className={cn(
-            "glass-panel transition-all duration-300",
-            isCalendarOpen ? "min-h-[550px]" : "min-h-[250px]"
-          )}
-        >
-          <CardContent className="pt-6">
-            <FormSection
-              title="Informations du joueur"
-              subtitle="Veuillez remplir les informations concernant le joueur"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label htmlFor="playerLastName">Nom</Label>
-                  <Input
-                    id="playerLastName"
-                    className="form-input-base"
-                    value={playerLastName}
-                    onChange={(e) => setPlayerLastName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="playerFirstName">Prénom</Label>
-                  <Input
-                    id="playerFirstName"
-                    className="form-input-base"
-                    value={playerFirstName}
-                    onChange={(e) => setPlayerFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Gestion dynamique de l'affichage du calendrier */}
-                <div className="space-y-2 relative">
-                  <Label htmlFor="birthDate">Date de naissance</Label>
-                  <div className="space-y-4">
-                    <BirthDatePicker
-                      selectedDate={playerBirthDate}
-                      onChange={(date) => {
-                        setPlayerBirthDate(date);
-                        setIsCalendarOpen(false); // Ferme le calendrier après sélection
-                      }}
-                      onCalendarOpen={() => setIsCalendarOpen(true)} // Ouvre la card
-                      onCalendarClose={() => setIsCalendarOpen(false)} // Ferme la card
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="currentClub">Nom du club</Label>
-                  <Input
-                    id="currentClub"
-                    className="form-input-base"
-                    value={currentClub}
-                    onChange={(e) => setCurrentClub(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-            </FormSection>
-          </CardContent>
-        </Card>
-
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -362,27 +369,23 @@ const ResponsibilityWaiverForm: React.FC = () => {
                         variant="outline"
                         className={cn(
                           "form-input-base justify-start text-left font-normal",
-                          !signatureDate && "text-muted-foreground"
+                          "text-muted-foreground" // Toujours grisé, car l'utilisateur ne peut pas changer la date
                         )}
+                        disabled // Empêche l'édition manuelle
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {signatureDate ? (
-                          format(signatureDate, "PPP", { locale: fr })
-                        ) : (
-                          <span>Sélectionnez une date</span>
-                        )}
+                        {format(signatureDate, "PPP", { locale: fr })}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-auto p-0 pointer-events-auto absolute z-[100]"
+                      className="w-auto p-0 pointer-events-none absolute z-[100]"
                       align="start"
-                      forceMount // Assure que le popover est toujours rendu
+                      forceMount
                     >
                       <Calendar
                         mode="single"
                         selected={signatureDate}
-                        onSelect={setSignatureDate}
-                        initialFocus
+                        disabled={() => true} // Toutes les dates sont désactivées
                         locale={fr}
                         className="p-3"
                       />
@@ -392,14 +395,17 @@ const ResponsibilityWaiverForm: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="approvalText">Mention "Lu et approuvé"</Label>
-                  <Input
-                    id="approvalText"
-                    className="form-input-base"
-                    value={approvalText}
-                    onChange={(e) => setApprovalText(e.target.value)}
-                    placeholder="Tapez 'Lu et approuvé'"
-                    required
-                  />
+
+                  <Select onValueChange={setApprovalText} required>
+                    <SelectTrigger className="form-input-base">
+                      <SelectValue placeholder="Sélectionnez votre accord" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Lu et approuvé">
+                        Lu et approuvé
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </FormSection>

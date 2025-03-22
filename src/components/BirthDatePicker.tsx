@@ -8,6 +8,7 @@ export interface BirthDatePickerProps {
   onChange: (date: Date | null) => void;
   onCalendarOpen?: () => void;
   onCalendarClose?: () => void;
+  required?: boolean;
 }
 
 const BirthDatePicker: React.FC<BirthDatePickerProps> = ({

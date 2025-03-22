@@ -136,24 +136,15 @@ const Contact = () => {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <Phone className="w-5 h-5 text-rwdm-red mt-0.5" />
-                    <div>
-                      <h3 className="font-medium mb-1">Téléphone</h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        +32 2 410 53 03
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
                     <Clock className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
-                      <h3 className="font-medium mb-1">Heures d'ouverture</h3>
+                      <h3 className="font-medium mb-1">
+                        Heures d'ouverture secrétariat
+                      </h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Lundi - Vendredi: 9h - 17h
+                        Lundi - Jeudi : 18h - 19h30
                         <br />
-                        Samedi: 9h - 12h
-                        <br />
-                        Dimanche: Fermé
+                        Vendredi à dimanche : Fermé
                       </p>
                     </div>
                   </div>
@@ -185,7 +176,7 @@ const Contact = () => {
               </h2>
               <div className="rounded-lg overflow-hidden h-96 bg-gray-200">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2520.123456789!2d4.324926253706253!3d50.86071471803977!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c3f1abcdef01%3A0x123456789abcdef!2sRacing%20White%20Daring%20Molenbeek!5e0!3m2!1sfr!2sbe!4v1690000000000&maptype=satellite&style=dark"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.5532587726173!2d4.319364915738471!3d50.864605779532826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c3f1abcdef01%3A0x123456789abcdef!2sAvenue%20Charles%20Malis%2061%2C%201080%20Molenbeek-Saint-Jean%2C%20Belgique!5e0!3m2!1sfr!2sbe!4v1690000000000&maptype=satellite&style=dark"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

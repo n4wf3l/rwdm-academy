@@ -7,6 +7,7 @@ import AnimatedTransition from "../components/AnimatedTransition";
 import SplashComponent from "../components/SplashComponent";
 import { motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
+import { Info } from "lucide-react";
 
 const Index = () => {
   // Restaurer la sélection du formulaire depuis localStorage (par défaut "registration")
@@ -86,6 +87,7 @@ const Index = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3">
                   RWDM Academy
                 </h1>
+
                 <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                   Bienvenue sur la plateforme officielle d'inscription de la
                   RWDM Academy. Veuillez sélectionner le type de formulaire que
@@ -106,6 +108,16 @@ const Index = () => {
                 onSelectForm={handleFormChange}
               />
             </AnimatedTransition>
+
+            {/* Légende des champs */}
+            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-2xl mx-auto space-y-1 text-center">
+              <p>* : Champ obligatoire</p>
+
+              <div className="flex items-center justify-center space-x-1">
+                <Info className="h-4 w-4 text-gray-500" />
+                <p>Icône information (survol de la souris)</p>
+              </div>
+            </div>
 
             {/* ✅ On passe `formData` et `handleFormDataChange` pour gérer les données */}
             <FormWrapper

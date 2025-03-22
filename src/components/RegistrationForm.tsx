@@ -15,25 +15,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import SpellCheckModal from "./ui/SpellCheckModal";
 import BirthDatePicker from "./BirthDatePicker";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
-const CURRENT_YEAR = new Date().getFullYear();
+const CURRENT_DATE = new Date();
+const CURRENT_YEAR = CURRENT_DATE.getFullYear();
+const NEXT_YEAR = CURRENT_YEAR + 1;
+
+const AFTER_JULY_31 = CURRENT_DATE.getMonth() >= 7;
+
+const BASE_YEAR = AFTER_JULY_31 ? NEXT_YEAR : CURRENT_YEAR - 1;
+
 const SEASONS = [
-  `${CURRENT_YEAR - 1}/${CURRENT_YEAR}`,
-  `${CURRENT_YEAR}/${CURRENT_YEAR + 1}`,
-  `${CURRENT_YEAR + 1}/${CURRENT_YEAR + 2}`,
+  `${BASE_YEAR}/${BASE_YEAR + 1}`,
+  `${BASE_YEAR + 1}/${BASE_YEAR + 2}`,
+  `${BASE_YEAR + 2}/${BASE_YEAR + 3}`,
 ];
-const POSITIONS = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
+
 const CATEGORIES = ["U5", "U6", "U7", "U8", "U9"];
 
 const FormSection: React.FC<{
@@ -68,11 +74,10 @@ const RegistrationForm = () => {
   const [postalCode, setPostalCode] = useState("");
   const [city, setCity] = useState("");
   const [currentClub, setCurrentClub] = useState("");
-  const [position, setPosition] = useState("");
   const [category, setCategory] = useState("");
 
   // États pour les responsables légaux (responsable principal)
-  const [parent1Type, setParent1Type] = useState("père"); // valeur par défaut
+  const [parent1Type, setParent1Type] = useState("père");
   const [parent1LastName, setParent1LastName] = useState("");
   const [parent1FirstName, setParent1FirstName] = useState("");
   const [parent1Phone, setParent1Phone] = useState("");
@@ -96,10 +101,8 @@ const RegistrationForm = () => {
   const [signature, setSignature] = useState<string | null>(null);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
-
   const currentDate = format(new Date(), "dd/MM/yyyy");
 
-  // Champs pour la vérification orthographique
   const spellCheckFields = [
     { label: "Nom du joueur", value: lastName },
     { label: "Prénom du joueur", value: firstName },
@@ -141,7 +144,6 @@ const RegistrationForm = () => {
     setIsSpellCheckOpen(true);
   };
 
-  // Calcule l'âge du joueur
   function getAge(birthDate: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -159,26 +161,25 @@ const RegistrationForm = () => {
     const requestData = {
       type: "registration",
       formData: {
-        season, // ex : "2025/2026"
-        lastName, // Nom du joueur
-        firstName, // Prénom du joueur
-        birthDate: birthDate ? birthDate.toISOString() : null, // Converti en ISO
-        birthPlace, // Lieu de naissance
-        address, // Adresse
-        postalCode, // Code postal
-        city, // Ville
-        currentClub, // Club actuel
-        position, // Position
-        category, // Catégorie (ex: U9)
-        parent1Type, // Type du responsable principal
-        parent1LastName, // Nom du responsable principal
-        parent1FirstName, // Prénom du responsable principal
-        parent1Phone, // Téléphone du responsable principal
-        parent1Email, // Email du responsable principal
-        parent1Address, // Adresse du responsable principal
-        parent1PostalCode, // Code postal du responsable principal
-        parent1Gsm, // GSM du responsable principal
-        parent2LastName, // Responsables secondaires (optionnel)
+        season,
+        lastName,
+        firstName,
+        birthDate: birthDate ? birthDate.toISOString() : null,
+        birthPlace,
+        address,
+        postalCode,
+        city,
+        currentClub,
+        category,
+        parent1Type,
+        parent1LastName,
+        parent1FirstName,
+        parent1Phone,
+        parent1Email,
+        parent1Address,
+        parent1PostalCode,
+        parent1Gsm,
+        parent2LastName,
         parent2FirstName,
         parent2Email,
         parent2Phone,
@@ -225,7 +226,6 @@ const RegistrationForm = () => {
         onSubmit={handleSubmit}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
       >
-        {/* Saison d'inscription */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -248,7 +248,6 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
-        {/* Informations du joueur */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -257,7 +256,7 @@ const RegistrationForm = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="lastName">Nom *</Label>
                   <Input
                     id="lastName"
                     className="form-input-base"
@@ -267,7 +266,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
+                  <Label htmlFor="firstName">Prénom *</Label>
                   <Input
                     id="firstName"
                     className="form-input-base"
@@ -277,14 +276,16 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate" className="mr-3">Date de naissance</Label>
+                  <Label htmlFor="birthDate" className="mr-3">
+                    Date de naissance *
+                  </Label>
                   <BirthDatePicker
                     selectedDate={birthDate ?? null}
                     onChange={setBirthDate}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthPlace">Lieu de naissance</Label>
+                  <Label htmlFor="birthPlace">Lieu de naissance *</Label>
                   <Input
                     id="birthPlace"
                     className="form-input-base"
@@ -293,7 +294,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">Adresse *</Label>
                   <Input
                     id="address"
                     className="form-input-base"
@@ -302,7 +303,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code postal</Label>
+                  <Label htmlFor="postalCode">Code postal *</Label>
                   <Input
                     id="postalCode"
                     className="form-input-base"
@@ -311,7 +312,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
+                  <Label htmlFor="city">Ville *</Label>
                   <Input
                     id="city"
                     className="form-input-base"
@@ -320,7 +321,26 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currentClub">Club actuel</Label>
+                  <Label
+                    htmlFor="currentClub"
+                    className="flex items-center space-x-1"
+                  >
+                    <span>Club actuel</span>
+
+                    {/* Icône d'information avec Tooltip */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Si le joueur n'a pas de club, vous pouvez laisser
+                          vide.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+
                   <Input
                     id="currentClub"
                     className="form-input-base"
@@ -328,22 +348,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Select onValueChange={setPosition} value={position}>
-                    <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez une position" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {POSITIONS.map((pos) => (
-                        <SelectItem key={pos} value={pos}>
-                          {pos}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Catégorie</Label>
+                  <Label htmlFor="category">Catégorie *</Label>
                   <Select onValueChange={setCategory} value={category}>
                     <SelectTrigger className="form-input-base">
                       <SelectValue placeholder="Sélectionnez une catégorie" />
@@ -362,7 +367,6 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
-        {/* Informations des responsables légaux */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -376,7 +380,7 @@ const RegistrationForm = () => {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Type">Type</Label>
+                      <Label htmlFor="parent1Type">Type *</Label>
                       <Select
                         onValueChange={setParent1Type}
                         value={parent1Type}
@@ -393,7 +397,7 @@ const RegistrationForm = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <Label htmlFor="parent1LastName">Nom</Label>
+                        <Label htmlFor="parent1LastName">Nom *</Label>
                         <Input
                           id="parent1LastName"
                           className="form-input-base"
@@ -403,7 +407,7 @@ const RegistrationForm = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent1FirstName">Prénom</Label>
+                        <Label htmlFor="parent1FirstName">Prénom *</Label>
                         <Input
                           id="parent1FirstName"
                           className="form-input-base"
@@ -414,7 +418,7 @@ const RegistrationForm = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Phone">Téléphone</Label>
+                      <Label htmlFor="parent1Phone">Téléphone *</Label>
                       <Input
                         id="parent1Phone"
                         className="form-input-base"
@@ -424,7 +428,7 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Email">Email</Label>
+                      <Label htmlFor="parent1Email">Email *</Label>
                       <Input
                         id="parent1Email"
                         className="form-input-base"
@@ -435,7 +439,7 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Address">Adresse</Label>
+                      <Label htmlFor="parent1Address">Adresse *</Label>
                       <Input
                         id="parent1Address"
                         className="form-input-base"
@@ -444,7 +448,7 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1PostalCode">Code postal</Label>
+                      <Label htmlFor="parent1PostalCode">Code postal *</Label>
                       <Input
                         id="parent1PostalCode"
                         className="form-input-base"
@@ -459,7 +463,6 @@ const RegistrationForm = () => {
                         className="form-input-base"
                         type="tel"
                         onChange={(e) => setParent1Gsm(e.target.value)}
-                        required
                       />
                     </div>
                   </div>
@@ -578,7 +581,6 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
-        {/* Consentement à l'image */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
@@ -600,7 +602,6 @@ const RegistrationForm = () => {
           </CardContent>
         </Card>
 
-        {/* Signature */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
