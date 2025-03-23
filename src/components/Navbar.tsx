@@ -49,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         <Link to="/" className="flex items-center space-x-3">
           <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center shadow-md">
             <span className="text-white font-bold text-xl">
-              <img src="logo.png" alt="" />
+              <img src="/logo.png" alt="Logo" />
             </span>
           </div>
           <span
