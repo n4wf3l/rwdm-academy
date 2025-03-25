@@ -73,6 +73,14 @@ const Dashboard = () => {
     fetchRequests();
   }, [token]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchRequests();
+    }, 5000); // toutes les 5 secondes
+
+    return () => clearInterval(interval);
+  }, []);
+
   async function fetchRequests() {
     try {
       const headers: HeadersInit = { "Content-Type": "application/json" };

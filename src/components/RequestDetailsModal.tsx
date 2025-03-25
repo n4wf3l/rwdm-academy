@@ -265,7 +265,8 @@ const renderRegistrationContent = (request: Request) => {
         </div>
       </Section>
 
-      {d.primaryGuardian && (
+      {/* Informations du responsable principal */}
+      {(d.parent1LastName || d.parent1FirstName || d.parent1Phone) && (
         <Section title="Informations du responsable principal">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
@@ -312,11 +313,8 @@ const renderRegistrationContent = (request: Request) => {
         </Section>
       )}
 
-      {(d.parent2LastName ||
-        d.parent2FirstName ||
-        d.parent2Email ||
-        d.parent2Phone ||
-        d.parent2Gsm) && (
+      {/* Informations du responsable secondaire */}
+      {(d.parent2LastName || d.parent2FirstName || d.parent2Phone) && (
         <Section title="Informations du responsable secondaire">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
