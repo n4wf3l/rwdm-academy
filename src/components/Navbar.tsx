@@ -162,12 +162,15 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       {/* Bouton de déconnexion en bas à droite si connecté */}
       {isLoggedIn && (
         <button
-          onClick={handleLogout}
-          className="fixed bottom-5 right-5 bg-red-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition-all flex items-center"
-        >
-          <LogOut className="mr-2 h-5 w-5" />
-          Déconnexion
-        </button>
+    onClick={handleLogout}
+    className="fixed bottom-5 right-5 z-50 bg-red-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-700 transition-all duration-300 flex items-center group overflow-hidden"
+  >
+    <LogOut className="h-5 w-5 transition-all duration-300" />
+    <span className="ml-2 whitespace-nowrap max-w-0 overflow-hidden group-hover:max-w-xs opacity-0 group-hover:opacity-100 transition-all duration-300">
+      Déconnexion
+    </span>
+  </button>
+
       )}
     </>
   );
