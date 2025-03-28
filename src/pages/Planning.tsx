@@ -308,6 +308,50 @@ const Planning = () => {
     (_, i) => START_HOUR + i
   );
 
+  async function handleCancelAppointment(appointmentId: number): Promise<void> {
+    // Mettre à jour l'état pour retirer le rendez-vous de l'interface
+    setAppointments((prevAppointments) =>
+      prevAppointments.filter(
+        (appointment) => parseInt(appointment.id, 10) !== appointmentId
+      )
+    );
+
+    // Appel à l'API pour supprimer le rendez-vous
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Si vous utilisez l'authentification
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'annulation du rendez-vous");
+      }
+
+      // Afficher une notification de succès
+      toast({
+        title: "Rendez-vous annulé",
+        description: `Le rendez-vous a été annulé avec succès.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'annulation du rendez-vous :", error);
+      // Si l'appel à l'API échoue, vous pouvez choisir de réajouter le rendez-vous à l'état
+      // ou afficher un message d'erreur
+      toast({
+        title: "Erreur",
+        description:
+          "Une erreur est survenue lors de l'annulation du rendez-vous.",
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -402,6 +446,7 @@ const Planning = () => {
         isOpen={isAppointmentDetailModalOpen}
         setIsOpen={setIsAppointmentDetailModalOpen}
         appointment={selectedAppointment}
+        onCancel={handleCancelAppointment}
       />
     </AdminLayout>
   );

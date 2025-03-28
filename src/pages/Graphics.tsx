@@ -14,7 +14,14 @@ const Graphics = () => {
   const [filterStatus, setFilterStatus] = useState("all"); // "all", "paid", "unpaid"
   const [filterPlayer, setFilterPlayer] = useState("");
   const [filterTeam, setFilterTeam] = useState("all"); // "all" ou nom d'équipe
-  const teamOptions = ["Toutes", ...Array.from(new Set(invoices.map(invoice => invoice.revenueItemName).filter(Boolean)))];
+  const teamOptions = [
+    "Toutes",
+    ...Array.from(
+      new Set(
+        invoices.map((invoice) => invoice.revenueItemName).filter(Boolean)
+      )
+    ),
+  ];
 
   useEffect(() => {
     // Récupération des factures
@@ -94,11 +101,17 @@ const Graphics = () => {
     // Filtrer par équipe (revenueItemName)
     let teamMatch = true;
     if (filterTeam !== "all") {
-      teamMatch = (invoice.revenueItemName || "").toLowerCase() === filterTeam.toLowerCase();
+      teamMatch =
+        (invoice.revenueItemName || "").toLowerCase() ===
+        filterTeam.toLowerCase();
     }
 
     return statusMatch && playerMatch && teamMatch;
   });
+
+  const uniqueMembers = new Set(
+    filteredInvoices.map((invoice) => invoice.memberBasicDto?.id)
+  ).size;
 
   return (
     <AdminLayout>
@@ -129,23 +142,28 @@ const Graphics = () => {
             />
           </div>
           <div>
-  <label className="block mb-1">Équipe :</label>
-  <select
-    value={filterTeam}
-    onChange={(e) => setFilterTeam(e.target.value)}
-    className="border p-2 rounded"
-  >
-    {teamOptions.map((teamName, index) => (
-      <option key={index} value={teamName}>
-        {teamName}
-      </option>
-    ))}
-  </select>
-</div>
+            <label className="block mb-1">Équipe :</label>
+            <select
+              value={filterTeam}
+              onChange={(e) => setFilterTeam(e.target.value)}
+              className="border p-2 rounded"
+            >
+              {teamOptions.map((teamName, index) => (
+                <option key={index} value={teamName}>
+                  {teamName}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Section Invoices */}
-        <h2 className="text-xl font-bold mb-4">📊 Toutes les Factures</h2>
+        <h2 className="text-xl font-bold mb-4">
+          📊 Toutes les Factures ({filteredInvoices.length}){" "}
+          <span className="text-sm text-gray-600">
+            ({uniqueMembers} membres uniques)
+          </span>
+        </h2>
         {loading && <p className="text-blue-500">Chargement des données...</p>}
         {errorMessage && <p className="text-red-500">⚠ {errorMessage}</p>}
         <div className="overflow-x-auto mt-4">
@@ -161,38 +179,45 @@ const Graphics = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredInvoices.length > 0 ? (
-                filteredInvoices.map((invoice, index) => (
-                  <tr key={index} className="border">
-                    <td className="py-2 px-4 border">
-                      {invoice.invoiceDate || "N/A"}
-                    </td>
-                    <td className="py-2 px-4 border">
-                      {invoice.invoiceNumber || "N/A"}
-                    </td>
-                    <td className="py-2 px-4 border">
-                      {invoice.memberBasicDto?.fullName || "N/A"}
-                    </td>
-                    <td className="py-2 px-4 border">
-                      {invoice.totalAmount} €
-                    </td>
-                    <td className="py-2 px-4 border">
-                      {invoice.paidAmount} €
-                    </td>
-                    <td className="py-2 px-4 border">
-                      {invoice.revenueItemName || "N/A"}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                !loading && (
-                  <tr>
-                    <td colSpan={6} className="text-center py-4">
-                      Aucune facture ne correspond aux critères sélectionnés
-                    </td>
-                  </tr>
-                )
-              )}
+              {filteredInvoices.length > 0
+                ? filteredInvoices.map((invoice, index) => (
+                    <tr key={index} className="border">
+                      <td className="py-2 px-4 border">
+                        {invoice.invoiceDate
+                          ? new Date(invoice.invoiceDate).toLocaleDateString(
+                              "fr-FR",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              }
+                            )
+                          : "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.invoiceNumber || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.memberBasicDto?.fullName || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.totalAmount} €
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.paidAmount} €
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {invoice.revenueItemName || "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                : !loading && (
+                    <tr>
+                      <td colSpan={6} className="text-center py-4">
+                        Aucune facture ne correspond aux critères sélectionnés
+                      </td>
+                    </tr>
+                  )}
             </tbody>
           </table>
         </div>
@@ -211,25 +236,27 @@ const Graphics = () => {
               </tr>
             </thead>
             <tbody>
-              {teams.length > 0 ? (
-                teams.map((team, index) => (
-                  <tr key={index} className="border">
-                    <td className="py-2 px-4 border">{team.id || "N/A"}</td>
-                    <td className="py-2 px-4 border">{team.name || "N/A"}</td>
-                    <td className="py-2 px-4 border">{team.age || "N/A"}</td>
-                    <td className="py-2 px-4 border">{team.level || "N/A"}</td>
-                    <td className="py-2 px-4 border">{team.gender || "N/A"}</td>
-                  </tr>
-                ))
-              ) : (
-                !loading && (
-                  <tr>
-                    <td colSpan={5} className="text-center py-4">
-                      Aucune équipe disponible
-                    </td>
-                  </tr>
-                )
-              )}
+              {teams.length > 0
+                ? teams.map((team, index) => (
+                    <tr key={index} className="border">
+                      <td className="py-2 px-4 border">{team.id || "N/A"}</td>
+                      <td className="py-2 px-4 border">{team.name || "N/A"}</td>
+                      <td className="py-2 px-4 border">{team.age || "N/A"}</td>
+                      <td className="py-2 px-4 border">
+                        {team.level || "N/A"}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {team.gender || "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                : !loading && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-4">
+                        Aucune équipe disponible
+                      </td>
+                    </tr>
+                  )}
             </tbody>
           </table>
         </div>

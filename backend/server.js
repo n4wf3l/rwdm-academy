@@ -551,6 +551,26 @@ app.get("/api/appointments", async (req, res) => {
   }
 });
 
+app.delete("/api/appointments/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [result] = await connection.execute(
+      "DELETE FROM appointments WHERE id = ?",
+      [id]
+    );
+    await connection.end();
+    if (result.affectedRows > 0) {
+      res.json({ message: "Rendez-vous annulé avec succès" });
+    } else {
+      res.status(404).json({ message: "Rendez-vous non trouvé" });
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'annulation du rendez-vous :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 router.post("/appointments", async (req, res) => {
   try {
     const { date, time, type, personName, email, adminId, notes } = req.body;
