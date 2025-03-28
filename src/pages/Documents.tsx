@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
-import { Search } from "lucide-react"; // Importer l'icône de recherche
-import { CAvatar } from "@coreui/react";
+import { Search, RefreshCcw, FileText, Eye } from "lucide-react";
+import { jsPDF } from "jspdf";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+// Importation de la modale et de ses types
+import RequestDetailsModal, {
+  Request as ModalRequest,
+  RequestStatus,
+} from "@/components/RequestDetailsModal";
+import Navbar from "@/components/Navbar";
+import NavbarAdmin from "@/components/NavbarAdmin";
 
 // Types pour les documents
-type DocumentType = 'registration' | 'selection-tests' | 'responsibility-waiver' | 'accident-report';
+type DocumentType =
+  | "registration"
+  | "selection-tests"
+  | "responsibility-waiver"
+  | "accident-report";
 
 interface Document {
-  [x: string]: string;
   id: string;
   type: DocumentType;
   name: string;
@@ -20,80 +45,199 @@ interface Document {
   email: string;
   phone: string;
   documentUrl: string;
+  status: string;
+  // Ici, on récupère l'id de l'admin mais on attend qu'en plus on récupère son prénom et son nom depuis l'API
+  assignedAdmin: string;
+  createdAt?: Date;
+  data: any;
 }
 
-// Données fictives pour notre démo
-const MOCK_DOCUMENTS: Document[] = [
-  {
-    id: "DOC-001",
-    type: "registration",
-    name: "Lucas",
-    surname: "Dubois",
-    email: "lucas.dubois@example.com",
-    phone: "+32 470 12 34 56",
-    documentUrl: "https://example.com/doc1.pdf"
-  },
-  {
-    id: "DOC-002",
-    type: "selection-tests",
-    name: "Emma",
-    surname: "Petit",
-    email: "emma.petit@example.com",
-    phone: "+32 475 23 45 67",
-    documentUrl: "https://example.com/doc2.pdf"
-  },
-  {
-    id: "DOC-003",
-    type: "responsibility-waiver",
-    name: "Noah",
-    surname: "Lambert",
-    email: "noah.lambert@example.com",
-    phone: "+32 478 34 56 78",
-    documentUrl: "https://example.com/doc3.pdf"
-  },
-  {
-    id: "DOC-004",
-    type: "accident-report",
-    name: "Chloé",
-    surname: "Moreau",
-    email: "chloe.moreau@example.com",
-    phone: "+32 479 45 67 89",
-    documentUrl: "https://example.com/doc4.pdf"
-  },
-];
-
 const Documents = () => {
-  const [documents] = useState<Document[]>(MOCK_DOCUMENTS);
-  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>(MOCK_DOCUMENTS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<DocumentType | 'all'>('all');
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<DocumentType | "all">("all");
   const { toast } = useToast();
 
-  // Filtrer les documents selon les critères
+  // État pour la demande sélectionnée (type attendu par la modale)
+  const [selectedRequest, setSelectedRequest] = useState<ModalRequest | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchCompletedDocuments();
+  }, []);
+
+  const fetchCompletedDocuments = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/requests?status=completed",
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Erreur lors de la récupération des documents terminés"
+        );
+      }
+
+      const data = await response.json();
+      // Filtrer uniquement les demandes dont le status est "Terminé"
+      const completedDocuments = data.filter(
+        (doc: any) => doc.status === "Terminé"
+      );
+
+      const formattedDocuments: Document[] = completedDocuments.map(
+        (doc: any) => {
+          const parsedData = JSON.parse(doc.data || "{}");
+          return {
+            id: doc.id,
+            type: doc.type,
+            name: parsedData.firstName || "Inconnu",
+            surname: parsedData.lastName || "Inconnu",
+            email: parsedData.parent1Email || "Non spécifié",
+            phone: parsedData.parent1Phone || "Non spécifié",
+            documentUrl: doc.documentUrl || "#",
+            status: doc.status,
+            // Utilise les colonnes admin_firstName et admin_lastName si présentes, sinon fallback
+            assignedAdmin: doc.admin_id
+              ? `${doc.admin_firstName} ${doc.admin_lastName}`
+              : parsedData.assignedAdmin || "Non assigné",
+            createdAt: doc.created_at ? new Date(doc.created_at) : undefined,
+            data: parsedData,
+          };
+        }
+      );
+
+      setDocuments(formattedDocuments);
+      setFilteredDocuments(formattedDocuments);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des documents :", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer les documents terminés.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleFilter = () => {
-    const filtered = documents.filter(doc => {
-      const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            doc.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            doc.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            doc.phone.includes(searchQuery);
-      
-      const matchesType = typeFilter === 'all' || doc.type === typeFilter;
-      
+    const filtered = documents.filter((doc) => {
+      const matchesSearch =
+        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.phone.includes(searchQuery);
+      const matchesType = typeFilter === "all" || doc.type === typeFilter;
       return matchesSearch && matchesType;
     });
     setFilteredDocuments(filtered);
   };
 
+  useEffect(() => {
+    handleFilter();
+  }, [searchQuery, typeFilter, documents]);
+
+  const handleRevertStatus = async (id: string) => {
+    try {
+      toast({
+        title: "Statut modifié",
+        description: `La demande ${id} a été remise en cours.`,
+      });
+      const updatedDocs = documents.filter((doc) => doc.id !== id);
+      setDocuments(updatedDocs);
+      setFilteredDocuments(updatedDocs);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du statut :", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de remettre le statut en cours.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGenerateDocPDF = (docData: Document) => {
+    const pdf = new jsPDF();
+    pdf.setFontSize(12);
+    pdf.text(`Document ID: ${docData.id}`, 10, 10);
+    pdf.text(`Type: ${docData.type}`, 10, 20);
+    pdf.text(`Nom: ${docData.name} ${docData.surname}`, 10, 30);
+    pdf.text(`Email: ${docData.email}`, 10, 40);
+    pdf.text(`Téléphone: ${docData.phone}`, 10, 50);
+    pdf.text(`Status: ${docData.status}`, 10, 60);
+    pdf.text(`Admin assigné: ${docData.assignedAdmin}`, 10, 70);
+    pdf.text(
+      `Date de la demande: ${
+        docData.createdAt ? docData.createdAt.toLocaleDateString() : "N/A"
+      }`,
+      10,
+      80
+    );
+    const jsonData = JSON.stringify(docData.data, null, 2);
+    const lines = pdf.splitTextToSize(jsonData, 180);
+    pdf.text(lines, 10, 90);
+    pdf.save(`document_${docData.id}.pdf`);
+    toast({
+      title: "PDF généré",
+      description: `Le PDF du document ${docData.id} a été généré.`,
+    });
+  };
+
+  // Fonction utilitaire pour convertir le status en RequestStatus (exemple de mapping)
+  const mapStatus = (status: string): RequestStatus => {
+    switch (status) {
+      case "Terminé":
+        return "completed";
+      case "Nouveau":
+        return "new";
+      // Ajoutez d'autres cas de conversion si nécessaire
+      default:
+        return status as RequestStatus;
+    }
+  };
+
+  const formatRequestId = (id: string | number): string => {
+    const numericId = typeof id === "number" ? id : parseInt(id, 10);
+    return `DEM-${numericId.toString().padStart(3, "0")}`;
+  };
+
+  // Transformation et ouverture de la modale avec l'objet Request attendu
+  const handleViewDetails = (doc: Document, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const request: ModalRequest = {
+      id: doc.id,
+      type: doc.type,
+      name: `${doc.name} ${doc.surname}`,
+      email: doc.email,
+      date: doc.createdAt ? doc.createdAt : new Date(),
+      status: mapStatus(doc.status),
+      assignedTo: doc.assignedAdmin,
+      details: doc.data,
+    };
+    setSelectedRequest(request);
+    setIsModalOpen(true);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* En-tête */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">Gestion des documents</h1>
-            <p className="text-gray-600 dark:text-gray-300">Retrouvez les documents des membres</p>
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+              Gestion des documents
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Retrouvez les documents des membres
+            </p>
           </div>
         </div>
 
+        {/* Filtres */}
         <Card>
           <CardHeader>
             <CardTitle>Filtres de recherche</CardTitle>
@@ -107,19 +251,14 @@ const Documents = () => {
                   placeholder="Rechercher par nom, prénom, email ou téléphone..."
                   className="pl-8"
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    handleFilter();
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              
               <Select
                 value={typeFilter}
-                onValueChange={(value) => {
-                  setTypeFilter(value as DocumentType | 'all');
-                  handleFilter();
-                }}
+                onValueChange={(value) =>
+                  setTypeFilter(value as DocumentType | "all")
+                }
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Type de document" />
@@ -127,48 +266,124 @@ const Documents = () => {
                 <SelectContent>
                   <SelectItem value="all">Tous les types</SelectItem>
                   <SelectItem value="registration">Inscriptions</SelectItem>
-                  <SelectItem value="selection-tests">Tests techniques</SelectItem>
-                  <SelectItem value="responsibility-waiver">Décharges de responsabilité</SelectItem>
-                  <SelectItem value="accident-report">Déclarations d'accident</SelectItem>
+                  <SelectItem value="selection-tests">
+                    Tests techniques
+                  </SelectItem>
+                  <SelectItem value="responsibility-waiver">
+                    Décharges de responsabilité
+                  </SelectItem>
+                  <SelectItem value="accident-report">
+                    Déclarations d'accident
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
 
+        {/* Tableau des documents */}
         <Card>
           <CardHeader>
             <CardTitle>Documents ({filteredDocuments.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {filteredDocuments.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Aucun document ne correspond à vos critères de recherche.</p>
-                </div>
-              ) : (
-                filteredDocuments.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between space-x-4">
-                    <div className="flex items-center space-x-4">
-                      <CAvatar src={doc.profilePicture || "https://via.placeholder.com/150"} />
-                      <div>
-                        <div className="font-bold">
-                          {doc.name} {doc.surname}
+            {filteredDocuments.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p>Aucun document ne correspond à vos critères de recherche.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Admin</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredDocuments.map((doc) => (
+                    <TableRow
+                      key={doc.id}
+                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                      onClick={() => handleViewDetails(doc)}
+                    >
+                      <TableCell className="font-medium">
+                        {formatRequestId(doc.id)}
+                      </TableCell>
+                      <TableCell>{doc.type}</TableCell>
+                      <TableCell>
+                        {doc.name} {doc.surname}
+                      </TableCell>
+                      <TableCell>{doc.email}</TableCell>
+                      <TableCell>{doc.phone}</TableCell>
+                      <TableCell>
+                        <span className="bg-green-500 text-white py-1 px-2 rounded">
+                          {doc.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>{doc.assignedAdmin}</TableCell>
+                      <TableCell>
+                        {doc.createdAt
+                          ? doc.createdAt.toLocaleDateString()
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRevertStatus(doc.id);
+                            }}
+                            title="Mettre en cours"
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGenerateDocPDF(doc);
+                            }}
+                            title="Générer PDF"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => handleViewDetails(doc, e)}
+                            title="Voir détails"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <div className="text-sm text-gray-500">{doc.email}</div>
-                        <div className="text-sm text-gray-500">{doc.phone}</div>
-                      </div>
-                    </div>
-                    <Button variant="outline" onClick={() => window.open(doc.documentUrl, "_blank")}>
-                      Voir document
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Modale des détails */}
+      {selectedRequest && (
+        <RequestDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          request={selectedRequest}
+        />
+      )}
     </AdminLayout>
   );
 };
