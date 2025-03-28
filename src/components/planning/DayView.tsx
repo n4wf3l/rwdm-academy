@@ -28,6 +28,7 @@ const DayView: React.FC<DayViewProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Calendrier */}
       <Card className="md:col-span-1">
         <CardHeader>
           <CardTitle>Calendrier</CardTitle>
@@ -62,6 +63,7 @@ const DayView: React.FC<DayViewProps> = ({
         </CardContent>
       </Card>
 
+      {/* Détails des rendez-vous */}
       <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle>
@@ -101,7 +103,8 @@ const DayView: React.FC<DayViewProps> = ({
                           </div>
                           <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="h-4 w-4" />
-                            <span>{format(appointment.date, "HH:mm")}</span>
+                            <span>{appointment.time}</span>{" "}
+                            {/* Utilisation de appointment.time pour l'heure */}
                           </div>
                           {appointment.email && (
                             <div className="flex items-center gap-2 text-gray-600 mt-1">
@@ -128,18 +131,28 @@ const DayView: React.FC<DayViewProps> = ({
                         </div>
                       </div>
 
+                      {/* Affichage de l'administrateur */}
                       <div className="mt-2 text-sm">
                         <div className="flex items-center gap-1 text-gray-600">
                           <User className="h-4 w-4" />
-                          <span>Admin: {appointment.adminName}</span>
+                          <span>
+                            <strong>Administrateur :</strong>{" "}
+                            {appointment.adminFirstName &&
+                            appointment.adminLastName
+                              ? `${appointment.adminFirstName} ${appointment.adminLastName}`
+                              : "Aucun administrateur assigné"}
+                          </span>
                         </div>
 
-                        {appointment.notes && (
+                        {/* Affichage des notes */}
+                        {appointment.notes ? (
                           <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                             <p className="text-gray-700 dark:text-gray-300">
-                              {appointment.notes}
+                              <strong>Notes :</strong> {appointment.notes}
                             </p>
                           </div>
+                        ) : (
+                          <p className="mt-2 text-gray-600">Aucune note</p>
                         )}
                       </div>
                     </div>
