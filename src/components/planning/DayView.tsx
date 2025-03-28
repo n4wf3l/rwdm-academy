@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Clock, CalendarIcon, Mail, User, Plus } from "lucide-react";
 import { Appointment, getAppointmentBadge } from "./planningUtils";
+import AppointmentDetailsDialog from "./AppointmentDetailsDialog"; // Importez le dialog
 
 interface DayViewProps {
   selectedDate: Date | undefined;
@@ -26,6 +27,19 @@ const DayView: React.FC<DayViewProps> = ({
   setIsScheduleModalOpen,
   showAppointmentDetails,
 }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
+
+  const handleCardClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setIsDialogOpen(true);
+  };
+
+  const handleCancelAppointment = (appointmentId: number) => {
+    console.log("Annuler le rendez-vous avec l'ID :", appointmentId);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Calendrier */}
@@ -93,7 +107,11 @@ const DayView: React.FC<DayViewProps> = ({
           ) : (
             <div className="space-y-4">
               {sortedAppointments.map((appointment) => (
-                <Card key={appointment.id} className="shadow-sm">
+                <Card
+                  key={appointment.id}
+                  className="shadow-sm transition-transform transform hover:scale-[1.02] cursor-pointer"
+                  onClick={() => handleCardClick(appointment)}
+                >
                   <CardContent className="p-4">
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-start">
@@ -103,8 +121,7 @@ const DayView: React.FC<DayViewProps> = ({
                           </div>
                           <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="h-4 w-4" />
-                            <span>{appointment.time}</span>{" "}
-                            {/* Utilisation de appointment.time pour l'heure */}
+                            <span>{appointment.time}</span>
                           </div>
                           {appointment.email && (
                             <div className="flex items-center gap-2 text-gray-600 mt-1">
@@ -163,6 +180,14 @@ const DayView: React.FC<DayViewProps> = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Appointment Details Dialog */}
+      <AppointmentDetailsDialog
+        isOpen={isDialogOpen}
+        setIsOpen={setIsDialogOpen}
+        appointment={selectedAppointment}
+        onCancel={handleCancelAppointment}
+      />
     </div>
   );
 };
