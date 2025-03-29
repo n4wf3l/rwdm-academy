@@ -1,4 +1,3 @@
-// RequestsTable.tsx
 import React from "react";
 import {
   Table,
@@ -17,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Eye, Clock, Check, X } from "lucide-react";
+import { Eye, Clock, Check, X, Calendar } from "lucide-react"; // Importer l'icône Calendar
 
 // Types localement
 export type RequestStatus =
@@ -160,7 +159,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     // Si "none" est sélectionné, le statut doit redevenir "new"
                     if (value === "none") {
                       onAssignRequest(request.id, value);
-                      // Vous pouvez gérer le changement de statut dans le callback parent
                     } else {
                       onAssignRequest(request.id, value);
                     }
@@ -199,11 +197,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Pour une demande d'inscription, on ouvre le modal d'entretien (AppointmentDialog)
+                      // Ouvrir le modal d'entretien pour les inscriptions
                       if (request.type === "registration") {
                         onOpenAppointmentDialog(request);
                       } else {
-                        // Sinon, on met à jour le statut normalement
                         onUpdateStatus(request.id, "in-progress");
                       }
                     }}
@@ -217,19 +214,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     className="text-green-600 border-green-600 hover:bg-green-100"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Condition spéciale pour "registration"
-                      if (request.type === "registration") {
-                        onOpenAppointmentDialog(request);
-                        return; // On quitte pour éviter de passer à "completed" tout de suite
-                      }
-
-                      // Condition pour "accident-report"
-                      if (request.type === "accident-report") {
-                        onUpdateStatus(request.id, "in-progress");
-                      } else {
-                        // Tous les autres types passent en "completed"
-                        onUpdateStatus(request.id, "completed");
-                      }
+                      // Changer le statut en "completed"
+                      onUpdateStatus(request.id, "completed");
                     }}
                     disabled={request.status === "completed"}
                   >
@@ -247,6 +233,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   >
                     <X className="h-4 w-4" />
                   </Button>
+                  {/* Ajout du bouton pour planifier un rendez-vous */}
+                  {request.type === "registration" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenAppointmentDialog(request);
+                      }}
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

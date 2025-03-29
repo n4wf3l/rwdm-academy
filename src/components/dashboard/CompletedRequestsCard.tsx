@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Eye, RotateCcw } from "lucide-react";
+import { ChevronLeft, Eye, RotateCcw } from "lucide-react";
 import { Request, RequestStatus } from "@/components/RequestDetailsModal";
 import { translateRequestType, getStatusBadge } from "./RequestsTable";
 
@@ -21,6 +21,7 @@ interface CompletedRequestsCardProps {
   onViewDetails: (request: Request) => void;
 }
 
+// Fonction pour formater l'ID de la demande
 const formatRequestId = (id: string | number): string => {
   const numericId = typeof id === "number" ? id : parseInt(id, 10);
   return `DEM-${numericId.toString().padStart(3, "0")}`;
@@ -28,20 +29,30 @@ const formatRequestId = (id: string | number): string => {
 
 // Fonction interne pour mettre à jour le statut
 const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
+  const token = localStorage.getItem("token"); // Récupérer le token
+
+  if (!token) {
+    console.error("Token manquant");
+    return;
+  }
+
   try {
     const response = await fetch(
       `http://localhost:5000/api/requests/${requestId}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Inclure le token dans l'en-tête
+        },
         body: JSON.stringify({ status: newStatus }),
       }
     );
+
     if (!response.ok) {
       throw new Error("Erreur lors de la mise à jour du statut");
     }
     console.log("Statut mis à jour avec succès pour la demande", requestId);
-    // Ici, vous pouvez déclencher un rafraîchissement des données depuis le parent
   } catch (error) {
     console.error("Erreur lors de la mise à jour du statut :", error);
   }
@@ -117,7 +128,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateStatus(request.id, "in-progress");
+                            updateStatus(request.id, "in-progress"); // Changer le statut en "En cours"
                           }}
                           disabled={request.status === "in-progress"}
                         >
@@ -145,14 +156,6 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                 disabled={page === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(Math.min(page + 1, totalPages))}
-                disabled={page === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
