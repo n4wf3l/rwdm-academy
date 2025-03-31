@@ -142,12 +142,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 Graphiques
               </Button>
             </Link>
-            <Link to="/">
+            <Link to="/settings">
               <Button
-                variant={isActive("/") ? "default" : "ghost"}
+                variant={isActive("/settings") ? "default" : "ghost"}
                 className={cn(
                   "w-full justify-start",
-                  isActive("/") ? "bg-rwdm-blue hover:bg-rwdm-blue/90" : ""
+                  isActive("/settings")
+                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                    : ""
                 )}
               >
                 <Settings className="mr-2 h-5 w-5" />
