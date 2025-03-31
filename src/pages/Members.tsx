@@ -4,10 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import MemberForm from "@/components/members/MemberForm";
 import MemberList from "@/components/members/MemberList";
 import EditMemberModal from "@/components/members/EditMemberModal";
-import DeleteMemberModal from "@/components/members/DeleteMemberModal"; // Import de la modale de suppression
+import DeleteMemberModal from "@/components/members/DeleteMemberModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import FullScreenLoader from "@/components/FullScreenLoader";
 
 interface Member {
-  id: number; // Assurez-vous que chaque membre a un id
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -17,15 +21,32 @@ interface Member {
   role: string;
 }
 
-const Members = () => {
+const Members: React.FC = () => {
   const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const [activeTab, setActiveTab] = useState<"list" | "create">("list");
 
-  // Récupérer les membres depuis le backend
+  // États de chargement distincts pour la création et la suppression
+  const [isCreationLoading, setIsCreationLoading] = useState(false);
+  const [isDeletionLoading, setIsDeletionLoading] = useState(false);
+
+  // Messages pour le loader
+  const creationMessages = [
+    "Création du compte en cours...",
+    "Sécurisation du compte...",
+    "Finalisation...",
+  ];
+  const deletionMessages = [
+    "Suppression du compte en cours...",
+    "Vérification de la suppression...",
+    "Finalisation de la suppression...",
+  ];
+
+  // Récupération des membres depuis le backend
   useEffect(() => {
     async function fetchMembers() {
       try {
@@ -62,6 +83,7 @@ const Members = () => {
 
   const handleMemberCreated = (member: Member) => {
     setMembers((prev) => [...prev, member]);
+    setActiveTab("list");
   };
 
   // Fonction de suppression via le backend
@@ -109,7 +131,7 @@ const Members = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEditedMember = async (updatedMember: any) => {
+  const handleSaveEditedMember = async (updatedMember: Member) => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
@@ -151,42 +173,79 @@ const Members = () => {
     setIsEditModalOpen(false);
   };
 
-  // Gestion de la suppression : ouverture de la modale de confirmation
+  // Ouverture de la modal de confirmation de suppression
   const openDeleteModal = (member: Member) => {
     setMemberToDelete(member);
     setIsDeleteModalOpen(true);
   };
 
-  // Fonction appelée par la modale de suppression pour confirmer
-  const handleConfirmDelete = () => {
+  // Fonction appelée par la modal de suppression pour confirmer
+  const handleConfirmDelete = async () => {
     if (memberToDelete) {
-      deleteMemberFromBackend(memberToDelete);
+      // Fermer immédiatement la modal de confirmation
       setIsDeleteModalOpen(false);
+      // Mettre à jour le loader pour la suppression
+      setIsDeletionLoading(true);
+      // Attendre 4 secondes pour simuler le traitement
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      // Procéder à la suppression réelle
+      await deleteMemberFromBackend(memberToDelete);
+      // Cacher le loader et réinitialiser l'état
+      setIsDeletionLoading(false);
       setMemberToDelete(null);
     }
   };
 
   return (
     <AdminLayout>
+      <FullScreenLoader
+        isLoading={isCreationLoading || isDeletionLoading}
+        messages={isDeletionLoading ? deletionMessages : creationMessages}
+      />
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-          Membres
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Gérez les membres de l'académie
-        </p>
-
-        {/* Affichage vertical des deux cards */}
-        <div className="flex flex-col gap-6">
-          <MemberForm onMemberCreated={handleMemberCreated} />
-          <MemberList
-            members={members}
-            onEdit={openEditModal}
-            onDelete={openDeleteModal}
-          />
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+              Membres
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Gérez les membres de l'académie
+            </p>
+          </div>
+          <div>
+            <Link to="/dashboard">
+              <Button variant="outline">Retour au tableau de bord</Button>
+            </Link>
+          </div>
         </div>
 
-        {/* Modale d'édition */}
+        <Tabs
+          defaultValue="list"
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as "list" | "create")}
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-2 w-full max-w-md">
+            <TabsTrigger value="list">Tous les membres</TabsTrigger>
+            <TabsTrigger value="create">Créer un membre</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="list">
+            <MemberList
+              members={members}
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
+            />
+          </TabsContent>
+          <TabsContent value="create">
+            <MemberForm
+              onMemberCreated={handleMemberCreated}
+              isLoading={isCreationLoading}
+              setIsLoading={setIsCreationLoading}
+            />
+          </TabsContent>
+        </Tabs>
+
         {editingMember && (
           <EditMemberModal
             member={editingMember}
@@ -196,7 +255,6 @@ const Members = () => {
           />
         )}
 
-        {/* Modale de suppression */}
         <DeleteMemberModal
           isOpen={isDeleteModalOpen}
           member={memberToDelete}

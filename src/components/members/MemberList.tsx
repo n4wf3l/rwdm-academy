@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,7 +47,6 @@ const MemberList: React.FC<MemberListProps> = ({
                       "https://via.placeholder.com/150";
                   }}
                 />
-
                 <div>
                   <div className="font-bold">
                     {member.firstName} {member.lastName}
