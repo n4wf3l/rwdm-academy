@@ -197,17 +197,13 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Ouvrir le modal d'entretien pour les inscriptions
-                      if (request.type === "registration") {
-                        onOpenAppointmentDialog(request);
-                      } else {
-                        onUpdateStatus(request.id, "in-progress");
-                      }
+                      onUpdateStatus(request.id, "in-progress");
                     }}
                     disabled={request.status === "in-progress"}
                   >
                     <Clock className="h-4 w-4" />
                   </Button>
+
                   <Button
                     variant="outline"
                     size="sm"
