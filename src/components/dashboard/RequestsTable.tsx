@@ -125,7 +125,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
           <TableHead>Date</TableHead>
           <TableHead>Statut</TableHead>
           <TableHead>Assigné à</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="text-center border-l">Rendez-vous</TableHead>
+          <TableHead className="text-center">Actions</TableHead>
         </TableRow>
       </TableHeader>
 
@@ -156,12 +157,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 <Select
                   value={assignedValue}
                   onValueChange={(value) => {
-                    // Si "none" est sélectionné, le statut doit redevenir "new"
-                    if (value === "none") {
-                      onAssignRequest(request.id, value);
-                    } else {
-                      onAssignRequest(request.id, value);
-                    }
+                    onAssignRequest(request.id, value);
                   }}
                 >
                   <SelectTrigger
@@ -180,8 +176,26 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   </SelectContent>
                 </Select>
               </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
+
+              <TableCell className="text-center border-l">
+                {request.type === "registration" ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenAppointmentDialog(request);
+                    }}
+                  >
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+
+              <TableCell className="text-center">
+                <div className="flex gap-2 justify-center">
                   <Button
                     variant="outline"
                     size="sm"
@@ -210,7 +224,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     className="text-green-600 border-green-600 hover:bg-green-100"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Changer le statut en "completed"
                       onUpdateStatus(request.id, "completed");
                     }}
                     disabled={request.status === "completed"}
@@ -229,19 +242,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   >
                     <X className="h-4 w-4" />
                   </Button>
-                  {/* Ajout du bouton pour planifier un rendez-vous */}
-                  {request.type === "registration" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenAppointmentDialog(request);
-                      }}
-                    >
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
               </TableCell>
             </TableRow>

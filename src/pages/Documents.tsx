@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
-import { Search, RefreshCcw, FileText, Eye } from "lucide-react";
+import { Search, RefreshCcw, FileText, Eye, RotateCcw } from "lucide-react";
 import { jsPDF } from "jspdf";
 import {
   Table,
@@ -143,13 +143,24 @@ const Documents = () => {
 
   const handleRevertStatus = async (id: string) => {
     try {
+      // Appel à l'API pour mettre à jour le statut
+      const response = await fetch(`http://localhost:5000/api/requests/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: "En cours" }), // ou "in-progress" selon le mapping
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la mise à jour du statut");
+      }
       toast({
         title: "Statut modifié",
         description: `La demande ${id} a été remise en cours.`,
       });
-      const updatedDocs = documents.filter((doc) => doc.id !== id);
-      setDocuments(updatedDocs);
-      setFilteredDocuments(updatedDocs);
+      // Rafraîchir les données
+      fetchCompletedDocuments();
     } catch (error) {
       console.error("Erreur lors de la mise à jour du statut :", error);
       toast({
@@ -338,14 +349,12 @@ const Documents = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRevertStatus(doc.id);
-                            }}
-                            title="Mettre en cours"
+                            onClick={(e) => handleViewDetails(doc, e)}
+                            title="Voir détails"
                           >
-                            <RefreshCcw className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
+
                           <Button
                             variant="outline"
                             size="sm"
@@ -357,13 +366,17 @@ const Documents = () => {
                           >
                             <FileText className="h-4 w-4" />
                           </Button>
+
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={(e) => handleViewDetails(doc, e)}
-                            title="Voir détails"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRevertStatus(doc.id);
+                            }}
+                            title="Mettre en cours"
                           >
-                            <Eye className="h-4 w-4" />
+                            <RotateCcw className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

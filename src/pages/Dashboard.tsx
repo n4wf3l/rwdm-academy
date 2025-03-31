@@ -472,12 +472,15 @@ const Dashboard = () => {
               totalPages={totalPendingAccidentPages}
               onPageChange={setPendingAccidentReportsPage}
               onViewDetails={openRequestDetails}
+              admins={admins}
               onSendToFederation={sendAccidentToFederation}
             />
 
             <CompletedRequestsCard
               completedRequests={paginatedCompletedRequests}
+              totalCompletedCount={completedRequests.length} // Ici, completedRequests est la liste complète
               page={completedRequestsPage}
+              admins={admins}
               totalPages={totalCompletedPages}
               onPageChange={setCompletedRequestsPage}
               onViewDetails={openRequestDetails}

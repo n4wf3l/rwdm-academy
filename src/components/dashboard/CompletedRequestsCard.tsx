@@ -9,14 +9,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, Eye, RotateCcw } from "lucide-react";
+import { ChevronLeft, Eye, RotateCcw, File } from "lucide-react";
 import { Request, RequestStatus } from "@/components/RequestDetailsModal";
 import { translateRequestType, getStatusBadge } from "./RequestsTable";
 
+export interface Admin {
+  id: string;
+  name: string;
+}
+
 interface CompletedRequestsCardProps {
-  completedRequests: Request[];
+  completedRequests: Request[]; // La liste paginée (max 5)
+  totalCompletedCount: number; // Le nombre total de demandes terminées dans la DB
   page: number;
   totalPages: number;
+  admins?: Admin[]; // Liste des admins pour afficher le nom/prénom (optionnel)
   onPageChange: (page: number) => void;
   onViewDetails: (request: Request) => void;
 }
@@ -29,7 +36,7 @@ const formatRequestId = (id: string | number): string => {
 
 // Fonction interne pour mettre à jour le statut
 const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
-  const token = localStorage.getItem("token"); // Récupérer le token
+  const token = localStorage.getItem("token");
 
   if (!token) {
     console.error("Token manquant");
@@ -43,7 +50,7 @@ const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Inclure le token dans l'en-tête
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status: newStatus }),
       }
@@ -60,15 +67,20 @@ const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
 
 const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
   completedRequests,
+  totalCompletedCount,
   page,
   totalPages,
+  admins,
   onPageChange,
   onViewDetails,
 }) => {
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>Demandes terminées ({completedRequests.length})</CardTitle>
+        <CardTitle>
+          Demandes récentes terminées ({completedRequests.length} affichées sur{" "}
+          {totalCompletedCount})
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
@@ -85,59 +97,75 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                   <TableHead>Nom</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Statut</TableHead>
+                  <TableHead>Assigné à</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {completedRequests.map((request) => (
-                  <TableRow
-                    key={request.id}
-                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                    onClick={() => onViewDetails(request)}
-                  >
-                    <TableCell className="font-medium">
-                      {formatRequestId(request.id)}
-                    </TableCell>
-                    <TableCell>{translateRequestType(request.type)}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div>{request.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {request.email}
+                {completedRequests.map((request) => {
+                  const assignedName =
+                    !request.assignedTo || request.assignedTo === "none"
+                      ? "Non assigné"
+                      : (admins &&
+                          admins.find(
+                            (admin) =>
+                              admin.id.toString() ===
+                              request.assignedTo.toString()
+                          )?.name) ||
+                        "Inconnu";
+                  return (
+                    <TableRow
+                      key={request.id}
+                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                      onClick={() => onViewDetails(request)}
+                    >
+                      <TableCell className="font-medium">
+                        {formatRequestId(request.id)}
+                      </TableCell>
+                      <TableCell>
+                        {translateRequestType(request.type)}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div>{request.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {request.email}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {request.date.toLocaleDateString("fr-BE")}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(request.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewDetails(request);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateStatus(request.id, "in-progress"); // Changer le statut en "En cours"
-                          }}
-                          disabled={request.status === "in-progress"}
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        {request.date.toLocaleDateString("fr-BE")}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(request.status)}</TableCell>
+                      <TableCell>{assignedName}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewDetails(request);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateStatus(request.id, "in-progress");
+                            }}
+                            disabled={request.status === "in-progress"}
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -160,6 +188,13 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
             </div>
           </div>
         )}
+
+        <div className="flex justify-center py-4">
+          <Button onClick={() => (window.location.href = "/documents")}>
+            <File className="h-4 w-4 mr-2" />
+            Voir les {totalCompletedCount} demandes terminées
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

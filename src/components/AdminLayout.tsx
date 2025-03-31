@@ -9,6 +9,8 @@ import {
   Menu,
   X,
   UserCircleIcon,
+  BarChart,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -84,6 +86,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 Tableau de bord
               </Button>
             </Link>
+            <Link to="/documents">
+              <Button
+                variant={isActive("/documents") ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  isActive("/documents")
+                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                    : ""
+                )}
+              >
+                <File className="mr-2 h-5 w-5" />
+                Documents
+              </Button>
+            </Link>
             <Link to="/planning">
               <Button
                 variant={isActive("/planning") ? "default" : "ghost"}
@@ -112,20 +128,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 Membres
               </Button>
             </Link>
-            <Link to="/documents">
-              <Button
-                variant={isActive("/documents") ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start",
-                  isActive("/documents")
-                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
-                    : ""
-                )}
-              >
-                <File className="mr-2 h-5 w-5" />
-                Documents
-              </Button>
-            </Link>
             <Link to="/graphics">
               <Button
                 variant={isActive("/graphics") ? "default" : "ghost"}
@@ -136,8 +138,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     : ""
                 )}
               >
-                <File className="mr-2 h-5 w-5" />
+                <BarChart className="mr-2 h-5 w-5" />
                 Graphiques
+              </Button>
+            </Link>
+            <Link to="/">
+              <Button
+                variant={isActive("/") ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start",
+                  isActive("/") ? "bg-rwdm-blue hover:bg-rwdm-blue/90" : ""
+                )}
+              >
+                <Settings className="mr-2 h-5 w-5" />
+                Paramètres
               </Button>
             </Link>
           </nav>
