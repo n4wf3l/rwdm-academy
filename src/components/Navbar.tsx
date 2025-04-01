@@ -12,6 +12,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [user, setUser] = useState({ firstName: "", lastName: "" });
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -19,6 +20,20 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     // Vérifier si un token est présent pour savoir si l'utilisateur est connecté
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
+    if (token) {
+      fetch("http://localhost:5000/api/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setUser({ firstName: data.firstName, lastName: data.lastName });
+        })
+        .catch((err) =>
+          console.error("Erreur lors de la récupération de l'utilisateur:", err)
+        );
+    }
   }, [location.pathname]);
 
   useEffect(() => {
@@ -56,19 +71,23 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       >
         <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">
-            <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-xl">
-                <img src="/logo.png" alt="Logo" />
+            <div className="h-10 w-10 flex items-center justify-center shadow-md">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <span
+                className={cn(
+                  "font-bold text-xl transition-colors",
+                  isScrolled ? "text-rwdm-blue dark:text-white" : "text-blue"
+                )}
+              >
+                RWDM Academy
               </span>
             </div>
-            <span
-              className={cn(
-                "font-bold text-xl transition-colors",
-                isScrolled ? "text-rwdm-blue dark:text-white" : "text-blue"
-              )}
-            >
-              RWDM Academy
-            </span>
           </Link>
 
           {/* Desktop menu */}
@@ -162,15 +181,27 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       {/* Bouton de déconnexion en bas à droite si connecté */}
       {isLoggedIn && (
         <button
-    onClick={handleLogout}
-    className="fixed bottom-5 right-5 z-50 bg-red-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-700 transition-all duration-300 flex items-center group overflow-hidden"
-  >
-    <LogOut className="h-5 w-5 transition-all duration-300" />
-    <span className="ml-2 whitespace-nowrap max-w-0 overflow-hidden group-hover:max-w-xs opacity-0 group-hover:opacity-100 transition-all duration-300">
-      Déconnexion
-    </span>
-  </button>
+          onClick={handleLogout}
+          className="fixed bottom-5 right-5 z-50 bg-red-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-700 transition-all duration-300 flex items-center group overflow-hidden"
+        >
+          <LogOut className="h-5 w-5 transition-all duration-300" />
+          <span className="ml-2 whitespace-nowrap max-w-0 overflow-hidden group-hover:max-w-xs opacity-0 group-hover:opacity-100 transition-all duration-300">
+            Déconnexion
+          </span>
+        </button>
+      )}
 
+      {/* Bloc utilisateur fixe en haut à droite avec prénom, nom et indicateur vert */}
+      {isLoggedIn && (
+        <div className="fixed top-4 right-4 z-50 flex items-center space-x-2 bg-white dark:bg-rwdm-darkblue p-2 rounded shadow">
+          <span className="text-gray-800 dark:text-white font-medium">
+            {user.firstName} {user.lastName}
+          </span>
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75 animate-ping"></div>
+            <div className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></div>
+          </div>
+        </div>
       )}
     </>
   );

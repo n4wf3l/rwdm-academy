@@ -11,6 +11,7 @@ import {
   UserCircleIcon,
   BarChart,
   Settings,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -93,13 +94,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center space-x-2 p-6 border-b">
-            <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
-              <img src="logo.png" alt="Logo" />
+            {/* Icône pour revenir vers "/" */}
+            <Link to="/" className="flex items-center">
+              <ArrowLeft size={24} className="text-rwdm-blue" />
+            </Link>
+            <div className="flex items-center space-x-2">
+              <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
+                <img src="logo.png" alt="Logo" />
+              </div>
+              <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
+                Panneau d'administration
+              </span>
             </div>
-            <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
-              Panneau d'administration
-            </span>
           </div>
+
           <nav className="flex-1 p-4 space-y-2">
             {/* Liens de navigation */}
             <Link to="/dashboard">
