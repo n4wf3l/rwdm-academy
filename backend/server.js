@@ -166,7 +166,7 @@ app.post(
 
       res.cookie("token", token, {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production", // secure en prod, false en dev
         sameSite: "Strict",
       });
 
@@ -370,6 +370,26 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error("Erreur lors de la récupération des admins :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Ajoute cette route dans ton backend (par exemple, à la fin de ton fichier)
+app.get("/api/me", authMiddleware, async (req, res) => {
+  console.log("User décodé:", req.user);
+  const userId = req.user.id;
+  try {
+    const [rows] = await dbPool.execute(
+      "SELECT firstName, lastName FROM users WHERE id = ?",
+      [userId]
+    );
+    console.log("Résultat DB:", rows);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });

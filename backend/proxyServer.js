@@ -3,7 +3,7 @@ const cors = require("cors");
 const axios = require("axios");
 
 const app = express();
-const PORT = 5000; // Port du serveur proxy
+const PORT = 5001; // Port du serveur proxy
 
 // Activer CORS pour autoriser toutes les origines
 app.use(cors());
@@ -81,16 +81,16 @@ app.get("/api/members-dues", async (req, res) => {
         "Content-Type": "application/json",
       },
     });
-    
+
     // Extraction en tenant compte d'une éventuelle structure { items: [...] }
     const teamsData = teamsResponse.data.items || teamsResponse.data;
     const teamIds = Array.isArray(teamsData)
       ? teamsData.map((team) => team.id)
       : [];
-    
+
     // Récupérer toutes les factures en parcourant toutes les pages
     const allInvoices = await fetchAllInvoices(teamIds);
-    
+
     // Renvoi uniquement du tableau d'invoices (sans infos de pagination)
     res.json(allInvoices);
   } catch (error) {
@@ -123,5 +123,7 @@ app.get("/api/teams/all", async (req, res) => {
 
 // Lancer le serveur proxy
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur proxy en cours d'exécution sur http://localhost:${PORT}`);
+  console.log(
+    `🚀 Serveur proxy en cours d'exécution sur http://localhost:${PORT}`
+  );
 });

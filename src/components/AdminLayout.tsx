@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,8 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [user, setUser] = useState({ firstName: "", lastName: "" });
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,8 +31,38 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     navigate("/");
   };
 
+  // Récupération des infos utilisateur depuis le backend
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch("http://localhost:5000/api/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUser({ firstName: data.firstName, lastName: data.lastName });
+      })
+      .catch((err) =>
+        console.error("Erreur lors de la récupération de l'utilisateur:", err)
+      );
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
+      {/* Bloc utilisateur fixe en haut à droite */}
+      <div className="fixed top-4 right-4 z-50 flex items-center space-x-2 bg-white dark:bg-rwdm-darkblue p-2 rounded shadow">
+        <span className="text-gray-800 dark:text-white font-medium">
+          {user.firstName} {user.lastName}
+        </span>
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75 animate-ping"></div>
+          <div className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></div>
+        </div>
+      </div>
+
       {/* Header mobile */}
       <header className="fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-12 glass-panel md:hidden">
         <div className="container mx-auto flex items-center justify-between">
@@ -43,7 +74,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               Admin RWDM
             </span>
           </div>
-
           <Button
             variant="ghost"
             size="icon"
@@ -64,14 +94,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="flex flex-col h-full">
           <div className="flex items-center space-x-2 p-6 border-b">
             <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
-              <img src="logo.png" alt="" />
+              <img src="logo.png" alt="Logo" />
             </div>
             <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
               Panneau d'administration
             </span>
           </div>
-
           <nav className="flex-1 p-4 space-y-2">
+            {/* Liens de navigation */}
             <Link to="/dashboard">
               <Button
                 variant={isActive("/dashboard") ? "default" : "ghost"}
@@ -157,7 +187,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Button>
             </Link>
           </nav>
-
           <div className="p-4 border-t">
             <Button
               variant="ghost"
