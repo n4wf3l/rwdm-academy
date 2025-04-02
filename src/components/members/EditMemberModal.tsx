@@ -22,23 +22,20 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const [firstName, setFirstName] = useState(member?.firstName || "");
   const [lastName, setLastName] = useState(member?.lastName || "");
   const [email, setEmail] = useState(member?.email || "");
-  const [functionTitle, setFunctionTitle] = useState(
-    member?.functionTitle || ""
-  );
+  const [func, setFunc] = useState(member?.function || ""); // fonction
   const [description, setDescription] = useState(member?.description || "");
   const [profilePicture, setProfilePicture] = useState(
     member?.profilePicture || ""
   );
   const [role, setRole] = useState(member?.role || "admin");
-  const [password, setPassword] = useState(""); // optionnel, pour mettre à jour le mot de passe
+  const [password, setPassword] = useState("");
 
-  // Actualiser les états lorsque le membre change
   useEffect(() => {
     if (member) {
       setFirstName(member.firstName);
       setLastName(member.lastName);
       setEmail(member.email);
-      setFunctionTitle(member.functionTitle);
+      setFunc(member.function || "");
       setDescription(member.description);
       setProfilePicture(member.profilePicture);
       setRole(member.role);
@@ -46,7 +43,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     }
   }, [member]);
 
-  // Permettre de changer l'image
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -60,7 +56,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     }
   };
 
-  // Fonction de sauvegarde qui effectue l'appel API PUT pour mettre à jour le membre
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const updatedMember = {
@@ -68,14 +63,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       firstName,
       lastName,
       email,
-      functionTitle,
+      function: func,
       description,
       profilePicture,
       role,
       password: password || undefined,
     };
 
-    // Appel de la fonction onSave passée par le parent
     await onSave(updatedMember);
     onClose();
   };
@@ -84,6 +78,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSave} className="space-y-4">
         <h2 className="text-lg font-bold">Modifier le membre</h2>
+
         <div className="flex items-center">
           <User className="mr-2" />
           <Input
@@ -94,6 +89,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             required
           />
         </div>
+
         <div className="flex items-center">
           <User className="mr-2" />
           <Input
@@ -104,6 +100,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             required
           />
         </div>
+
         <div className="flex items-center">
           <Mail className="mr-2" />
           <Input
@@ -114,15 +111,17 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             required
           />
         </div>
+
         <div className="flex items-center">
           <Briefcase className="mr-2" />
           <Input
             type="text"
             placeholder="Fonction"
-            value={functionTitle}
-            onChange={(e) => setFunctionTitle(e.target.value)}
+            value={func}
+            onChange={(e) => setFunc(e.target.value)}
           />
         </div>
+
         <div className="flex items-center">
           <FileText className="mr-2" />
           <Input
@@ -132,6 +131,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
+
         <div className="flex items-center">
           <Image className="mr-2" />
           <input
@@ -141,6 +141,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             className="border rounded p-2"
           />
         </div>
+
         <div className="flex items-center">
           <span className="mr-2 font-semibold">Rôle :</span>
           <select
@@ -150,8 +151,10 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           >
             <option value="admin">Admin</option>
             <option value="superadmin">Superadmin</option>
+            <option value="owner">Owner</option>
           </select>
         </div>
+
         <div className="flex items-center">
           <span className="mr-2 font-semibold">Mot de passe :</span>
           <Input
@@ -161,6 +164,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
         <Button type="submit" className="bg-rwdm-blue">
           Sauvegarder
         </Button>

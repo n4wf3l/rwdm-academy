@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import FullScreenLoader from "@/components/FullScreenLoader";
+import RoleLegendCard from "@/components/members/RoleLegendCard";
 
 interface Member {
   id: number;
@@ -16,9 +17,10 @@ interface Member {
   lastName: string;
   email: string;
   profilePicture: string;
-  functionTitle: string;
+  function: string;
   description: string;
   role: string;
+  createdAt: string;
 }
 
 const Members: React.FC = () => {
@@ -148,12 +150,13 @@ const Members: React.FC = () => {
       const data = await response.json();
       if (response.ok) {
         setMembers((prev) =>
-          prev.map((m) => (m.id === updatedMember.id ? updatedMember : m))
+          prev.map((m) => (m.id === updatedMember.id ? data : m))
         );
         toast({
           title: "Membre mis à jour",
           description: "Le membre a été mis à jour avec succès.",
         });
+        window.location.reload();
       } else {
         toast({
           title: "Erreur",
@@ -229,6 +232,7 @@ const Members: React.FC = () => {
             <TabsTrigger value="list">Tous les membres</TabsTrigger>
             <TabsTrigger value="create">Créer un membre</TabsTrigger>
           </TabsList>
+          <RoleLegendCard className="mt-4" />
 
           <TabsContent value="list">
             <MemberList
