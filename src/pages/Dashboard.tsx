@@ -67,19 +67,50 @@ const Dashboard = () => {
   const [newAppointmentEmail, setNewAppointmentEmail] = useState("");
   const [newAppointmentAdmin, setNewAppointmentAdmin] = useState("");
   const [newAppointmentNotes, setNewAppointmentNotes] = useState("");
+  const [pendingDeletion, setPendingDeletion] = useState<{
+    [key: string]: NodeJS.Timeout;
+  }>({});
+
+  const scheduleDeletion = (requestId: string) => {
+    const timeout = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/requests/${requestId}`,
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.ok) {
+          setRequests((prev) => prev.filter((r) => r.id !== requestId));
+          toast({
+            title: "Demande supprimée",
+            description: "La demande a été supprimée définitivement.",
+          });
+        }
+      } catch (error) {
+        console.error("Erreur de suppression différée :", error);
+      }
+    }, 10000); // 10 secondes
+
+    setPendingDeletion((prev) => ({ ...prev, [requestId]: timeout }));
+  };
+
+  const cancelScheduledDeletion = (requestId: string) => {
+    if (pendingDeletion[requestId]) {
+      clearTimeout(pendingDeletion[requestId]);
+      setPendingDeletion((prev) => {
+        const updated = { ...prev };
+        delete updated[requestId];
+        return updated;
+      });
+    }
+  };
 
   // 1) Récupérer les demandes depuis l'API
   useEffect(() => {
     fetchRequests();
   }, [token]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchRequests();
-    }, 5000); // toutes les 5 secondes
-
-    return () => clearInterval(interval);
-  }, []);
 
   async function fetchRequests() {
     try {
@@ -145,6 +176,10 @@ const Dashboard = () => {
           date: new Date(req.created_at),
           status: mapDbStatus(req.status),
           assignedTo: req.admin_id ? req.admin_id.toString() : "none",
+          rejectedAt: req.rejected_at
+            ? new Date(req.rejected_at.replace(" ", "T"))
+            : undefined,
+
           details: dataParsed, // <= c'est le plus important
         };
       });
@@ -325,6 +360,7 @@ const Dashboard = () => {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
+
       const response = await fetch(
         `http://localhost:5000/api/requests/${requestId}`,
         {
@@ -333,19 +369,28 @@ const Dashboard = () => {
           body: JSON.stringify(bodyToSend),
         }
       );
-      if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour du statut");
+
+      if (!response.ok) throw new Error("Erreur de mise à jour");
+
+      // ✅ Recharger les données pour obtenir le nouveau rejectedAt
+      await fetchRequests();
+
+      // Timer côté client
+      if (newStatus === "rejected") {
+        scheduleDeletion(requestId);
+      } else if (newStatus === "in-progress") {
+        cancelScheduledDeletion(requestId);
       }
+
       toast({
         title: "Statut mis à jour",
         description: `Le statut a été changé en "${dbStatus}".`,
       });
-      await fetchRequests();
     } catch (error) {
       console.error("Erreur lors du changement de statut :", error);
       toast({
         title: "Erreur",
-        description: "Impossible de changer le statut de la demande.",
+        description: "Impossible de changer le statut.",
         variant: "destructive",
       });
     }

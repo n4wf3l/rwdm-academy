@@ -429,8 +429,8 @@ app.get("/api/requests", authMiddleware, async (req, res) => {
     const connection = await mysql.createConnection(dbConfig);
 
     const query = `
-        SELECT r.id, r.type, r.data, r.status, r.created_at, r.updated_at,
-               u.id AS admin_id, u.firstName AS admin_firstName, u.lastName AS admin_lastName, u.email AS admin_email
+SELECT r.id, r.type, r.data, r.status, r.created_at, r.updated_at,
+       r.rejected_at, u.id AS admin_id, u.firstName AS admin_firstName, u.lastName AS admin_lastName, u.email AS admin_email
         FROM requests r
         LEFT JOIN users u ON r.assigned_to = u.id
         ORDER BY r.created_at DESC
@@ -458,13 +458,20 @@ app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
       status = "Assigné";
     }
 
-    // Construction dynamique de la requête
     const columnsToUpdate = [];
     const values = [];
 
     if (status !== undefined) {
       columnsToUpdate.push("status = ?");
       values.push(status);
+
+      // Met à jour rejected_at si le statut est "Rejeté"
+      if (status === "Rejeté" || status === "rejected") {
+        columnsToUpdate.push("rejected_at = NOW()");
+        console.log("🛠️ PATCH reçu avec:", { status, assignedTo });
+      } else {
+        columnsToUpdate.push("rejected_at = NULL");
+      }
     }
 
     if (assignedTo !== undefined) {
@@ -475,10 +482,10 @@ app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
 
     columnsToUpdate.push("updated_at = CURRENT_TIMESTAMP");
     const sql = `
-        UPDATE requests
-        SET ${columnsToUpdate.join(", ")}
-        WHERE id = ?
-      `;
+      UPDATE requests
+      SET ${columnsToUpdate.join(", ")}
+      WHERE id = ?
+    `;
     values.push(id);
 
     const [result] = await connection.execute(sql, values);
@@ -561,6 +568,7 @@ app.get("/api/appointments", async (req, res) => {
     await connection.end();
 
     console.log("📥 API a renvoyé :", rows); // Vérification
+    console.log("🚀 Données envoyées au frontend :", rows);
     res.json(rows);
   } catch (error) {
     console.error(
