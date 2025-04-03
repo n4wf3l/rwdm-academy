@@ -141,6 +141,23 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     onUpdateStatus(requestId, newStatus);
   };
 
+  function formatElapsedTime(past: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - past.getTime();
+    const seconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return "À l’instant";
+    if (minutes < 60)
+      return `Il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
+    if (hours < 24) return `Il y a ${hours} heure${hours > 1 ? "s" : ""}`;
+    if (days < 3) return `Il y a ${days} jour${days > 1 ? "s" : ""}`;
+
+    return past.toLocaleDateString("fr-BE");
+  }
+
   function formatRemainingTime(
     rejectedAt: Date | undefined,
     now: Date
@@ -214,7 +231,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   <div className="text-xs text-gray-500">{request.email}</div>
                 </div>
               </TableCell>
-              <TableCell>{request.date.toLocaleDateString("fr-BE")}</TableCell>
+              <TableCell>{formatElapsedTime(request.date)}</TableCell>
               <TableCell>{getStatusBadge(request.status)}</TableCell>
               <TableCell>
                 <Select
