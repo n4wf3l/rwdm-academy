@@ -276,15 +276,17 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
               <TableCell className="text-center">
                 {request.status === "rejected" ? (
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="text-xs text-red-600">
-                      Suppression dans{" "}
-                      {formatRemainingTime(request.rejectedAt, now)}
+                  <div className="flex justify-between items-center w-full">
+                    <div className="text-xs text-red-600 text-center leading-tight w-full">
+                      <div>Suppression dans</div>
+                      <div className="font-semibold">
+                        {formatRemainingTime(request.rejectedAt, now)}
+                      </div>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
+                      className="ml-2 text-yellow-600 border-yellow-600 hover:bg-yellow-100"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleUpdateStatus(request.id, "in-progress");
