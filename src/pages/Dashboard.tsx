@@ -529,6 +529,7 @@ const Dashboard = () => {
               totalPages={totalCompletedPages}
               onPageChange={setCompletedRequestsPage}
               onViewDetails={openRequestDetails}
+              onUpdateStatus={handleUpdateStatus}
             />
           </TabsContent>
 

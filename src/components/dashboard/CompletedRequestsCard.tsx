@@ -26,6 +26,7 @@ interface CompletedRequestsCardProps {
   admins?: Admin[]; // Liste des admins pour afficher le nom/prénom (optionnel)
   onPageChange: (page: number) => void;
   onViewDetails: (request: Request) => void;
+  onUpdateStatus: (requestId: string, newStatus: RequestStatus) => void;
 }
 
 // Fonction pour formater l'ID de la demande
@@ -73,6 +74,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
   admins,
   onPageChange,
   onViewDetails,
+  onUpdateStatus,
 }) => {
   return (
     <Card>
@@ -155,7 +157,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              updateStatus(request.id, "in-progress");
+                              onUpdateStatus(request.id, "in-progress");
                             }}
                             disabled={request.status === "in-progress"}
                           >

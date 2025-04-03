@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Eye, Clock, Check, X, Calendar } from "lucide-react"; // Importer l'icône Calendar
+import { useToast } from "@/hooks/use-toast";
 
 // Types localement
 export type RequestStatus =
@@ -112,6 +113,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     [key: string]: NodeJS.Timeout;
   }>({});
   const [now, setNow] = useState(new Date());
+  const { toast } = useToast();
 
   const handleUpdateStatus = (requestId: string, newStatus: RequestStatus) => {
     if (newStatus === "rejected") {
@@ -324,25 +326,39 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                       className="text-green-600 border-green-600 hover:bg-green-100"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (assignedValue === "none") {
+                          toast({
+                            title: "Assignation requise",
+                            description:
+                              "Veuillez assigner un administrateur avant d'accepter.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
                         onUpdateStatus(request.id, "completed");
                       }}
                       disabled={request.status === "completed"}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
+
                     <Button
                       variant="outline"
                       size="sm"
                       className="text-red-600 border-red-600 hover:bg-red-100"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Mémorise l'heure exacte du rejet
-
+                        if (assignedValue === "none") {
+                          toast({
+                            title: "Assignation requise",
+                            description:
+                              "Veuillez assigner un administrateur avant de rejeter.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
                         handleUpdateStatus(request.id, "rejected");
                       }}
-                      disabled={
-                        request.status === ("rejected" as RequestStatus)
-                      }
                     >
                       <X className="h-4 w-4" />
                     </Button>
