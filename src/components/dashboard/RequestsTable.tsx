@@ -191,9 +191,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
           <TableHead>ID</TableHead>
           <TableHead>Type</TableHead>
           <TableHead>Nom</TableHead>
-          <TableHead>Date</TableHead>
           <TableHead>Statut</TableHead>
           <TableHead>Assigné à</TableHead>
+          <TableHead>Date</TableHead>
           <TableHead className="text-center border-l">Rendez-vous</TableHead>
           <TableHead className="text-center">Actions</TableHead>
         </TableRow>
@@ -201,11 +201,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
       <TableBody>
         {sortedRequests.map((request) => {
-          // Si request.assignedTo est null ou undefined, on affiche "none"
           const assignedValue = request.assignedTo ?? "none";
-          if (request.status === "rejected") {
-            console.log("⏰ request.rejectedAt:", request.rejectedAt);
-          }
           return (
             <TableRow
               key={request.id}
@@ -215,15 +211,18 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
               <TableCell className="font-medium">
                 {formatRequestId(request.id)}
               </TableCell>
+
               <TableCell>{translateRequestType(request.type)}</TableCell>
+
               <TableCell>
                 <div>
                   <div>{request.name}</div>
                   <div className="text-xs text-gray-500">{request.email}</div>
                 </div>
               </TableCell>
-              <TableCell>{formatElapsedTime(request.date)}</TableCell>
+
               <TableCell>{getStatusBadge(request.status)}</TableCell>
+
               <TableCell>
                 <Select
                   value={assignedValue}
@@ -247,6 +246,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   </SelectContent>
                 </Select>
               </TableCell>
+
+              <TableCell>{formatElapsedTime(request.date)}</TableCell>
 
               <TableCell className="text-center border-l">
                 {request.type === "registration" ? (
@@ -324,7 +325,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                           });
                           return;
                         }
-                        onUpdateStatus(request.id, "completed");
+                        onUpdateStatus(
+                          request.id,
+                          request.type === "accident-report"
+                            ? "in-progress"
+                            : "completed"
+                        );
                       }}
                       disabled={request.status === "completed"}
                     >

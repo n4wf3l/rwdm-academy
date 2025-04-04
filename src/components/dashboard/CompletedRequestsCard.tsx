@@ -97,9 +97,9 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                   <TableHead>ID</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Date</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Assigné à</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -115,6 +115,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                               request.assignedTo.toString()
                           )?.name) ||
                         "Inconnu";
+
                   return (
                     <TableRow
                       key={request.id}
@@ -124,9 +125,11 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                       <TableCell className="font-medium">
                         {formatRequestId(request.id)}
                       </TableCell>
+
                       <TableCell>
                         {translateRequestType(request.type)}
                       </TableCell>
+
                       <TableCell>
                         <div>
                           <div>{request.name}</div>
@@ -135,11 +138,15 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                           </div>
                         </div>
                       </TableCell>
+
+                      <TableCell>{getStatusBadge(request.status)}</TableCell>
+
+                      <TableCell>{assignedName}</TableCell>
+
                       <TableCell>
                         {request.date.toLocaleDateString("fr-BE")}
                       </TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>{assignedName}</TableCell>
+
                       <TableCell>
                         <div className="flex gap-2">
                           <Button

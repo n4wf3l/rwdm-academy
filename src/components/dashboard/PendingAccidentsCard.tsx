@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,22 +9,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Eye, Send } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Send, Pencil } from "lucide-react";
 import { Request } from "@/components/RequestDetailsModal";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export interface Admin {
   id: string;
   name: string;
 }
 
-// Fonction pour formater l'ID de la demande sous forme DEM-XXX
 const formatRequestId = (id: string | number): string => {
   const numericId = typeof id === "number" ? id : parseInt(id, 10);
   return `DEM-${numericId.toString().padStart(3, "0")}`;
 };
 
-// Fonction pour calculer le délai restant (ou le retard) en jours
-// On considère que 21 jours après l'accident constitue la deadline.
 const getDeadlineInfo = (accidentDateString?: string): string => {
   if (!accidentDateString) return "N/A";
   const accidentDate = new Date(accidentDateString);
@@ -44,7 +51,7 @@ interface PendingAccidentsCardProps {
   onPageChange: (page: number) => void;
   onViewDetails: (request: Request) => void;
   onSendToFederation: (requestId: string) => void;
-  admins?: Admin[]; // Pour afficher le nom/prénom de l'admin assigné
+  admins?: Admin[];
 }
 
 const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
@@ -56,53 +63,78 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
   onSendToFederation,
   admins,
 }) => {
-  if (pendingAccidents.length === 0) {
-    return null;
-  }
+  const [selectedIdToSend, setSelectedIdToSend] = useState<string | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState("federation@rbfa.be");
+  const [newEmail, setNewEmail] = useState(recipientEmail);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+
+  if (pendingAccidents.length === 0) return null;
 
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>
-          Déclarations d'accident en attente ({pendingAccidents.length})
-        </CardTitle>
+        <div className="flex justify-between items-center w-full">
+          <CardTitle>
+            Déclarations d'accident en attente ({pendingAccidents.length})
+          </CardTitle>
+          <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Modifier l’email de l’Union Belge</DialogTitle>
+              </DialogHeader>
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Nouveau destinataire"
+              />
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    setRecipientEmail(newEmail);
+                    setEmailDialogOpen(false);
+                  }}
+                >
+                  Enregistrer
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
+
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Nom</TableHead>
                 <TableHead>Date d'accident</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Statut</TableHead>
                 <TableHead>Assigné à</TableHead>
                 <TableHead>Deadline</TableHead>
                 <TableHead>Actions</TableHead>
+                <TableHead>Destinataires</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pendingAccidents.map((request) => {
-                // Récupération de la date d'accident depuis les détails (stockée en JSON)
-                const accidentDateStr =
-                  request.details && "accidentDate" in request.details
-                    ? request.details.accidentDate
-                    : null;
-                // Récupération du nom de l'admin assigné ou affichage "Non assigné"
+                const accidentDateStr = request.details?.accidentDate || null;
+
                 const assignedName =
                   !request.assignedTo || request.assignedTo === "none"
                     ? "Non assigné"
-                    : (admins &&
-                        admins.find(
-                          (admin) =>
-                            admin.id.toString() ===
-                            request.assignedTo.toString()
-                        )?.name) ||
-                      "Inconnu";
-                // Récupération du chemin du PDF
-                const certificateLink =
-                  request.details && "filePath" in request.details
-                    ? request.details.filePath
-                    : null;
+                    : admins?.find(
+                        (admin) =>
+                          admin.id.toString() === request.assignedTo?.toString()
+                      )?.name || "Inconnu";
+
                 return (
                   <TableRow
                     key={request.id}
@@ -112,11 +144,16 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     <TableCell className="font-medium">
                       {formatRequestId(request.id)}
                     </TableCell>
-                    <TableCell>{request.name}</TableCell>
                     <TableCell>
                       {accidentDateStr
                         ? new Date(accidentDateStr).toLocaleDateString("fr-BE")
                         : "N/A"}
+                    </TableCell>
+                    <TableCell>{request.name}</TableCell>
+                    <TableCell>
+                      <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
+                        En cours
+                      </div>
                     </TableCell>
                     <TableCell>{assignedName}</TableCell>
                     <TableCell>{getDeadlineInfo(accidentDateStr)}</TableCell>
@@ -135,15 +172,19 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                          className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onSendToFederation(request.id);
+                            setSelectedIdToSend(request.id);
                           }}
                         >
-                          <Send className="h-4 w-4 mr-1" />
-                          <span>Envoyer</span>
+                          <Send className="h-4 w-4" />
                         </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs text-gray-700">
+                        {recipientEmail}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -179,6 +220,19 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
           </div>
         )}
       </CardContent>
+
+      <ConfirmationDialog
+        open={!!selectedIdToSend}
+        onClose={() => setSelectedIdToSend(null)}
+        onConfirm={() => {
+          if (selectedIdToSend) {
+            onSendToFederation(selectedIdToSend);
+            setSelectedIdToSend(null);
+          }
+        }}
+        title="Envoyer à l'Union belge"
+        message="Êtes-vous sûr de vouloir envoyer cette déclaration d'accident à l'Union belge de football ?"
+      />
     </Card>
   );
 };
