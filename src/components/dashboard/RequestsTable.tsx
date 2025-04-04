@@ -55,7 +55,8 @@ export interface RequestsTableProps {
   onAssignRequest: (requestId: string, adminId: string) => void;
   onUpdateStatus: (requestId: string, newStatus: RequestStatus) => void;
   onViewDetails: (request: Request) => void;
-  onOpenAppointmentDialog: (request: Request) => void; // Nouvelle prop
+  onOpenAppointmentDialog: (request: Request) => void;
+  onRequestDeleted?: (requestId: string) => void;
 }
 
 /**
@@ -108,6 +109,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   onUpdateStatus,
   onViewDetails,
   onOpenAppointmentDialog,
+  onRequestDeleted,
 }) => {
   const [pendingDeletion, setPendingDeletion] = useState<{
     [key: string]: NodeJS.Timeout;
@@ -116,20 +118,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   const { toast } = useToast();
 
   const handleUpdateStatus = (requestId: string, newStatus: RequestStatus) => {
-    if (newStatus === "rejected") {
-      const timeout = setTimeout(() => {
-        fetch(`http://localhost:5000/api/requests/${requestId}`, {
-          method: "DELETE",
-        }).then(() => {
-          // Optionnel : tu peux ici aussi appeler un callback pour mettre à jour l'état global
-        });
-      }, 10000);
-
-      setPendingDeletion((prev) => ({
-        ...prev,
-        [requestId]: timeout,
-      }));
-    }
+    // Rien ici pour "rejected", car la suppression est gérée dans Dashboard
 
     if (newStatus === "in-progress" && pendingDeletion[requestId]) {
       clearTimeout(pendingDeletion[requestId]);

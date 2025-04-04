@@ -215,6 +215,61 @@ const Dashboard = () => {
       });
 
       setRequests(formattedRequests);
+      // 🔁 Vérifier si des demandes déjà "rejected" doivent être supprimées automatiquement
+      formattedRequests.forEach((req) => {
+        if (
+          req.status === "rejected" &&
+          req.rejectedAt &&
+          !pendingDeletion[req.id]
+        ) {
+          const now = new Date();
+          const rejectedAt = new Date(req.rejectedAt);
+          const deletionDeadline = new Date(
+            rejectedAt.getTime() + 24 * 60 * 60 * 1000
+          );
+          const timeLeft = deletionDeadline.getTime() - now.getTime();
+
+          if (timeLeft > 0) {
+            // Planifie la suppression exactement à la fin des 24h
+            const timeout = setTimeout(async () => {
+              try {
+                const res = await fetch(
+                  `http://localhost:5000/api/requests/${req.id}`,
+                  {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                  }
+                );
+                if (res.ok) {
+                  setRequests((prev) => prev.filter((r) => r.id !== req.id));
+                  toast({
+                    title: "Demande supprimée automatiquement",
+                    description: `La demande ${req.id} a été supprimée après 24h.`,
+                  });
+                }
+              } catch (err) {
+                console.error("Erreur suppression auto :", err);
+              }
+            }, timeLeft);
+
+            setPendingDeletion((prev) => ({ ...prev, [req.id]: timeout }));
+          } else {
+            // 24h déjà passées, suppression immédiate
+            fetch(`http://localhost:5000/api/requests/${req.id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            }).then((res) => {
+              if (res.ok) {
+                setRequests((prev) => prev.filter((r) => r.id !== req.id));
+                toast({
+                  title: "Demande supprimée automatiquement",
+                  description: `La demande ${req.id} a été supprimée après 24h.`,
+                });
+              }
+            });
+          }
+        }
+      });
     } catch (error) {
       console.error("Erreur API:", error);
     }
@@ -332,6 +387,11 @@ const Dashboard = () => {
     pendingAccidentReportsPage * pendingAccidentReportsPerPage
   );
 
+  const handleRequestDeleted = (id: string) => {
+    console.log("🗑️ Suppression dans Dashboard pour ID :", id);
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+  };
+
   const handleAssignRequest = async (requestId: string, adminId: string) => {
     try {
       // si "none", on repasse le statut => "new"
@@ -386,6 +446,9 @@ const Dashboard = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
+      // ❌ On NE planifie PAS ici la suppression directe, car le rejectedAt n’est pas encore enregistré
+      // ✅ On attend que la réponse PATCH soit terminée
+
       const response = await fetch(
         `http://localhost:5000/api/requests/${requestId}`,
         {
@@ -397,13 +460,11 @@ const Dashboard = () => {
 
       if (!response.ok) throw new Error("Erreur de mise à jour");
 
-      // ✅ Recharger les données pour obtenir le nouveau rejectedAt
-      await fetchRequests();
+      // ✅ Maintenant que rejectedAt est bien défini dans la DB, on recharge les données
+      await fetchRequests(); // cette fonction relancera la logique de setTimeout automatiquement avec le bon rejectedAt
 
-      // Timer côté client
-      if (newStatus === "rejected") {
-        scheduleDeletion(requestId);
-      } else if (newStatus === "in-progress") {
+      // ✅ Si on annule un rejet => annuler le timer
+      if (newStatus === "in-progress") {
         cancelScheduledDeletion(requestId);
       }
 
@@ -526,6 +587,7 @@ const Dashboard = () => {
                     onUpdateStatus={handleUpdateStatus}
                     onViewDetails={openRequestDetails}
                     onOpenAppointmentDialog={openAppointmentDialog} // Passer la fonction ici
+                    onRequestDeleted={handleRequestDeleted}
                   />
                   <AppointmentDialog
                     isOpen={isAppointmentDialogOpen}

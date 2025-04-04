@@ -119,6 +119,7 @@ export interface Request {
   status: RequestStatus;
   assignedTo?: string;
   details: RequestDetails;
+  rejectedAt?: Date;
 }
 
 export interface RequestDetailsModalProps {

@@ -502,6 +502,28 @@ app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// ✅ Route DELETE pour supprimer une demande (request)
+app.delete("/api/requests/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [result] = await connection.execute(
+      "DELETE FROM requests WHERE id = ?",
+      [id]
+    );
+    await connection.end();
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "Demande supprimée avec succès." });
+    } else {
+      res.status(404).json({ message: "Demande non trouvée." });
+    }
+  } catch (error) {
+    console.error("❌ Erreur lors de la suppression de la demande :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+});
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.post("/api/upload", upload.single("pdfFile"), (req, res) => {
