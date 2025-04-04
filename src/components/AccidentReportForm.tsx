@@ -93,18 +93,18 @@ const AccidentReportForm: React.FC = () => {
         description: "Vous ne pouvez pas déclarer un accident dans le futur.",
         variant: "destructive",
       });
-    } else if (differenceInDays > 15) {
+    } else if (differenceInDays > 19) {
       toast({
         title: "Déclaration refusée",
         description:
-          "Votre déclaration ne peut plus être prise en compte, car l'accident a eu lieu il y a plus de 15 jours.",
+          "Votre déclaration ne peut plus être prise en compte, car l'accident a eu lieu il y a plus de 19 jours.",
         variant: "destructive",
       });
     } else {
       toast({
         title: "Déclaration valide",
         description:
-          "Votre déclaration d'accident respecte la limite du délai de 15 jours.",
+          "Votre déclaration d'accident respecte la limite du délai de 19 jours.",
         variant: "default",
       });
       setAccidentDate(date);
@@ -222,11 +222,12 @@ const AccidentReportForm: React.FC = () => {
             title="Important"
             subtitle={
               <>
-                Veuillez noter que vous devez envoyer votre demande dans un
-                délai de{" "}
-                <span className="text-red-500 font-semibold">15 jours</span>{" "}
-                maximum après l'accident. Le quinzième jour est accepté. Passé
-                ce délai, la demande ne pourra plus être prise en compte.
+                Veuillez noter qu’il est recommandé d’envoyer votre demande dans
+                un délai maximum de{" "}
+                <span className="text-red-500 font-semibold">19 jours</span>{" "}
+                suivant l’accident. Le dix-neuvième jour peut être refusé.
+                Au-delà de ce délai, la demande ne pourra plus être prise en
+                compte.
               </>
             }
             children={null}
@@ -313,11 +314,13 @@ const AccidentReportForm: React.FC = () => {
                       <SelectValue placeholder="Sélectionnez une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 17 }, (_, i) => (
-                        <SelectItem key={`U${i + 5}`} value={`U${i + 5}`}>
-                          {`U${i + 5}`}
-                        </SelectItem>
-                      ))}
+                      {Array.from({ length: 17 }, (_, i) => i + 5)
+                        .filter((age) => age !== 20)
+                        .map((age) => (
+                          <SelectItem key={`U${age}`} value={`U${age}`}>
+                            {`U${age}`}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>

@@ -72,7 +72,18 @@ const NOYAUX = [
   "U19",
   "U21",
 ];
-const POSITIONS = ["Gardien", "Défenseur", "Milieu de terrain", "Attaquant"];
+const POSITIONS = [
+  "Gardien",
+  "Arrière droit",
+  "Arrière gauche",
+  "Défenseur central",
+  "Milieu récupérateur",
+  "Milieu relayeur",
+  "Milieu offensif",
+  "Ailier droit",
+  "Ailier gauche",
+  "Attaquant pointe",
+];
 
 const SelectionTestsForm: React.FC = () => {
   const navigate = useNavigate();
@@ -273,7 +284,7 @@ const SelectionTestsForm: React.FC = () => {
           <CardContent className="pt-6">
             <FormSection
               title="Informations sur les tests"
-              subtitle="Veuillez sélectionner le noyau et la période des tests"
+              subtitle="Veuillez sélectionner le noyau"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">

@@ -19,6 +19,7 @@ import {
   Mail,
   Check,
   X,
+  GraduationCap,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -44,6 +45,7 @@ export type RequestType =
 export interface RequestDetails {
   // Pour inscription
   season?: string;
+  academy?: string;
   birthPlace?: string;
   address?: string;
   postalCode?: string;
@@ -68,6 +70,7 @@ export interface RequestDetails {
   parent1Gsm?: string;
 
   // Pour inscription – responsable secondaire
+  parent2Type?: string;
   parent2LastName?: string;
   parent2FirstName?: string;
   parent2Email?: string;
@@ -200,11 +203,18 @@ const renderRegistrationContent = (request: Request) => {
   return (
     <>
       <Section title="Saison d'inscription">
-        <Field
-          label="Saison"
-          value={d.season || "-"}
-          icon={<CalendarIcon className="h-4 w-4" />}
-        />
+        <div className="flex gap-4 flex-wrap">
+          <Field
+            label="Saison"
+            value={d.season || "-"}
+            icon={<CalendarIcon className="h-4 w-4" />}
+          />
+          <Field
+            label="Académie"
+            value={d.academy || "-"}
+            icon={<GraduationCap className="h-4 w-4" />}
+          />
+        </div>
       </Section>
 
       <Section title="Informations du joueur">
@@ -251,11 +261,6 @@ const renderRegistrationContent = (request: Request) => {
           <Field
             label="Club actuel"
             value={d.currentClub || "-"}
-            icon={<FileText className="h-4 w-4" />}
-          />
-          <Field
-            label="Position"
-            value={d.position || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
@@ -318,6 +323,11 @@ const renderRegistrationContent = (request: Request) => {
       {(d.parent2LastName || d.parent2FirstName || d.parent2Phone) && (
         <Section title="Informations du responsable secondaire">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field
+              label="Type"
+              value={d.parent2Type || "-"}
+              icon={<User className="h-4 w-4" />}
+            />
             <Field
               label="Nom"
               value={d.parent2LastName || "-"}

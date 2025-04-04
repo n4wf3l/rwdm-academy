@@ -87,7 +87,9 @@ export function getStatusBadge(status: RequestStatus) {
     case "assigned":
       return <Badge className="bg-purple-500">Assigné</Badge>;
     case "in-progress":
-      return <Badge className="bg-yellow-500">En cours</Badge>;
+      return (
+        <Badge className="bg-yellow-500 whitespace-nowrap">En cours</Badge>
+      );
     case "completed":
       return <Badge className="bg-green-500">Terminé</Badge>;
     case "rejected":

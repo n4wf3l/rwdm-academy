@@ -66,6 +66,7 @@ const RegistrationForm = () => {
 
   // États pour les informations du joueur
   const [season, setSeason] = useState(SEASONS[1]);
+  const [academy, setAcademy] = useState("");
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [birthDate, setBirthDate] = useState<Date | undefined>();
@@ -87,6 +88,7 @@ const RegistrationForm = () => {
   const [parent1Gsm, setParent1Gsm] = useState("");
 
   // Pour le responsable secondaire (optionnel)
+  const [parent2Type, setParent2Type] = useState("");
   const [parent2LastName, setParent2LastName] = useState("");
   const [parent2FirstName, setParent2FirstName] = useState("");
   const [parent2Email, setParent2Email] = useState("");
@@ -162,6 +164,7 @@ const RegistrationForm = () => {
       type: "registration",
       formData: {
         season,
+        academy,
         lastName,
         firstName,
         birthDate: birthDate ? birthDate.toISOString() : null,
@@ -179,6 +182,7 @@ const RegistrationForm = () => {
         parent1Address,
         parent1PostalCode,
         parent1Gsm,
+        parent2Type,
         parent2LastName,
         parent2FirstName,
         parent2Email,
@@ -228,23 +232,47 @@ const RegistrationForm = () => {
       >
         <Card className="glass-panel">
           <CardContent className="pt-6">
-            <FormSection
-              title="Saison d'inscription"
-              subtitle="Veuillez sélectionner la saison pour laquelle vous souhaitez inscrire le joueur"
-            >
-              <Select value={season} onValueChange={setSeason}>
-                <SelectTrigger className="form-input-base">
-                  <SelectValue placeholder="Sélectionnez une saison" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SEASONS.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Sélection de la saison */}
+              <FormSection
+                title="Saison d'inscription"
+                subtitle="Veuillez sélectionner la saison pour laquelle vous souhaitez inscrire le joueur"
+              >
+                <Select value={season} onValueChange={setSeason}>
+                  <SelectTrigger className="form-input-base">
+                    <SelectValue placeholder="Sélectionnez une saison" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEASONS.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormSection>
+
+              {/* Sélection de l'académie */}
+              <FormSection
+                title="Académie"
+                subtitle="Veuillez sélectionner l'académie souhaitée (plus d'informations sur la page À propos)"
+              >
+                <Select value={academy} onValueChange={setAcademy}>
+                  <SelectTrigger className="form-input-base">
+                    <SelectValue placeholder="Sélectionnez une académie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Brussels Eagles Football Academy">
+                      Brussels Eagles Football Academy
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormSection>
+                    <SelectItem value="RF For Ever Academy">
+                      RF For Ever Academy
+                    </SelectItem>
+                    <SelectItem value="RWDM Academy">RWDM Academy</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormSection>
+            </div>
           </CardContent>
         </Card>
 
@@ -496,7 +524,10 @@ const RegistrationForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-3">
                       <div className="space-y-2">
                         <Label htmlFor="parent2Type">Type</Label>
-                        <Select defaultValue="mère">
+                        <Select
+                          value={parent2Type}
+                          onValueChange={setParent2Type}
+                        >
                           <SelectTrigger className="form-input-base">
                             <SelectValue placeholder="Sélectionnez le type" />
                           </SelectTrigger>
