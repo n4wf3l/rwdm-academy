@@ -1,5 +1,4 @@
 import { format, isSameDay } from "date-fns";
-import { ReactNode } from "react";
 
 // Types for our planning
 export type AppointmentType =
@@ -10,16 +9,16 @@ export type AppointmentType =
   | "other";
 
 export interface Appointment {
-  time: ReactNode;
-  adminLastName: any;
-  adminFirstName: any;
   id: string;
   date: Date;
+  time: string;
   type: AppointmentType;
   personName: string;
-  adminName: string;
-  notes?: string;
   email?: string;
+  adminName: string;
+  adminFirstName?: string;
+  adminLastName?: string;
+  notes?: string;
 }
 
 // Mock data for our demo
@@ -32,6 +31,8 @@ export const AVAILABLE_TIMES = [
   "10:30",
   "11:00",
   "11:30",
+  "12:00",
+  "12:30",
   "13:00",
   "13:30",
   "14:00",
@@ -41,6 +42,12 @@ export const AVAILABLE_TIMES = [
   "16:00",
   "16:30",
   "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "19:30",
+  "20:00",
 ];
 
 // Available admins
@@ -96,7 +103,15 @@ export const groupAppointmentsByDay = (appointments: Appointment[]) => {
   const grouped: Record<string, Appointment[]> = {};
 
   appointments.forEach((appointment) => {
-    const dateStr = format(appointment.date, "yyyy-MM-dd");
+    if (
+      !(appointment.date instanceof Date) ||
+      isNaN(appointment.date.getTime())
+    ) {
+      console.error("⛔ Mauvaise date dans le rendez-vous :", appointment);
+      return; // ignore cette entrée corrompue
+    }
+
+    const dateStr = format(appointment.date, "yyyy-MM-dd"); // ✅ Ne plantera plus
     if (!grouped[dateStr]) {
       grouped[dateStr] = [];
     }
@@ -139,14 +154,25 @@ export const isTimeSlotAvailable = (
 };
 
 // Get available time slots for a date
-export const getAvailableTimeSlotsForDate = (
+export function getAvailableTimeSlotsForDate(
   appointments: Appointment[],
   date: Date
-) => {
-  return AVAILABLE_TIMES.filter((time) =>
-    isTimeSlotAvailable(appointments, date, time)
+): string[] {
+  const validAppointments = appointments.filter(
+    (a) => a.date instanceof Date && !isNaN(a.date.getTime())
   );
-};
+
+  const taken = validAppointments
+    .filter(
+      (a) =>
+        a.date.getFullYear() === date.getFullYear() &&
+        a.date.getMonth() === date.getMonth() &&
+        a.date.getDate() === date.getDate()
+    )
+    .map((a) => a.time); // Assurez-vous que vous utilisez a.time ici
+
+  return AVAILABLE_TIMES.filter((time) => !taken.includes(time));
+}
 
 // Format hour (9 -> 09:00)
 export const formatHour = (hour: number) => {

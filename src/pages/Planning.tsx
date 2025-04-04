@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -170,9 +170,10 @@ const Planning = () => {
   );
 
   // Créneaux disponibles pour la date sélectionnée du nouveau rendez-vous
-  const availableTimeSlots = newAppointmentDate
-    ? getAvailableTimeSlotsForDate(appointments, newAppointmentDate)
-    : [];
+  const availableTimeSlots = useMemo(() => {
+    if (!newAppointmentDate) return [];
+    return getAvailableTimeSlotsForDate(appointments, newAppointmentDate);
+  }, [appointments, newAppointmentDate]);
 
   // Fonction pour déterminer si une date a des rendez-vous
   const hasAppointmentsOnDate = (date: Date) => {
@@ -439,7 +440,10 @@ const Planning = () => {
         newAppointmentNotes={newAppointmentNotes}
         setNewAppointmentNotes={setNewAppointmentNotes}
         availableTimeSlots={availableTimeSlots}
-        addAppointment={addAppointment}
+        appointments={appointments}
+        addAppointmentToState={(appointment) =>
+          setAppointments((prev) => [...prev, appointment])
+        }
       />
       {/* Modal for appointment details */}
       <AppointmentDetailsDialog

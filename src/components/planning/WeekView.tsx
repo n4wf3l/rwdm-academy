@@ -38,21 +38,28 @@ const filterAppointmentsForHourAndDate = (
   date: Date,
   hour: number
 ) => {
-  console.log("🔎 Vérification des filtres :", { date, hour, appointments });
-
   return appointments.filter((a) => {
     const appointmentDate = new Date(a.date);
-    const appointmentHour =
-      "time" in a ? parseInt((a as any).time.split(":")[0], 10) : -1;
+
+    const hourFromDate = appointmentDate.getHours();
+    const hourFromTimeString = a.time
+      ? parseInt(a.time.split(":")[0], 10)
+      : null;
+
+    const matchHour =
+      hourFromTimeString !== null
+        ? hourFromTimeString === hour
+        : hourFromDate === hour;
 
     return (
       appointmentDate.getFullYear() === date.getFullYear() &&
       appointmentDate.getMonth() === date.getMonth() &&
       appointmentDate.getDate() === date.getDate() &&
-      appointmentHour === hour
+      matchHour
     );
   });
 };
+
 const WeekView: React.FC<WeekViewProps> = ({
   currentWeek,
   daysOfWeek,

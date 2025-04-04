@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,11 @@ import CompletedRequestsCard from "@/components/dashboard/CompletedRequestsCard"
 import PendingAccidentsCard from "@/components/dashboard/PendingAccidentsCard";
 import StatisticsCard from "@/components/dashboard/StatisticsCard";
 import AppointmentDialog from "@/components/dashboard/AppointmentDialog";
-import { AppointmentType } from "@/components/planning/planningUtils";
+import {
+  Appointment,
+  AppointmentType,
+  getAvailableTimeSlotsForDate,
+} from "@/components/planning/planningUtils";
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 
 // Définition locale du type Admin
@@ -70,6 +74,32 @@ const Dashboard = () => {
   const [pendingDeletion, setPendingDeletion] = useState<{
     [key: string]: NodeJS.Timeout;
   }>({});
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      const response = await fetch("http://localhost:5000/api/appointments", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await response.json();
+      console.log("Données des rendez-vous :", data); // Ajoutez ce log
+      const formattedAppointments = data.map((appointment: any) => ({
+        ...appointment,
+        date: new Date(appointment.date),
+        time: appointment.time,
+      }));
+
+      setAppointments(formattedAppointments);
+    };
+
+    fetchAppointments();
+  }, []);
+
+  // Calculer les créneaux horaires disponibles pour la date sélectionnée
+  const availableTimeSlots = useMemo(() => {
+    if (!newAppointmentDate) return [];
+    return getAvailableTimeSlotsForDate(appointments, newAppointmentDate);
+  }, [appointments, newAppointmentDate]);
 
   const scheduleDeletion = (requestId: string) => {
     const timeout = setTimeout(async () => {
@@ -267,7 +297,6 @@ const Dashboard = () => {
     }
   }
 
-  // 3) Filtrage local
   const filteredRequests = requests.filter((req) => {
     const matchesSearch =
       req.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -284,7 +313,6 @@ const Dashboard = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  // tri pour "completed" + pagination
   const completedRequests = requests.filter((r) => r.status === "completed");
   const totalCompletedPages = Math.ceil(
     completedRequests.length / completedRequestsPerPage
@@ -293,8 +321,6 @@ const Dashboard = () => {
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
   );
-
-  // tri pour "accident-report" en cours
   const pendingAccidentReports = requests.filter(
     (r) => r.type === "accident-report" && r.status === "in-progress"
   );
@@ -306,7 +332,6 @@ const Dashboard = () => {
     pendingAccidentReportsPage * pendingAccidentReportsPerPage
   );
 
-  // 4) Callbacks (assign / status)
   const handleAssignRequest = async (requestId: string, adminId: string) => {
     try {
       // si "none", on repasse le statut => "new"
@@ -404,11 +429,11 @@ const Dashboard = () => {
     });
   };
 
-  // 5) Modales
   const openRequestDetails = (req: Request) => {
     setSelectedRequest(req);
     setIsModalOpen(true);
   };
+
   const closeRequestDetails = () => {
     setSelectedRequest(null);
     setIsModalOpen(false);
@@ -562,11 +587,13 @@ const Dashboard = () => {
         setNewAppointmentAdmin={setNewAppointmentAdmin}
         newAppointmentNotes={newAppointmentNotes}
         setNewAppointmentNotes={setNewAppointmentNotes}
-        availableTimeSlots={["09:00", "10:00", "11:00", "14:00", "15:00"]}
-        addAppointment={() => {
+        appointments={appointments} // Assurez-vous que ce tableau est correctement peuplé
+        availableTimeSlots={availableTimeSlots} // Passer les créneaux horaires disponibles
+        addAppointmentToState={(appointment) => {
+          console.log("🔄 Ajout dans Dashboard :", appointment);
           toast({
             title: "Rendez-vous planifié",
-            description: `Un rendez-vous a été ajouté pour ${newAppointmentPerson}.`,
+            description: `Un rendez-vous a été ajouté pour ${appointment.personName}.`,
           });
           setIsAddAppointmentDialogOpen(false);
         }}

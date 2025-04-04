@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +25,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AppointmentType, AVAILABLE_ADMINS } from "./planningUtils";
+import {
+  AppointmentType,
+  AVAILABLE_ADMINS,
+  AVAILABLE_TIMES,
+  getAvailableTimeSlotsForDate,
+  Appointment,
+} from "./planningUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddAppointmentDialogProps {
   isOpen: boolean;
@@ -45,7 +52,8 @@ interface AddAppointmentDialogProps {
   newAppointmentNotes: string;
   setNewAppointmentNotes: (notes: string) => void;
   availableTimeSlots: string[];
-  addAppointment: () => void;
+  appointments: Appointment[];
+  addAppointmentToState: (appointment: any) => void;
 }
 
 const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
@@ -66,9 +74,22 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   newAppointmentNotes,
   setNewAppointmentNotes,
   availableTimeSlots,
-  addAppointment,
+  appointments,
+  addAppointmentToState,
 }) => {
   const [admins, setAdmins] = useState<{ id: string; name: string }[]>([]);
+  const { toast } = useToast();
+  const filteredTimeSlots = useMemo(() => {
+    if (!newAppointmentDate || !Array.isArray(appointments))
+      return AVAILABLE_TIMES;
+
+    const slots = getAvailableTimeSlotsForDate(
+      appointments,
+      newAppointmentDate
+    );
+    console.log("🎯 Créneaux disponibles filtrés :", slots); // Vérifiez les créneaux ici
+    return slots;
+  }, [appointments, newAppointmentDate]);
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -106,7 +127,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         !newAppointmentType ||
         !newAppointmentAdmin
       ) {
-        alert("❌ Veuillez remplir tous les champs obligatoires.");
+        toast({
+          title: "Champs obligatoires",
+          description: "Veuillez remplir tous les champs obligatoires.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -119,8 +144,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         adminId: newAppointmentAdmin,
         notes: newAppointmentNotes || "",
       };
-
-      console.log("📤 Envoi des données :", appointmentData);
 
       const response = await fetch("http://localhost:5000/api/appointments", {
         method: "POST",
@@ -135,11 +158,57 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         throw new Error("Erreur lors de l'enregistrement du rendez-vous");
       }
 
-      alert("✅ Rendez-vous enregistré avec succès !");
-      setIsOpen(false); // Ferme le modal après succès
+      const savedAppointment = await response.json();
+
+      // Reconstruire correctement l'objet pour le state
+      const [hour, minute] = newAppointmentTime.split(":").map(Number);
+      let dateObj: Date;
+      try {
+        const rawDate = savedAppointment.date ?? appointmentData.date;
+        const [year, month, day] = rawDate.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+        dateObj.setHours(hour, minute, 0, 0);
+      } catch (error) {
+        console.error(
+          "⛔ Impossible de parser la date :",
+          savedAppointment.date
+        );
+        toast({
+          title: "Erreur",
+          description: "Format de date invalide. Impossible d'enregistrer.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const admin = admins.find((a) => a.id === newAppointmentAdmin);
+
+      addAppointmentToState({
+        id: savedAppointment.id,
+        date: dateObj,
+        time: newAppointmentTime,
+        type: newAppointmentType,
+        personName: newAppointmentPerson,
+        email: newAppointmentEmail,
+        notes: newAppointmentNotes,
+        adminName: admin?.name ?? "",
+        adminFirstName: admin?.name?.split(" ")[0] ?? "",
+        adminLastName: admin?.name?.split(" ")?.slice(1).join(" ") ?? "",
+      });
+
+      toast({
+        title: "Rendez-vous enregistré",
+        description: `Le rendez-vous avec ${newAppointmentPerson} a bien été enregistré.`,
+      });
+
+      setIsOpen(false);
     } catch (error) {
-      console.error("❌ Erreur lors de l'ajout du rendez-vous :", error);
-      alert("❌ Une erreur est survenue, veuillez réessayer.");
+      console.error("❌ Erreur lors de l'enregistrement :", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue, veuillez réessayer.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -191,17 +260,21 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                   <SelectValue placeholder="Sélectionnez une heure" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableTimeSlots.length > 0 ? (
-                    availableTimeSlots.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
+                  {filteredTimeSlots.map((time) => {
+                    const isTaken = !filteredTimeSlots.includes(time);
+                    return (
+                      <SelectItem
+                        key={time}
+                        value={time}
+                        disabled={isTaken}
+                        className={
+                          isTaken ? "opacity-50 pointer-events-none" : ""
+                        }
+                      >
+                        {time} {isTaken && " (Complet)"}
                       </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="" disabled>
-                      Aucun créneau disponible
-                    </SelectItem>
-                  )}
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
