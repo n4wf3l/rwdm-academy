@@ -18,7 +18,6 @@ interface Member {
   email: string;
   profilePicture: string;
   function: string;
-  description: string;
   role: string;
   createdAt: string;
 }

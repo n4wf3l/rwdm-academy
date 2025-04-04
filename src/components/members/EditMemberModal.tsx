@@ -23,7 +23,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const [lastName, setLastName] = useState(member?.lastName || "");
   const [email, setEmail] = useState(member?.email || "");
   const [func, setFunc] = useState(member?.function || ""); // fonction
-  const [description, setDescription] = useState(member?.description || "");
   const [profilePicture, setProfilePicture] = useState(
     member?.profilePicture || ""
   );
@@ -35,8 +34,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       setFirstName(member.firstName);
       setLastName(member.lastName);
       setEmail(member.email);
-      setFunc(member.function || "");
-      setDescription(member.description);
+      setFunc(member.function || member.functionTitle || ""); // 🧠 support backward
       setProfilePicture(member.profilePicture);
       setRole(member.role);
       setPassword("");
@@ -63,8 +61,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       firstName,
       lastName,
       email,
-      function: func,
-      description,
+      functionTitle: func, // ✅ Changement ici
       profilePicture,
       role,
       password: password || undefined,
@@ -119,16 +116,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             placeholder="Fonction"
             value={func}
             onChange={(e) => setFunc(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center">
-          <FileText className="mr-2" />
-          <Input
-            type="text"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
           />
         </div>
 

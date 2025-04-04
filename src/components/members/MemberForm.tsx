@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, Briefcase, FileText, Image } from "lucide-react";
-import FullScreenLoader from "@/components/FullScreenLoader"; // Ajustez le chemin si nécessaire
+import FullScreenLoader from "@/components/FullScreenLoader";
 
 interface MemberFormProps {
   onMemberCreated: (member: any) => void;
@@ -22,8 +22,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
-  const [functionTitle, setFunctionTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [func, setFunc] = useState(""); // maintenant fonction principale
   const [role, setRole] = useState("admin");
   const { toast } = useToast();
 
@@ -33,8 +32,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
     setEmail("");
     setPassword("");
     setProfilePicture("");
-    setFunctionTitle("");
-    setDescription("");
+    setFunc("");
     setRole("admin");
   };
 
@@ -61,8 +59,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       email,
       password,
       profilePicture,
-      functionTitle,
-      description,
+      function: func,
       role,
     };
 
@@ -80,15 +77,18 @@ const MemberForm: React.FC<MemberFormProps> = ({
       const data = await response.json();
 
       if (response.ok) {
-        // Attendre 4 secondes pour laisser le loader s'afficher
         await new Promise((resolve) => setTimeout(resolve, 4000));
 
-        // Ensuite afficher le toast et mettre à jour l'état
         toast({
           title: "Membre créé",
           description: `Le membre ${firstName} ${lastName} a été créé avec succès.`,
         });
-        onMemberCreated(newMember);
+
+        // Ajoute la date locale pour un affichage immédiat
+        const localCreatedAt = new Date().toISOString();
+
+        onMemberCreated(data);
+
         resetForm();
       } else {
         toast({
@@ -111,7 +111,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
   return (
     <>
-      {/* Loader en plein écran */}
       <FullScreenLoader isLoading={isLoading} />
       <Card>
         <CardHeader>
@@ -119,7 +118,6 @@ const MemberForm: React.FC<MemberFormProps> = ({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Container à deux colonnes pour desktop */}
             <div className="md:flex md:space-x-4">
               {/* Colonne gauche */}
               <div className="flex flex-col space-y-4 md:w-1/2">
@@ -164,6 +162,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   />
                 </div>
               </div>
+
               {/* Colonne droite */}
               <div className="flex flex-col space-y-4 md:w-1/2">
                 <div className="flex items-center">
@@ -180,17 +179,8 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   <Input
                     type="text"
                     placeholder="Fonction"
-                    value={functionTitle}
-                    onChange={(e) => setFunctionTitle(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <FileText className="mr-2" />
-                  <Input
-                    type="text"
-                    placeholder="Description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={func}
+                    onChange={(e) => setFunc(e.target.value)}
                   />
                 </div>
                 <div className="flex items-center">
@@ -207,13 +197,14 @@ const MemberForm: React.FC<MemberFormProps> = ({
                 </div>
               </div>
             </div>
-            {/* Bouton centré en bas de la card */}
+
             <div className="flex justify-center">
               <Button type="submit" className="bg-rwdm-blue">
                 Créer le membre
               </Button>
             </div>
           </form>
+
           {profilePicture && (
             <div className="mt-4">
               <img

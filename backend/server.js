@@ -201,24 +201,27 @@ app.post(
       lastName,
       email,
       password,
-      functionTitle,
-      description,
+      function: functionTitle,
       profilePicture,
       role,
     } = req.body;
 
     try {
-      const [rows] = await dbPool.execute(
-        "SELECT * FROM users WHERE email = ?",
+      const [existing] = await dbPool.execute(
+        "SELECT id FROM users WHERE email = ?",
         [email]
       );
-      if (rows.length > 0)
-        return res.status(400).json({ message: "Cet email est déjà utilisé" });
+      if (existing.length > 0) {
+        return res.status(400).json({ message: "Cet email est déjà utilisé." });
+      }
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      await dbPool.execute(
-        "INSERT INTO users (firstName, lastName, email, password, role, `function`, description, profilePicture) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      // Insertion
+      const [insertResult] = await dbPool.execute(
+        `INSERT INTO users (
+          firstName, lastName, email, password, role, \`function\`, profilePicture
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           firstName,
           lastName,
@@ -226,16 +229,21 @@ app.post(
           hashedPassword,
           role || "admin",
           functionTitle || "",
-          description || "",
           profilePicture || "",
         ]
       );
 
-      res
-        .status(201)
-        .json({ message: "Nouveau membre admin créé avec succès" });
+      const insertedId = insertResult.insertId;
+
+      // Récupération de l'utilisateur créé
+      const [newUserRows] = await dbPool.execute(
+        "SELECT id, firstName, lastName, email, role, `function` AS function, profilePicture, createdAt FROM users WHERE id = ?",
+        [insertedId]
+      );
+
+      res.status(201).json(newUserRows[0]);
     } catch (error) {
-      console.error("Erreur lors de la création de l'admin :", error);
+      console.error("❌ Erreur lors de la création de l'admin :", error);
       res.status(500).json({ message: "Erreur serveur" });
     }
   }
@@ -307,7 +315,6 @@ app.put(
       email,
       password, // optionnel
       functionTitle,
-      description,
       profilePicture,
       role,
     } = req.body;
@@ -320,7 +327,7 @@ app.put(
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         query =
-          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, description = ?, profilePicture = ? WHERE id = ?";
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, profilePicture = ? WHERE id = ?";
         params = [
           firstName,
           lastName,
@@ -328,20 +335,18 @@ app.put(
           hashedPassword,
           role,
           functionTitle || "",
-          description || "",
           profilePicture || "",
           id,
         ];
       } else {
         query =
-          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, description = ?, profilePicture = ? WHERE id = ?";
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, profilePicture = ? WHERE id = ?";
         params = [
           firstName,
           lastName,
           email,
           role,
           functionTitle || "",
-          description || "",
           profilePicture || "",
           id,
         ];
@@ -364,7 +369,7 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
     const [rows] = await connection.execute(
-      "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, description, role FROM users"
+      "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, role FROM users"
     );
     await connection.end();
     res.json(rows);

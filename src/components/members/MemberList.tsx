@@ -20,7 +20,6 @@ interface Member {
   email: string;
   profilePicture: string;
   function: string;
-  description: string;
   role: string;
   createdAt: string;
 }
@@ -67,7 +66,6 @@ const MemberList: React.FC<MemberListProps> = ({
                 <TableHead>Nom complet</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Fonction</TableHead>
-                <TableHead>Description</TableHead>
                 <TableHead>Rôle</TableHead>
                 <TableHead>Créé le</TableHead>
                 <TableHead>Actions</TableHead>
@@ -93,9 +91,6 @@ const MemberList: React.FC<MemberListProps> = ({
                     </TableCell>
                     <TableCell>{member.email}</TableCell>
                     <TableCell>{member.function || "—"}</TableCell>
-                    <TableCell className="text-xs text-gray-500">
-                      {member.description || "—"}
-                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={
