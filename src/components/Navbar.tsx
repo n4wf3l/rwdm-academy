@@ -235,7 +235,7 @@ const NavLink: React.FC<NavLinkProps> = ({
     {active && (
       <motion.div
         layoutId="activeIndicator"
-        className="absolute -bottom-1 left-3 right-3 h-0.5 bg-rwdm-red"
+        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-rwdm-red"
       />
     )}
   </Link>

@@ -26,6 +26,12 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 
+interface FormSectionProps {
+  title: string;
+  subtitle?: React.ReactNode; // <-- au lieu de `string`
+  children: React.ReactNode;
+}
+
 const CURRENT_DATE = new Date();
 const CURRENT_YEAR = CURRENT_DATE.getFullYear();
 const NEXT_YEAR = CURRENT_YEAR + 1;
@@ -255,8 +261,9 @@ const RegistrationForm = () => {
               {/* Sélection de l'académie */}
               <FormSection
                 title="Académie"
-                subtitle="Veuillez sélectionner l'académie souhaitée (plus d'informations sur la page À propos)"
+                subtitle="Veuillez sélectionner l'académie souhaitée pour l'inscription du joueur."
               >
+                {/* Sélecteur */}
                 <Select value={academy} onValueChange={setAcademy}>
                   <SelectTrigger className="form-input-base">
                     <SelectValue placeholder="Sélectionnez une académie" />
@@ -271,6 +278,18 @@ const RegistrationForm = () => {
                     <SelectItem value="RWDM Academy">RWDM Academy</SelectItem>
                   </SelectContent>
                 </Select>
+
+                {/* Lien vers la page À propos */}
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Plus d'informations sur la page{" "}
+                  <a
+                    href="/about?tab=histoire#academies"
+                    className="underline text-rwdm-blue hover:text-rwdm-red transition-colors"
+                  >
+                    À propos
+                  </a>
+                  .
+                </p>
               </FormSection>
             </div>
           </CardContent>
