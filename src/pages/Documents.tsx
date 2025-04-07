@@ -69,6 +69,21 @@ const Documents = () => {
     fetchCompletedDocuments();
   }, []);
 
+  const translateDocumentType = (type: string) => {
+    switch (type) {
+      case "registration":
+        return "Inscription";
+      case "selection-tests":
+        return "Tests techniques";
+      case "responsibility-waiver":
+        return "Décharge de responsabilité";
+      case "accident-report":
+        return "Déclaration d'accident";
+      default:
+        return type;
+    }
+  };
+
   const fetchCompletedDocuments = async () => {
     try {
       const response = await fetch(
@@ -312,7 +327,7 @@ const Documents = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Téléphone</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Admin</TableHead>
+                    <TableHead>Assigné à</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -327,7 +342,8 @@ const Documents = () => {
                       <TableCell className="font-medium">
                         {formatRequestId(doc.id)}
                       </TableCell>
-                      <TableCell>{doc.type}</TableCell>
+                      <TableCell>{translateDocumentType(doc.type)}</TableCell>
+
                       <TableCell>
                         {doc.name} {doc.surname}
                       </TableCell>
