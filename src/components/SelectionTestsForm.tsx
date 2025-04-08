@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,7 +115,9 @@ const SelectionTestsForm: React.FC = () => {
   const [signature, setSignature] = useState<string | null>(null);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState<boolean>(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
-
+  const [isCooldown, setIsCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
   // Gestion des dates avec vérification
   const handleStartDateChange = (date: Date | undefined) => {
     if (!date) return;
@@ -176,8 +178,40 @@ const SelectionTestsForm: React.FC = () => {
     return age;
   };
 
+  useEffect(() => {
+    if (!isCooldown) return;
+
+    cooldownTimerRef.current = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownTimerRef.current!);
+          setIsCooldown(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    };
+  }, [isCooldown]);
+
+  useEffect(() => {
+    const lastSubmit = localStorage.getItem("selectionTestsLastSubmitTime");
+    if (lastSubmit) {
+      const diff = Math.floor((Date.now() - parseInt(lastSubmit)) / 1000);
+      if (diff < 600) {
+        setIsCooldown(true);
+        setCooldownRemaining(600 - diff);
+      }
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isCooldown) return;
+
     if (!playerBirthDate) {
       toast({
         title: "Erreur",
@@ -245,6 +279,12 @@ const SelectionTestsForm: React.FC = () => {
         description: "Votre demande de test a été envoyée avec succès.",
       });
       setIsSpellCheckOpen(false);
+      localStorage.setItem(
+        "selectionTestsLastSubmitTime",
+        Date.now().toString()
+      );
+      setIsCooldown(true);
+      setCooldownRemaining(600);
       navigate("/success/selectionTests");
     } catch (error) {
       console.error("Erreur lors de la soumission :", error);
@@ -572,13 +612,29 @@ const SelectionTestsForm: React.FC = () => {
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={!signature}
+            disabled={!signature || isCooldown}
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
-            Soumettre la demande de test
+            {isCooldown
+              ? `Veuillez patienter (${Math.floor(cooldownRemaining / 60)
+                  .toString()
+                  .padStart(2, "0")}:${(cooldownRemaining % 60)
+                  .toString()
+                  .padStart(2, "0")})`
+              : "Soumettre la demande de test"}
           </Button>
         </div>
       </form>
+
+      {isCooldown && (
+        <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
+          Vous pourrez renvoyer un test de sélection dans{" "}
+          {Math.floor(cooldownRemaining / 60)
+            .toString()
+            .padStart(2, "0")}
+          :{(cooldownRemaining % 60).toString().padStart(2, "0")}
+        </div>
+      )}
 
       <SpellCheckModal
         isOpen={isSpellCheckOpen}

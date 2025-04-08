@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,8 @@ const SEASONS = [
 
 const CATEGORIES = ["U5", "U6", "U7", "U8", "U9"];
 
+const TEN_MINUTES_MS = 10 * 60 * 1000;
+
 const FormSection: React.FC<{
   title: string;
   subtitle?: string;
@@ -69,6 +71,8 @@ const FormSection: React.FC<{
 const RegistrationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
 
   // États pour les informations du joueur
   const [season, setSeason] = useState(SEASONS[1]);
@@ -230,10 +234,45 @@ const RegistrationForm = () => {
     }
   };
 
+  useEffect(() => {
+    if (!cooldownEndTime) return;
+
+    const interval = setInterval(() => {
+      const remaining = cooldownEndTime - Date.now();
+      setTimeLeft(remaining > 0 ? remaining : 0);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setCooldownEndTime(null);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownEndTime]);
+
+  // ✅ À appeler quand l’envoi du formulaire réussit
+  const handleSuccessfulSubmit = () => {
+    setCooldownEndTime(Date.now() + TEN_MINUTES_MS);
+  };
+
+  const isCooldown = cooldownEndTime !== null && timeLeft > 0;
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  };
+
   return (
     <>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!isCooldown) {
+            handleSubmit(e); // on passe bien l'event ici ✅
+            handleSuccessfulSubmit(); // on démarre le cooldown de 10min
+          }
+        }}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
       >
         <Card className="glass-panel">
@@ -692,13 +731,23 @@ const RegistrationForm = () => {
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={!signature}
+            disabled={isCooldown || !signature}
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
-            Soumettre la demande d'inscription
+            {isCooldown
+              ? "Veuillez patienter..."
+              : "Soumettre la demande d'inscription"}
           </Button>
         </div>
       </form>
+
+      {/* ⏳ Chrono visible en bas à gauche */}
+      {isCooldown && (
+        <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
+          Vous pourrez renvoyer une demande d'inscription dans{" "}
+          {formatTime(timeLeft)}
+        </div>
+      )}
 
       <SpellCheckModal
         isOpen={isSpellCheckOpen}

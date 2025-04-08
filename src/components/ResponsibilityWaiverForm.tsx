@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +72,9 @@ const ResponsibilityWaiverForm: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [approvalText, setApprovalText] = useState("");
+  const [isCooldown, setIsCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,7 +183,11 @@ const ResponsibilityWaiverForm: React.FC = () => {
         title: "Décharge soumise avec succès",
         description: "Votre décharge de responsabilité a été envoyée.",
       });
+      const now = Date.now();
+      localStorage.setItem("waiverLastSubmitTime", now.toString());
 
+      setIsCooldown(true);
+      setCooldownRemaining(600); // 10 minutes
       navigate("/success/responsibilityWaiver");
     } catch (error) {
       console.error("❌ Erreur lors de la soumission :", error);
@@ -191,6 +198,36 @@ const ResponsibilityWaiverForm: React.FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (!isCooldown) return;
+
+    cooldownTimerRef.current = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownTimerRef.current!);
+          setIsCooldown(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    };
+  }, [isCooldown]);
+
+  useEffect(() => {
+    const lastSubmit = localStorage.getItem("waiverLastSubmitTime");
+    if (lastSubmit) {
+      const diff = Math.floor((Date.now() - parseInt(lastSubmit)) / 1000);
+      if (diff < 600) {
+        setIsCooldown(true);
+        setCooldownRemaining(600 - diff);
+      }
+    }
+  }, []);
 
   const waiverText = `Je soussigné(e), ${parentFirstName || ""} ${
     parentLastName || "[Prénom du représentant]" + " [Nom de famille]"
@@ -214,7 +251,11 @@ const ResponsibilityWaiverForm: React.FC = () => {
   return (
     <>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (isCooldown) return;
+          handleSubmit(e);
+        }}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up"
       >
         <Card
@@ -454,13 +495,26 @@ const ResponsibilityWaiverForm: React.FC = () => {
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={!signature || approvalText !== "Lu et approuvé"}
+            disabled={
+              !signature || approvalText !== "Lu et approuvé" || isCooldown
+            }
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
             Soumettre la décharge
           </Button>
         </div>
       </form>
+
+      {/* Timer en bas à gauche */}
+      {isCooldown && (
+        <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
+          Vous pourrez renvoyer une décharge de responsabilité dans{" "}
+          <span className="font-semibold">
+            {String(Math.floor(cooldownRemaining / 60)).padStart(2, "0")}:
+            {String(cooldownRemaining % 60).padStart(2, "0")}
+          </span>
+        </div>
+      )}
 
       <SpellCheckModal
         isOpen={isSpellCheckOpen}

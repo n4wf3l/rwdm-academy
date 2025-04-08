@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +79,9 @@ const AccidentReportForm: React.FC = () => {
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [accidentDescription, setAccidentDescription] = useState<string>("");
   const [category, setCategory] = useState<string>(""); // État pour la catégorie
+  const [isCooldown, setIsCooldown] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -115,6 +118,36 @@ const AccidentReportForm: React.FC = () => {
     e.preventDefault();
     setIsSpellCheckOpen(true);
   };
+
+  useEffect(() => {
+    const lastSubmit = localStorage.getItem("accidentLastSubmitTime");
+    if (lastSubmit) {
+      const diff = Math.floor((Date.now() - parseInt(lastSubmit)) / 1000);
+      if (diff < 600) {
+        setIsCooldown(true);
+        setCooldownRemaining(600 - diff);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isCooldown) return;
+
+    cooldownTimerRef.current = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownTimerRef.current!);
+          setIsCooldown(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    };
+  }, [isCooldown]);
 
   const finalSubmit = async () => {
     if (!pdfFile) {
@@ -184,7 +217,9 @@ const AccidentReportForm: React.FC = () => {
         title: "Déclaration soumise avec succès",
         description: "Votre déclaration d'accident a été envoyée.",
       });
-
+      localStorage.setItem("accidentLastSubmitTime", Date.now().toString());
+      setIsCooldown(true);
+      setCooldownRemaining(600);
       navigate("/success/accidentReport");
     } catch (error) {
       console.error("❌ Erreur lors de la soumission :", error);
@@ -236,7 +271,11 @@ const AccidentReportForm: React.FC = () => {
       </Card>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (isCooldown) return;
+          handleSubmit(e);
+        }}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up pt-6"
       >
         <Card className="glass-panel">
@@ -489,14 +528,25 @@ const AccidentReportForm: React.FC = () => {
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={!signature || !pdfFile}
+            disabled={!signature || !pdfFile || isCooldown}
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
-            Soumettre la déclaration
+            {isCooldown ? "Veuillez patienter..." : "Soumettre la déclaration"}
           </Button>
         </div>
       </form>
 
+      {isCooldown && (
+        <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
+          Vous pourrez renvoyer une déclaration dans{" "}
+          <strong>
+            {Math.floor(cooldownRemaining / 60)
+              .toString()
+              .padStart(2, "0")}
+            :{(cooldownRemaining % 60).toString().padStart(2, "0")}
+          </strong>
+        </div>
+      )}
       <SpellCheckModal
         isOpen={isSpellCheckOpen}
         onClose={() => setIsSpellCheckOpen(false)}
