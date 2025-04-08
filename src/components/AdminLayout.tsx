@@ -21,7 +21,7 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [user, setUser] = useState({ firstName: "", lastName: "" });
+  const [user, setUser] = useState({ firstName: "", lastName: "", role: "" });
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -44,7 +44,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        setUser({ firstName: data.firstName, lastName: data.lastName });
+        setUser({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: data.role,
+        });
+        console.log("👤 Utilisateur connecté :", data); // ← ajoute ça ici
       })
       .catch((err) =>
         console.error("Erreur lors de la récupération de l'utilisateur:", err)
@@ -166,34 +171,38 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 Membres
               </Button>
             </Link>
-            <Link to="/graphics">
-              <Button
-                variant={isActive("/graphics") ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start",
-                  isActive("/graphics")
-                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
-                    : ""
-                )}
-              >
-                <BarChart className="mr-2 h-5 w-5" />
-                Graphiques
-              </Button>
-            </Link>
-            <Link to="/settings">
-              <Button
-                variant={isActive("/settings") ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start",
-                  isActive("/settings")
-                    ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
-                    : ""
-                )}
-              >
-                <Settings className="mr-2 h-5 w-5" />
-                Paramètres
-              </Button>
-            </Link>
+            {user.role === "owner" && (
+              <Link to="/graphics">
+                <Button
+                  variant={isActive("/graphics") ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    isActive("/graphics")
+                      ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                      : ""
+                  )}
+                >
+                  <BarChart className="mr-2 h-5 w-5" />
+                  Graphiques
+                </Button>
+              </Link>
+            )}
+            {["owner", "superadmin"].includes(user.role) && (
+              <Link to="/settings">
+                <Button
+                  variant={isActive("/settings") ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    isActive("/settings")
+                      ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                      : ""
+                  )}
+                >
+                  <Settings className="mr-2 h-5 w-5" />
+                  Paramètres
+                </Button>
+              </Link>
+            )}
           </nav>
           <div className="p-4 border-t">
             <Button

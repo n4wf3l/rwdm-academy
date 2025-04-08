@@ -28,12 +28,14 @@ interface MemberListProps {
   members: Member[];
   onEdit: (member: Member) => void;
   onDelete: (member: Member) => void;
+  currentUserRole: string;
 }
 
 const MemberList: React.FC<MemberListProps> = ({
   members,
   onEdit,
   onDelete,
+  currentUserRole,
 }) => {
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,7 +70,10 @@ const MemberList: React.FC<MemberListProps> = ({
                 <TableHead>Fonction</TableHead>
                 <TableHead>Rôle</TableHead>
                 <TableHead>Créé le</TableHead>
-                <TableHead>Actions</TableHead>
+                {currentUserRole === "owner" ||
+                  (currentUserRole === "superadmin" && (
+                    <TableHead>Actions</TableHead>
+                  ))}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -122,24 +127,28 @@ const MemberList: React.FC<MemberListProps> = ({
                           )
                         : "—"}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => onEdit(member)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => onDelete(member)}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {(currentUserRole === "owner" ||
+                      (currentUserRole === "superadmin" &&
+                        member.role !== "owner")) && (
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onEdit(member)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onDelete(member)}
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : (

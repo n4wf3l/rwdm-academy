@@ -10,12 +10,14 @@ interface MemberFormProps {
   onMemberCreated: (member: any) => void;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  currentUserRole: string;
 }
 
 const MemberForm: React.FC<MemberFormProps> = ({
   onMemberCreated,
   isLoading,
   setIsLoading,
+  currentUserRole,
 }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -192,7 +194,9 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   >
                     <option value="admin">Admin</option>
                     <option value="superadmin">Superadmin</option>
-                    <option value="owner">Owner</option>
+                    {currentUserRole === "owner" && (
+                      <option value="owner">Owner</option>
+                    )}
                   </select>
                 </div>
               </div>

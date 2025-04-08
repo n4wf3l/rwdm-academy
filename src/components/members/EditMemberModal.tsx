@@ -10,6 +10,7 @@ interface EditMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedMember: any) => void;
+  currentUserRole: string;
 }
 
 const EditMemberModal: React.FC<EditMemberModalProps> = ({
@@ -17,6 +18,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  currentUserRole,
 }) => {
   const { toast } = useToast();
   const [firstName, setFirstName] = useState(member?.firstName || "");
@@ -129,18 +131,43 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           />
         </div>
 
-        <div className="flex items-center">
-          <span className="mr-2 font-semibold">Rôle :</span>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="border rounded p-2"
-          >
-            <option value="admin">Admin</option>
-            <option value="superadmin">Superadmin</option>
-            <option value="owner">Owner</option>
-          </select>
-        </div>
+        {currentUserRole === "superadmin" && member.role === "owner" ? (
+          // ❌ Cas interdit : superadmin ne peut pas modifier un owner
+          <div className="flex items-center">
+            <span className="mr-2 font-semibold">Rôle :</span>
+            <span className="text-sm text-gray-500 capitalize">{role}</span>
+          </div>
+        ) : currentUserRole === "superadmin" && role === "owner" ? (
+          // ❌ Cas interdit : superadmin ne peut pas donner le rôle owner
+          <div className="flex items-center">
+            <span className="mr-2 font-semibold">Rôle :</span>
+            <span className="text-sm text-red-500">
+              Interdit de définir ce rôle
+            </span>
+          </div>
+        ) : (
+          // ✅ Cas autorisé
+          <div className="flex items-center">
+            <span className="mr-2 font-semibold">Rôle :</span>
+            <select
+              value={role}
+              onChange={(e) => {
+                const newRole = e.target.value;
+                // ❌ Protection supplémentaire : empêcher un superadmin de choisir "owner"
+                if (currentUserRole === "superadmin" && newRole === "owner")
+                  return;
+                setRole(newRole);
+              }}
+              className="border rounded p-2"
+            >
+              <option value="admin">Admin</option>
+              <option value="superadmin">Superadmin</option>
+              {currentUserRole === "owner" && (
+                <option value="owner">Owner</option>
+              )}
+            </select>
+          </div>
+        )}
 
         <div className="flex items-center">
           <span className="mr-2 font-semibold">Mot de passe :</span>

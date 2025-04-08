@@ -24,14 +24,13 @@ const RoleLegendCard: React.FC<RoleLegendCardProps> = ({ className }) => {
           <Badge variant="secondary">Superadmin</Badge>
           <p className="text-sm text-gray-700">
             Responsable de la gestion – accès à la configuration, utilisateurs
-            et factures.
+            et assignations.
           </p>
         </div>
         <div className="flex items-start gap-3">
           <Badge variant="outline">Admin</Badge>
           <p className="text-sm text-gray-700">
-            Gestionnaire planning – accès uniquement au planning des matchs et
-            entraînements.
+            Gestionnaire planning – accès au planning et tableau de bord
           </p>
         </div>
       </CardContent>

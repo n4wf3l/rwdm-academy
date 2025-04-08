@@ -75,6 +75,15 @@ const Dashboard = () => {
     [key: string]: NodeJS.Timeout;
   }>({});
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [user, setUser] = useState<{
+    firstName: string;
+    lastName: string;
+    role: "admin" | "superadmin" | "owner";
+  }>({
+    firstName: "",
+    lastName: "",
+    role: "admin", // valeur initiale valide
+  });
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -295,10 +304,7 @@ const Dashboard = () => {
       const data = await response.json();
       console.log("✅ Admins récupérés :", data);
 
-      // Filtrer si besoin => superadmin
-      const onlySuperAdmins = data.filter((u: any) => u.role === "superadmin");
-
-      const formattedAdmins: Admin[] = onlySuperAdmins.map((user: any) => ({
+      const formattedAdmins: Admin[] = data.map((user: any) => ({
         id: user.id.toString(),
         firstName: user.firstName,
         lastName: user.lastName,
@@ -315,6 +321,27 @@ const Dashboard = () => {
       console.error("Erreur admins:", error);
     }
   }
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok)
+          throw new Error("Impossible de récupérer l'utilisateur");
+
+        const userData = await response.json();
+        console.log("👤 Utilisateur connecté :", userData);
+        setUser(userData); // ici, il doit inclure un champ 'role'
+      } catch (error) {
+        console.error("Erreur utilisateur :", error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, [token]);
 
   // Convertir un statut DB => TS
   function mapDbStatus(dbStatus: string): RequestStatus {
@@ -394,17 +421,13 @@ const Dashboard = () => {
 
   const handleAssignRequest = async (requestId: string, adminId: string) => {
     try {
-      // si "none", on repasse le statut => "new"
       const newStatus: RequestStatus = adminId === "none" ? "new" : "assigned";
-      // on met à jour le statut côté serveur
       await handleUpdateStatus(requestId, newStatus);
 
-      // ensuite, on PATCH l'assignation
       const bodyToSend = { assignedTo: adminId === "none" ? null : adminId };
       const headers: HeadersInit = { "Content-Type": "application/json" };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
       const response = await fetch(
         `http://localhost:5000/api/requests/${requestId}`,
         {
@@ -413,16 +436,26 @@ const Dashboard = () => {
           body: JSON.stringify(bodyToSend),
         }
       );
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'assignation");
-      }
+
+      if (!response.ok) throw new Error("Erreur lors de l'assignation");
+
+      // 🔍 Trouver le nom complet de l’admin depuis la liste
+      const assignedAdmin = admins.find((admin) => admin.id === adminId);
+      const adminFullName =
+        assignedAdmin && adminId !== "none"
+          ? `${assignedAdmin.firstName} ${assignedAdmin.lastName}`
+          : null;
+
       toast({
         title: "Demande assignée",
         description:
           adminId === "none"
             ? `La demande ${requestId} a été désassignée et repassée en "Nouveau".`
-            : `La demande ${requestId} a été assignée à l'admin ${adminId}.`,
+            : `La demande ${requestId} a été assignée à ${
+                adminFullName ?? "cet admin"
+              }.`,
       });
+
       await fetchRequests();
     } catch (error) {
       console.error("Erreur d'assignation :", error);
@@ -588,6 +621,7 @@ const Dashboard = () => {
                     onViewDetails={openRequestDetails}
                     onOpenAppointmentDialog={openAppointmentDialog} // Passer la fonction ici
                     onRequestDeleted={handleRequestDeleted}
+                    currentUserRole={user.role}
                   />
                   <AppointmentDialog
                     isOpen={isAppointmentDialogOpen}

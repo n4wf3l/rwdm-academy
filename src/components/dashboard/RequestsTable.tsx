@@ -57,6 +57,7 @@ export interface RequestsTableProps {
   onViewDetails: (request: Request) => void;
   onOpenAppointmentDialog: (request: Request) => void;
   onRequestDeleted?: (requestId: string) => void;
+  currentUserRole: "admin" | "superadmin" | "owner";
 }
 
 /**
@@ -112,6 +113,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   onViewDetails,
   onOpenAppointmentDialog,
   onRequestDeleted,
+  currentUserRole,
 }) => {
   const [pendingDeletion, setPendingDeletion] = useState<{
     [key: string]: NodeJS.Timeout;
@@ -121,6 +123,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
   const handleUpdateStatus = (requestId: string, newStatus: RequestStatus) => {
     // Rien ici pour "rejected", car la suppression est gérée dans Dashboard
+
+    console.log("🧑‍💼 currentUserRole :", currentUserRole);
+    console.log("🧑‍💼 currentUserRole (raw):", `"${currentUserRole}"`);
+    console.log("🧑‍💼 currentUserRole (trimmed):", `"${currentUserRole.trim()}"`);
 
     if (newStatus === "in-progress" && pendingDeletion[requestId]) {
       clearTimeout(pendingDeletion[requestId]);
@@ -226,27 +232,37 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
               <TableCell>{getStatusBadge(request.status)}</TableCell>
 
               <TableCell>
-                <Select
-                  value={assignedValue}
-                  onValueChange={(value) => {
-                    onAssignRequest(request.id, value);
-                  }}
-                >
-                  <SelectTrigger
-                    className="w-[180px]"
-                    onClick={(e) => e.stopPropagation()}
+                {["owner", "superadmin"].includes(currentUserRole.trim()) ? (
+                  <Select
+                    value={assignedValue}
+                    onValueChange={(value) => {
+                      onAssignRequest(request.id, value);
+                    }}
                   >
-                    <SelectValue placeholder="Assigner à" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Non assigné</SelectItem>
-                    {admins.map((admin) => (
-                      <SelectItem key={admin.id} value={admin.id}>
-                        {admin.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    <SelectTrigger
+                      className="w-[180px]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue placeholder="Assigner à" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Non assigné</SelectItem>
+                      {admins.map((admin) => {
+                        console.log("🔍 Admin dispo :", admin);
+                        return (
+                          <SelectItem key={admin.id} value={admin.id}>
+                            {admin.name}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span>
+                    {admins.find((a) => a.id === assignedValue)?.name ||
+                      "Non assigné"}
+                  </span>
+                )}
               </TableCell>
 
               <TableCell>{formatElapsedTime(request.date)}</TableCell>

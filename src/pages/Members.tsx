@@ -30,7 +30,15 @@ const Members: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const [activeTab, setActiveTab] = useState<"list" | "create">("list");
-
+  const [user, setUser] = useState<{
+    firstName: string;
+    lastName: string;
+    role: string;
+  }>({
+    firstName: "",
+    lastName: "",
+    role: "",
+  });
   // États de chargement distincts pour la création et la suppression
   const [isCreationLoading, setIsCreationLoading] = useState(false);
   const [isDeletionLoading, setIsDeletionLoading] = useState(false);
@@ -81,6 +89,31 @@ const Members: React.FC = () => {
     }
     fetchMembers();
   }, [toast]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch("http://localhost:5000/api/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUser({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: data.role,
+        });
+      })
+      .catch((err) =>
+        console.error(
+          "Erreur lors de la récupération de l'utilisateur connecté:",
+          err
+        )
+      );
+  }, []);
 
   const handleMemberCreated = (member: Member) => {
     setMembers((prev) => [...prev, member]);
@@ -227,9 +260,17 @@ const Members: React.FC = () => {
           onValueChange={(value) => setActiveTab(value as "list" | "create")}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsList
+            className={`grid ${
+              user.role === "owner" || user.role === "superadmin"
+                ? "grid-cols-2"
+                : "grid-cols-1"
+            } w-full max-w-md`}
+          >
             <TabsTrigger value="list">Tous les membres</TabsTrigger>
-            <TabsTrigger value="create">Créer un membre</TabsTrigger>
+            {(user.role === "owner" || user.role === "superadmin") && (
+              <TabsTrigger value="create">Créer un membre</TabsTrigger>
+            )}
           </TabsList>
           <RoleLegendCard className="mt-4" />
 
@@ -238,6 +279,7 @@ const Members: React.FC = () => {
               members={members}
               onEdit={openEditModal}
               onDelete={openDeleteModal}
+              currentUserRole={user.role}
             />
           </TabsContent>
           <TabsContent value="create">
@@ -245,6 +287,7 @@ const Members: React.FC = () => {
               onMemberCreated={handleMemberCreated}
               isLoading={isCreationLoading}
               setIsLoading={setIsCreationLoading}
+              currentUserRole={user.role}
             />
           </TabsContent>
         </Tabs>
@@ -255,6 +298,7 @@ const Members: React.FC = () => {
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
             onSave={handleSaveEditedMember}
+            currentUserRole={user.role}
           />
         )}
 
