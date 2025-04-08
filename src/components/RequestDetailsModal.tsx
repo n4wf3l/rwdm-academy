@@ -1,4 +1,3 @@
-import React, { useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +25,7 @@ import { fr } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import React, { useRef, forwardRef } from "react";
 
 /* ======================= TYPES ======================= */
 
@@ -562,19 +562,21 @@ const renderAccidentReportContent = (request: Request) => {
       </Section>
 
       {d.filePath && (
-        <Section title="Document justificatif">
-          <a
-            href={`http://localhost:5000${d.filePath}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center p-3 bg-gray-50 dark:bg-gray-800
+        <div data-ignore-pdf>
+          <Section title="Document justificatif">
+            <a
+              href={`http://localhost:5000${d.filePath}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center p-3 bg-gray-50 dark:bg-gray-800
                  rounded-lg border border-gray-200 dark:border-gray-700
                  hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <FileText className="h-5 w-5 mr-2 text-rwdm-blue" />
-            <span className="text-sm">Voir le document PDF</span>
-          </a>
-        </Section>
+            >
+              <FileText className="h-5 w-5 mr-2 text-rwdm-blue" />
+              <span className="text-sm">Voir le document PDF</span>
+            </a>
+          </Section>
+        </div>
       )}
 
       <Section title="Signature">
@@ -650,12 +652,14 @@ const renderResponsibilityWaiverContent = (request: Request) => {
 
   return (
     <div>
-      <Button
-        onClick={generatePDF}
-        className="block mx-auto bg-green-600 hover:bg-green-700 text-white mt-4 mb-10"
-      >
-        Générer PDF
-      </Button>
+      <div data-ignore-pdf>
+        <Button
+          onClick={generatePDF}
+          className="block mx-auto bg-green-600 hover:bg-green-700 text-white mt-4 mb-10"
+        >
+          Générer PDF
+        </Button>
+      </div>
 
       {/* 📌 Zone qui sera capturée en PDF */}
       <div ref={pdfRef} className="p-4 bg-white rounded-lg shadow-md">
@@ -754,12 +758,11 @@ const renderResponsibilityWaiverContent = (request: Request) => {
 
 /* ======================= COMPOSANT PRINCIPAL ======================= */
 
-const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
-  isOpen,
-  onClose,
-  request,
-}) => {
-  if (!request) return null;
+const RequestDetailsModal = forwardRef<
+  HTMLDivElement,
+  RequestDetailsModalProps
+>(({ isOpen, onClose, request }, ref) => {
+  if (!isOpen || !request) return null;
 
   const renderContent = () => {
     switch (request.type) {
@@ -778,13 +781,16 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        ref={ref}
+        className="sm:max-w-4xl max-h-[90vh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-xl">
               {translateRequestType(request.type)}
             </span>
-            {getStatusBadge(request.status)}
+            <div data-ignore-pdf>{getStatusBadge(request.status)}</div>
           </DialogTitle>
           <DialogDescription>
             Demande #{request.id} •{" "}
@@ -835,18 +841,19 @@ const RequestDetailsModal: React.FC<RequestDetailsModalProps> = ({
           </Card>
 
           <Separator className="my-6" />
-
           {renderContent()}
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} data-ignore-pdf>
             Fermer
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-};
+});
+
+RequestDetailsModal.displayName = "RequestDetailsModal"; // obligatoire avec forwardRef
 
 export default RequestDetailsModal;

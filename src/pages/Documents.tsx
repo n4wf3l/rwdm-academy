@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,14 +21,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { generateAccidentReportPDF } from "@/utils/generateAccidentReportPDF";
+import { generateResponsibilityWaiverPDF } from "@/utils/generateResponsibilityWaiverPDF";
+import generateRegistrationPDF from "@/utils/generateRegistrationPDF";
+import generateSelectionTestsPDF from "@/utils/generateSelectionTestsPDF";
 
 // Importation de la modale et de ses types
 import RequestDetailsModal, {
   Request as ModalRequest,
   RequestStatus,
 } from "@/components/RequestDetailsModal";
-import Navbar from "@/components/Navbar";
-import NavbarAdmin from "@/components/NavbarAdmin";
+import html2canvas from "html2canvas";
 
 // Types pour les documents
 type DocumentType =
@@ -58,6 +61,10 @@ const Documents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<DocumentType | "all">("all");
   const { toast } = useToast();
+  const containerRefs = useRef<{
+    [key: string]: React.RefObject<HTMLDivElement>;
+  }>({});
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // État pour la demande sélectionnée (type attendu par la modale)
   const [selectedRequest, setSelectedRequest] = useState<ModalRequest | null>(
@@ -186,33 +193,146 @@ const Documents = () => {
     }
   };
 
-  const handleGenerateDocPDF = (docData: Document) => {
-    const pdf = new jsPDF();
-    pdf.setFontSize(12);
-    pdf.text(`Document ID: ${docData.id}`, 10, 10);
-    pdf.text(`Type: ${docData.type}`, 10, 20);
-    pdf.text(`Nom: ${docData.name} ${docData.surname}`, 10, 30);
-    pdf.text(`Email: ${docData.email}`, 10, 40);
-    pdf.text(`Téléphone: ${docData.phone}`, 10, 50);
-    pdf.text(`Status: ${docData.status}`, 10, 60);
-    pdf.text(`Admin assigné: ${docData.assignedAdmin}`, 10, 70);
-    pdf.text(
-      `Date de la demande: ${
-        docData.createdAt ? docData.createdAt.toLocaleDateString() : "N/A"
-      }`,
-      10,
-      80
-    );
-    const jsonData = JSON.stringify(docData.data, null, 2);
-    const lines = pdf.splitTextToSize(jsonData, 180);
-    pdf.text(lines, 10, 90);
-    pdf.save(`document_${docData.id}.pdf`);
-    toast({
-      title: "PDF généré",
-      description: `Le PDF du document ${docData.id} a été généré.`,
-    });
+  useEffect(() => {
+    if (!selectedRequest) return;
+
+    let tries = 0;
+    const maxTries = 20;
+
+    const interval = setInterval(() => {
+      if (modalRef.current) {
+        clearInterval(interval);
+        handleGenerateDocPDF();
+      } else {
+        tries++;
+        if (tries >= maxTries) {
+          clearInterval(interval);
+          toast({
+            title: "Erreur",
+            description:
+              "La modale n’a pas pu être chargée pour générer le PDF.",
+            variant: "destructive",
+          });
+        }
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [selectedRequest]);
+
+  const waitForRefThenGeneratePDF = () => {
+    let tries = 0;
+    const maxTries = 20;
+
+    const interval = setInterval(() => {
+      if (modalRef.current) {
+        clearInterval(interval);
+        handleGenerateDocPDF();
+      } else {
+        tries++;
+        if (tries >= maxTries) {
+          clearInterval(interval);
+          toast({
+            title: "Erreur",
+            description: "La modale n’a pas pu être chargée pour le PDF.",
+            variant: "destructive",
+          });
+        }
+      }
+    }, 100); // vérifie toutes les 100ms
   };
 
+  const handleGenerateDocPDF = async () => {
+    if (!selectedRequest || !modalRef.current) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le PDF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const input = modalRef.current;
+    const originalMaxHeight = input.style.maxHeight;
+    const originalOverflow = input.style.overflow;
+    input.style.maxHeight = "none";
+    input.style.overflow = "visible";
+
+    // Convertit la modale en image
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      useCORS: true,
+      ignoreElements: (element) => {
+        return element.hasAttribute("data-ignore-pdf");
+      },
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    // Prépare le PDF
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidthMm = canvas.width * 0.264583; // conversion px -> mm
+    const imgHeightMm = canvas.height * 0.264583;
+
+    const availableHeight = pageHeight - 70; // Espace restant après logo
+    const scale = Math.min(
+      pageWidth / imgWidthMm,
+      availableHeight / imgHeightMm
+    );
+
+    const displayWidth = imgWidthMm * scale;
+    const displayHeight = imgHeightMm * scale;
+
+    // Charge le logo
+    const logo = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.src = "/logo.png";
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+    });
+
+    const logoWidth = 30;
+    const logoHeight = (logo.height / logo.width) * logoWidth;
+
+    // Ajoute le logo + titre
+    pdf.addImage(
+      logo,
+      "PNG",
+      (pageWidth - logoWidth) / 2,
+      10,
+      logoWidth,
+      logoHeight
+    );
+
+    pdf.setFontSize(16);
+    pdf.text("Aperçu de la demande", pageWidth / 2, logoHeight + 20, {
+      align: "center",
+    });
+
+    // Ajoute le contenu image centré
+    pdf.addImage(
+      imgData,
+      "PNG",
+      (pageWidth - displayWidth) / 2,
+      logoHeight + 30,
+      displayWidth,
+      displayHeight
+    );
+
+    // Sauvegarde
+    pdf.save(`Demande_${selectedRequest.id}.pdf`);
+
+    toast({
+      title: "PDF généré",
+      description: `Le PDF de la demande ${selectedRequest.id} a été généré.`,
+    });
+    input.style.maxHeight = originalMaxHeight;
+    input.style.overflow = originalOverflow;
+  };
   // Fonction utilitaire pour convertir le status en RequestStatus (exemple de mapping)
   const mapStatus = (status: string): RequestStatus => {
     switch (status) {
@@ -376,7 +496,19 @@ const Documents = () => {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleGenerateDocPDF(doc);
+                              setSelectedRequest({
+                                id: doc.id,
+                                type: doc.type,
+                                name: `${doc.name} ${doc.surname}`,
+                                email: doc.email,
+                                date: doc.createdAt
+                                  ? doc.createdAt
+                                  : new Date(),
+                                status: mapStatus(doc.status),
+                                assignedTo: doc.assignedAdmin,
+                                details: doc.data,
+                              });
+                              setIsModalOpen(true); // ❗️Crucial pour que la modale monte dans le DOM
                             }}
                             title="Générer PDF"
                           >
@@ -411,6 +543,7 @@ const Documents = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           request={selectedRequest}
+          ref={modalRef}
         />
       )}
     </AdminLayout>
