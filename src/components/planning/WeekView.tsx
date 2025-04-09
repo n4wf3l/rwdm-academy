@@ -19,6 +19,7 @@ import {
   formatHour,
   getAppointmentsForHourAndDate,
   getTimeFromDate,
+  translateAppointmentType,
 } from "./planningUtils";
 
 interface WeekViewProps {
@@ -27,38 +28,11 @@ interface WeekViewProps {
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;
   goToNextWeek: () => void;
-  hours: number[];
+  hours: string[];
   appointments: Appointment[];
-  handleTimeSlotClick: (date: Date, hour: number) => void;
+  handleTimeSlotClick: (date: Date, hour: string) => void;
   showAppointmentDetails: (appointment: Appointment) => void;
 }
-
-const filterAppointmentsForHourAndDate = (
-  appointments: Appointment[],
-  date: Date,
-  hour: number
-) => {
-  return appointments.filter((a) => {
-    const appointmentDate = new Date(a.date);
-
-    const hourFromDate = appointmentDate.getHours();
-    const hourFromTimeString = a.time
-      ? parseInt(a.time.split(":")[0], 10)
-      : null;
-
-    const matchHour =
-      hourFromTimeString !== null
-        ? hourFromTimeString === hour
-        : hourFromDate === hour;
-
-    return (
-      appointmentDate.getFullYear() === date.getFullYear() &&
-      appointmentDate.getMonth() === date.getMonth() &&
-      appointmentDate.getDate() === date.getDate() &&
-      matchHour
-    );
-  });
-};
 
 const WeekView: React.FC<WeekViewProps> = ({
   currentWeek,
@@ -128,15 +102,16 @@ const WeekView: React.FC<WeekViewProps> = ({
                 {hours.map((hour) => (
                   <TableRow key={hour}>
                     <TableCell className="align-top text-right font-medium py-2">
-                      {formatHour(hour)}
+                      {hour}
                     </TableCell>
+
                     {daysOfWeek.map((day, dayIndex) => {
-                      const appointmentsForHour =
-                        filterAppointmentsForHourAndDate(
-                          appointments,
-                          day,
-                          hour
-                        );
+                      const appointmentsForHour = getAppointmentsForHourAndDate(
+                        appointments,
+                        day,
+                        hour // ✅ string, ex: "09:30"
+                      );
+
                       return (
                         <TableCell
                           key={dayIndex}
@@ -180,14 +155,22 @@ const WeekView: React.FC<WeekViewProps> = ({
                                           "bg-gray-100 border-l-4 border-gray-500 text-gray-800"
                                       )}
                                     >
-                                      <div className="font-medium truncate">
-                                        {appointment.personName}
+                                      <div className="font-bold truncate">
+                                        {appointment.personName
+                                          .split(" ")
+                                          .map(
+                                            (word) =>
+                                              word.charAt(0).toUpperCase() +
+                                              word.slice(1).toLowerCase()
+                                          )
+                                          .join(" ")}
                                       </div>
-                                      <div className="flex justify-between items-center">
-                                        <span>
-                                          {appointment.type || "Type inconnu"}
+                                      <div className="flex flex-col items-start gap-1">
+                                        <span className="block text-wrap break-words max-w-[110px] leading-tight">
+                                          {translateAppointmentType(
+                                            appointment.type
+                                          )}
                                         </span>
-
                                         <span className="text-[10px]">
                                           {appointment.adminFirstName &&
                                           appointment.adminLastName

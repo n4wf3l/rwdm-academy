@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Appointment } from "@/components/planning/planningUtils";
+import {
+  Appointment,
+  translateAppointmentType,
+} from "@/components/planning/planningUtils";
 import { DialogTitle } from "@radix-ui/react-dialog"; // Assurez-vous d'importer DialogTitle
 
 interface AppointmentDetailsDialogProps {
@@ -33,8 +36,7 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
     <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
       <Card>
         <CardHeader>
-          <DialogTitle> Détails du rendez-vous </DialogTitle>{" "}
-          {/* Ajout du DialogTitle */}
+          <DialogTitle></DialogTitle> {/* Ajout du DialogTitle */}
           <CardTitle>
             <h2>Détails du rendez-vous</h2>
           </CardTitle>
@@ -42,7 +44,14 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
         <CardContent>
           <div className="space-y-2">
             <p>
-              <strong>Nom :</strong> {appointment.personName}
+              <strong>Nom :</strong>{" "}
+              {appointment.personName
+                .split(" ")
+                .map(
+                  (word) =>
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                )
+                .join(" ")}
             </p>
             <p>
               <strong>Email :</strong> {appointment.email}
@@ -57,8 +66,10 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
               <strong>Heure :</strong> {appointment.time}
             </p>
             <p>
-              <strong>Type :</strong> {appointment.type}
+              <strong>Type :</strong>{" "}
+              {translateAppointmentType(appointment.type)}
             </p>
+
             <p>
               <strong>Administrateur :</strong>{" "}
               {appointment.adminFirstName && appointment.adminLastName

@@ -287,13 +287,13 @@ const Planning = () => {
     setCurrentWeek(new Date());
   };
 
-  // Gérer le clic sur un créneau horaire
-  const handleTimeSlotClick = (date: Date, hour: number) => {
-    const timeSlotDate = new Date(date);
-    timeSlotDate.setHours(hour, 0, 0, 0);
+  const handleTimeSlotClick = (date: Date, hour: string) => {
+    const [h, m] = hour.split(":").map(Number);
+    const newDate = new Date(date);
+    newDate.setHours(h, m, 0, 0);
 
-    setNewAppointmentDate(timeSlotDate);
-    setNewAppointmentTime(`${hour.toString().padStart(2, "0")}:00`);
+    setNewAppointmentDate(newDate); // ✅ corrigé ici
+    setNewAppointmentTime(hour); // ✅ pas besoin de reformater, c'est déjà bon
     setIsScheduleModalOpen(true);
   };
 
@@ -304,10 +304,11 @@ const Planning = () => {
   };
 
   // Générer les heures pour l'affichage du planning
-  const hours = Array.from(
-    { length: END_HOUR - START_HOUR },
-    (_, i) => START_HOUR + i
-  );
+  const hours = Array.from({ length: 22 }, (_, i) => {
+    const hour = 9 + Math.floor(i / 2);
+    const minutes = i % 2 === 0 ? "00" : "30";
+    return `${hour.toString().padStart(2, "0")}:${minutes}`;
+  });
 
   async function handleCancelAppointment(appointmentId: number): Promise<void> {
     // Mettre à jour l'état pour retirer le rendez-vous de l'interface

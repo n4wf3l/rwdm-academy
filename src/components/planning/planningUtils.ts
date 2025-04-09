@@ -207,9 +207,11 @@ export const isAppointmentInHour = (
 export const getAppointmentsForHourAndDate = (
   appointments: Appointment[],
   date: Date,
-  hour: number
-) => {
-  return appointments.filter((appointment) =>
-    isAppointmentInHour(appointment, date, hour)
+  time: string
+): Appointment[] => {
+  return appointments.filter(
+    (appointment) =>
+      appointment.time === time &&
+      appointment.date.toDateString() === date.toDateString()
   );
 };

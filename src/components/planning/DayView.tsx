@@ -117,8 +117,16 @@ const DayView: React.FC<DayViewProps> = ({
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="font-semibold text-lg">
-                            {appointment.personName}
+                            {appointment.personName
+                              .split(" ")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() +
+                                  word.slice(1).toLowerCase()
+                              )
+                              .join(" ")}
                           </div>
+
                           <div className="flex items-center gap-2 text-gray-600">
                             <Clock className="h-4 w-4" />
                             <span>{appointment.time}</span>

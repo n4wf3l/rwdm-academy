@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import MemberForm from "@/components/members/MemberForm";
@@ -54,6 +54,15 @@ const Members: React.FC = () => {
     "Vérification de la suppression...",
     "Finalisation de la suppression...",
   ];
+
+  const hours = useMemo(() => {
+    const result = [];
+    for (let h = 9; h <= 20; h++) {
+      result.push(h);
+      result.push(h + 0.5);
+    }
+    return result;
+  }, []);
 
   // Récupération des membres depuis le backend
   useEffect(() => {
