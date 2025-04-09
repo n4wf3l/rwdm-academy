@@ -79,17 +79,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 }) => {
   const [admins, setAdmins] = useState<{ id: string; name: string }[]>([]);
   const { toast } = useToast();
-  const filteredTimeSlots = useMemo(() => {
-    if (!newAppointmentDate || !Array.isArray(appointments))
-      return AVAILABLE_TIMES;
-
-    const slots = getAvailableTimeSlotsForDate(
-      appointments,
-      newAppointmentDate
-    );
-    console.log("🎯 Créneaux disponibles filtrés :", slots); // Vérifiez les créneaux ici
-    return slots;
-  }, [appointments, newAppointmentDate]);
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -260,21 +249,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                   <SelectValue placeholder="Sélectionnez une heure" />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredTimeSlots.map((time) => {
-                    const isTaken = !filteredTimeSlots.includes(time);
-                    return (
-                      <SelectItem
-                        key={time}
-                        value={time}
-                        disabled={isTaken}
-                        className={
-                          isTaken ? "opacity-50 pointer-events-none" : ""
-                        }
-                      >
-                        {time} {isTaken && " (Complet)"}
-                      </SelectItem>
-                    );
-                  })}
+                  {availableTimeSlots.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
