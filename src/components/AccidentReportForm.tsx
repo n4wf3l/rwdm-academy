@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Info, Upload } from "lucide-react";
+import { CalendarIcon, CheckCircle, Info, Upload, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignaturePad from "./ui/SignaturePad";
 import { jsPDF } from "jspdf";
@@ -33,18 +33,13 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select"; // Assurez-vous que ce chemin est correct
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface FormSectionProps {
   title: string;
   subtitle?: React.ReactNode;
   children: React.ReactNode;
 }
-
-const generatePDF = () => {
-  const doc = new jsPDF();
-  doc.text("Hello World", 10, 10);
-  doc.save("document.pdf");
-};
 
 const FormSection: React.FC<FormSectionProps> = ({
   title,
@@ -70,11 +65,15 @@ const AccidentReportForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [accidentDate, setAccidentDate] = useState<Date | null>(null);
+  const [accidentCode, setAccidentCode] = useState<string>(""); // Pour déclaration d'accident
+  const [healingCode, setHealingCode] = useState<string>("");
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [clubName, setClubName] = useState<string>("RWDM"); // Met RWDM par défaut
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [accidentDescription, setAccidentDescription] = useState<string>("");
@@ -82,6 +81,12 @@ const AccidentReportForm: React.FC = () => {
   const [isCooldown, setIsCooldown] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [codeDossier, setCodeDossier] = useState<string>("");
+  const [codeValid, setCodeValid] = useState<boolean | null>(null);
+  const [hasSentDeclaration, setHasSentDeclaration] = useState<boolean>(false);
+  const [documentType, setDocumentType] = useState<
+    "accident-report" | "healing-certificate"
+  >("accident-report");
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -149,10 +154,81 @@ const AccidentReportForm: React.FC = () => {
     };
   }, [isCooldown]);
 
+  const generateCode = () => {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setCodeDossier(code);
+
+    toast({
+      title: "Code généré avec succès",
+      description:
+        "Conservez bien ce code pour pouvoir lier votre certificat de guérison plus tard.",
+      variant: "default", // tu peux mettre "success" si tu veux un style spécial
+    });
+  };
+
+  const checkCodeValidity = async (code: string, emailToMatch: string) => {
+    if (!code || !emailToMatch) return;
+
+    try {
+      const response = await fetch("http://localhost:5000/api/requests", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP ${response.status}`);
+      }
+
+      const allRequests = await response.json();
+
+      if (!Array.isArray(allRequests)) {
+        console.error(
+          "La réponse de l'API n'est pas un tableau :",
+          allRequests
+        );
+        setCodeValid(false);
+        return;
+      }
+
+      const matching = allRequests.find((req) => {
+        if (req.type !== "accident-report") return false;
+
+        try {
+          const parsedData = JSON.parse(req.data);
+
+          return (
+            parsedData.codeDossier === code &&
+            parsedData.documentLabel === "Déclaration d'accident" &&
+            parsedData.email?.toLowerCase() === emailToMatch.toLowerCase()
+          );
+        } catch (e) {
+          console.warn("Impossible de parser req.data pour req.id =", req.id);
+          return false;
+        }
+      });
+
+      setCodeValid(!!matching);
+    } catch (err) {
+      console.error("Erreur lors de la vérification du code :", err);
+      setCodeValid(false);
+    }
+  };
+
   const finalSubmit = async () => {
     if (!pdfFile) {
       console.error("❌ Aucun fichier sélectionné !");
       return;
+    }
+
+    // ✅ BLOQUER TOUT SI LE CODE EST INVALIDE POUR "certificat de guérison"
+    if (documentType === "healing-certificate" && !codeValid) {
+      toast({
+        title: "Code de dossier invalide",
+        description: "Veuillez entrer un code valide de déclaration existante.",
+        variant: "destructive",
+      });
+      return; // ⛔ Empêche toute suite d'exécution
     }
 
     try {
@@ -180,17 +256,35 @@ const AccidentReportForm: React.FC = () => {
         throw new Error("Chemin du fichier non reçu !");
       }
 
+      if (response.status === 413) {
+        toast({
+          title: "Fichier trop volumineux",
+          description:
+            "Veuillez sélectionner un fichier PDF de moins de 10 Mo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const requestData = {
         type: "accident-report",
         formData: {
           clubName,
           playerLastName,
           playerFirstName,
+          email,
+          phone,
           accidentDate,
           description: accidentDescription,
           filePath: fileData.filePath,
           signature,
-          category, // Ajout de la catégorie dans les données envoyées
+          category,
+          codeDossier:
+            documentType === "accident-report" ? accidentCode : healingCode,
+          documentLabel:
+            documentType === "healing-certificate"
+              ? "Certificat de guérison"
+              : "Déclaration d'accident",
         },
         assignedTo: null,
       };
@@ -212,11 +306,11 @@ const AccidentReportForm: React.FC = () => {
         throw new Error("Erreur lors de l'envoi du formulaire");
       }
 
-      console.log("✅ Demande envoyée avec succès !");
       toast({
         title: "Déclaration soumise avec succès",
-        description: "Votre déclaration d'accident a été envoyée.",
+        description: "Votre déclaration a été envoyée.",
       });
+
       localStorage.setItem("accidentLastSubmitTime", Date.now().toString());
       setIsCooldown(true);
       setCooldownRemaining(600);
@@ -234,6 +328,11 @@ const AccidentReportForm: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Le fichier dépasse la limite de 10 Mo.");
+        return;
+      }
+
       if (file.type === "application/pdf") {
         setPdfFile(file);
       } else {
@@ -242,10 +341,68 @@ const AccidentReportForm: React.FC = () => {
     }
   };
 
+  const UploadSection = ({
+    file,
+    setFile,
+    handleFileChange,
+    documentType,
+  }: {
+    file: File | null;
+    setFile: (file: File | null) => void;
+    handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    documentType: "accident-report" | "healing-certificate";
+  }) => {
+    const inputId = `pdfUpload-${documentType}`;
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center w-full">
+          <label
+            htmlFor={inputId}
+            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500"
+          >
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400" />
+              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                <span className="font-semibold">Cliquez pour télécharger</span>{" "}
+                ou glissez-déposez
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                PDF uniquement (MAX. 10MB)
+              </p>
+            </div>
+            <input
+              id={inputId}
+              name="pdfFile"
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </label>
+        </div>
+
+        {file && (
+          <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <span className="text-sm truncate">{file.name}</span>
+            <button
+              type="button"
+              onClick={() => setFile(null)}
+              className="text-xs text-rwdm-red hover:text-rwdm-red/80 transition-colors"
+            >
+              Supprimer
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const spellCheckFields = [
-    { label: "Nom du club", value: clubName },
     { label: "Nom du joueur", value: playerLastName },
     { label: "Prénom du joueur", value: playerFirstName },
+    { label: "Adresse e-mail", value: email },
+    { label: "Numéro de téléphone", value: phone },
     { label: "Catégorie", value: category }, // Ajout de la catégorie pour la vérification
   ];
 
@@ -257,16 +414,36 @@ const AccidentReportForm: React.FC = () => {
             title="Important"
             subtitle={
               <>
-                Veuillez noter qu’il est recommandé d’envoyer votre demande dans
-                un délai maximum de{" "}
+                Veuillez noter qu’il est vivement recommandé d’envoyer votre
+                déclaration dans un délai maximum de{" "}
                 <span className="text-red-500 font-semibold">19 jours</span>{" "}
-                suivant l’accident. Le dix-neuvième jour peut être refusé.
-                Au-delà de ce délai, la demande ne pourra plus être prise en
-                compte.
+                suivant l’accident. Le dix-neuvième jour peut être refusé. Passé
+                ce délai, la demande ne pourra plus être prise en compte.
+                <br />
+                <br />
+                La déclaration sera d’abord validée par le club, puis transmise
+                à l’Union belge de football. Les frais médicaux sont dans un
+                premier temps à votre charge.
+                <br />
+                <br />
+                À la fin de la blessure, vous devrez téléverser sur cette page
+                votre certificat de guérison ainsi que les frais transmis par
+                votre médecin. Ces documents seront également approuvés par le
+                club avant d’être envoyés à l’Union belge pour un éventuel
+                remboursement.
+                <br />
+                <br />
+                <span className="font-semibold text-gray-700 dark:text-gray-300">
+                  Veuillez également télécharger le PDF ci-dessous, le faire
+                  remplir par votre médecin, puis le joindre en tant que fichier
+                  PDF lors de la déclaration d’accident.
+                </span>
               </>
             }
             children={null}
           />
+
+          <MedicalReportPDF />
         </CardContent>
       </Card>
 
@@ -387,6 +564,32 @@ const AccidentReportForm: React.FC = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Adresse e-mail *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    className="form-input-base"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Numéro de téléphone *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    className="form-input-base"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2 mt-4">
                 <Label htmlFor="accidentDescription">
                   Description de l'accident *
@@ -396,9 +599,13 @@ const AccidentReportForm: React.FC = () => {
                   className="form-input-base min-h-32"
                   placeholder="Décrivez comment l'accident s'est produit, où, quand et les conséquences immédiates..."
                   required
+                  maxLength={700} // Limite côté HTML
                   value={accidentDescription}
                   onChange={(e) => setAccidentDescription(e.target.value)}
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                  {accidentDescription.length}/700 caractères
+                </p>
               </div>
             </FormSection>
           </CardContent>
@@ -408,54 +615,163 @@ const AccidentReportForm: React.FC = () => {
           <CardContent className="pt-6">
             <FormSection
               title="Document justificatif"
-              subtitle="Veuillez télécharger un document PDF justificatif (rapport médical, etc.)"
+              subtitle="Veuillez choisir le type de document à téléverser puis charger un fichier PDF justificatif (rapport médical, etc.)"
             >
-              <div className="space-y-4">
-                <div className="flex items-center justify-center w-full">
-                  <label
-                    htmlFor="pdfUpload"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500"
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">
-                          Cliquez pour télécharger
-                        </span>{" "}
-                        ou glissez-déposez
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PDF uniquement (MAX. 10MB)
-                      </p>
+              <Tabs
+                defaultValue="accident-report"
+                value={documentType}
+                onValueChange={(value) =>
+                  setDocumentType(
+                    value as "accident-report" | "healing-certificate"
+                  )
+                }
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="accident-report">
+                    Déclaration d'accident
+                  </TabsTrigger>
+                  <TabsTrigger value="healing-certificate">
+                    Certificat de guérison
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Déclaration d'accident */}
+                <TabsContent value="accident-report">
+                  <div className="space-y-4">
+                    <div className="flex gap-3 items-end">
+                      <div className="w-full">
+                        <Label htmlFor="accidentCode">Code du dossier</Label>
+                        <Input
+                          id="accidentCode"
+                          value={accidentCode}
+                          readOnly
+                          placeholder="Cliquez sur 'Générer' pour obtenir un code"
+                          className="form-input-base bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+                          required
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          const newCode = Math.random()
+                            .toString(36)
+                            .substring(2, 8)
+                            .toUpperCase();
+                          setAccidentCode(newCode);
+                          toast({
+                            title: "Code généré",
+                            description: `Voici votre code : ${newCode}`,
+                          });
+                        }}
+                      >
+                        Générer
+                      </Button>
                     </div>
-                    <input
-                      id="pdfUpload"
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      onChange={handleFileChange}
-                      required
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Ce code est essentiel pour délivrer plus tard le
+                      certificat de guérison.
+                      <span className="ml-1 font-medium text-red-500">
+                        Sans ce code
+                      </span>
+                      , il ne sera pas possible d’envoyer un certificat de
+                      guérison lié à cette déclaration.
+                    </p>
+
+                    <UploadSection
+                      file={pdfFile}
+                      setFile={setPdfFile}
+                      handleFileChange={handleFileChange}
+                      documentType="accident-report"
                     />
-                  </label>
-                </div>
-
-                {pdfFile && (
-                  <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <span className="text-sm truncate">{pdfFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setPdfFile(null)}
-                      className="text-xs text-rwdm-red hover:text-rwdm-red/80 transition-colors"
-                    >
-                      Supprimer
-                    </button>
                   </div>
-                )}
+                </TabsContent>
 
-                <div className="mt-4">
-                  <MedicalReportPDF />
-                </div>
-              </div>
+                {/* Certificat de guérison */}
+                <TabsContent value="healing-certificate">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        id="confirmSent"
+                        checked={hasSentDeclaration}
+                        onChange={(e) =>
+                          setHasSentDeclaration(e.target.checked)
+                        }
+                        className="mt-1"
+                      />
+                      <label
+                        htmlFor="confirmSent"
+                        className="text-sm text-gray-700 dark:text-gray-300"
+                      >
+                        J’ai déjà effectué l’envoi d’une déclaration d’accident
+                      </label>
+                    </div>
+
+                    {hasSentDeclaration && (
+                      <>
+                        <div>
+                          <Label htmlFor="healingCode">
+                            Code du dossier reçu lors de la déclaration *
+                          </Label>
+                          <Input
+                            id="healingCode"
+                            value={healingCode}
+                            onChange={(e) => {
+                              const val = e.target.value.toUpperCase();
+                              setHealingCode(val);
+                              checkCodeValidity(val, email);
+                            }}
+                            placeholder="Ex : XG72ZL"
+                            className={`form-input-base ${
+                              codeValid === false
+                                ? "border-red-500"
+                                : codeValid === true
+                                ? "border-green-500"
+                                : ""
+                            }`}
+                            required
+                          />
+
+                          {codeValid === true && (
+                            <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                              <CheckCircle className="w-4 h-4" />
+                              Code valide ! Le dossier est bien lié à l’adresse
+                              :
+                              <span className="font-semibold ml-1">
+                                {email}
+                              </span>
+                            </p>
+                          )}
+
+                          {codeValid === false && (
+                            <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                              <XCircle className="w-4 h-4" />
+                              Aucun dossier ne correspond à ce code pour l’email
+                              :
+                              <span className="font-semibold ml-1">
+                                {email || "non renseigné"}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Veuilllez joindre votre certificat de guérison
+                          ci-dessous :
+                        </p>
+
+                        <UploadSection
+                          file={pdfFile}
+                          setFile={setPdfFile}
+                          handleFileChange={handleFileChange}
+                          documentType="healing-certificate"
+                        />
+                      </>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </FormSection>
           </CardContent>
         </Card>

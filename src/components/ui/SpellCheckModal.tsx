@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Check, AlertCircle } from "lucide-react";
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SpellCheckField {
   label: string;
@@ -30,6 +31,23 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
   fields,
   title = "Vérification des informations",
 }) => {
+  const [checked, setChecked] = useState<boolean[]>(
+    Array(fields.length).fill(false)
+  );
+
+  useEffect(() => {
+    // Réinitialise si le modal se ferme
+    if (!isOpen) setChecked(Array(fields.length).fill(false));
+  }, [isOpen, fields.length]);
+
+  const handleCheck = (index: number) => {
+    const updated = [...checked];
+    updated[index] = !updated[index];
+    setChecked(updated);
+  };
+
+  const allChecked = checked.every((c) => c);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -39,34 +57,53 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
             {title}
           </DialogTitle>
           <DialogDescription>
-            Veuillez vérifier attentivement l'orthographe des informations
-            suivantes avant de soumettre le formulaire.
+            Veuillez vérifier et confirmer chaque champ en cochant la case.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <div className="space-y-5">
-            {fields.map((field, index) => (
-              <div key={index} className="space-y-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {field.label}:
-                </p>
-                <p className="text-lg font-medium px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+        <div className="py-4 space-y-5">
+          {fields.map((field, index) => (
+            <div key={index} className="space-y-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {field.label} :
+              </p>
+              <div className="flex items-center gap-3">
+                <p
+                  className={`text-base font-medium px-3 py-2 rounded-md flex-1
+                    ${
+                      checked[index]
+                        ? "bg-green-100 dark:bg-green-900 text-green-700"
+                        : "bg-red-100 dark:bg-red-900 text-red-700"
+                    }`}
+                >
                   {field.value || (
                     <span className="text-gray-400 italic">Non renseigné</span>
                   )}
                 </p>
+
+                <Checkbox
+                  checked={checked[index]}
+                  onCheckedChange={() => handleCheck(index)}
+                  className="border-gray-400"
+                />
+                {checked[index] && <Check className="w-4 h-4 text-green-600" />}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-        <DialogFooter className="sm:justify-between">
+
+        <DialogFooter className="sm:justify-between mt-2">
           <Button variant="outline" onClick={onClose}>
             Modifier
           </Button>
           <Button
+            disabled={!allChecked}
             onClick={onConfirm}
-            className="gap-1 bg-rwdm-blue hover:bg-rwdm-blue/90"
+            className={`gap-1 ${
+              allChecked
+                ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
             <Check className="h-4 w-4" />
             Confirmer et soumettre

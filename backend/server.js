@@ -411,6 +411,25 @@ app.post("/api/requests", async (req, res) => {
     return res.status(400).json({ error: "Données incomplètes." });
   }
 
+  // ✅ Vérification du code dossier si c'est un certificat
+  if (type === "healing-certificate") {
+    const code = formData.codeDossier;
+
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(
+      `SELECT id FROM requests WHERE JSON_EXTRACT(data, '$.codeDossier') = ? AND type = 'accident-report'`,
+      [code]
+    );
+    await connection.end();
+
+    if (rows.length === 0) {
+      return res.status(400).json({
+        error:
+          "Aucune déclaration d'accident correspondante trouvée pour ce code.",
+      });
+    }
+  }
+
   try {
     const connection = await mysql.createConnection(dbConfig);
     const query =
@@ -526,6 +545,31 @@ app.delete("/api/requests/:id", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("❌ Erreur lors de la suppression de la demande :", error);
     res.status(500).json({ message: "Erreur serveur." });
+  }
+});
+
+// Vérifie si un code de dossier existe (utile avant d'envoyer un certificat de guérison)
+app.get("/api/check-code/:code", async (req, res) => {
+  const { code } = req.params;
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    const [rows] = await connection.execute(
+      `SELECT id FROM requests WHERE JSON_EXTRACT(data, '$.codeDossier') = ? AND type = 'accident-report'`,
+      [code]
+    );
+
+    await connection.end();
+
+    if (rows.length === 0) {
+      return res.status(404).json({ valid: false, message: "Code inexistant" });
+    }
+
+    res.json({ valid: true, message: "Code reconnu" });
+  } catch (error) {
+    console.error("Erreur lors de la vérification du code dossier :", error);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 

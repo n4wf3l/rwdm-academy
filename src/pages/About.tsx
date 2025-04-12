@@ -349,7 +349,7 @@ const About = () => {
                   className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
                 >
                   <Trophy className="mr-2 h-4 w-4" />
-                  RF For Ever Academy
+                  Red For Ever Academy
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -481,7 +481,7 @@ const About = () => {
                       </div>
                       <div className="w-full md:w-2/3">
                         <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          RWDM For Ever Academy
+                          Red For Ever Academy
                         </h3>
                         <p className="mb-4 text-gray-600 dark:text-gray-300">
                           Le RWDM et la commune de Molenbeek-Saint-Jean lancent

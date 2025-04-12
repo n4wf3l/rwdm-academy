@@ -311,8 +311,8 @@ const RegistrationForm = () => {
                     <SelectItem value="Brussels Eagles Football Academy">
                       Brussels Eagles Football Academy
                     </SelectItem>
-                    <SelectItem value="RF For Ever Academy">
-                      RF For Ever Academy
+                    <SelectItem value="Red For Ever Academy">
+                      Red For Ever Academy
                     </SelectItem>
                     <SelectItem value="RWDM Academy">RWDM Academy</SelectItem>
                   </SelectContent>

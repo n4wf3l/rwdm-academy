@@ -524,7 +524,6 @@ const renderAccidentReportContent = (request: Request) => {
     <>
       <Section title="Informations sur l'accident">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Au lieu de d.signatureDate, vous voulez la date d'accident: d.accidentDate */}
           <Field
             label="Date de l'accident"
             value={
@@ -534,7 +533,6 @@ const renderAccidentReportContent = (request: Request) => {
             }
             icon={<CalendarIcon className="h-4 w-4" />}
           />
-          {/* Si vous avez un champ "affiliationNumber", laissez-le, sinon supprimez */}
           <Field
             label="Nom du club"
             value={d.clubName || "-"}
@@ -549,6 +547,26 @@ const renderAccidentReportContent = (request: Request) => {
             label="Prénom du joueur"
             value={d.playerFirstName || "-"}
             icon={<User className="h-4 w-4" />}
+          />
+          <Field
+            label="Adresse e-mail"
+            value={d.email || "-"}
+            icon={<Mail className="h-4 w-4" />}
+          />
+          <Field
+            label="Numéro de téléphone"
+            value={d.phone || "-"}
+            icon={<Phone className="h-4 w-4" />}
+          />
+          <Field
+            label="Code du dossier"
+            value={d.codeDossier || "-"}
+            icon={<FileText className="h-4 w-4" />}
+          />
+          <Field
+            label="Type de document"
+            value={d.documentLabel || "-"}
+            icon={<FileText className="h-4 w-4" />}
           />
         </div>
       </Section>
@@ -816,16 +834,21 @@ const RequestDetailsModal = forwardRef<
                   <div className="flex items-center gap-2 mt-1">
                     <Phone className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {request.type === "responsibility-waiver" &&
-                      request.details.parentPhone
-                        ? request.details.parentPhone
-                        : request.type === "registration" &&
-                          request.details.parent1Phone
-                        ? request.details.parent1Phone
-                        : request.type === "selection-tests" &&
-                          request.details.phone
-                        ? request.details.phone
-                        : request.phone || "-"}
+                      {(() => {
+                        if (request.type === "responsibility-waiver") {
+                          return request.details.parentPhone || "-";
+                        }
+                        if (request.type === "registration") {
+                          return request.details.parent1Phone || "-";
+                        }
+                        if (
+                          request.type === "selection-tests" ||
+                          request.type === "accident-report"
+                        ) {
+                          return request.details.phone || "-";
+                        }
+                        return request.phone || "-";
+                      })()}
                     </span>
                   </div>
                 </div>
