@@ -83,23 +83,24 @@ export function translateRequestType(type: RequestType): string {
  * Retourne le Badge correspondant au statut
  */
 export function getStatusBadge(status: RequestStatus) {
+  const baseClass = "whitespace-nowrap";
+
   switch (status) {
     case "new":
-      return <Badge className="bg-blue-500">Nouveau</Badge>;
+      return <Badge className={`${baseClass} bg-blue-500`}>Nouveau</Badge>;
     case "assigned":
-      return <Badge className="bg-purple-500">Assigné</Badge>;
+      return <Badge className={`${baseClass} bg-purple-500`}>Assigné</Badge>;
     case "in-progress":
-      return (
-        <Badge className="bg-yellow-500 whitespace-nowrap">En cours</Badge>
-      );
+      return <Badge className="bg-yellow-500">En cours</Badge>;
     case "completed":
-      return <Badge className="bg-green-500">Terminé</Badge>;
+      return <Badge className={`${baseClass} bg-green-500`}>Terminé</Badge>;
     case "rejected":
-      return <Badge className="bg-red-500">Rejeté</Badge>;
+      return <Badge className={`${baseClass} bg-red-500`}>Rejeté</Badge>;
     default:
-      return <Badge>Inconnu</Badge>;
+      return <Badge className={baseClass}>Inconnu</Badge>;
   }
 }
+
 
 const formatRequestId = (id: string | number): string => {
   const numericId = typeof id === "number" ? id : parseInt(id, 10);
