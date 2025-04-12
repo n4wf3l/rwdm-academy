@@ -16,7 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Eye, Clock, Check, X, Calendar } from "lucide-react"; // Importer l'icône Calendar
+import {
+  Eye,
+  Clock,
+  Check,
+  X,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"; // Importer l'icône Calendar
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "../ui/ConfirmationDialog";
 
@@ -100,7 +108,6 @@ export function getStatusBadge(status: RequestStatus) {
       return <Badge className={baseClass}>Inconnu</Badge>;
   }
 }
-
 
 const formatRequestId = (id: string | number): string => {
   const numericId = typeof id === "number" ? id : parseInt(id, 10);
@@ -190,11 +197,23 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   }, []);
 
   const sortedRequests = [...requests].sort((a, b) => {
-    if (a.status === "rejected") return 1;
-    if (b.status === "rejected") return -1;
-    return 0;
+    const getPriority = (status: RequestStatus) => {
+      if (status === "rejected") return 3;
+      if (status === "in-progress") return 2;
+      return 1;
+    };
+
+    return getPriority(a.status) - getPriority(b.status);
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(sortedRequests.length / itemsPerPage);
+  const paginatedRequests = sortedRequests.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   return (
     <>
       <Table>
@@ -212,7 +231,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         </TableHeader>
 
         <TableBody>
-          {sortedRequests.map((request) => {
+          {paginatedRequests.map((request) => {
             const assignedValue = request.assignedTo ?? "none";
             return (
               <TableRow
@@ -384,6 +403,32 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
           })}
         </TableBody>
       </Table>
+
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center border-t px-4 py-3">
+          <span className="text-sm text-gray-600">
+            Page {currentPage} sur {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
       <ConfirmationDialog
         open={confirmOpen}
         onClose={() => {
