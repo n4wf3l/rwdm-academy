@@ -68,6 +68,14 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
   const [newEmail, setNewEmail] = useState(recipientEmail);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
+  const groupedByCode = pendingAccidents.reduce((acc, request) => {
+    const dossierCode = request.details?.codeDossier || `NO_CODE_${request.id}`;
+
+    if (!acc[dossierCode]) acc[dossierCode] = [];
+    acc[dossierCode].push(request);
+    return acc;
+  }, {} as Record<string, Request[]>);
+
   if (pendingAccidents.length === 0) return null;
 
   return (
@@ -77,6 +85,8 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
           <CardTitle>
             Déclarations d'accident en attente ({pendingAccidents.length})
           </CardTitle>
+
+          {/* Bouton pour modifier l'email de l'Union Belge */}
           <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -124,76 +134,128 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pendingAccidents.map((request) => {
-                const accidentDateStr = request.details?.accidentDate || null;
+              {Object.entries(groupedByCode).map(([code, requests]) => {
+                const declaration = requests.find(
+                  (r) => r.details?.documentLabel === "Déclaration d'accident"
+                );
+                const healing = requests.find(
+                  (r) => r.details?.documentLabel === "Certificat de guérison"
+                );
 
-                const assignedName =
-                  !request.assignedTo || request.assignedTo === "none"
-                    ? "Non assigné"
-                    : admins?.find(
-                        (admin) =>
-                          admin.id.toString() === request.assignedTo?.toString()
-                      )?.name || "Inconnu";
+                if (!declaration) return null;
 
                 return (
-                  <TableRow
-                    key={request.id}
-                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                    onClick={() => onViewDetails(request)}
-                  >
-                    <TableCell className="font-medium">
-                      {formatRequestId(request.id)}
-                    </TableCell>
-                    <TableCell>
-                      {accidentDateStr
-                        ? new Date(accidentDateStr).toLocaleDateString("fr-BE")
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>{request.name}</TableCell>
-                    <TableCell>
-                      <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
-                        En cours
-                      </div>
-                    </TableCell>
-                    <TableCell>{assignedName}</TableCell>
-                    <TableCell>{getDeadlineInfo(accidentDateStr)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onViewDetails(request);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedIdToSend(request.id);
-                          }}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-xs text-gray-700">
-                        {recipientEmail}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <React.Fragment key={code}>
+                    {/* Déclaration principale */}
+                    <TableRow
+                      onClick={() => onViewDetails(declaration)}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                    >
+                      <TableCell>{formatRequestId(declaration.id)}</TableCell>
+                      <TableCell>
+                        {declaration.details?.accidentDate
+                          ? new Date(
+                              declaration.details.accidentDate
+                            ).toLocaleDateString("fr-BE")
+                          : ""}
+                      </TableCell>
+                      <TableCell>{declaration.name}</TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
+                          En cours
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {admins?.find((a) => a.id === declaration.assignedTo)
+                          ?.name || "Non assigné"}
+                      </TableCell>
+                      <TableCell>
+                        {getDeadlineInfo(declaration.details?.accidentDate)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewDetails(declaration);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedIdToSend(declaration.id);
+                            }}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{recipientEmail}</TableCell>
+                    </TableRow>
+
+                    {/* Certificat lié */}
+                    {healing && (
+                      <TableRow
+                        onClick={() => onViewDetails(healing)}
+                        className="bg-gray-50 dark:bg-gray-900 text-sm"
+                      >
+                        <TableCell>{formatRequestId(healing.id)}</TableCell>
+                        <TableCell>
+                          {healing.details?.accidentDate
+                            ? new Date(
+                                healing.details.accidentDate
+                              ).toLocaleDateString("fr-BE")
+                            : ""}
+                        </TableCell>
+                        <TableCell className="italic text-gray-500">
+                          Certificat de guérison reçu
+                        </TableCell>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewDetails(healing);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedIdToSend(healing.id);
+                              }}
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>{recipientEmail}</TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </TableBody>
           </Table>
         </div>
 
+        {/* Pagination */}
         {pendingAccidents.length > 5 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <div className="text-sm text-gray-600">
@@ -221,6 +283,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
         )}
       </CardContent>
 
+      {/* Confirmation d'envoi */}
       <ConfirmationDialog
         open={!!selectedIdToSend}
         onClose={() => setSelectedIdToSend(null)}
