@@ -207,13 +207,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                         className="bg-gray-50 dark:bg-gray-900 text-sm"
                       >
                         <TableCell>{formatRequestId(healing.id)}</TableCell>
-                        <TableCell>
-                          {healing.details?.accidentDate
-                            ? new Date(
-                                healing.details.accidentDate
-                              ).toLocaleDateString("fr-BE")
-                            : ""}
-                        </TableCell>
+                        <TableCell></TableCell>
                         <TableCell className="italic text-gray-500">
                           Certificat de guérison reçu
                         </TableCell>
