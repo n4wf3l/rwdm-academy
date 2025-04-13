@@ -258,7 +258,6 @@ const Documents = () => {
     input.style.maxHeight = "none";
     input.style.overflow = "visible";
 
-    // Convertit la modale en image
     const canvas = await html2canvas(input, {
       scale: 2,
       backgroundColor: "#ffffff",
@@ -270,24 +269,14 @@ const Documents = () => {
 
     const imgData = canvas.toDataURL("image/png");
 
-    // Prépare le PDF
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const imgWidthMm = canvas.width * 0.264583; // conversion px -> mm
-    const imgHeightMm = canvas.height * 0.264583;
+    // Ajoute l'image qui prend toute la page
+    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
 
-    const availableHeight = pageHeight - 70; // Espace restant après logo
-    const scale = Math.min(
-      pageWidth / imgWidthMm,
-      availableHeight / imgHeightMm
-    );
-
-    const displayWidth = imgWidthMm * scale;
-    const displayHeight = imgHeightMm * scale;
-
-    // Charge le logo
+    // Charge et ajoute le logo centré en haut
     const logo = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image();
       img.src = "/logo.png";
@@ -295,44 +284,25 @@ const Documents = () => {
       img.onerror = reject;
     });
 
-    const logoWidth = 30;
+    const logoWidth = 15; // deux fois plus petit que 30
     const logoHeight = (logo.height / logo.width) * logoWidth;
+    const logoX = (pageWidth - logoWidth) / 2;
+    const logoY = 3; // marge en haut
 
-    // Ajoute le logo + titre
-    pdf.addImage(
-      logo,
-      "PNG",
-      (pageWidth - logoWidth) / 2,
-      10,
-      logoWidth,
-      logoHeight
-    );
+    pdf.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
 
-    pdf.setFontSize(16);
-    pdf.text("Aperçu de la demande", pageWidth / 2, logoHeight + 20, {
-      align: "center",
-    });
-
-    // Ajoute le contenu image centré
-    pdf.addImage(
-      imgData,
-      "PNG",
-      (pageWidth - displayWidth) / 2,
-      logoHeight + 30,
-      displayWidth,
-      displayHeight
-    );
-
-    // Sauvegarde
+    // Génère et télécharge le PDF
     pdf.save(`Demande_${selectedRequest.id}.pdf`);
 
     toast({
       title: "PDF généré",
       description: `Le PDF de la demande ${selectedRequest.id} a été généré.`,
     });
+
     input.style.maxHeight = originalMaxHeight;
     input.style.overflow = originalOverflow;
   };
+
   // Fonction utilitaire pour convertir le status en RequestStatus (exemple de mapping)
   const mapStatus = (status: string): RequestStatus => {
     switch (status) {
