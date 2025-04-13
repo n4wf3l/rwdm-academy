@@ -261,7 +261,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
         <Card
           className={cn(
             "glass-panel transition-all duration-300",
-            isCalendarOpen ? "min-h-[550px]" : "min-h-[250px]"
+            isCalendarOpen ? "min-h-[650px]" : "min-h-[250px]"
           )}
         >
           <CardContent className="pt-6">
@@ -419,7 +419,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-auto p-0 pointer-events-none absolute z-[100]"
+                      className="w-auto p-0 absolute z-[100] overflow-visible"
                       align="start"
                       forceMount
                     >
@@ -453,7 +453,12 @@ const ResponsibilityWaiverForm: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="glass-panel">
+        <Card
+          className={cn(
+            "glass-panel overflow-visible transition-all duration-300",
+            isCalendarOpen ? "min-h-[550px]" : "min-h-[250px]"
+          )}
+        >
           <CardContent className="pt-6">
             <FormSection
               title="Signature"

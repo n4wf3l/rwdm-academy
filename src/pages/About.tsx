@@ -335,21 +335,21 @@ const About = () => {
                   className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
                 >
                   <Book className="mr-2 h-4 w-4" />
-                  RWDM Academy
+                  RWDM Aca.
                 </TabsTrigger>
                 <TabsTrigger
                   value="mission"
                   className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
                 >
                   <Lightbulb className="mr-2 h-4 w-4" />
-                  Brussels Eagles Football Academy
+                  BEF Aca.
                 </TabsTrigger>
                 <TabsTrigger
                   value="approche"
                   className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
                 >
                   <Trophy className="mr-2 h-4 w-4" />
-                  Red For Ever Academy
+                  RFE Aca.
                 </TabsTrigger>
               </TabsList>
             </div>

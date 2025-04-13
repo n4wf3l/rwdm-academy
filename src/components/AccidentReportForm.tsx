@@ -64,7 +64,7 @@ const FormSection: React.FC<FormSectionProps> = ({
 const AccidentReportForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [accidentDate, setAccidentDate] = useState<Date | null>(null);
+  const [accidentDate, setAccidentDate] = useState<Date | undefined>();
   const [accidentCode, setAccidentCode] = useState<string>(""); // Pour déclaration d'accident
   const [healingCode, setHealingCode] = useState<string>("");
   const [signature, setSignature] = useState<string | null>(null);
@@ -84,6 +84,7 @@ const AccidentReportForm: React.FC = () => {
   const [codeDossier, setCodeDossier] = useState<string>("");
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [hasSentDeclaration, setHasSentDeclaration] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
   const [documentType, setDocumentType] = useState<
     "accident-report" | "healing-certificate"
   >("accident-report");
@@ -116,6 +117,7 @@ const AccidentReportForm: React.FC = () => {
         variant: "default",
       });
       setAccidentDate(date);
+      setOpen(false); // ✅ ferme le calendrier après sélection valide
     }
   };
 
@@ -478,7 +480,7 @@ const AccidentReportForm: React.FC = () => {
                     </Tooltip>
                   </Label>
 
-                  <Popover>
+                  <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"

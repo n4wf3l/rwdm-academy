@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Info, Mail, Menu, X, LogOut } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Info, Mail, Menu, X, LogOut, Home } from "lucide-react";
 
 interface NavbarProps {
   className?: string;
@@ -93,7 +93,10 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           {/* Desktop menu */}
           <nav className="hidden md:flex items-center space-x-8">
             <NavLink to="/" active={isActivePath("/")} scrolled={isScrolled}>
-              Accueil
+              <div className="flex items-center gap-1.5">
+                <Home size={18} />
+                <span>Accueil</span>
+              </div>
             </NavLink>
             <NavLink
               to="/about"
@@ -137,78 +140,59 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         </div>
 
         {/* Mobile menu */}
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white dark:bg-rwdm-darkblue shadow-lg"
-          >
-            <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-              <MobileNavLink
-                to="/"
-                active={isActivePath("/")}
-                onClick={toggleMenu}
-              >
-                Accueil
-              </MobileNavLink>
-              <MobileNavLink
-                to="/about"
-                active={isActivePath("/about")}
-                onClick={toggleMenu}
-              >
-                <div className="flex items-center gap-2">
-                  <Info size={18} />
-                  <span>À propos</span>
-                </div>
-              </MobileNavLink>
-              <MobileNavLink
-                to="/contact"
-                active={isActivePath("/contact")}
-                onClick={toggleMenu}
-              >
-                <div className="flex items-center gap-2">
-                  <Mail size={18} />
-                  <span>Contact</span>
-                </div>
-              </MobileNavLink>
-            </div>
-          </motion.div>
-        )}
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              key="mobile-menu"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden bg-white dark:bg-rwdm-darkblue shadow-lg overflow-hidden"
+            >
+              <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+                <MobileNavLink
+                  to="/"
+                  active={isActivePath("/")}
+                  onClick={toggleMenu}
+                >
+                  <div className="flex items-center gap-2">
+                    <Home size={18} />
+                    <span>Accueil</span>
+                  </div>
+                </MobileNavLink>
+
+                <MobileNavLink
+                  to="/about"
+                  active={isActivePath("/about")}
+                  onClick={toggleMenu}
+                >
+                  <div className="flex items-center gap-2">
+                    <Info size={18} />
+                    <span>À propos</span>
+                  </div>
+                </MobileNavLink>
+
+                <MobileNavLink
+                  to="/contact"
+                  active={isActivePath("/contact")}
+                  onClick={toggleMenu}
+                >
+                  <div className="flex items-center gap-2">
+                    <Mail size={18} />
+                    <span>Contact</span>
+                  </div>
+                </MobileNavLink>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Bloc utilisateur + bouton de déconnexion côte à côte en bas à droite */}
       {isLoggedIn && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center space-x-3">
-          {/* Bouton Déconnexion */}
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-full shadow-md hover:bg-red-700 transition-all duration-300 flex items-center group overflow-hidden"
-          >
-            <LogOut className="h-5 w-5 transition-all duration-300" />
-            <span className="ml-2 whitespace-nowrap max-w-0 overflow-hidden group-hover:max-w-xs opacity-0 group-hover:opacity-100 transition-all duration-300">
-              Déconnexion
-            </span>
-          </button>
-
-          {/* Nom + rond vert */}
-          <div className="flex items-center space-x-2 bg-white dark:bg-rwdm-darkblue p-2 rounded shadow">
-            <span className="text-gray-800 dark:text-white font-medium">
-              {user.firstName} {user.lastName}
-            </span>
-            <div className="relative flex items-center justify-center">
-              <div className="absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75 animate-ping"></div>
-              <div className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bouton de déconnexion en bas à droite si connecté */}
-      {/* Bloc utilisateur + bouton de déconnexion côte à côte en bas à droite */}
-      {isLoggedIn && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center space-x-3">
+        <div className="hidden md:flex fixed bottom-5 right-5 z-50 items-center space-x-3">
           {/* Bouton Déconnexion */}
           <button
             onClick={handleLogout}
