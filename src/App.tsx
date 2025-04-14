@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,9 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import SplashComponent from "@/components/SplashComponent"; // 👈 Ajoute ton Splash ici
+
+// Pages
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -30,23 +34,40 @@ const queryClient = new QueryClient();
 
 const AuthRedirect = ({ children }) => {
   const token = localStorage.getItem("token");
-
-  if (token) {
-    return <Navigate to="/dashboard" replace />; // Redirige si déjà connecté
-  }
-
-  return children;
+  return token ? <Navigate to="/dashboard" replace /> : children;
 };
 
 function App() {
+  const [language, setLanguage] = useState<string | null>(null);
+
+  // Vérifie si une langue est déjà choisie
+  useEffect(() => {
+    const storedLang = localStorage.getItem("language");
+    if (storedLang) {
+      setLanguage(storedLang);
+    }
+  }, []);
+
+  // Si aucune langue choisie → Affiche le SplashComponent
+  if (!language) {
+    return (
+      <SplashComponent
+        onLanguageSelect={(lang) => {
+          localStorage.setItem("language", lang);
+          setLanguage(lang);
+        }}
+      />
+    );
+  }
+
+  // App principale une fois la langue sélectionnée
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        {/* ✅ Router doit englober les routes */}
         <Router>
-          <ScrollToTop /> {/* ✅ Ici, il s'exécute après chaque navigation */}
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />

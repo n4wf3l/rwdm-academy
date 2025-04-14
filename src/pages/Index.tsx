@@ -8,6 +8,7 @@ import SplashComponent from "../components/SplashComponent";
 import { motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 import { Info } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Index = () => {
   // Restaurer la sélection du formulaire depuis localStorage (par défaut "registration")
@@ -20,6 +21,7 @@ const Index = () => {
     return savedData ? JSON.parse(savedData) : {};
   });
 
+  const { t } = useTranslation();
   const [pageLoaded, setPageLoaded] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
@@ -89,9 +91,7 @@ const Index = () => {
                 </h1>
 
                 <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  Bienvenue sur la plateforme officielle d'inscription de la
-                  RWDM Academy. Veuillez sélectionner le type de formulaire que
-                  vous souhaitez compléter.
+                  {t("welcome")}
                 </p>
               </motion.div>
             </AnimatedTransition>
@@ -111,11 +111,11 @@ const Index = () => {
 
             {/* Légende des champs */}
             <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-2xl mx-auto space-y-1 text-center">
-              <p>* : Champ obligatoire</p>
+              <p>{t("champ")}</p>
 
               <div className="flex items-center justify-center space-x-1">
                 <Info className="h-4 w-4 text-gray-500" />
-                <p>Icône information (survol de la souris)</p>
+                <p>{t("champ2")}</p>
               </div>
             </div>
 

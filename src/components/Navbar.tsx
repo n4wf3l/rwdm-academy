@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Info, Mail, Menu, X, LogOut, Home } from "lucide-react";
+import { Info, Mail, Menu, X, LogOut, Home, Globe } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface NavbarProps {
   className?: string;
@@ -15,6 +22,13 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const [user, setUser] = useState({ firstName: "", lastName: "" });
   const location = useLocation();
   const navigate = useNavigate();
+  const currentLang = localStorage.getItem("language") || "fr";
+  const { t } = useTranslation();
+  const langLabels = {
+    fr: "Français",
+    nl: "Nederlands",
+    en: "English",
+  };
 
   useEffect(() => {
     // Vérifier si un token est présent pour savoir si l'utilisateur est connecté
@@ -78,7 +92,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 className="h-full w-full object-contain"
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col items-start space-y-1">
               <span
                 className={cn(
                   "font-bold text-xl transition-colors",
@@ -87,6 +101,39 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
               >
                 RWDM Academy
               </span>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-rwdm-red dark:hover:text-white transition">
+                  <Globe className="h-4 w-4" />
+                  <span>{langLabels[currentLang]}</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="mt-1 z-[9999]">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.setItem("language", "fr");
+                      window.location.reload();
+                    }}
+                  >
+                    Français
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.setItem("language", "nl");
+                      window.location.reload();
+                    }}
+                  >
+                    Nederlands
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.setItem("language", "en");
+                      window.location.reload();
+                    }}
+                  >
+                    English
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </Link>
 
@@ -95,7 +142,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             <NavLink to="/" active={isActivePath("/")} scrolled={isScrolled}>
               <div className="flex items-center gap-1.5">
                 <Home size={18} />
-                <span>Accueil</span>
+                <span>{t("home")}</span>
               </div>
             </NavLink>
             <NavLink
@@ -105,7 +152,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             >
               <div className="flex items-center gap-1.5">
                 <Info size={18} />
-                <span>À propos</span>
+                <span>{t("about")}</span>
               </div>
             </NavLink>
             <NavLink
@@ -115,7 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             >
               <div className="flex items-center gap-1.5">
                 <Mail size={18} />
-                <span>Contact</span>
+                <span>{t("contact")}</span>
               </div>
             </NavLink>
             <Link
@@ -125,7 +172,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 "bg-rwdm-red text-white hover:bg-rwdm-red/90 shadow-md hover:shadow-lg"
               )}
             >
-              Espace Admin
+              {t("admin_space")}
             </Link>
           </nav>
 
