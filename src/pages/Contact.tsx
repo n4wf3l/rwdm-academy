@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Clock, Info } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Contact = () => {
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
       <Navbar />
@@ -38,7 +46,85 @@ const Contact = () => {
                 <h2 className="text-2xl font-semibold mb-6">
                   Envoyez-nous un message
                 </h2>
-                <form className="space-y-4">
+                <form
+                  className="space-y-4"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+
+                    const lastSent = localStorage.getItem("lastContactTime");
+                    const now = Date.now();
+
+                    if (lastSent && now - parseInt(lastSent) < 10 * 60 * 1000) {
+                      const remaining =
+                        10 * 60 * 1000 - (now - parseInt(lastSent));
+                      const minutes = Math.floor(remaining / 60000);
+                      const seconds = Math.floor((remaining % 60000) / 1000);
+                      toast({
+                        title: "⏳ Attendez avant de réessayer",
+                        description: `Veuillez patienter encore ${minutes}m${
+                          seconds < 10 ? "0" : ""
+                        }${seconds}s avant de pouvoir renvoyer un message.`,
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    if (!name || !email || !subject || !message) {
+                      toast({
+                        title: "Champs manquants",
+                        description: "Merci de compléter tous les champs.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    try {
+                      setIsSending(true);
+                      const res = await fetch(
+                        "http://localhost:5000/api/form-mail/send-contact-message",
+                        {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            name,
+                            email,
+                            subject,
+                            message,
+                          }),
+                        }
+                      );
+
+                      const data = await res.json();
+                      if (!res.ok)
+                        throw new Error(data.error || "Erreur inconnue");
+
+                      toast({
+                        title: "Message envoyé",
+                        description:
+                          "Merci, votre message a bien été transmis à l'administration.",
+                      });
+
+                      setName("");
+                      setEmail("");
+                      setSubject("");
+                      setMessage("");
+                      localStorage.setItem(
+                        "lastContactTime",
+                        Date.now().toString()
+                      ); // ⏱️ on enregistre l’heure
+                    } catch (error) {
+                      console.error(error);
+                      toast({
+                        title: "Erreur",
+                        description:
+                          "Impossible d'envoyer le message pour l'instant.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsSending(false);
+                    }
+                  }}
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label
@@ -52,6 +138,8 @@ const Contact = () => {
                         id="name"
                         className="form-input-base"
                         placeholder="Votre nom"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                       />
                     </div>
                     <div>
@@ -66,6 +154,8 @@ const Contact = () => {
                         id="email"
                         className="form-input-base"
                         placeholder="Votre email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                   </div>
@@ -81,6 +171,8 @@ const Contact = () => {
                       id="subject"
                       className="form-input-base"
                       placeholder="Sujet de votre message"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
                     />
                   </div>
                   <div>
@@ -95,10 +187,16 @@ const Contact = () => {
                       rows={5}
                       className="form-input-base resize-none"
                       placeholder="Votre message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                     ></textarea>
                   </div>
-                  <Button className="w-full md:w-auto button-transition bg-rwdm-red hover:bg-rwdm-red/90">
-                    Envoyer le message
+                  <Button
+                    type="submit"
+                    disabled={isSending}
+                    className="w-full md:w-auto button-transition bg-rwdm-red hover:bg-rwdm-red/90"
+                  >
+                    {isSending ? "Envoi en cours..." : "Envoyer le message"}
                   </Button>
                 </form>
               </CardContent>
@@ -131,7 +229,7 @@ const Contact = () => {
                     <div>
                       <h3 className="font-medium mb-1">Email</h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        academy@rwdm.be
+                        info@nainnovations.be
                       </p>
                     </div>
                   </div>

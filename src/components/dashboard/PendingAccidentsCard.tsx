@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
 import { ChevronLeft, ChevronRight, Eye, Send, Pencil } from "lucide-react";
 import { Request } from "@/components/RequestDetailsModal";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogTrigger,
@@ -21,6 +22,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
 export interface Admin {
   id: string;
@@ -50,7 +52,8 @@ interface PendingAccidentsCardProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onViewDetails: (request: Request) => void;
-  onSendToFederation: (requestId: string) => void;
+  onSendDeclaration: (requestId: string) => void; // ✅ AJOUTER ICI
+  onSendHealingCertificate: (requestId: string) => void; // ✅ AJOUTER ICI
   admins?: Admin[];
 }
 
@@ -60,16 +63,40 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
   totalPages,
   onPageChange,
   onViewDetails,
-  onSendToFederation,
+  onSendDeclaration,
+  onSendHealingCertificate,
   admins,
 }) => {
   const [selectedIdToSend, setSelectedIdToSend] = useState<string | null>(null);
-  const [recipientEmail, setRecipientEmail] = useState("federation@rbfa.be");
-  const [newEmail, setNewEmail] = useState(recipientEmail);
+  const [selectedHealingIdToSend, setSelectedHealingIdToSend] = useState<
+    string | null
+  >(null);
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [newEmail, setNewEmail] = useState("");
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  useEffect(() => {
+    const fetchEmail = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/email-recipients/accident-report"
+        );
+        setRecipientEmail(response.data.email);
+        setNewEmail(response.data.email);
+      } catch (error) {
+        console.error(
+          "Erreur lors du chargement de l’email du destinataire",
+          error
+        );
+      }
+    };
+
+    fetchEmail();
+  }, []);
 
   const groupedByCode = pendingAccidents.reduce((acc, request) => {
     const dossierCode = request.details?.codeDossier || `NO_CODE_${request.id}`;
+
+    // 🔁 Appel au backend pour récupérer l'email actuel
 
     if (!acc[dossierCode]) acc[dossierCode] = [];
     acc[dossierCode].push(request);
@@ -83,7 +110,8 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
       <CardHeader className="border-b">
         <div className="flex justify-between items-center w-full">
           <CardTitle>
-            Déclarations d'accident en attente ({pendingAccidents.length})
+            Déclarations d'accident en attente (
+            {Object.keys(groupedByCode).length})
           </CardTitle>
 
           {/* Bouton pour modifier l'email de l'Union Belge */}
@@ -105,9 +133,23 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
               />
               <DialogFooter>
                 <Button
-                  onClick={() => {
-                    setRecipientEmail(newEmail);
-                    setEmailDialogOpen(false);
+                  onClick={async () => {
+                    try {
+                      await axios.put(
+                        "http://localhost:5000/api/email-recipients/accident-report",
+                        {
+                          email: newEmail,
+                        }
+                      );
+                      setRecipientEmail(newEmail);
+                      setEmailDialogOpen(false);
+                    } catch (err) {
+                      console.error(
+                        "Erreur lors de l’enregistrement de l’email :",
+                        err
+                      );
+                      // Tu peux aussi afficher une notif ici si tu veux
+                    }
                   }}
                 >
                   Enregistrer
@@ -135,12 +177,20 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             </TableHeader>
             <TableBody>
               {Object.entries(groupedByCode).map(([code, requests]) => {
-                const declaration = requests.find(
-                  (r) => r.details?.documentLabel === "Déclaration d'accident"
+                // Utilise "any" pour ne pas avoir d'erreur TypeScript
+                const declaration: any = requests.find(
+                  (r: any) =>
+                    r.details?.documentLabel === "Déclaration d'accident"
                 );
-                const healing = requests.find(
-                  (r) => r.details?.documentLabel === "Certificat de guérison"
+                const healing: any = requests.find(
+                  (r: any) =>
+                    r.details?.documentLabel === "Certificat de guérison"
                 );
+
+                const isDeclarationSent = Boolean(
+                  (declaration as any)?.sent_at
+                );
+                const isHealingSent = !!(healing && (healing as any).sent_at);
 
                 if (!declaration) return null;
 
@@ -187,13 +237,24 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
+                            disabled={isDeclarationSent}
+                            className={cn(
+                              "border-yellow-600",
+                              isDeclarationSent
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-yellow-600 hover:bg-yellow-100"
+                            )}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedIdToSend(declaration.id);
+                              if (!isDeclarationSent)
+                                setSelectedIdToSend(declaration.id);
                             }}
                           >
-                            <Send className="h-4 w-4" />
+                            {isDeclarationSent ? (
+                              "Déjà envoyé"
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
                           </Button>
                         </div>
                       </TableCell>
@@ -226,16 +287,28 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
+
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-yellow-600 border-yellow-600 hover:bg-yellow-100"
+                              disabled={isHealingSent}
+                              className={cn(
+                                "border-yellow-600",
+                                isHealingSent
+                                  ? "text-gray-400 cursor-not-allowed"
+                                  : "text-yellow-600 hover:bg-yellow-100"
+                              )}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedIdToSend(healing.id);
+                                if (!isHealingSent)
+                                  setSelectedHealingIdToSend(healing.id);
                               }}
                             >
-                              <Send className="h-4 w-4" />
+                              {isHealingSent ? (
+                                "Déjà envoyé"
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         </TableCell>
@@ -283,12 +356,24 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
         onClose={() => setSelectedIdToSend(null)}
         onConfirm={() => {
           if (selectedIdToSend) {
-            onSendToFederation(selectedIdToSend);
+            onSendDeclaration(selectedIdToSend);
             setSelectedIdToSend(null);
           }
         }}
         title="Envoyer à l'Union belge"
         message="Êtes-vous sûr de vouloir envoyer cette déclaration d'accident à l'Union belge de football ?"
+      />
+      <ConfirmationDialog
+        open={!!selectedHealingIdToSend}
+        onClose={() => setSelectedHealingIdToSend(null)}
+        onConfirm={() => {
+          if (selectedHealingIdToSend) {
+            onSendHealingCertificate(selectedHealingIdToSend);
+            setSelectedHealingIdToSend(null);
+          }
+        }}
+        title="Envoyer certificat de guérison"
+        message="Êtes-vous sûr de vouloir envoyer ce certificat de guérison à l'Union belge ?"
       />
     </Card>
   );

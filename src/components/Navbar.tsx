@@ -247,7 +247,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           >
             <LogOut className="h-5 w-5 transition-all duration-300" />
             <span className="ml-2 whitespace-nowrap max-w-0 overflow-hidden group-hover:max-w-xs opacity-0 group-hover:opacity-100 transition-all duration-300">
-              Déconnexion
+              {t("logout")}
             </span>
           </button>
 

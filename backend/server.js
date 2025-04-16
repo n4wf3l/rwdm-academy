@@ -411,7 +411,6 @@ app.post("/api/requests", async (req, res) => {
     return res.status(400).json({ error: "Données incomplètes." });
   }
 
-  // ✅ Vérification du code dossier si c'est un certificat
   if (type === "healing-certificate") {
     const code = formData.codeDossier;
 
@@ -439,9 +438,12 @@ app.post("/api/requests", async (req, res) => {
       JSON.stringify(formData),
       assignedTo || null,
     ]);
-
     await connection.end();
-    res.status(201).json({ message: "Demande enregistrée avec succès" });
+
+    res.status(201).json({
+      message: "Demande enregistrée avec succès",
+      requestId: result.insertId, // ✅ Important pour le frontend
+    });
   } catch (error) {
     console.error("❌ Erreur lors de l'insertion :", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -453,12 +455,13 @@ app.get("/api/requests", authMiddleware, async (req, res) => {
     const connection = await mysql.createConnection(dbConfig);
 
     const query = `
-SELECT r.id, r.type, r.data, r.status, r.created_at, r.updated_at,
-       r.rejected_at, u.id AS admin_id, u.firstName AS admin_firstName, u.lastName AS admin_lastName, u.email AS admin_email
-        FROM requests r
-        LEFT JOIN users u ON r.assigned_to = u.id
-        ORDER BY r.created_at DESC
-      `;
+    SELECT r.id, r.type, r.data, r.status, r.created_at, r.updated_at,
+           r.rejected_at, r.sent_at,
+           u.id AS admin_id, u.firstName AS admin_firstName, u.lastName AS admin_lastName, u.email AS admin_email
+    FROM requests r
+    LEFT JOIN users u ON r.assigned_to = u.id
+    ORDER BY r.created_at DESC
+  `;
 
     const [rows] = await connection.execute(query);
     await connection.end();
@@ -784,6 +787,13 @@ app.post("/api/reset-password", async (req, res) => {
   }
 });
 
+const emailRecipientsRoutes = require("./routes/emailRecipients");
+app.use("/api/email-recipients", emailRecipientsRoutes);
+
+const formMailRoutes = require("./routes/formMail");
+app.use("/api/form-mail", formMailRoutes);
+
+module.exports = app;
 // Lancer le serveur
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);

@@ -90,7 +90,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
 
   const finalSubmit = async () => {
     try {
-      // Vérification des champs obligatoires
+      // ✅ Vérification des champs obligatoires
       if (
         !parentLastName ||
         !parentFirstName ||
@@ -113,7 +113,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
         return;
       }
 
-      // ✅ Étape 1 : Upload du fichier signature (Base64 en PNG)
+      // ✅ Étape 1 : Upload de la signature
       let filePath = null;
       if (signature) {
         const formData = new FormData();
@@ -127,15 +127,14 @@ const ResponsibilityWaiverForm: React.FC = () => {
 
         if (!uploadResponse.ok) {
           const uploadError = await uploadResponse.json();
-          console.error("❌ Erreur lors de l'upload du fichier :", uploadError);
-          throw new Error(uploadError.error || "Échec de l'upload du fichier.");
+          throw new Error(uploadError.error || "Erreur upload signature.");
         }
 
         const uploadData = await uploadResponse.json();
         filePath = uploadData.filePath;
       }
 
-      // ✅ Étape 2 : Construire les données à envoyer
+      // ✅ Étape 2 : Construction des données
       const requestData = {
         type: "responsibility-waiver",
         formData: {
@@ -150,18 +149,13 @@ const ResponsibilityWaiverForm: React.FC = () => {
           previousClub: previousClub || null,
           signatureDate: format(signatureDate, "yyyy-MM-dd"),
           approvalText,
-          signature, // Garde la signature en base64 en plus
-          filePath, // ✅ Ajout du fichier uploadé
+          signature,
+          filePath,
         },
         assignedTo: null,
       };
 
-      console.log(
-        "📤 Données envoyées à /api/requests :",
-        JSON.stringify(requestData, null, 2)
-      );
-
-      // ✅ Étape 3 : Envoyer les données finales avec le fichier
+      // ✅ Étape 3 : Enregistrement en base
       const response = await fetch("http://localhost:5000/api/requests", {
         method: "POST",
         headers: {
@@ -172,20 +166,35 @@ const ResponsibilityWaiverForm: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("❌ Erreur API:", errorData);
-        throw new Error(
-          errorData.error || "Erreur lors de l'envoi de la décharge"
-        );
+        throw new Error(errorData.error || "Erreur API.");
       }
 
-      console.log("✅ Décharge envoyée avec succès !");
+      const responseData = await response.json();
+      const requestId = responseData.requestId;
+
+      // ✅ Étape 4 : Envoi de l’email de confirmation
+      const emailResponse = await fetch(
+        "http://localhost:5000/api/form-mail/send-waiver-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ formData: requestData.formData, requestId }),
+        }
+      );
+
+      const emailData = await emailResponse.json();
+      console.log("✅ Email envoyé :", emailData);
+
+      // ✅ Succès final
       toast({
         title: "Décharge soumise avec succès",
         description: "Votre décharge de responsabilité a été envoyée.",
       });
+
       const now = Date.now();
       localStorage.setItem("waiverLastSubmitTime", now.toString());
-
       setIsCooldown(true);
       setCooldownRemaining(600); // 10 minutes
       navigate("/success/responsibilityWaiver");
@@ -240,12 +249,11 @@ const ResponsibilityWaiverForm: React.FC = () => {
   } décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.`;
 
   const spellCheckFields = [
-    { label: "Nom du parent", value: parentLastName },
-    { label: "Prénom du parent", value: parentFirstName },
-    { label: "Email du parent", value: parentEmail },
-    { label: "Nom du joueur", value: playerLastName },
+    { label: "Prénom du responsable", value: parentFirstName },
+    { label: "Nom du responsable", value: parentLastName },
+    { label: "Email du responsable", value: parentEmail },
     { label: "Prénom du joueur", value: playerFirstName },
-    { label: "Club actuel", value: currentClub },
+    { label: "Nom du joueur", value: playerLastName },
   ];
 
   return (
@@ -327,7 +335,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
           <CardContent className="pt-6">
             <FormSection
               title="Informations du parent/tuteur"
-              subtitle="Veuillez remplir vos informations en tant que responsable légal"
+              subtitle="Veuillez remplir vos informations en tant que responsable légal. Vous êtes joueur et majeur ? Vous avez le droit d'introduire vos propres données."
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">

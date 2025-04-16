@@ -25,6 +25,7 @@ import {
   getAvailableTimeSlotsForDate,
 } from "@/components/planning/planningUtils";
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
+import axios from "axios";
 
 // Définition locale du type Admin
 export interface Admin {
@@ -396,16 +397,22 @@ const Dashboard = () => {
   });
 
   const completedRequests = requests.filter((r) => r.status === "completed");
+
   const totalCompletedPages = Math.ceil(
     completedRequests.length / completedRequestsPerPage
   );
+
   const paginatedCompletedRequests = completedRequests.slice(
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
   );
   const pendingAccidentReports = requests.filter(
-    (r) => r.type === "accident-report" && r.status === "in-progress"
+    (r) =>
+      r.type === "accident-report" &&
+      r.status !== "completed" &&
+      r.status !== "rejected"
   );
+
   const totalPendingAccidentPages = Math.ceil(
     pendingAccidentReports.length / pendingAccidentReportsPerPage
   );
@@ -515,12 +522,88 @@ const Dashboard = () => {
     }
   };
 
-  const sendAccidentToFederation = (requestId: string) => {
-    handleUpdateStatus(requestId, "completed");
-    toast({
-      title: "Déclaration envoyée",
-      description: "La déclaration d'accident a été transmise à l'Union Belge.",
-    });
+  const sendAccidentToFederation = async (requestId: string) => {
+    try {
+      // 1. Appel backend pour envoyer l'email
+      const response = await axios.post(
+        `http://localhost:5000/api/email-recipients/send-request/${requestId}`
+      );
+
+      console.log("✅ Email envoyé:", response.data);
+
+      // 2. Mise à jour du statut
+      handleUpdateStatus(requestId, "completed");
+
+      // 3. Affichage toast
+      toast({
+        title: "Déclaration envoyée",
+        description:
+          "La déclaration d'accident a été transmise à l'Union Belge.",
+      });
+    } catch (error) {
+      console.error("❌ Erreur lors de l'envoi :", error);
+      toast({
+        title: "Échec de l'envoi",
+        description:
+          "Une erreur est survenue lors de l’envoi de l’email. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const sendAccidentDeclaration = async (requestId: string) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/email-recipients/send-request/${requestId}`
+      );
+      toast({
+        title: "Déclaration envoyée",
+        description: "La déclaration d'accident a été transmise.",
+      });
+      // ❌ NE PAS changer le statut ici !
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de l'envoi de la déclaration.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Quand on clique sur "Send" du certificat : envoyer l'email ET marquer les deux comme terminés
+  const sendHealingCertificate = async (requestId: string) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/email-recipients/send-request/${requestId}`
+      );
+
+      // 1. Trouver les deux demandes (décla + certificat) avec le même codeDossier
+      const healingRequest = requests.find((r) => r.id === requestId);
+      const code = healingRequest?.details?.codeDossier;
+
+      if (!code) throw new Error("Code dossier manquant.");
+
+      const toMarkCompleted = requests.filter(
+        (r) => r.details?.codeDossier === code && r.type === "accident-report"
+      );
+
+      for (const req of toMarkCompleted) {
+        await handleUpdateStatus(req.id, "completed");
+      }
+
+      toast({
+        title: "Certificat envoyé",
+        description:
+          "Les deux documents ont été transmis et marqués comme terminés.",
+      });
+    } catch (error) {
+      console.error("Erreur certificat :", error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de l'envoi du certificat.",
+        variant: "destructive",
+      });
+    }
   };
 
   const openRequestDetails = (req: Request) => {
@@ -639,7 +722,8 @@ const Dashboard = () => {
               onPageChange={setPendingAccidentReportsPage}
               onViewDetails={openRequestDetails}
               admins={admins}
-              onSendToFederation={sendAccidentToFederation}
+              onSendDeclaration={sendAccidentDeclaration} // ✅ celui qui N’envoie PAS le statut
+              onSendHealingCertificate={sendHealingCertificate} // ✅ celui qui met les deux en "completed"
             />
 
             <CompletedRequestsCard

@@ -238,26 +238,26 @@ const SelectionTestsForm: React.FC = () => {
       type: "selection-tests",
       formData: {
         // Informations sur les tests
-        noyau, // Ex: "U6"
-        testStartDate, // Date de début (ISO)
-        testEndDate, // Date de fin (ISO)
+        noyau,
+        testStartDate,
+        testEndDate,
         // Informations du joueur
-        lastName, // Nom du joueur
-        firstName, // Prénom du joueur
-        playerBirthDate, // Date de naissance du joueur (ISO)
-        phone, // Téléphone (GSM) du joueur
-        email, // Email du joueur
-        currentClub, // Club actuel
-        previousClub, // Club précédent
-        position, // Position du joueur
+        lastName,
+        firstName,
+        playerBirthDate,
+        phone,
+        email,
+        currentClub,
+        previousClub,
+        position,
         // Informations du responsable légal
-        parentLastName, // Nom du responsable
-        parentFirstName, // Prénom du responsable
-        parentEmail, // Email du responsable
-        parentPhone, // Téléphone (GSM) du responsable
-        parentRelation, // Relation ("parent" ou "representant")
+        parentLastName,
+        parentFirstName,
+        parentEmail,
+        parentPhone,
+        parentRelation,
         // Signature
-        signature, // Signature (base64)
+        signature,
         createdAt: new Date().toISOString(),
       },
       assignedTo: null,
@@ -273,6 +273,21 @@ const SelectionTestsForm: React.FC = () => {
       if (!response.ok) {
         throw new Error("Erreur lors de l'envoi du formulaire");
       }
+
+      const { requestId } = await response.json(); // 🆔 Récupère l'ID généré
+
+      // ✅ Envoi de l'email de confirmation
+      await fetch(
+        "http://localhost:5000/api/form-mail/send-selection-test-email",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            formData: requestData.formData,
+            requestId,
+          }),
+        }
+      );
 
       toast({
         title: "Formulaire soumis",
@@ -498,7 +513,7 @@ const SelectionTestsForm: React.FC = () => {
           <CardContent className="pt-6">
             <FormSection
               title="Informations des responsables légaux"
-              subtitle="Veuillez remplir les informations concernant les responsables légaux du joueur"
+              subtitle="Veuillez remplir les informations concernant les responsables légaux du joueur. Vous êtes joueur et majeur ? Vous avez le droit d'introduire vos propres données et de sélectionner 'Représentant légal'."
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
@@ -523,7 +538,7 @@ const SelectionTestsForm: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="parentPhone">
-                    Téléphone (GSM) du parent *
+                    Téléphone (GSM) du responsable *
                   </Label>
                   <Input
                     id="parentPhone"
@@ -535,7 +550,7 @@ const SelectionTestsForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="parentEmail">Email du parent *</Label>
+                  <Label htmlFor="parentEmail">Email du responsable *</Label>
                   <Input
                     id="parentEmail"
                     type="email"

@@ -123,6 +123,7 @@ export interface Request {
   assignedTo?: string;
   details: RequestDetails;
   rejectedAt?: Date;
+  sent_at?: string | null; // 👈 Ajoute cette ligne
 }
 
 export interface RequestDetailsModalProps {

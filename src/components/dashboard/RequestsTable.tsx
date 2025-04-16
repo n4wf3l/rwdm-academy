@@ -51,6 +51,7 @@ interface Request {
   status: RequestStatus;
   assignedTo?: string | null;
   rejectedAt?: Date;
+  details?: any;
 }
 
 interface Admin {
@@ -243,7 +244,17 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   {formatRequestId(request.id)}
                 </TableCell>
 
-                <TableCell>{translateRequestType(request.type)}</TableCell>
+                <TableCell>
+                  {translateRequestType(request.type)}
+                  {request.type === "accident-report" &&
+                    request.details?.documentLabel ===
+                      "Déclaration d'accident" &&
+                    " (1/2)"}
+                  {request.type === "accident-report" &&
+                    request.details?.documentLabel ===
+                      "Certificat de guérison" &&
+                    " (2/2)"}
+                </TableCell>
 
                 <TableCell>
                   <div>
@@ -271,7 +282,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                       <SelectContent>
                         <SelectItem value="none">Non assigné</SelectItem>
                         {admins.map((admin) => {
-                          console.log("🔍 Admin dispo :", admin);
                           return (
                             <SelectItem key={admin.id} value={admin.id}>
                               {admin.name}

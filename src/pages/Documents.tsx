@@ -32,6 +32,7 @@ import RequestDetailsModal, {
   RequestStatus,
 } from "@/components/RequestDetailsModal";
 import html2canvas from "html2canvas";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 
 // Types pour les documents
 type DocumentType =
@@ -65,7 +66,9 @@ const Documents = () => {
     [key: string]: React.RefObject<HTMLDivElement>;
   }>({});
   const modalRef = useRef<HTMLDivElement>(null);
-
+  const [confirmPDFRequest, setConfirmPDFRequest] =
+    useState<ModalRequest | null>(null);
+  const [confirmRevertId, setConfirmRevertId] = useState<string | null>(null);
   // État pour la demande sélectionnée (type attendu par la modale)
   const [selectedRequest, setSelectedRequest] = useState<ModalRequest | null>(
     null
@@ -192,33 +195,6 @@ const Documents = () => {
       });
     }
   };
-
-  useEffect(() => {
-    if (!selectedRequest) return;
-
-    let tries = 0;
-    const maxTries = 20;
-
-    const interval = setInterval(() => {
-      if (modalRef.current) {
-        clearInterval(interval);
-        handleGenerateDocPDF();
-      } else {
-        tries++;
-        if (tries >= maxTries) {
-          clearInterval(interval);
-          toast({
-            title: "Erreur",
-            description:
-              "La modale n’a pas pu être chargée pour générer le PDF.",
-            variant: "destructive",
-          });
-        }
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [selectedRequest]);
 
   const waitForRefThenGeneratePDF = () => {
     let tries = 0;
@@ -432,7 +408,17 @@ const Documents = () => {
                       <TableCell className="font-medium">
                         {formatRequestId(doc.id)}
                       </TableCell>
-                      <TableCell>{translateDocumentType(doc.type)}</TableCell>
+                      <TableCell>
+                        {translateDocumentType(doc.type)}
+                        {doc.type === "accident-report" &&
+                          doc.data?.documentLabel ===
+                            "Déclaration d'accident" &&
+                          " (1/2)"}
+                        {doc.type === "accident-report" &&
+                          doc.data?.documentLabel ===
+                            "Certificat de guérison" &&
+                          " (2/2)"}
+                      </TableCell>
 
                       <TableCell>
                         {doc.name} {doc.surname}
@@ -466,7 +452,7 @@ const Documents = () => {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedRequest({
+                              setConfirmPDFRequest({
                                 id: doc.id,
                                 type: doc.type,
                                 name: `${doc.name} ${doc.surname}`,
@@ -478,7 +464,6 @@ const Documents = () => {
                                 assignedTo: doc.assignedAdmin,
                                 details: doc.data,
                               });
-                              setIsModalOpen(true); // ❗️Crucial pour que la modale monte dans le DOM
                             }}
                             title="Générer PDF"
                           >
@@ -490,7 +475,7 @@ const Documents = () => {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRevertStatus(doc.id);
+                              setConfirmRevertId(doc.id);
                             }}
                             title="Mettre en cours"
                           >
@@ -516,6 +501,34 @@ const Documents = () => {
           ref={modalRef}
         />
       )}
+
+      <ConfirmationDialog
+        open={!!confirmPDFRequest}
+        onClose={() => setConfirmPDFRequest(null)}
+        onConfirm={() => {
+          if (confirmPDFRequest) {
+            setSelectedRequest(confirmPDFRequest);
+            setIsModalOpen(true);
+            waitForRefThenGeneratePDF();
+            setConfirmPDFRequest(null);
+          }
+        }}
+        title="Générer le PDF"
+        message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
+      />
+
+      <ConfirmationDialog
+        open={!!confirmRevertId}
+        onClose={() => setConfirmRevertId(null)}
+        onConfirm={() => {
+          if (confirmRevertId) {
+            handleRevertStatus(confirmRevertId);
+            setConfirmRevertId(null);
+          }
+        }}
+        title="Remettre en cours"
+        message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
+      />
     </AdminLayout>
   );
 };

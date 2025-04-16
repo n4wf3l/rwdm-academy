@@ -230,17 +230,12 @@ const AccidentReportForm: React.FC = () => {
         description: "Veuillez entrer un code valide de déclaration existante.",
         variant: "destructive",
       });
-      return; // ⛔ Empêche toute suite d'exécution
+      return;
     }
 
     try {
       const formData = new FormData();
       formData.append("pdfFile", pdfFile);
-
-      console.log(
-        "📤 Données envoyées à /api/upload :",
-        formData.get("pdfFile")
-      );
 
       const response = await fetch("http://localhost:5000/api/upload", {
         method: "POST",
@@ -252,7 +247,6 @@ const AccidentReportForm: React.FC = () => {
       }
 
       const fileData = await response.json();
-      console.log("✅ Réponse API après upload :", fileData);
 
       if (!fileData.filePath) {
         throw new Error("Chemin du fichier non reçu !");
@@ -291,8 +285,6 @@ const AccidentReportForm: React.FC = () => {
         assignedTo: null,
       };
 
-      console.log("📤 Données envoyées à /api/requests :", requestData);
-
       const requestResponse = await fetch(
         "http://localhost:5000/api/requests",
         {
@@ -307,6 +299,21 @@ const AccidentReportForm: React.FC = () => {
       if (!requestResponse.ok) {
         throw new Error("Erreur lors de l'envoi du formulaire");
       }
+
+      const { requestId } = await requestResponse.json();
+
+      // ✅ Envoi de l’email de confirmation
+      await fetch(
+        "http://localhost:5000/api/form-mail/send-accident-report-email",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            formData: requestData.formData,
+            requestId,
+          }),
+        }
+      );
 
       toast({
         title: "Déclaration soumise avec succès",
@@ -401,11 +408,10 @@ const AccidentReportForm: React.FC = () => {
   };
 
   const spellCheckFields = [
-    { label: "Nom du joueur", value: playerLastName },
     { label: "Prénom du joueur", value: playerFirstName },
+    { label: "Nom du joueur", value: playerLastName },
     { label: "Adresse e-mail", value: email },
     { label: "Numéro de téléphone", value: phone },
-    { label: "Catégorie", value: category }, // Ajout de la catégorie pour la vérification
   ];
 
   return (

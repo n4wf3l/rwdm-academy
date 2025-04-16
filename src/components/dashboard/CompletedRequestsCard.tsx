@@ -128,6 +128,14 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
 
                       <TableCell>
                         {translateRequestType(request.type)}
+                        {request.type === "accident-report" &&
+                          request.details?.documentLabel ===
+                            "Déclaration d'accident" &&
+                          " (1/2)"}
+                        {request.type === "accident-report" &&
+                          request.details?.documentLabel ===
+                            "Certificat de guérison" &&
+                          " (2/2)"}
                       </TableCell>
 
                       <TableCell>

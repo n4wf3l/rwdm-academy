@@ -156,6 +156,18 @@ const RegistrationForm = () => {
     setIsSpellCheckOpen(true);
   };
 
+  useEffect(() => {
+    const storedEnd = localStorage.getItem("registrationCooldownEnd");
+    if (storedEnd) {
+      const endTime = parseInt(storedEnd, 10);
+      if (Date.now() < endTime) {
+        setCooldownEndTime(endTime);
+      } else {
+        localStorage.removeItem("registrationCooldownEnd");
+      }
+    }
+  }, []);
+
   function getAge(birthDate: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -208,6 +220,7 @@ const RegistrationForm = () => {
     };
 
     try {
+      // 1. Envoi de la demande vers la DB
       const response = await fetch("http://localhost:5000/api/requests", {
         method: "POST",
         headers: {
@@ -215,14 +228,41 @@ const RegistrationForm = () => {
         },
         body: JSON.stringify(requestData),
       });
+
       if (!response.ok) {
         throw new Error("Erreur lors de l'envoi du formulaire");
       }
+
+      const { requestId } = await response.json();
+
+      // 2. Envoi de l'email à l'adresse interne (RWDM/administration)
+      await fetch(`http://localhost:5000/send-request/${requestId}`, {
+        method: "POST",
+      });
+
+      // 3. Envoi de l'email de confirmation au parent
+      await fetch(
+        "http://localhost:5000/api/form-mail/send-registration-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            formData: requestData.formData,
+            requestId, // ← ⚠️ très important !
+          }),
+        }
+      );
+
+      // 4. Toast + Redirection
       toast({
         title: "Formulaire soumis",
         description: "Votre inscription a été envoyée avec succès.",
       });
+
       setIsSpellCheckOpen(false);
+
       navigate("/success/registration");
     } catch (error) {
       console.error("Erreur lors de la soumission :", error);
@@ -251,7 +291,9 @@ const RegistrationForm = () => {
 
   // ✅ À appeler quand l’envoi du formulaire réussit
   const handleSuccessfulSubmit = () => {
-    setCooldownEndTime(Date.now() + TEN_MINUTES_MS);
+    const endTime = Date.now() + TEN_MINUTES_MS;
+    setCooldownEndTime(endTime);
+    localStorage.setItem("registrationCooldownEnd", endTime.toString());
   };
 
   const isCooldown = cooldownEndTime !== null && timeLeft > 0;
