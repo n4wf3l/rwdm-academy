@@ -109,10 +109,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
     <Card>
       <CardHeader className="border-b">
         <div className="flex justify-between items-center w-full">
-          <CardTitle>
-            Déclarations d'accident en attente (
-            {Object.keys(groupedByCode).length})
-          </CardTitle>
+          <CardTitle>Déclarations d'accident en attente</CardTitle>
 
           {/* Bouton pour modifier l'email de l'Union Belge */}
           <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
@@ -177,14 +174,11 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             </TableHeader>
             <TableBody>
               {Object.entries(groupedByCode).map(([code, requests]) => {
-                // Utilise "any" pour ne pas avoir d'erreur TypeScript
-                const declaration: any = requests.find(
-                  (r: any) =>
-                    r.details?.documentLabel === "Déclaration d'accident"
+                const declaration = requests.find(
+                  (r) => r.details?.documentLabel === "Déclaration d'accident"
                 );
-                const healing: any = requests.find(
-                  (r: any) =>
-                    r.details?.documentLabel === "Certificat de guérison"
+                const healing = requests.find(
+                  (r) => r.details?.documentLabel === "Certificat de guérison"
                 );
 
                 const isDeclarationSent = Boolean(
@@ -197,70 +191,71 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                 return (
                   <React.Fragment key={code}>
                     {/* Déclaration principale */}
-                    <TableRow
-                      onClick={() => onViewDetails(declaration)}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                    >
-                      <TableCell>{formatRequestId(declaration.id)}</TableCell>
-                      <TableCell>
-                        {declaration.details?.accidentDate
-                          ? new Date(
-                              declaration.details.accidentDate
-                            ).toLocaleDateString("fr-BE")
-                          : ""}
-                      </TableCell>
-                      <TableCell>{declaration.name}</TableCell>
-                      <TableCell>
-                        <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
-                          En cours
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {admins?.find((a) => a.id === declaration.assignedTo)
-                          ?.name || "Non assigné"}
-                      </TableCell>
-                      <TableCell>
-                        {getDeadlineInfo(declaration.details?.accidentDate)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewDetails(declaration);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={isDeclarationSent}
-                            className={cn(
-                              "border-yellow-600",
-                              isDeclarationSent
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-yellow-600 hover:bg-yellow-100"
-                            )}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!isDeclarationSent)
-                                setSelectedIdToSend(declaration.id);
-                            }}
-                          >
-                            {isDeclarationSent ? (
-                              "Déjà envoyé"
-                            ) : (
-                              <Send className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>{recipientEmail}</TableCell>
-                    </TableRow>
-
+                    {declaration && (
+                      <TableRow
+                        onClick={() => onViewDetails(declaration)}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                      >
+                        <TableCell>{formatRequestId(declaration.id)}</TableCell>
+                        <TableCell>
+                          {declaration.details?.accidentDate
+                            ? new Date(
+                                declaration.details.accidentDate
+                              ).toLocaleDateString("fr-BE")
+                            : ""}
+                        </TableCell>
+                        <TableCell>{declaration.name}</TableCell>
+                        <TableCell>
+                          <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
+                            En cours
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {admins?.find((a) => a.id === declaration.assignedTo)
+                            ?.name || "Non assigné"}
+                        </TableCell>
+                        <TableCell>
+                          {getDeadlineInfo(declaration.details?.accidentDate)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewDetails(declaration);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={isDeclarationSent}
+                              className={cn(
+                                "border-yellow-600",
+                                isDeclarationSent
+                                  ? "text-gray-400 cursor-not-allowed"
+                                  : "text-yellow-600 hover:bg-yellow-100"
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!isDeclarationSent)
+                                  setSelectedIdToSend(declaration.id);
+                              }}
+                            >
+                              {isDeclarationSent ? (
+                                "Déjà envoyé"
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>{recipientEmail}</TableCell>
+                      </TableRow>
+                    )}
                     {/* Certificat lié */}
                     {healing && (
                       <TableRow
@@ -323,31 +318,30 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
         </div>
 
         {/* Pagination */}
-        {pendingAccidents.length > 5 && (
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <div className="text-sm text-gray-600">
-              Page {page} sur {totalPages}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(Math.max(page - 1, 1))}
-                disabled={page === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(Math.min(page + 1, totalPages))}
-                disabled={page === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+
+        <div className="flex items-center justify-between border-t px-4 py-3">
+          <div className="text-sm text-gray-600">
+            Page {page} sur {totalPages}
           </div>
-        )}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(Math.max(page - 1, 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(Math.min(page + 1, totalPages))}
+              disabled={page === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </CardContent>
 
       {/* Confirmation d'envoi */}
