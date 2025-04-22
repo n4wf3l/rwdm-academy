@@ -48,6 +48,7 @@ const Dashboard = () => {
     "all"
   );
   const [typeFilter, setTypeFilter] = useState<RequestType | "all">("all");
+  const [assignedAdminFilter, setAssignedAdminFilter] = useState("all");
   const { toast } = useToast();
   const navigate = useNavigate();
   const [completedRequestsPage, setCompletedRequestsPage] = useState(1);
@@ -112,6 +113,8 @@ const Dashboard = () => {
     if (!newAppointmentDate) return [];
     return getAvailableTimeSlotsForDate(appointments, newAppointmentDate);
   }, [appointments, newAppointmentDate]);
+
+  const assignedAdminOptions = admins.map((a) => ({ id: a.id, name: a.name }));
 
   const scheduleDeletion = (requestId: string) => {
     const timeout = setTimeout(async () => {
@@ -686,10 +689,14 @@ const Dashboard = () => {
               searchQuery={searchQuery}
               statusFilter={statusFilter}
               typeFilter={typeFilter}
+              assignedAdminFilter={assignedAdminFilter} // 👈 AJOUTE CETTE LIGNE
               onSearchChange={setSearchQuery}
               onStatusFilterChange={setStatusFilter}
               onTypeFilterChange={setTypeFilter}
+              onAssignedAdminFilterChange={setAssignedAdminFilter}
+              assignedAdminOptions={assignedAdminOptions}
             />
+
             <Card>
               <CardHeader
                 className="
@@ -731,6 +738,10 @@ const Dashboard = () => {
                     currentAdminId={user.id}
                     currentUserFirstName={user.firstName}
                     currentUserLastName={user.lastName}
+                    searchQuery={searchQuery} // ✅ Ajouté
+                    statusFilter={statusFilter} // ✅ Ajouté
+                    typeFilter={typeFilter} // ✅ Ajouté
+                    assignedAdminFilter={assignedAdminFilter} // ✅ Ajouté
                   />
                   <AppointmentDialog
                     isOpen={isAppointmentDialogOpen}

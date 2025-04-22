@@ -1,18 +1,26 @@
-
-import React from 'react';
+import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
 import { RequestStatus, RequestType } from "@/components/RequestDetailsModal";
 
 interface SearchFiltersProps {
   searchQuery: string;
-  statusFilter: RequestStatus | 'all';
-  typeFilter: RequestType | 'all';
+  statusFilter: RequestStatus | "all";
+  typeFilter: RequestType | "all";
   onSearchChange: (value: string) => void;
-  onStatusFilterChange: (value: RequestStatus | 'all') => void;
-  onTypeFilterChange: (value: RequestType | 'all') => void;
+  onStatusFilterChange: (value: RequestStatus | "all") => void;
+  onTypeFilterChange: (value: RequestType | "all") => void;
+  assignedAdminFilter: string;
+  onAssignedAdminFilterChange: (value: string) => void;
+  assignedAdminOptions: { id: string; name: string }[];
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
@@ -21,7 +29,10 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   typeFilter,
   onSearchChange,
   onStatusFilterChange,
-  onTypeFilterChange
+  onTypeFilterChange,
+  assignedAdminFilter,
+  assignedAdminOptions,
+  onAssignedAdminFilterChange,
 }) => {
   return (
     <Card>
@@ -40,11 +51,31 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             <Select
+              value={assignedAdminFilter}
+              onValueChange={(value) => onAssignedAdminFilterChange(value)}
+            >
+              <SelectTrigger className="w-[200px]">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Assigné à" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les admins</SelectItem>
+                <SelectItem value="none">Non assigné</SelectItem>
+                {assignedAdminOptions.map((admin) => (
+                  <SelectItem key={admin.id} value={admin.id}>
+                    {admin.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
               value={statusFilter}
-              onValueChange={(value) => onStatusFilterChange(value as RequestStatus | 'all')}
+              onValueChange={(value) =>
+                onStatusFilterChange(value as RequestStatus | "all")
+              }
             >
               <SelectTrigger className="w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
@@ -59,10 +90,12 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <SelectItem value="rejected">Rejeté</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select
               value={typeFilter}
-              onValueChange={(value) => onTypeFilterChange(value as RequestType | 'all')}
+              onValueChange={(value) =>
+                onTypeFilterChange(value as RequestType | "all")
+              }
             >
               <SelectTrigger className="w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
@@ -71,7 +104,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <SelectContent>
                 <SelectItem value="all">Tous les types</SelectItem>
                 <SelectItem value="registration">Inscription</SelectItem>
-                <SelectItem value="selection-tests">Tests de sélection</SelectItem>
+                <SelectItem value="selection-tests">
+                  Tests de sélection
+                </SelectItem>
                 <SelectItem value="accident-report">Accident</SelectItem>
                 <SelectItem value="responsibility-waiver">Décharge</SelectItem>
               </SelectContent>

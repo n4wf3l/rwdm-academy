@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,28 @@ const Documents = () => {
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [adminFilter, setAdminFilter] = useState<string>("all");
+  const uniqueAdmins = useMemo(() => {
+    const names = documents.map((doc) => doc.assignedAdmin).filter(Boolean);
+    return Array.from(new Set(names));
+  }, [documents]);
+
+  const handleFilter = () => {
+    const filtered = documents.filter((doc) => {
+      const matchesSearch =
+        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.phone.includes(searchQuery);
+
+      const matchesType = typeFilter === "all" || doc.type === typeFilter;
+      const matchesAdmin =
+        adminFilter === "all" || doc.assignedAdmin === adminFilter;
+
+      return matchesSearch && matchesType && matchesAdmin;
+    });
+    setFilteredDocuments(filtered);
+  };
 
   useEffect(() => {
     fetchCompletedDocuments();
@@ -149,22 +171,9 @@ const Documents = () => {
     }
   };
 
-  const handleFilter = () => {
-    const filtered = documents.filter((doc) => {
-      const matchesSearch =
-        doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.phone.includes(searchQuery);
-      const matchesType = typeFilter === "all" || doc.type === typeFilter;
-      return matchesSearch && matchesType;
-    });
-    setFilteredDocuments(filtered);
-  };
-
   useEffect(() => {
     handleFilter();
-  }, [searchQuery, typeFilter, documents]);
+  }, [searchQuery, typeFilter, adminFilter, documents]);
 
   const handleRevertStatus = async (id: string) => {
     try {
@@ -347,6 +356,23 @@ const Documents = () => {
                 />
               </div>
               <Select
+                value={adminFilter}
+                onValueChange={(value) => setAdminFilter(value)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Assigné à" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les admins</SelectItem>
+                  {uniqueAdmins.map((admin) => (
+                    <SelectItem key={admin} value={admin}>
+                      {admin}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
                 value={typeFilter}
                 onValueChange={(value) =>
                   setTypeFilter(value as DocumentType | "all")
@@ -380,7 +406,7 @@ const Documents = () => {
           </CardHeader>
           <CardContent>
             {filteredDocuments.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-8 text-gray-500">
                 <p>Aucun document ne correspond à vos critères de recherche.</p>
               </div>
             ) : (
