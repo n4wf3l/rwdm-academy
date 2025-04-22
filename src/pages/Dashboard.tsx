@@ -77,13 +77,15 @@ const Dashboard = () => {
   }>({});
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [user, setUser] = useState<{
+    id: string; // <= IL MANQUE CELUI-CI
     firstName: string;
     lastName: string;
     role: "admin" | "superadmin" | "owner";
   }>({
+    id: "", // <= valeur initiale
     firstName: "",
     lastName: "",
-    role: "admin", // valeur initiale valide
+    role: "admin",
   });
 
   useEffect(() => {
@@ -702,9 +704,12 @@ const Dashboard = () => {
                     onAssignRequest={handleAssignRequest}
                     onUpdateStatus={handleUpdateStatus}
                     onViewDetails={openRequestDetails}
-                    onOpenAppointmentDialog={openAppointmentDialog} // Passer la fonction ici
+                    onOpenAppointmentDialog={openAppointmentDialog}
                     onRequestDeleted={handleRequestDeleted}
                     currentUserRole={user.role}
+                    currentAdminId={user.id}
+                    currentUserFirstName={user.firstName}
+                    currentUserLastName={user.lastName}
                   />
                   <AppointmentDialog
                     isOpen={isAppointmentDialogOpen}

@@ -31,9 +31,9 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   };
 
   useEffect(() => {
-    // Vérifier si un token est présent pour savoir si l'utilisateur est connecté
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
+
     if (token) {
       fetch("http://localhost:5000/api/me", {
         headers: {
@@ -42,7 +42,9 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log("Données utilisateur reçues :", data); // 👈
           setUser({ firstName: data.firstName, lastName: data.lastName });
+          localStorage.setItem("adminId", data.id);
         })
         .catch((err) =>
           console.error("Erreur lors de la récupération de l'utilisateur:", err)

@@ -27,6 +27,7 @@ import {
 } from "lucide-react"; // Importer l'icône Calendar
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "../ui/ConfirmationDialog";
+import { cn } from "@/lib/utils";
 
 // Types localement
 export type RequestStatus =
@@ -68,6 +69,9 @@ export interface RequestsTableProps {
   onOpenAppointmentDialog: (request: Request) => void;
   onRequestDeleted?: (requestId: string) => void;
   currentUserRole: "admin" | "superadmin" | "owner";
+  currentAdminId: string;
+  currentUserFirstName: string;
+  currentUserLastName: string;
 }
 
 /**
@@ -124,6 +128,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   onOpenAppointmentDialog,
   onRequestDeleted,
   currentUserRole,
+  currentAdminId,
+  currentUserFirstName,
+  currentUserLastName,
 }) => {
   const [pendingDeletion, setPendingDeletion] = useState<{
     [key: string]: NodeJS.Timeout;
@@ -234,10 +241,21 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         <TableBody>
           {paginatedRequests.map((request) => {
             const assignedValue = request.assignedTo ?? "none";
+            const assignedAdminName = admins.find(
+              (a) => a.id === assignedValue
+            )?.name;
+            const isAssignedToCurrentUser =
+              assignedAdminName ===
+              `${currentUserFirstName} ${currentUserLastName}`;
+
             return (
               <TableRow
                 key={request.id}
-                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                className={cn(
+                  "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
+                  isAssignedToCurrentUser &&
+                    "bg-blue-50 hover:bg-blue-100 dark:bg-red-900"
+                )}
                 onClick={() => onViewDetails(request)}
               >
                 <TableCell className="font-medium">
