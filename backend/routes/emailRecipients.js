@@ -76,8 +76,15 @@ router.post("/send-request/:id", async (req, res) => {
     // 3. Préparer la pièce jointe PDF
     let attachments = [];
 
-    if (requestData.filePath) {
-      const cleanedFilePath = requestData.filePath.replace(/^\/+/, "");
+    // ✅ Gère filePath (string) ou filePaths (array)
+    const filePathsArray = Array.isArray(requestData.filePaths)
+      ? requestData.filePaths
+      : requestData.filePath
+      ? [requestData.filePath]
+      : [];
+
+    filePathsArray.forEach((filePath) => {
+      const cleanedFilePath = filePath.replace(/^\/+/, "");
       const fileAbsolutePath = path.join(__dirname, "..", cleanedFilePath);
 
       if (fs.existsSync(fileAbsolutePath)) {
@@ -89,7 +96,7 @@ router.post("/send-request/:id", async (req, res) => {
       } else {
         console.warn("❗️Fichier non trouvé :", fileAbsolutePath);
       }
-    }
+    });
 
     // 4. Contenu de l’email
     const htmlContent = `

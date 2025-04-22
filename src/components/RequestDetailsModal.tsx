@@ -580,7 +580,28 @@ const renderAccidentReportContent = (request: Request) => {
         </div>
       </Section>
 
-      {d.filePath && (
+      {Array.isArray(d.filePaths) && d.filePaths.length > 0 ? (
+        <div data-ignore-pdf>
+          <Section title="Documents justificatifs">
+            <div className="space-y-2">
+              {d.filePaths.map((file: string, index: number) => (
+                <a
+                  key={index}
+                  href={`http://localhost:5000${file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center p-3 bg-gray-50 dark:bg-gray-800
+               rounded-lg border border-gray-200 dark:border-gray-700
+               hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <FileText className="h-5 w-5 mr-2 text-rwdm-blue" />
+                  <span className="text-sm">Voir le document {index + 1}</span>
+                </a>
+              ))}
+            </div>
+          </Section>
+        </div>
+      ) : d.filePath ? (
         <div data-ignore-pdf>
           <Section title="Document justificatif">
             <a
@@ -588,15 +609,15 @@ const renderAccidentReportContent = (request: Request) => {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-3 bg-gray-50 dark:bg-gray-800
-                 rounded-lg border border-gray-200 dark:border-gray-700
-                 hover:bg-gray-100 dark:hover:bg-gray-700"
+           rounded-lg border border-gray-200 dark:border-gray-700
+           hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <FileText className="h-5 w-5 mr-2 text-rwdm-blue" />
               <span className="text-sm">Voir le document PDF</span>
             </a>
           </Section>
         </div>
-      )}
+      ) : null}
 
       <Section title="Signature">
         {d.signature ? (

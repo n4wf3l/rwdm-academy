@@ -68,7 +68,8 @@ const AccidentReportForm: React.FC = () => {
   const [accidentCode, setAccidentCode] = useState<string>(""); // Pour déclaration d'accident
   const [healingCode, setHealingCode] = useState<string>("");
   const [signature, setSignature] = useState<string | null>(null);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
+
   const [clubName, setClubName] = useState<string>("RWDM"); // Met RWDM par défaut
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
@@ -218,12 +219,21 @@ const AccidentReportForm: React.FC = () => {
   };
 
   const finalSubmit = async () => {
-    if (!pdfFile) {
-      console.error("❌ Aucun fichier sélectionné !");
+    if (
+      (documentType === "healing-certificate" && pdfFiles.length === 0) ||
+      (documentType === "accident-report" && pdfFiles.length !== 1)
+    ) {
+      toast({
+        title: "Erreur de fichier",
+        description:
+          documentType === "healing-certificate"
+            ? "Veuillez ajouter au moins un fichier PDF (max 2)."
+            : "Veuillez ajouter un fichier PDF pour la déclaration d’accident.",
+        variant: "destructive",
+      });
       return;
     }
 
-    // ✅ BLOQUER TOUT SI LE CODE EST INVALIDE POUR "certificat de guérison"
     if (documentType === "healing-certificate" && !codeValid) {
       toast({
         title: "Code de dossier invalide",
@@ -235,7 +245,9 @@ const AccidentReportForm: React.FC = () => {
 
     try {
       const formData = new FormData();
-      formData.append("pdfFile", pdfFile);
+      pdfFiles.forEach((file) => {
+        formData.append("pdfFiles", file); // ton backend doit accepter "pdfFiles"
+      });
 
       const response = await fetch("http://localhost:5000/api/upload", {
         method: "POST",
@@ -248,15 +260,15 @@ const AccidentReportForm: React.FC = () => {
 
       const fileData = await response.json();
 
-      if (!fileData.filePath) {
-        throw new Error("Chemin du fichier non reçu !");
+      if (!fileData.filePaths || !Array.isArray(fileData.filePaths)) {
+        throw new Error("Chemin des fichiers non reçu ou invalide !");
       }
 
       if (response.status === 413) {
         toast({
           title: "Fichier trop volumineux",
           description:
-            "Veuillez sélectionner un fichier PDF de moins de 10 Mo.",
+            "Veuillez sélectionner des fichiers PDF de moins de 10 Mo chacun.",
           variant: "destructive",
         });
         return;
@@ -272,7 +284,7 @@ const AccidentReportForm: React.FC = () => {
           phone,
           accidentDate,
           description: accidentDescription,
-          filePath: fileData.filePath,
+          filePaths: fileData.filePaths, // tableau ici
           signature,
           category,
           codeDossier:
@@ -302,7 +314,6 @@ const AccidentReportForm: React.FC = () => {
 
       const { requestId } = await requestResponse.json();
 
-      // ✅ Envoi de l’email de confirmation
       await fetch(
         "http://localhost:5000/api/form-mail/send-accident-report-email",
         {
@@ -335,29 +346,53 @@ const AccidentReportForm: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 10 * 1024 * 1024) {
-        alert("Le fichier dépasse la limite de 10 Mo.");
-        return;
-      }
+    if (!e.target.files) return;
 
-      if (file.type === "application/pdf") {
-        setPdfFile(file);
-      } else {
-        alert("Veuillez sélectionner un fichier PDF");
-      }
+    const newFiles = Array.from(e.target.files);
+
+    const allFiles = [...pdfFiles, ...newFiles].filter(
+      (file, index, self) =>
+        index === self.findIndex((f) => f.name === file.name)
+    );
+
+    const maxFiles = documentType === "healing-certificate" ? 2 : 1;
+
+    if (documentType === "accident-report" && allFiles.length > 1) {
+      toast({
+        title: "Trop de fichiers",
+        description:
+          "Une seule pièce justificative est autorisée pour une déclaration d'accident.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const limitedFiles = allFiles.slice(0, maxFiles);
+
+    const invalidFiles = limitedFiles.filter(
+      (file) => file.type !== "application/pdf" || file.size > 10 * 1024 * 1024
+    );
+
+    if (invalidFiles.length > 0) {
+      toast({
+        title: "Fichier invalide",
+        description: "Seuls les fichiers PDF de moins de 10 Mo sont autorisés.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPdfFiles(limitedFiles);
   };
 
   const UploadSection = ({
-    file,
-    setFile,
+    files,
+    setFiles,
     handleFileChange,
     documentType,
   }: {
-    file: File | null;
-    setFile: (file: File | null) => void;
+    files: File[];
+    setFiles: (files: File[]) => void;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     documentType: "accident-report" | "healing-certificate";
   }) => {
@@ -377,31 +412,39 @@ const AccidentReportForm: React.FC = () => {
                 ou glissez-déposez
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                PDF uniquement (MAX. 10MB)
+                Jusqu'à 2 fichiers PDF (MAX. 10MB chacun)
               </p>
             </div>
             <input
               id={inputId}
-              name="pdfFile"
+              name="pdfFiles"
               type="file"
               accept="application/pdf"
               className="hidden"
+              multiple={documentType === "healing-certificate"}
               onChange={handleFileChange}
             />
           </label>
         </div>
 
-        {file && (
-          <div className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <span className="text-sm truncate">{file.name}</span>
-            <button
-              type="button"
-              onClick={() => setFile(null)}
-              className="text-xs text-rwdm-red hover:text-rwdm-red/80 transition-colors"
-            >
-              Supprimer
-            </button>
-          </div>
+        {files.length > 0 && (
+          <ul className="space-y-2">
+            {files.map((file, idx) => (
+              <li
+                key={idx}
+                className="flex justify-between items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg"
+              >
+                <span className="text-sm truncate">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setFiles(files.filter((_, i) => i !== idx))}
+                  className="text-xs text-rwdm-red hover:text-rwdm-red/80 transition-colors"
+                >
+                  Supprimer
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     );
@@ -550,23 +593,23 @@ const AccidentReportForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="playerLastName">Nom du joueur *</Label>
-                  <Input
-                    id="playerLastName"
-                    className="form-input-base"
-                    value={playerLastName}
-                    onChange={(e) => setPlayerLastName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="playerFirstName">Prénom du joueur *</Label>
                   <Input
                     id="playerFirstName"
                     className="form-input-base"
                     value={playerFirstName}
                     onChange={(e) => setPlayerFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="playerLastName">Nom du joueur *</Label>
+                  <Input
+                    id="playerLastName"
+                    className="form-input-base"
+                    value={playerLastName}
+                    onChange={(e) => setPlayerLastName(e.target.value)}
                     required
                   />
                 </div>
@@ -687,10 +730,10 @@ const AccidentReportForm: React.FC = () => {
                     </p>
 
                     <UploadSection
-                      file={pdfFile}
-                      setFile={setPdfFile}
+                      files={pdfFiles}
+                      setFiles={setPdfFiles}
                       handleFileChange={handleFileChange}
-                      documentType="accident-report"
+                      documentType={documentType}
                     />
                   </div>
                 </TabsContent>
@@ -770,8 +813,8 @@ const AccidentReportForm: React.FC = () => {
                         </p>
 
                         <UploadSection
-                          file={pdfFile}
-                          setFile={setPdfFile}
+                          files={pdfFiles}
+                          setFiles={setPdfFiles}
                           handleFileChange={handleFileChange}
                           documentType="healing-certificate"
                         />
@@ -797,7 +840,7 @@ const AccidentReportForm: React.FC = () => {
                   médicales me concernant relatives à l'accident dont j'ai été
                   victime, comme décrit dans la{" "}
                   <a
-                    href="https://www.arena-nv.be/CONFIDENTIALITE.pdf"
+                    href="https://arena-nv.be/fr/products/4"
                     className="text-blue-600 underline"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -852,7 +895,26 @@ const AccidentReportForm: React.FC = () => {
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={!signature || !pdfFile || isCooldown}
+            disabled={
+              isCooldown ||
+              !signature ||
+              !hasAcceptedPolicy ||
+              !accidentDate ||
+              !clubName ||
+              !playerLastName ||
+              !playerFirstName ||
+              !email ||
+              !phone ||
+              !accidentDescription ||
+              !category ||
+              (documentType === "accident-report"
+                ? accidentCode === "" || pdfFiles.length !== 1
+                : !hasSentDeclaration ||
+                  healingCode === "" ||
+                  !codeValid ||
+                  pdfFiles.length === 0 ||
+                  pdfFiles.length > 2)
+            }
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
             {isCooldown ? "Veuillez patienter..." : "Soumettre la déclaration"}

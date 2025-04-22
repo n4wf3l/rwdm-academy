@@ -578,15 +578,17 @@ app.get("/api/check-code/:code", async (req, res) => {
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.post("/api/upload", upload.single("pdfFile"), (req, res) => {
-  if (!req.file) {
+app.post("/api/upload", upload.array("pdfFiles", 2), (req, res) => {
+  if (!req.files || req.files.length === 0) {
     console.error("❌ Aucun fichier reçu !");
     return res.status(400).json({ error: "Aucun fichier téléchargé" });
   }
 
-  console.log("✅ Fichier reçu :", req.file);
+  console.log("✅ Fichiers reçus :", req.files);
 
-  res.json({ filePath: `/uploads/${req.file.filename}` });
+  const filePaths = req.files.map((file) => `/uploads/${file.filename}`);
+
+  res.json({ filePaths }); // On renvoie un tableau des chemins
 });
 
 // Endpoint pour ajouter un rendez-vous
