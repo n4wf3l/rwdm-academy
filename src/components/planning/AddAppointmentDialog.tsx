@@ -110,6 +110,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
   const saveAppointmentToDB = async () => {
     try {
+      /* ───────── 1) Vérifications de base ───────── */
       if (
         !newAppointmentDate ||
         !newAppointmentTime ||
@@ -124,6 +125,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         return;
       }
 
+      /* ───────── 2) Construction des données à envoyer ───────── */
       const appointmentData = {
         date: format(newAppointmentDate, "yyyy-MM-dd"),
         time: newAppointmentTime,
@@ -134,6 +136,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         notes: newAppointmentNotes || "",
       };
 
+      /* ───────── 3) Enregistrement en DB ───────── */
       const response = await fetch("http://localhost:5000/api/appointments", {
         method: "POST",
         headers: {
@@ -143,32 +146,18 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         body: JSON.stringify(appointmentData),
       });
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'enregistrement du rendez-vous");
-      }
+      if (!response.ok)
+        throw new Error("Erreur lors de l'enregistrement du rendez‑vous");
 
       const savedAppointment = await response.json();
 
-      // Reconstruire correctement l'objet pour le state
+      /* ───────── 4) Reconstruction correcte pour le state ───────── */
       const [hour, minute] = newAppointmentTime.split(":").map(Number);
-      let dateObj: Date;
-      try {
-        const rawDate = savedAppointment.date ?? appointmentData.date;
-        const [year, month, day] = rawDate.split("-").map(Number);
-        dateObj = new Date(year, month - 1, day);
-        dateObj.setHours(hour, minute, 0, 0);
-      } catch (error) {
-        console.error(
-          "⛔ Impossible de parser la date :",
-          savedAppointment.date
-        );
-        toast({
-          title: "Erreur",
-          description: "Format de date invalide. Impossible d'enregistrer.",
-          variant: "destructive",
-        });
-        return;
-      }
+      const [y, m, d] = (savedAppointment.date ?? appointmentData.date)
+        .split("-")
+        .map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      dateObj.setHours(hour, minute, 0, 0);
 
       const admin = admins.find((a) => a.id === newAppointmentAdmin);
 
@@ -185,14 +174,40 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         adminLastName: admin?.name?.split(" ")?.slice(1).join(" ") ?? "",
       });
 
+      /* ───────── 5) Envoi automatique d’e‑mail (optionnel) ───────── */
+      if (sendEmailChecked) {
+        const mailRes = await fetch(
+          "http://localhost:5000/api/form-mail/send-appointment-confirmation",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              appointment: {
+                ...appointmentData,
+                adminName: admin?.name ?? "",
+              },
+            }),
+          }
+        );
+
+        if (!mailRes.ok) throw new Error("Échec envoi email");
+
+        const mailData = await mailRes.json();
+        toast({
+          title: "Email envoyé",
+          description: mailData.message,
+        });
+      }
+
+      /* ───────── 6) Succès final ───────── */
       toast({
-        title: "Rendez-vous enregistré",
-        description: `Le rendez-vous avec ${newAppointmentPerson} a bien été enregistré.`,
+        title: "Rendez‑vous enregistré",
+        description: `Le rendez‑vous avec ${newAppointmentPerson} a bien été enregistré.`,
       });
 
       setIsOpen(false);
-    } catch (error) {
-      console.error("❌ Erreur lors de l'enregistrement :", error);
+    } catch (err) {
+      console.error("❌ Erreur lors de l'enregistrement :", err);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue, veuillez réessayer.",
@@ -201,6 +216,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     }
   };
 
+  const [sendEmailChecked, setSendEmailChecked] = useState(false);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px]">
@@ -339,6 +355,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               onChange={(e) => setNewAppointmentNotes(e.target.value)}
               placeholder="Ajoutez des notes supplémentaires"
             />
+          </div>
+
+          <div className="flex items-center space-x-2 mt-2">
+            <input
+              type="checkbox"
+              id="send-email-checkbox"
+              checked={sendEmailChecked}
+              onChange={(e) => setSendEmailChecked(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="send-email-checkbox" className="text-sm">
+              Envoyer un email automatiquement à la personne
+            </Label>
           </div>
         </div>
         <DialogFooter>

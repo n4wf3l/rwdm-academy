@@ -74,6 +74,14 @@ export interface RequestsTableProps {
   currentUserLastName: string;
 }
 
+/* mapping route → endpoint */
+const emailEndpointByType: Record<RequestType, string> = {
+  registration: "send-registration-email",
+  "selection-tests": "send-selection-test-email",
+  "accident-report": "send-accident-report-email",
+  "responsibility-waiver": "send-waiver-email",
+};
+
 /**
  * Fonction utilitaire pour traduire le type de demande
  */
@@ -463,9 +471,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
           setConfirmOpen(false);
           setPendingAction(null);
         }}
-        onConfirm={() => {
+        onConfirm={(sendEmail) => {
           if (!pendingAction) return;
+
           const { request, type } = pendingAction;
+
+          /* 1. Mise à jour du statut */
           handleUpdateStatus(
             request.id,
             type === "accept"
@@ -474,12 +485,47 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 : "completed"
               : "rejected"
           );
+
+          /* 2. Envoi d’email si la case est cochée */
+          /* 2. Envoi d’email si la case est cochée */
+          if (sendEmail) {
+            const decision = type === "accept" ? "accepted" : "rejected";
+
+            fetch("http://localhost:5000/api/form-mail/send-decision-email", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                formData: request.details, // le backend attend 'formData'
+                requestId: request.id,
+                decision, // 'accepted' | 'rejected'
+                requestType: request.type,
+              }),
+            })
+              .then((res) => {
+                if (!res.ok) throw new Error("Échec de l'envoi");
+                return res.json();
+              })
+              .then((data) =>
+                toast({ title: "Email envoyé", description: data.message })
+              )
+              .catch((err) => {
+                console.error("❌ Erreur envoi mail :", err);
+                toast({
+                  title: "Erreur",
+                  description: "Impossible d’envoyer l’email.",
+                  variant: "destructive",
+                });
+              });
+          }
+
+          /* 3. Fermeture du dialogue */
           setConfirmOpen(false);
           setPendingAction(null);
         }}
         message={`Êtes-vous sûr de vouloir ${
           pendingAction?.type === "accept" ? "accepter" : "rejeter"
         } cette demande ? Cette action est importante.`}
+        showEmailCheckbox
       />
     </>
   );

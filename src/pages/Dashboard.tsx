@@ -691,11 +691,32 @@ const Dashboard = () => {
               onTypeFilterChange={setTypeFilter}
             />
             <Card>
-              <CardHeader>
-                <CardTitle>
+              <CardHeader
+                className="
+    flex flex-row items-start justify-between
+    p-4   /* ou la valeur que vous voulez */
+  "
+              >
+                {/* ─── Titre aligné à gauche ───────────────────── */}
+                <CardTitle className="m-0 p-0">
                   Liste des demandes ({filteredRequests.length})
                 </CardTitle>
+
+                {/* ─── Légende alignée à droite ─────────────────── */}
+                <div className="flex items-center gap-2 text-sm">
+                  <span
+                    className="
+        inline-block h-3 w-3 rounded-sm
+        bg-blue-50 ring-1 ring-blue-300
+        dark:bg-red-900 dark:ring-red-800
+      "
+                  />
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Mes assignations
+                  </span>
+                </div>
               </CardHeader>
+
               <CardContent>
                 <div className="overflow-x-auto">
                   <RequestsTable

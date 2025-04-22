@@ -1,6 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
+const { format } = require("date-fns");
+const { fr } = require("date-fns/locale");
+
+function getLabelFromType(type) {
+  switch (type) {
+    case "registration":
+      return "Inscription à l'académie";
+    case "selection-tests":
+      return "Tests de sélection";
+    case "accident-report":
+      return "Déclaration d'accident";
+    case "responsibility-waiver":
+      return "Décharge de responsabilité";
+    case "other":
+      return "Rendez-vous général";
+    default:
+      return "Rendez-vous";
+  }
+}
 
 router.post("/send-registration-email", async (req, res) => {
   const { formData, requestId } = req.body;
@@ -303,6 +322,206 @@ router.post("/send-contact-message", async (req, res) => {
   } catch (err) {
     console.error("❌ Erreur lors de l'envoi du message :", err);
     res.status(500).json({ error: "Erreur lors de l'envoi du message." });
+  }
+});
+
+router.post("/send-decision-email", async (req, res) => {
+  const { formData, requestId, decision, requestType } = req.body;
+
+  if (!formData || !requestId || !decision || !requestType)
+    return res.status(400).json({ error: "Données manquantes." });
+
+  /* ── 1.  Petit helper pour traduire le type ─────────── */
+  const typeLabels = {
+    registration: "inscription à l'académie",
+    "selection-tests": "test de sélection",
+    "accident-report": "déclaration d'accident",
+    "responsibility-waiver": "décharge de responsabilité",
+  };
+  const typeLabel = typeLabels[requestType] ?? "votre demande";
+
+  /* ── 2.  Transporter nodemailer identique ───────────── */
+  const transporter = nodemailer.createTransport({
+    host: "smtp-auth.mailprotect.be",
+    port: 587,
+    secure: false,
+    auth: { user: "info@nainnovations.be", pass: "mdp123" },
+  });
+
+  /* ── 3.  Objet & contenu dynamiques ─────────────────── */
+  const accepted = decision === "accepted";
+  const subject = accepted
+    ? `Votre demande est acceptée – RWDM Academy (ref #${requestId})`
+    : `Votre demande est refusée – RWDM Academy (ref #${requestId})`;
+
+  const html = accepted
+    ? `
+          <p>Bonjour ${
+            formData.parentFirstName ?? formData.firstName ?? "Madame, Monsieur"
+          },</p>
+          <p>✅ Bonne nouvelle ! Votre <strong>${typeLabel}</strong> (réf ${requestId}) a été <strong>acceptée</strong> par la direction de la RWDM Academy.</p>
+          <p>Nous reviendrons rapidement vers vous pour la suite.</p>
+          <p>Cordialement,<br/>RWDM Academy</p>
+        `
+    : `
+          <p>Bonjour ${
+            formData.parentFirstName ?? formData.firstName ?? "Madame, Monsieur"
+          },</p>
+          <p>Nous sommes au regret de vous informer que <strong>${typeLabel}</strong> (réf ${requestId}) a été <strong>refusée</strong> par la direction de la RWDM Academy.</p>
+          <p>Cordialement,<br/>RWDM Academy</p>
+        `;
+
+  /* ── 4.  Envoi ───────────────────────────────────────── */
+  await transporter.sendMail({
+    from: '"RWDM Academy" <info@nainnovations.be>',
+    to: formData.email || formData.parent1Email || formData.parentEmail,
+    subject,
+    html,
+  });
+
+  res.json({ message: "Email de décision envoyé avec succès." });
+});
+
+router.post("/send-appointment-confirmation", async (req, res) => {
+  const { appointment } = req.body;
+
+  // Sécurité minimale
+  if (!appointment || !appointment.email) {
+    return res.status(400).json({ error: "Données manquantes." });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp-auth.mailprotect.be",
+      port: 587,
+      secure: false,
+      auth: {
+        user: "info@nainnovations.be",
+        pass: "mdp123",
+      },
+    });
+
+    // On formate un petit résumé
+    const { date, time, type, personName, adminName } = appointment;
+
+    const html = `
+    <p>Bonjour ${personName ?? "Madame, Monsieur"},</p>
+  
+    <p>
+      Nous avons le plaisir de vous confirmer la planification de votre rendez-vous avec l'équipe RWDM Academy.
+    </p>
+  
+    <p><strong>Détails du rendez-vous :</strong></p>
+  
+    <table style="margin: 16px 0; border-collapse: collapse; font-size: 15px;">
+      <tr>
+        <td style="padding: 4px 8px;"><strong>Date :</strong></td>
+        <td style="padding: 4px 8px;">${format(new Date(date), "dd MMMM yyyy", {
+          locale: fr,
+        })}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 8px;"><strong>Heure :</strong></td>
+        <td style="padding: 4px 8px;">${time}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 8px;"><strong>Type de rendez-vous :</strong></td>
+        <td style="padding: 4px 8px;">${getLabelFromType(type)}</td>
+      </tr>
+      ${
+        adminName
+          ? `<tr>
+              <td style="padding: 4px 8px;"><strong>Administrateur référent :</strong></td>
+              <td style="padding: 4px 8px;">${adminName}</td>
+            </tr>`
+          : ""
+      }
+      <tr>
+        <td style="padding: 4px 8px;"><strong>Lieu :</strong></td>
+        <td style="padding: 4px 8px;">
+          Avenue Charles Malis 61<br/>
+          1080 Molenbeek-Saint-Jean<br/>
+          <em>Direction de l'académie du club</em>
+        </td>
+      </tr>
+    </table>
+  
+    <p>
+      Nous vous remercions de vous présenter à l'heure convenue. En cas d'indisponibilité, merci de nous contacter dès que possible afin de convenir d'un autre créneau.
+    </p>
+  
+    <p>Bien cordialement,</p>
+  
+    <p>
+      <strong>RWDM Academy</strong><br/>
+      Cellule administrative
+    </p>
+  `;
+
+    await transporter.sendMail({
+      from: '"RWDM Academy" <info@nainnovations.be>',
+      to: appointment.email,
+      subject: "Confirmation de rendez‑vous – RWDM Academy",
+      html,
+    });
+
+    res.json({ message: "Email de confirmation envoyé avec succès." });
+  } catch (err) {
+    console.error("❌ Erreur envoi rendez‑vous :", err);
+    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
+  }
+});
+
+router.post("/send-appointment-cancellation", async (req, res) => {
+  const { appointment } = req.body;
+
+  if (
+    !appointment ||
+    !appointment.email ||
+    !appointment.date ||
+    !appointment.time
+  ) {
+    return res.status(400).json({ error: "Données manquantes." });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp-auth.mailprotect.be",
+      port: 587,
+      secure: false,
+      auth: {
+        user: "info@nainnovations.be",
+        pass: "mdp123",
+      },
+    });
+
+    // ✅ formatage date + heure
+    const { format } = require("date-fns");
+    const { fr } = require("date-fns/locale");
+    const formattedDate = format(new Date(appointment.date), "dd/MM/yyyy", {
+      locale: fr,
+    });
+    const formattedTime = appointment.time;
+
+    const html = `
+        <p>Bonjour ${appointment.personName},</p>
+        <p>Nous vous informons que votre rendez-vous prévu le <strong>${formattedDate}</strong> à <strong>${formattedTime}</strong> a été <strong>annulé</strong>.</p>
+        <p>Pour toute question, n'hésitez pas à nous contacter.</p>
+        <br/>
+        <p>Cordialement,<br/>RWDM Academy</p>
+      `;
+
+    await transporter.sendMail({
+      from: '"RWDM Academy" <info@nainnovations.be>',
+      to: appointment.email,
+      subject: `Rendez-vous annulé – RWDM Academy`,
+      html,
+    });
+
+    res.json({ message: "Email d’annulation envoyé avec succès." });
+  } catch (err) {
+    console.error("❌ Erreur envoi email rendez-vous :", err);
+    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
   }
 });
 

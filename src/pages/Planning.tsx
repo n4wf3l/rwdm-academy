@@ -310,45 +310,60 @@ const Planning = () => {
     return `${hour.toString().padStart(2, "0")}:${minutes}`;
   });
 
-  async function handleCancelAppointment(appointmentId: number): Promise<void> {
-    // Mettre à jour l'état pour retirer le rendez-vous de l'interface
-    setAppointments((prevAppointments) =>
-      prevAppointments.filter(
-        (appointment) => parseInt(appointment.id, 10) !== appointmentId
-      )
+  async function handleCancelAppointment(
+    appointmentId: number,
+    sendEmail = false
+  ): Promise<void> {
+    const appointmentToCancel = appointments.find(
+      (appt) => parseInt(appt.id, 10) === appointmentId
     );
 
-    // Appel à l'API pour supprimer le rendez-vous
+    // Mettre à jour l'état (optimistic UI)
+    setAppointments((prevAppointments) =>
+      prevAppointments.filter((appt) => parseInt(appt.id, 10) !== appointmentId)
+    );
+
     try {
+      // 1. Supprimer en base
       const response = await fetch(
         `http://localhost:5000/api/appointments/${appointmentId}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Si vous utilisez l'authentification
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'annulation du rendez-vous");
+      if (!response.ok) throw new Error("Erreur suppression rendez-vous");
+
+      // 2. Envoi email si demandé
+      if (sendEmail && appointmentToCancel) {
+        const emailRes = await fetch(
+          "http://localhost:5000/api/form-mail/send-appointment-cancellation",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ appointment: appointmentToCancel }),
+          }
+        );
+
+        if (!emailRes.ok) throw new Error("Erreur envoi email d'annulation");
       }
 
-      // Afficher une notification de succès
       toast({
         title: "Rendez-vous annulé",
-        description: `Le rendez-vous a été annulé avec succès.`,
-        variant: "default",
+        description: sendEmail
+          ? "Le rendez-vous a été annulé et la personne a été avertie par email."
+          : "Le rendez-vous a été annulé.",
       });
     } catch (error) {
-      console.error("Erreur lors de l'annulation du rendez-vous :", error);
-      // Si l'appel à l'API échoue, vous pouvez choisir de réajouter le rendez-vous à l'état
-      // ou afficher un message d'erreur
+      console.error("❌ Annulation échouée :", error);
       toast({
         title: "Erreur",
         description:
-          "Une erreur est survenue lors de l'annulation du rendez-vous.",
+          "Impossible d'annuler le rendez-vous ou d'envoyer l'email.",
         variant: "destructive",
       });
     }
