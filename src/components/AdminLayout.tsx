@@ -12,8 +12,16 @@ import {
   BarChart,
   Settings,
   ArrowLeft,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -24,6 +32,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [user, setUser] = useState({ firstName: "", lastName: "", role: "" });
   const location = useLocation();
   const navigate = useNavigate();
+  const currentLang = localStorage.getItem("language") || "fr";
+  const { t } = useTranslation();
+  const langLabels = {
+    fr: "Français",
+    nl: "Nederlands",
+    en: "English",
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -98,18 +113,58 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center space-x-2 p-6 border-b">
-            {/* Icône pour revenir vers "/" */}
-            <Link to="/" className="flex items-center">
-              <ArrowLeft size={24} className="text-rwdm-blue" />
-            </Link>
-            <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
-                <img src="logo.png" alt="Logo" />
+          <div className="p-6 border-b">
+            {/* Ligne supérieure : logo + titre */}
+            <div className="flex items-center space-x-2 mb-4">
+              <Link to="/" className="flex items-center">
+                <ArrowLeft size={24} className="text-rwdm-blue" />
+              </Link>
+
+              <div className="flex items-center space-x-2">
+                <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
+                  <img src="logo.png" alt="Logo" />
+                </div>
+
+                <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
+                  {t("admin_panel")}
+                </span>
               </div>
-              <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
-                Panneau d'administration
-              </span>
+            </div>
+
+            {/* Ligne inférieure : choix de langue centré */}
+            <div className="flex justify-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-rwdm-red dark:hover:text-white transition">
+                  <Globe className="h-4 w-4" />
+                  <span>{langLabels[currentLang]}</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="mt-1 z-[9999]">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.setItem("language", "fr");
+                      window.dispatchEvent(new Event("language-changed"));
+                    }}
+                  >
+                    Français
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.setItem("language", "nl");
+                      window.dispatchEvent(new Event("language-changed"));
+                    }}
+                  >
+                    Nederlands
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.setItem("language", "en");
+                      window.dispatchEvent(new Event("language-changed"));
+                    }}
+                  >
+                    English
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -126,7 +181,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 )}
               >
                 <LayoutDashboard className="mr-2 h-5 w-5" />
-                Tableau de bord
+                {t("admin_dashboard")}
               </Button>
             </Link>
             <Link to="/documents">
@@ -140,7 +195,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 )}
               >
                 <File className="mr-2 h-5 w-5" />
-                Documents
+                {t("admin_documents")}
               </Button>
             </Link>
             <Link to="/planning">
@@ -154,7 +209,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 )}
               >
                 <Calendar className="mr-2 h-5 w-5" />
-                Planning
+                {t("admin_planning")}
               </Button>
             </Link>
             <Link to="/members">
@@ -168,7 +223,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 )}
               >
                 <UserCircleIcon className="mr-2 h-5 w-5" />
-                Membres
+                {t("admin_members")}
               </Button>
             </Link>
             {user.role === "owner" && (
@@ -183,7 +238,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   )}
                 >
                   <BarChart className="mr-2 h-5 w-5" />
-                  Graphiques
+                  {t("admin_graphics")}
                 </Button>
               </Link>
             )}
@@ -199,7 +254,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   )}
                 >
                   <Settings className="mr-2 h-5 w-5" />
-                  Paramètres
+                  {t("admin_settings")}
                 </Button>
               </Link>
             )}
@@ -211,7 +266,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-5 w-5" />
-              Déconnexion
+              {t("admin_logout")}
             </Button>
           </div>
         </div>

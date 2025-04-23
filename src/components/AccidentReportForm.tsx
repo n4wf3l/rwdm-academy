@@ -412,7 +412,9 @@ const AccidentReportForm: React.FC = () => {
                 ou glissez-déposez
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Jusqu'à 2 fichiers PDF (MAX. 10MB chacun)
+                {documentType === "healing-certificate"
+                  ? "Jusqu'à 2 fichiers PDF (MAX. 10MB chacun)"
+                  : "1 seul fichier PDF (MAX. 10MB)"}
               </p>
             </div>
             <input
