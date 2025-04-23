@@ -38,17 +38,22 @@ const AuthRedirect = ({ children }) => {
 };
 
 function App() {
-  const [language, setLanguage] = useState<string | null>(null);
+  const [language, setLanguage] = useState<string | null>(() =>
+    localStorage.getItem("language")
+  );
 
-  // Vérifie si une langue est déjà choisie
   useEffect(() => {
-    const storedLang = localStorage.getItem("language");
-    if (storedLang) {
-      setLanguage(storedLang);
-    }
+    const handleLanguageChange = () => {
+      const newLang = localStorage.getItem("language");
+      if (newLang) setLanguage(newLang);
+    };
+
+    window.addEventListener("language-changed", handleLanguageChange);
+    return () => {
+      window.removeEventListener("language-changed", handleLanguageChange);
+    };
   }, []);
 
-  // Si aucune langue choisie → Affiche le SplashComponent
   if (!language) {
     return (
       <SplashComponent

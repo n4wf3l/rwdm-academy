@@ -26,7 +26,8 @@ const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const hasSelectedLanguage = localStorage.getItem("preferredLanguage");
+    // ✅ Corrigé
+    const hasSelectedLanguage = localStorage.getItem("language");
     if (hasSelectedLanguage) {
       setShowSplash(false);
     } else {
@@ -62,7 +63,8 @@ const Index = () => {
 
   // Restaurer la langue sélectionnée
   const handleLanguageSelect = (language: "fr" | "nl" | "en") => {
-    localStorage.setItem("preferredLanguage", language);
+    localStorage.setItem("language", language);
+    window.dispatchEvent(new Event("language-changed")); // Pour le hook
     setShowSplash(false);
   };
 

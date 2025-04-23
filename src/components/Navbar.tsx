@@ -113,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   <DropdownMenuItem
                     onClick={() => {
                       localStorage.setItem("language", "fr");
-                      window.location.reload();
+                      window.dispatchEvent(new Event("language-changed"));
                     }}
                   >
                     Français
@@ -121,7 +121,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   <DropdownMenuItem
                     onClick={() => {
                       localStorage.setItem("language", "nl");
-                      window.location.reload();
+                      window.dispatchEvent(new Event("language-changed"));
                     }}
                   >
                     Nederlands
@@ -129,7 +129,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   <DropdownMenuItem
                     onClick={() => {
                       localStorage.setItem("language", "en");
-                      window.location.reload();
+                      window.dispatchEvent(new Event("language-changed"));
                     }}
                   >
                     English
