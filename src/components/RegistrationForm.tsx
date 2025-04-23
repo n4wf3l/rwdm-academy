@@ -739,8 +739,19 @@ const RegistrationForm = () => {
               title="Signature"
               subtitle="Veuillez signer ci-dessous"
             >
-              <SignaturePad onChange={setSignature} />
-              <p className="text-sm text-gray-500 mt-2">Date : {currentDate}</p>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <strong>Pour rappel :</strong> ce formulaire concerne une{" "}
+                  <u>demande d'inscription</u> à la RWDM Academy et ne constitue
+                  en aucun cas une inscription définitive. Vous recevrez une
+                  réponse dans les prochaines heures ou jours de la part de la
+                  direction, via l'adresse email que vous avez fournie.
+                </p>
+                <SignaturePad onChange={setSignature} />
+                <p className="text-sm text-gray-500 mt-2">
+                  Date : {currentDate}
+                </p>
+              </div>
             </FormSection>
           </CardContent>
         </Card>

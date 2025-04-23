@@ -135,15 +135,18 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       >
         <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Link
-              to="/"
-              className="h-10 w-10 flex items-center justify-center "
-            >
-              <img
-                src={logoUrl || "/placeholder-logo.png"}
-                alt="Logo"
-                className="h-full w-full object-contain"
-              />
+            <Link to="/" className="h-10 w-10 flex items-center justify-center">
+              {logoUrl && (
+                <motion.img
+                  key={logoUrl} // pour réinitialiser l'animation si le logo change
+                  src={logoUrl}
+                  alt="Logo"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 3 }}
+                  transition={{ duration: 0.8 }}
+                  className="h-full w-full object-contain"
+                />
+              )}
             </Link>
 
             <div className="flex flex-col items-start space-y-1">

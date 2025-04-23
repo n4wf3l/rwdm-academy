@@ -590,10 +590,24 @@ const SelectionTestsForm: React.FC = () => {
               title="Signature"
               subtitle="Veuillez signer pour confirmer votre inscription aux tests de sélection"
             >
-              <SignaturePad
-                onChange={setSignature}
-                placeholder="Signez ici pour valider l'inscription aux tests"
-              />
+              <div className="space-y-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  La RWDM Academy décline toute responsabilité en cas
+                  d'incidents, d'accidents, de vols survenus dans ses
+                  installations et aux abords. En signant ce document, vous
+                  reconnaissez avoir pris connaissance de cette information.
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <strong>
+                    Signature du joueur ou des parents/tuteur légal (pour les
+                    enfants de moins de 13 ans)
+                  </strong>
+                </p>
+                <SignaturePad
+                  onChange={setSignature}
+                  placeholder="Signez ici pour valider l'inscription aux tests"
+                />
+              </div>
             </FormSection>
           </CardContent>
         </Card>
