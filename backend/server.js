@@ -795,6 +795,9 @@ app.use("/api/email-recipients", emailRecipientsRoutes);
 const formMailRoutes = require("./routes/formMail");
 app.use("/api/form-mail", formMailRoutes);
 
+const changeDataRoutes = require("./changeData");
+app.use("/api", changeDataRoutes);
+
 module.exports = app;
 // Lancer le serveur
 app.listen(PORT, () => {

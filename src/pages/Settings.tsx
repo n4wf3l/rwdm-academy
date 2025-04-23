@@ -1,146 +1,259 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const Settings: React.FC = () => {
-  // Sélecteur de langue
-  const [language, setLanguage] = useState("FR"); // FR, NL, EN
+// Composants séparés
+import GeneralSettings from "@/components/settings/GeneralSettings";
+import AboutSettings from "@/components/settings/AboutSettings";
+import ContactSettings from "@/components/settings/ContactSettings";
+import axios from "axios";
+import { toast } from "sonner";
 
-  // Section General
+const Settings: React.FC = () => {
+  const [language, setLanguage] = useState<"FR" | "NL" | "EN">("FR");
+
+  // General
   const [siteColor1, setSiteColor1] = useState("#003366");
   const [siteColor2, setSiteColor2] = useState("#FFFFFF");
   const [logo, setLogo] = useState("https://via.placeholder.com/150");
-  const [clubName, setClubName] = useState({
-    FR: "Club de Football",
-    NL: "Voetbalclub",
-    EN: "Football Club",
-  });
-  const [clubAddress, setClubAddress] = useState({
-    FR: "12 Rue de la Paix",
-    NL: "12 Vredestraat",
-    EN: "12 Peace Street",
-  });
-  const [postalCode, setPostalCode] = useState("75001");
-  const [commune, setCommune] = useState("Paris");
-  const [country, setCountry] = useState("France");
-  const [email, setEmail] = useState("contact@club.com");
-  const [facebookUrl, setFacebookUrl] = useState("https://facebook.com/club");
-  const [instagramUrl, setInstagramUrl] = useState(
-    "https://instagram.com/club"
-  );
+  const [clubName, setClubName] = useState({ FR: "", NL: "", EN: "" });
+  const [clubAddress, setClubAddress] = useState({ FR: "", NL: "", EN: "" });
+  const [postalCode, setPostalCode] = useState("");
+  const [commune, setCommune] = useState({ FR: "", NL: "", EN: "" });
+  const [country, setCountry] = useState({ FR: "", NL: "", EN: "" });
+  const [email, setEmail] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
 
-  // Section À propos
-  const [playersCount, setPlayersCount] = useState(120);
-  const [experienceYears, setExperienceYears] = useState(15);
-  const [nationalTrophies, setNationalTrophies] = useState(8);
-  const [youngTalents, setYoungTalents] = useState(25);
+  // About
+  const [nationalTrophies, setNationalTrophies] = useState("");
+  const [youngTalents, setYoungTalents] = useState("");
   const [historyDescription, setHistoryDescription] = useState({
-    FR: "Notre club a une riche histoire...",
-    NL: "Onze club heeft een rijke geschiedenis...",
-    EN: "Our club has a rich history...",
+    FR: "",
+    NL: "",
+    EN: "",
   });
-  const [historyPhoto, setHistoryPhoto] = useState(
-    "https://via.placeholder.com/300x200"
-  );
+  const [historyPhoto, setHistoryPhoto] = useState("");
   const [missionDescription, setMissionDescription] = useState({
-    FR: "Notre mission est de former les meilleurs joueurs...",
-    NL: "Onze missie is om de beste spelers op te leiden...",
-    EN: "Our mission is to develop the best players...",
+    FR: "",
+    NL: "",
+    EN: "",
   });
-  const [missionPhoto, setMissionPhoto] = useState(
-    "https://via.placeholder.com/300x200"
-  );
+  const [missionPhoto, setMissionPhoto] = useState("");
   const [approachDescription, setApproachDescription] = useState({
-    FR: "Nous adoptons une approche innovante...",
-    NL: "We hanteren een innovatieve aanpak...",
-    EN: "We use an innovative approach...",
+    FR: "",
+    NL: "",
+    EN: "",
   });
-  const [approachPhoto, setApproachPhoto] = useState(
-    "https://via.placeholder.com/300x200"
-  );
-  const [valueTitle1, setValueTitle1] = useState({
-    FR: "Passion",
-    NL: "Passie",
-    EN: "Passion",
+  const [approachPhoto, setApproachPhoto] = useState("");
+  const [valueTitle1, setValueTitle1] = useState({ FR: "", NL: "", EN: "" });
+  const [valueDesc1, setValueDesc1] = useState({ FR: "", NL: "", EN: "" });
+  const [valueTitle2, setValueTitle2] = useState({ FR: "", NL: "", EN: "" });
+  const [valueDesc2, setValueDesc2] = useState({ FR: "", NL: "", EN: "" });
+  const [valueTitle3, setValueTitle3] = useState({ FR: "", NL: "", EN: "" });
+  const [valueDesc3, setValueDesc3] = useState({ FR: "", NL: "", EN: "" });
+  const [playersCount, setPlayersCount] = useState("");
+  const [experienceYears, setExperienceYears] = useState("");
+
+  const [academyNames1, setAcademyNames1] = useState({
+    FR: "",
+    NL: "",
+    EN: "",
   });
-  const [valueDesc1, setValueDesc1] = useState({
-    FR: "Nous vivons pour le football.",
-    NL: "We leven voor voetbal.",
-    EN: "We live for football.",
+  const [academyNames2, setAcademyNames2] = useState({
+    FR: "",
+    NL: "",
+    EN: "",
   });
-  const [valueTitle2, setValueTitle2] = useState({
-    FR: "Esprit d'équipe",
-    NL: "Teamgeest",
-    EN: "Team Spirit",
-  });
-  const [valueDesc2, setValueDesc2] = useState({
-    FR: "L'union fait la force.",
-    NL: "Samen staan we sterk.",
-    EN: "Together we are stronger.",
-  });
-  const [valueTitle3, setValueTitle3] = useState({
-    FR: "Excellence",
-    NL: "Uitmuntendheid",
-    EN: "Excellence",
-  });
-  const [valueDesc3, setValueDesc3] = useState({
-    FR: "Toujours viser le meilleur.",
-    NL: "Altijd streven naar het beste.",
-    EN: "Always aim for the best.",
+  const [academyNames3, setAcademyNames3] = useState({
+    FR: "",
+    NL: "",
+    EN: "",
   });
 
-  // Section Contact
-  const [openingHours, setOpeningHours] = useState(
-    "Lundi - Vendredi: 9h - 18h<br>Samedi: 10h - 16h"
-  );
-  const [vatNumber, setVatNumber] = useState("FR123456789");
-  const [companyNumber, setCompanyNumber] = useState("SIRET 987654321");
+  const [academyDescriptions1, setAcademyDescriptions1] = useState({
+    FR: "",
+    NL: "",
+    EN: "",
+  });
+  const [academyDescriptions2, setAcademyDescriptions2] = useState({
+    FR: "",
+    NL: "",
+    EN: "",
+  });
+  const [academyDescriptions3, setAcademyDescriptions3] = useState({
+    FR: "",
+    NL: "",
+    EN: "",
+  });
 
-  // Fonction dummy de sauvegarde
-  const handleSaveSettings = () => {
-    const settingsData = {
-      general: {
-        siteColor1,
-        siteColor2,
-        logo,
-        clubName,
-        clubAddress,
-        postalCode,
-        commune,
-        country,
-        email,
-        facebookUrl,
-        instagramUrl,
-      },
-      about: {
-        playersCount,
-        experienceYears,
-        nationalTrophies,
-        youngTalents,
-        historyDescription,
-        historyPhoto,
-        missionDescription,
-        missionPhoto,
-        approachDescription,
-        approachPhoto,
-        valueTitle1,
-        valueDesc1,
-        valueTitle2,
-        valueDesc2,
-        valueTitle3,
-        valueDesc3,
-      },
-      contact: {
-        openingHours,
-        vatNumber,
-        companyNumber,
-      },
-      language,
-    };
-    console.log("Settings sauvegardés :", settingsData);
+  const [academyPhotos1, setAcademyPhotos1] = useState("");
+  const [academyPhotos2, setAcademyPhotos2] = useState("");
+  const [academyPhotos3, setAcademyPhotos3] = useState("");
+
+  // Contact
+  const [openingHours, setOpeningHours] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
+  const [companyNumber, setCompanyNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+
+  const settingsData = {
+    language: "FR", // langue par défaut sélectionnée
+    general: {
+      siteColor1,
+      siteColor2,
+      logo,
+      clubName, // { FR, NL, EN }
+      clubAddress, // { FR, NL, EN }
+      postalCode,
+      commune,
+      country,
+      email,
+      facebookUrl,
+      instagramUrl,
+    },
+    about: {
+      playersCount: Number(playersCount),
+      experienceYears: Number(experienceYears),
+      nationalTrophies: Number(nationalTrophies),
+      youngTalents: Number(youngTalents),
+      historyDescription, // { FR, NL, EN }
+      historyPhoto,
+      missionDescription, // { FR, NL, EN }
+      missionPhoto,
+      approachDescription, // { FR, NL, EN }
+      approachPhoto,
+      valueTitle1,
+      valueDesc1, // { FR, NL, EN }
+      valueTitle2,
+      valueDesc2,
+      valueTitle3,
+      valueDesc3,
+      academyNames1,
+      academyDescriptions1,
+      academyPhotos1,
+      academyNames2,
+      academyDescriptions2,
+      academyPhotos2,
+      academyNames3,
+      academyDescriptions3,
+      academyPhotos3,
+    },
+    contact: {
+      openingHours, // peut être en HTML
+      vatNumber,
+      companyNumber,
+      accountName,
+    },
   };
+
+  const handleSaveSettings = async () => {
+    const totalSizeInBytes =
+      ((historyPhoto?.length ||
+        0 + missionPhoto?.length ||
+        0 + approachPhoto?.length ||
+        0) *
+        3) /
+      4; // base64 est 33% plus lourd
+
+    if (totalSizeInBytes > 1.5 * 1024 * 1024) {
+      toast.error("📦 Trop d’images à la fois. Réduis leur taille !");
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        "http://localhost:5000/api/settings",
+        settingsData
+      );
+      toast.success("Les paramètres ont bien été enregistrés !");
+    } catch (error: any) {
+      console.error("❌ Erreur lors de la sauvegarde :", error);
+      toast.error("Une erreur est survenue lors de la sauvegarde.");
+    }
+  };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/settings");
+        const data = res.data;
+
+        // General
+        setSiteColor1(data.general.siteColor1 || "#003366");
+        setSiteColor2(data.general.siteColor2 || "#FFFFFF");
+        setLogo(data.general.logo || "https://via.placeholder.com/150");
+        setClubName(data.general.clubName || { FR: "", NL: "", EN: "" });
+        setClubAddress(data.general.clubAddress || { FR: "", NL: "", EN: "" });
+        setPostalCode(data.general.postalCode || "");
+        setCommune(data.general.commune || { FR: "", NL: "", EN: "" });
+        setCountry(data.general.country || { FR: "", NL: "", EN: "" });
+        setEmail(data.general.email || "");
+        setFacebookUrl(data.general.facebookUrl || "");
+        setInstagramUrl(data.general.instagramUrl || "");
+
+        // About
+        setPlayersCount(String(data.about.playersCount || ""));
+        setExperienceYears(String(data.about.experienceYears || ""));
+        setNationalTrophies(data.about.nationalTrophies || 0);
+        setYoungTalents(data.about.youngTalents || 0);
+        setHistoryDescription(
+          data.about.historyDescription || { FR: "", NL: "", EN: "" }
+        );
+        setHistoryPhoto(data.about.historyPhoto || "");
+        setMissionDescription(
+          data.about.missionDescription || { FR: "", NL: "", EN: "" }
+        );
+        setMissionPhoto(data.about.missionPhoto || "");
+        setApproachDescription(
+          data.about.approachDescription || { FR: "", NL: "", EN: "" }
+        );
+        setApproachPhoto(data.about.approachPhoto || "");
+        setValueTitle1(data.about.valueTitle1 || { FR: "", NL: "", EN: "" });
+        setValueDesc1(data.about.valueDesc1 || { FR: "", NL: "", EN: "" });
+        setValueTitle2(data.about.valueTitle2 || { FR: "", NL: "", EN: "" });
+        setValueDesc2(data.about.valueDesc2 || { FR: "", NL: "", EN: "" });
+        setValueTitle3(data.about.valueTitle3 || { FR: "", NL: "", EN: "" });
+        setValueDesc3(data.about.valueDesc3 || { FR: "", NL: "", EN: "" });
+        setAcademyNames1(
+          data.about.academyNames1 || { FR: "", NL: "", EN: "" }
+        );
+        setAcademyDescriptions1(
+          data.about.academyDescriptions1 || { FR: "", NL: "", EN: "" }
+        );
+        setAcademyPhotos1(data.about.academyPhotos1 || "");
+
+        setAcademyNames2(
+          data.about.academyNames2 || { FR: "", NL: "", EN: "" }
+        );
+        setAcademyDescriptions2(
+          data.about.academyDescriptions2 || { FR: "", NL: "", EN: "" }
+        );
+        setAcademyPhotos2(data.about.academyPhotos2 || "");
+
+        setAcademyNames3(
+          data.about.academyNames3 || { FR: "", NL: "", EN: "" }
+        );
+        setAcademyDescriptions3(
+          data.about.academyDescriptions3 || { FR: "", NL: "", EN: "" }
+        );
+        setAcademyPhotos3(data.about.academyPhotos3 || "");
+
+        // Contact
+        setOpeningHours(data.contact.openingHours || "");
+        setVatNumber(data.contact.vatNumber || "");
+        setCompanyNumber(data.contact.companyNumber || "");
+        setAccountName(data.contact.accountName || "");
+        // Langue (optionnel)
+        setLanguage(data.language || "FR");
+      } catch (error) {
+        console.error("❌ Erreur lors du chargement des paramètres :", error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   return (
     <AdminLayout>
@@ -155,7 +268,7 @@ const Settings: React.FC = () => {
           <select
             className="border p-2 rounded"
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(e) => setLanguage(e.target.value as "FR" | "NL" | "EN")}
           >
             <option value="FR">Version Français</option>
             <option value="NL">Version Néerlandais</option>
@@ -165,340 +278,109 @@ const Settings: React.FC = () => {
 
         <Tabs defaultValue="general">
           <TabsList className="mb-4 border-b">
-            <TabsTrigger value="general" className="px-4 py-2 text-lg">
-              General
-            </TabsTrigger>
-            <TabsTrigger value="about" className="px-4 py-2 text-lg">
-              À propos
-            </TabsTrigger>
-            <TabsTrigger value="contact" className="px-4 py-2 text-lg">
-              Contact
-            </TabsTrigger>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="about">À propos</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general" className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-1">
-                  Couleur 1 du site
-                </label>
-                <Input
-                  type="color"
-                  value={siteColor1}
-                  onChange={(e) => setSiteColor1(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Couleur 2 du site
-                </label>
-                <Input
-                  type="color"
-                  value={siteColor2}
-                  onChange={(e) => setSiteColor2(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Logo (URL)</label>
-                <Input value={logo} onChange={(e) => setLogo(e.target.value)} />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Nom du club ({language})
-                </label>
-                <Input
-                  value={clubName[language]}
-                  onChange={(e) =>
-                    setClubName({ ...clubName, [language]: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Adresse du club ({language})
-                </label>
-                <Input
-                  value={clubAddress[language]}
-                  onChange={(e) =>
-                    setClubAddress({
-                      ...clubAddress,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="flex space-x-4">
-                <div className="w-1/2">
-                  <label className="block font-semibold mb-1">
-                    Code postal
-                  </label>
-                  <Input
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                  />
-                </div>
-                <div className="w-1/2">
-                  <label className="block font-semibold mb-1">Commune</label>
-                  <Input
-                    value={commune}
-                    onChange={(e) => setCommune(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Pays</label>
-                <Input
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Email</label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">URL Facebook</label>
-                <Input
-                  value={facebookUrl}
-                  onChange={(e) => setFacebookUrl(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  URL Instagram
-                </label>
-                <Input
-                  value={instagramUrl}
-                  onChange={(e) => setInstagramUrl(e.target.value)}
-                />
-              </div>
-            </div>
+          <TabsContent value="general">
+            <GeneralSettings
+              language={language}
+              siteColor1={siteColor1}
+              setSiteColor1={setSiteColor1}
+              siteColor2={siteColor2}
+              setSiteColor2={setSiteColor2}
+              logo={logo}
+              setLogo={setLogo}
+              clubName={clubName}
+              setClubName={setClubName}
+              clubAddress={clubAddress}
+              setClubAddress={setClubAddress}
+              postalCode={postalCode}
+              setPostalCode={setPostalCode}
+              commune={commune}
+              setCommune={setCommune}
+              country={country}
+              setCountry={setCountry}
+              email={email}
+              setEmail={setEmail}
+              facebookUrl={facebookUrl}
+              setFacebookUrl={setFacebookUrl}
+              instagramUrl={instagramUrl}
+              setInstagramUrl={setInstagramUrl}
+            />
           </TabsContent>
 
-          <TabsContent value="about" className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-1">
-                  Nombre de joueurs formés
-                </label>
-                <Input
-                  type="number"
-                  value={playersCount}
-                  onChange={(e) => setPlayersCount(Number(e.target.value))}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Nombre d'années d'expérience
-                </label>
-                <Input
-                  type="number"
-                  value={experienceYears}
-                  onChange={(e) => setExperienceYears(Number(e.target.value))}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Nombre de trophées nationaux
-                </label>
-                <Input
-                  type="number"
-                  value={nationalTrophies}
-                  onChange={(e) => setNationalTrophies(Number(e.target.value))}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Nombre de jeunes talents
-                </label>
-                <Input
-                  type="number"
-                  value={youngTalents}
-                  onChange={(e) => setYoungTalents(Number(e.target.value))}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Description histoire ({language})
-                </label>
-                <Input
-                  value={historyDescription[language]}
-                  onChange={(e) =>
-                    setHistoryDescription({
-                      ...historyDescription,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Photo histoire (URL)
-                </label>
-                <Input
-                  value={historyPhoto}
-                  onChange={(e) => setHistoryPhoto(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Description Mission ({language})
-                </label>
-                <Input
-                  value={missionDescription[language]}
-                  onChange={(e) =>
-                    setMissionDescription({
-                      ...missionDescription,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Photo Mission (URL)
-                </label>
-                <Input
-                  value={missionPhoto}
-                  onChange={(e) => setMissionPhoto(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Description approche ({language})
-                </label>
-                <Input
-                  value={approachDescription[language]}
-                  onChange={(e) =>
-                    setApproachDescription({
-                      ...approachDescription,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Photo approche (URL)
-                </label>
-                <Input
-                  value={approachPhoto}
-                  onChange={(e) => setApproachPhoto(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Titre Valeur 1 ({language})
-                </label>
-                <Input
-                  value={valueTitle1[language]}
-                  onChange={(e) =>
-                    setValueTitle1({
-                      ...valueTitle1,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Description Valeur 1 ({language})
-                </label>
-                <Input
-                  value={valueDesc1[language]}
-                  onChange={(e) =>
-                    setValueDesc1({ ...valueDesc1, [language]: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Titre Valeur 2 ({language})
-                </label>
-                <Input
-                  value={valueTitle2[language]}
-                  onChange={(e) =>
-                    setValueTitle2({
-                      ...valueTitle2,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Description Valeur 2 ({language})
-                </label>
-                <Input
-                  value={valueDesc2[language]}
-                  onChange={(e) =>
-                    setValueDesc2({ ...valueDesc2, [language]: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Titre Valeur 3 ({language})
-                </label>
-                <Input
-                  value={valueTitle3[language]}
-                  onChange={(e) =>
-                    setValueTitle3({
-                      ...valueTitle3,
-                      [language]: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Description Valeur 3 ({language})
-                </label>
-                <Input
-                  value={valueDesc3[language]}
-                  onChange={(e) =>
-                    setValueDesc3({ ...valueDesc3, [language]: e.target.value })
-                  }
-                />
-              </div>
-            </div>
+          <TabsContent value="about">
+            <AboutSettings
+              language={language}
+              playersCount={playersCount}
+              setPlayersCount={setPlayersCount}
+              experienceYears={experienceYears}
+              setExperienceYears={setExperienceYears}
+              nationalTrophies={nationalTrophies}
+              setNationalTrophies={setNationalTrophies}
+              youngTalents={youngTalents}
+              setYoungTalents={setYoungTalents}
+              historyDescription={historyDescription}
+              setHistoryDescription={setHistoryDescription}
+              historyPhoto={historyPhoto}
+              setHistoryPhoto={setHistoryPhoto}
+              missionDescription={missionDescription}
+              setMissionDescription={setMissionDescription}
+              missionPhoto={missionPhoto}
+              setMissionPhoto={setMissionPhoto}
+              approachDescription={approachDescription}
+              setApproachDescription={setApproachDescription}
+              approachPhoto={approachPhoto}
+              setApproachPhoto={setApproachPhoto}
+              valueTitle1={valueTitle1}
+              setValueTitle1={setValueTitle1}
+              valueDesc1={valueDesc1}
+              setValueDesc1={setValueDesc1}
+              valueTitle2={valueTitle2}
+              setValueTitle2={setValueTitle2}
+              valueDesc2={valueDesc2}
+              setValueDesc2={setValueDesc2}
+              valueTitle3={valueTitle3}
+              setValueTitle3={setValueTitle3}
+              valueDesc3={valueDesc3}
+              setValueDesc3={setValueDesc3}
+              academyNames1={academyNames1}
+              setAcademyNames1={setAcademyNames1}
+              academyDescriptions1={academyDescriptions1}
+              setAcademyDescriptions1={setAcademyDescriptions1}
+              academyPhotos1={academyPhotos1}
+              setAcademyPhotos1={setAcademyPhotos1}
+              academyNames2={academyNames2}
+              setAcademyNames2={setAcademyNames2}
+              academyDescriptions2={academyDescriptions2}
+              setAcademyDescriptions2={setAcademyDescriptions2}
+              academyPhotos2={academyPhotos2}
+              setAcademyPhotos2={setAcademyPhotos2}
+              academyNames3={academyNames3}
+              setAcademyNames3={setAcademyNames3}
+              academyDescriptions3={academyDescriptions3}
+              setAcademyDescriptions3={setAcademyDescriptions3}
+              academyPhotos3={academyPhotos3}
+              setAcademyPhotos3={setAcademyPhotos3}
+            />
           </TabsContent>
 
-          <TabsContent value="contact" className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-1">
-                  Heure d'ouverture
-                </label>
-                <Input
-                  placeholder="Ex: Lundi - Vendredi: 9h - 18h<br>Samedi: 10h - 16h"
-                  value={openingHours}
-                  onChange={(e) => setOpeningHours(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Nr TVA</label>
-                <Input
-                  value={vatNumber}
-                  onChange={(e) => setVatNumber(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">
-                  Nr d'Entreprise
-                </label>
-                <Input
-                  value={companyNumber}
-                  onChange={(e) => setCompanyNumber(e.target.value)}
-                />
-              </div>
-            </div>
+          <TabsContent value="contact">
+            <ContactSettings
+              accountName={accountName}
+              setAccountName={setAccountName}
+              openingHours={openingHours}
+              setOpeningHours={setOpeningHours}
+              vatNumber={vatNumber}
+              setVatNumber={setVatNumber}
+              companyNumber={companyNumber}
+              setCompanyNumber={setCompanyNumber}
+            />
           </TabsContent>
         </Tabs>
+
         <div className="mt-6 flex justify-center">
           <Button
             onClick={handleSaveSettings}

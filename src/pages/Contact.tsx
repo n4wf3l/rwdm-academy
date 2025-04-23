@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { motion } from "framer-motion";
@@ -6,6 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Clock, Info } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
+import axios from "axios";
+import { translations } from "@/lib/i18n";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -14,6 +17,108 @@ const Contact = () => {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [clubAddress, setClubAddress] = useState<{ [key: string]: string }>({});
+  const [commune, setCommune] = useState<{ [key: string]: string }>({});
+  const [postalCode, setPostalCode] = useState("");
+  const [emailClub, setEmailClub] = useState("");
+  const [country, setCountry] = useState<{ [key: string]: string }>({});
+  const getLocalizedValue = (
+    field: { [key: string]: string } | undefined,
+    lang: string
+  ): string => {
+    if (!field) return "";
+    return (
+      field[lang] ||
+      field["FR"] ||
+      Object.entries(field).find(([key]) => isNaN(Number(key)))?.[1] ||
+      ""
+    );
+  };
+  const { t, lang } = useTranslation();
+  const currentLang = lang.toUpperCase();
+  const [openingHours, setOpeningHours] = useState({});
+  const [vatNumber, setVatNumber] = useState("");
+  const [companyNumber, setCompanyNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const mapQuery = useMemo(() => {
+    return encodeURIComponent(
+      `${getLocalizedValue(
+        clubAddress,
+        currentLang
+      )} ${postalCode} ${getLocalizedValue(commune, currentLang)} Belgique`
+    );
+  }, [clubAddress, commune, postalCode, currentLang]);
+  const daysOfWeek = [
+    "Lundi",
+    "Mardi",
+    "Mercredi",
+    "Jeudi",
+    "Vendredi",
+    "Samedi",
+    "Dimanche",
+  ] as const;
+
+  type Day = (typeof daysOfWeek)[number]; // "Lundi" | "Mardi" | ...
+  const translateDay = (
+    day: Day,
+    t: (key: keyof typeof translations.fr) => string
+  ): string => {
+    return t(`day_${day.toLowerCase()}` as keyof typeof translations.fr);
+  };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5000/api/settings");
+        updateFromGeneral(data.general);
+        updateFromContact(data.contact); // ✅ ajoute ceci
+      } catch (err) {
+        console.error("Erreur fetch settings avec axios:", err);
+      }
+    };
+
+    fetchSettings();
+
+    const onLanguageChange = () => {
+      fetchSettings(); // refetch à chaque changement de langue
+    };
+
+    window.addEventListener("language-changed", onLanguageChange);
+    return () =>
+      window.removeEventListener("language-changed", onLanguageChange);
+  }, []);
+
+  const updateFromGeneral = (general: any) => {
+    setCommune(
+      Object.fromEntries(
+        Object.entries(general.commune || {}).filter(([key]) =>
+          isNaN(Number(key))
+        )
+      ) as { [key: string]: string }
+    );
+
+    setCountry(
+      Object.fromEntries(
+        Object.entries(general.country || {}).filter(([key]) =>
+          isNaN(Number(key))
+        )
+      ) as { [key: string]: string }
+    );
+    setClubAddress(general.clubAddress || {});
+    setPostalCode(general.postalCode || "");
+    setEmailClub(general.email || "");
+    setOpeningHours(general.openingHours || {});
+    setVatNumber(general.vatNumber || "");
+    setCompanyNumber(general.companyNumber || "");
+    setAccountName(general.accountName || "");
+  };
+
+  const updateFromContact = (contact: any) => {
+    setOpeningHours(contact.openingHours || {});
+    setVatNumber(contact.vatNumber || "");
+    setCompanyNumber(contact.companyNumber || "");
+    setAccountName(contact.accountName || "");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
@@ -26,11 +131,10 @@ const Contact = () => {
           className="text-center mb-8"
         >
           <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3">
-            Contactez-nous
+            {t("contact_title")}
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Vous avez des questions? N'hésitez pas à nous contacter. Notre
-            équipe est là pour vous aider.
+            {t("contact_description")}
           </p>
         </motion.div>
 
@@ -44,7 +148,7 @@ const Contact = () => {
             <Card className="h-full glass-panel">
               <CardContent className="p-6">
                 <h2 className="text-2xl font-semibold mb-6">
-                  Envoyez-nous un message
+                  {t("send_us_message")}
                 </h2>
                 <form
                   className="space-y-4"
@@ -131,7 +235,7 @@ const Contact = () => {
                         htmlFor="name"
                         className="block text-sm font-medium mb-1"
                       >
-                        Nom
+                        {t("contact_name")}
                       </label>
                       <input
                         type="text"
@@ -147,7 +251,7 @@ const Contact = () => {
                         htmlFor="email"
                         className="block text-sm font-medium mb-1"
                       >
-                        Email
+                        {t("contact_email")}
                       </label>
                       <input
                         type="email"
@@ -164,23 +268,47 @@ const Contact = () => {
                       htmlFor="subject"
                       className="block text-sm font-medium mb-1"
                     >
-                      Sujet
+                      {t("contact_subject")}
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="subject"
                       className="form-input-base"
-                      placeholder="Sujet de votre message"
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                    />
+                    >
+                      <option value="">{t("contact_select_subject")}</option>
+                      <option value="registration">
+                        {t("contact_subject_registration")}
+                      </option>
+                      <option value="selection_tests">
+                        {t("contact_subject_selection")}
+                      </option>
+                      <option value="liability_waiver">
+                        {t("contact_subject_waiver")}
+                      </option>
+                      <option value="accident_report">
+                        {t("contact_subject_accident")}
+                      </option>
+                      <option value="recruitment">
+                        {t("contact_subject_recruitment")}
+                      </option>
+                      <option value="incident">
+                        {t("contact_subject_incident")}
+                      </option>
+                      <option value="technical">
+                        {t("contact_subject_technical")}
+                      </option>
+                      <option value="other">
+                        {t("contact_subject_other")}
+                      </option>
+                    </select>
                   </div>
                   <div>
                     <label
                       htmlFor="message"
                       className="block text-sm font-medium mb-1"
                     >
-                      Message
+                      {t("contact_message")}
                     </label>
                     <textarea
                       id="message"
@@ -196,7 +324,7 @@ const Contact = () => {
                     disabled={isSending}
                     className="w-full md:w-auto button-transition bg-rwdm-red hover:bg-rwdm-red/90"
                   >
-                    {isSending ? "Envoi en cours..." : "Envoyer le message"}
+                    {isSending ? "Envoi en cours..." : t("contact_submit")}
                   </Button>
                 </form>
               </CardContent>
@@ -209,27 +337,33 @@ const Contact = () => {
           >
             <Card className="h-full glass-panel">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-6">Coordonnées</h2>
+                <h2 className="text-2xl font-semibold mb-6">
+                  {t("contact_info_title")}
+                </h2>
                 <div className="space-y-6">
                   <div className="flex items-start space-x-3">
                     <MapPin className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
-                      <h3 className="font-medium mb-1">Notre adresse</h3>
+                      <h3 className="font-medium mb-1">
+                        {t("contact_address_title")}
+                      </h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Stade Edmond Machtens
+                        {getLocalizedValue(clubAddress, currentLang)}
                         <br />
-                        Avenue Charles Malis 61
+                        {postalCode} {getLocalizedValue(commune, currentLang)}
                         <br />
-                        1080 Molenbeek-Saint-Jean
+                        {getLocalizedValue(country, currentLang)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <Mail className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
-                      <h3 className="font-medium mb-1">Email</h3>
+                      <h3 className="font-medium mb-1">
+                        {t("contact_email_title")}
+                      </h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        info@nainnovations.be
+                        {emailClub}
                       </p>
                     </div>
                   </div>
@@ -237,23 +371,44 @@ const Contact = () => {
                     <Clock className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
                       <h3 className="font-medium mb-1">
-                        Heures d'ouverture secrétariat
+                        {t("contact_office_hours")}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        Lundi - Jeudi : 18h - 19h30
-                        <br />
-                        Vendredi à dimanche : Fermé
-                      </p>
+                      <div className="text-gray-600 dark:text-gray-300">
+                        {Object.entries(openingHours || {}).map(
+                          ([day, times]: any) =>
+                            times.open && times.close ? (
+                              <div key={day}>
+                                {translateDay(day as Day, t)} : {times.open} -{" "}
+                                {times.close}
+                              </div>
+                            ) : (
+                              <div key={day}>
+                                {translateDay(day as Day, t)} : {t("closed")}
+                              </div>
+                            )
+                        )}
+                      </div>
                     </div>
                   </div>
+
                   <div className="flex items-start space-x-3">
                     <Info className="w-5 h-5 text-rwdm-red mt-0.5" />
                     <div>
-                      <h3 className="font-medium mb-1">Informations</h3>
+                      <h3 className="font-medium mb-1">
+                        {t("contact_info_title")}
+                      </h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        N° TVA: BE0123456789
+                        {accountName && (
+                          <>
+                            {t("contact_account_name")}: {accountName}
+                            <br />
+                          </>
+                        )}
+                        {t("contact_vat_number")}:{" "}
+                        {vatNumber || t("email_unavailable")}
                         <br />
-                        N° d'entreprise: 0123.456.789
+                        {t("contact_company_number")}:{" "}
+                        {companyNumber || t("email_unavailable")}
                       </p>
                     </div>
                   </div>
@@ -270,18 +425,18 @@ const Contact = () => {
           <Card className="glass-panel">
             <CardContent className="p-6">
               <h2 className="text-2xl font-semibold mb-4">
-                Comment nous trouver
+                {t("how_to_find_us")}
               </h2>
               <div className="rounded-lg overflow-hidden h-96 bg-gray-200">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2519.5532587726173!2d4.319364915738471!3d50.864605779532826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c3f1abcdef01%3A0x123456789abcdef!2sAvenue%20Charles%20Malis%2061%2C%201080%20Molenbeek-Saint-Jean%2C%20Belgique!5e0!3m2!1sfr!2sbe!4v1690000000000&maptype=satellite&style=dark"
+                  src={`https://www.google.com/maps?q=${mapQuery}&t=&z=17&ie=UTF8&iwloc=near&output=embed`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
+                />
               </div>
             </CardContent>
           </Card>

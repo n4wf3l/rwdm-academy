@@ -29,6 +29,30 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     nl: "Nederlands",
     en: "English",
   };
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [clubName, setClubName] = useState<{
+    FR: string;
+    NL: string;
+    EN: string;
+  }>({
+    FR: "",
+    NL: "",
+    EN: "",
+  });
+
+  useEffect(() => {
+    const fetchClubName = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/settings");
+        const data = await res.json();
+        setClubName(data.general.clubName);
+      } catch (err) {
+        console.error("Erreur lors du chargement du nom du club :", err);
+      }
+    };
+
+    fetchClubName();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,6 +77,24 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   }, [location.pathname]);
 
   useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/settings");
+        const data = await res.json();
+        if (data.general.logo && data.general.logo.startsWith("data:image")) {
+          setLogoUrl(data.general.logo); // base64 depuis DB
+        } else {
+          setLogoUrl(null); // ou une URL distante si tu gères les fichiers côté serveur
+        }
+      } catch (err) {
+        console.error("Erreur chargement logo :", err);
+      }
+    };
+
+    fetchLogo();
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -74,6 +116,12 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     navigate("/");
   };
 
+  const changeLanguage = (lang: "fr" | "nl" | "en") => {
+    localStorage.setItem("language", lang);
+    window.dispatchEvent(new Event("language-changed"));
+    navigate(location.pathname + location.search); // rester sur la même page
+  };
+
   return (
     <>
       <header
@@ -86,14 +134,18 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         )}
       >
         <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="h-10 w-10 flex items-center justify-center shadow-md">
+          <div className="flex items-center space-x-3">
+            <Link
+              to="/"
+              className="h-10 w-10 flex items-center justify-center "
+            >
               <img
-                src="/logo.png"
+                src={logoUrl || "/placeholder-logo.png"}
                 alt="Logo"
                 className="h-full w-full object-contain"
               />
-            </div>
+            </Link>
+
             <div className="flex flex-col items-start space-y-1">
               <span
                 className={cn(
@@ -101,7 +153,8 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   isScrolled ? "text-rwdm-blue dark:text-white" : "text-blue"
                 )}
               >
-                RWDM Academy
+                {clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
+                  "RWDM Academy"}
               </span>
 
               <DropdownMenu>
@@ -110,34 +163,19 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   <span>{langLabels[currentLang]}</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="mt-1 z-[9999]">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      localStorage.setItem("language", "fr");
-                      window.dispatchEvent(new Event("language-changed"));
-                    }}
-                  >
+                  <DropdownMenuItem onClick={() => changeLanguage("fr")}>
                     Français
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      localStorage.setItem("language", "nl");
-                      window.dispatchEvent(new Event("language-changed"));
-                    }}
-                  >
+                  <DropdownMenuItem onClick={() => changeLanguage("nl")}>
                     Nederlands
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      localStorage.setItem("language", "en");
-                      window.dispatchEvent(new Event("language-changed"));
-                    }}
-                  >
+                  <DropdownMenuItem onClick={() => changeLanguage("en")}>
                     English
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </Link>
+          </div>
 
           {/* Desktop menu */}
           <nav className="hidden md:flex items-center space-x-8">

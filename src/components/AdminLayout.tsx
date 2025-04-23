@@ -34,12 +34,30 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const currentLang = localStorage.getItem("language") || "fr";
   const { t } = useTranslation();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const langLabels = {
     fr: "Français",
     nl: "Nederlands",
     en: "English",
   };
 
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/settings");
+        const data = await res.json();
+        if (data.general.logo && data.general.logo.startsWith("data:image")) {
+          setLogoUrl(data.general.logo); // base64 depuis DB
+        } else {
+          setLogoUrl(null); // ou une URL distante si tu gères les fichiers côté serveur
+        }
+      } catch (err) {
+        console.error("Erreur chargement logo :", err);
+      }
+    };
+
+    fetchLogo();
+  }, []);
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
@@ -121,8 +139,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Link>
 
               <div className="flex items-center space-x-2">
-                <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
-                  <img src="logo.png" alt="Logo" />
+                <div className="h-10 w-10 flex items-center justify-center text-white font-bold text-xl">
+                  <img
+                    src={logoUrl || "/placeholder-logo.png"}
+                    alt="Logo"
+                    className="h-full w-full object-contain"
+                  />
                 </div>
 
                 <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
