@@ -21,6 +21,7 @@ app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*", credentials: true }));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -575,8 +576,6 @@ app.get("/api/check-code/:code", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
-
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.post("/api/upload", upload.array("pdfFiles", 2), (req, res) => {
   if (!req.files || req.files.length === 0) {

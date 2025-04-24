@@ -46,8 +46,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       try {
         const res = await fetch("http://localhost:5000/api/settings");
         const data = await res.json();
-        if (data.general.logo && data.general.logo.startsWith("data:image")) {
-          setLogoUrl(data.general.logo); // base64 depuis DB
+        if (data.general.logo.startsWith("/uploads/")) {
+          setLogoUrl(data.general.logo);
         } else {
           setLogoUrl(null); // ou une URL distante si tu gères les fichiers côté serveur
         }
@@ -140,11 +140,19 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
               <div className="flex items-center space-x-2">
                 <div className="h-10 w-10 flex items-center justify-center text-white font-bold text-xl">
-                  <img
-                    src={logoUrl || "/placeholder-logo.png"}
-                    alt="Logo"
-                    className="h-full w-full object-contain"
-                  />
+                  {logoUrl ? (
+                    <img
+                      src={logoUrl} // ✅ URL relative comme "/uploads/monlogo.png"
+                      alt="Logo"
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <img
+                      src="/placeholder-logo.png" // 🔁 fallback si aucun logo uploadé
+                      alt="Logo par défaut"
+                      className="h-full w-full object-contain"
+                    />
+                  )}
                 </div>
 
                 <span className="text-rwdm-blue dark:text-white font-semibold text-xl">

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import axios from "axios";
 
 const AboutSettings = ({
   playersCount,
@@ -57,7 +58,7 @@ const AboutSettings = ({
   academyPhotos3,
   setAcademyPhotos3,
 }) => {
-  const MAX_IMAGE_SIZE = 1024 * 1024;
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
   const handleImageUpload = (
     file: File,
@@ -71,7 +72,7 @@ const AboutSettings = ({
         : `${sizeInKb} Ko`;
 
     if (file.size > MAX_IMAGE_SIZE) {
-      toast.error(`L’image (${sizeMessage}) dépasse 1 Mo`);
+      toast.error(`L’image (${sizeMessage}) dépasse 2 Mo`);
       resetInput();
       return false;
     }
@@ -83,6 +84,35 @@ const AboutSettings = ({
     };
     reader.readAsDataURL(file);
     return true;
+  };
+
+  const checkImageSize = (file: File, maxSize: number): boolean => {
+    const sizeInMb = file.size / 1024 / 1024;
+    if (file.size > maxSize) {
+      toast.error(
+        `📦 L’image est trop lourde (${sizeInMb.toFixed(
+          2
+        )} Mo) – max autorisé : ${maxSize / 1024 / 1024} Mo`
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const uploadImageFile = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/upload/image",
+        formData
+      );
+      return response.data.filePath; // ex: "/uploads/1685678923-monimage.png"
+    } catch (err) {
+      toast.error("Erreur lors du téléchargement de l'image");
+      return null;
+    }
   };
 
   return (
@@ -160,11 +190,19 @@ const AboutSettings = ({
           <Input
             type="file"
             accept="image/*"
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
-              if (file) {
-                const reset = () => (e.target.value = "");
-                handleImageUpload(file, setHistoryPhoto, reset);
+              if (!file) return;
+
+              if (!checkImageSize(file, MAX_IMAGE_SIZE)) {
+                e.target.value = "";
+                return;
+              }
+
+              const filePath = await uploadImageFile(file);
+              if (filePath) {
+                setHistoryPhoto(filePath); // Chemin du fichier (ex: /uploads/...)
+                toast.success("Image chargée avec succès !");
               }
             }}
           />
@@ -203,11 +241,19 @@ const AboutSettings = ({
           <Input
             type="file"
             accept="image/*"
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
-              if (file) {
-                const reset = () => (e.target.value = "");
-                handleImageUpload(file, setMissionPhoto, reset);
+              if (!file) return;
+
+              if (!checkImageSize(file, MAX_IMAGE_SIZE)) {
+                e.target.value = "";
+                return;
+              }
+
+              const filePath = await uploadImageFile(file);
+              if (filePath) {
+                setMissionPhoto(filePath);
+                toast.success("Image chargée avec succès !");
               }
             }}
           />
@@ -246,11 +292,19 @@ const AboutSettings = ({
           <Input
             type="file"
             accept="image/*"
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
-              if (file) {
-                const reset = () => (e.target.value = "");
-                handleImageUpload(file, setApproachPhoto, reset);
+              if (!file) return;
+
+              if (!checkImageSize(file, MAX_IMAGE_SIZE)) {
+                e.target.value = "";
+                return;
+              }
+
+              const filePath = await uploadImageFile(file);
+              if (filePath) {
+                setApproachPhoto(filePath);
+                toast.success("Image chargée avec succès !");
               }
             }}
           />
@@ -329,22 +383,22 @@ const AboutSettings = ({
             <Input
               type="file"
               accept="image/*"
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                if (file.size > 750 * 1024) {
-                  toast.error("📦 L’image ne doit pas dépasser 750 Ko");
+
+                if (!checkImageSize(file, MAX_IMAGE_SIZE)) {
                   e.target.value = "";
                   return;
                 }
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  if (num === 1) setAcademyPhotos1(reader.result as string);
-                  else if (num === 2)
-                    setAcademyPhotos2(reader.result as string);
-                  else setAcademyPhotos3(reader.result as string);
-                };
-                reader.readAsDataURL(file);
+
+                const filePath = await uploadImageFile(file);
+                if (filePath) {
+                  if (num === 1) setAcademyPhotos1(filePath);
+                  else if (num === 2) setAcademyPhotos2(filePath);
+                  else setAcademyPhotos3(filePath);
+                  toast.success(`Image pour l’académie ${num} chargée !`);
+                }
               }}
             />
             {((num === 1 && academyPhotos1) ||

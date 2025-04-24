@@ -81,10 +81,15 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       try {
         const res = await fetch("http://localhost:5000/api/settings");
         const data = await res.json();
-        if (data.general.logo && data.general.logo.startsWith("data:image")) {
-          setLogoUrl(data.general.logo); // base64 depuis DB
-        } else {
-          setLogoUrl(null); // ou une URL distante si tu gères les fichiers côté serveur
+
+        if (data.general.logo) {
+          if (data.general.logo.startsWith("/uploads/")) {
+            setLogoUrl(data.general.logo); // 👈 URL relative directement utilisable
+          } else if (data.general.logo.startsWith("/uploads/")) {
+            setLogoUrl(`http://localhost:5000${data.general.logo}`); // fichier uploadé
+          } else {
+            setLogoUrl(null);
+          }
         }
       } catch (err) {
         console.error("Erreur chargement logo :", err);
@@ -138,11 +143,11 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             <Link to="/" className="h-10 w-10 flex items-center justify-center">
               {logoUrl && (
                 <motion.img
-                  key={logoUrl} // pour réinitialiser l'animation si le logo change
-                  src={logoUrl}
+                  key={logoUrl} // Pour réinitialiser l'animation si le logo change
+                  src={logoUrl} // Pas besoin de forcer "http://localhost:5000"
                   alt="Logo"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 3 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.8 }}
                   className="h-full w-full object-contain"
                 />

@@ -62,10 +62,10 @@ const About = () => {
   });
 
   const achievements = [
-    { value: aboutData.playersCount, label: t("players_trained") },
+    { value: "+" + aboutData.playersCount, label: t("players_trained") },
     { value: aboutData.experienceYears, label: t("years_experience") },
     { value: aboutData.nationalTrophies, label: t("national_trophies") },
-    { value: aboutData.youngTalents, label: t("young_talents") },
+    { value: "+" + aboutData.youngTalents, label: t("young_talents") },
   ];
 
   useEffect(() => {

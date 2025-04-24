@@ -149,16 +149,33 @@ const Settings: React.FC = () => {
   };
 
   const handleSaveSettings = async () => {
-    const totalSizeInBytes =
-      ((historyPhoto?.length ||
-        0 + missionPhoto?.length ||
-        0 + approachPhoto?.length ||
-        0) *
-        3) /
-      4; // base64 est 33% plus lourd
+    const maxSize = 2 * 1024 * 1024; // 2 Mo
+    const base64Size = (img: string) => {
+      // Ignore les images déjà uploadées (chemins relatifs comme /uploads/...)
+      if (img?.startsWith("/uploads/")) return 0;
+      return (img?.length || 0) * 0.75;
+    };
 
-    if (totalSizeInBytes > 1.5 * 1024 * 1024) {
-      toast.error("📦 Trop d’images à la fois. Réduis leur taille !");
+    const imageFields = [
+      historyPhoto,
+      missionPhoto,
+      approachPhoto,
+      academyPhotos1,
+      academyPhotos2,
+      academyPhotos3,
+    ];
+
+    const totalImageSize = imageFields.reduce(
+      (sum, img) => sum + base64Size(img),
+      0
+    );
+
+    if (totalImageSize > maxSize) {
+      toast.error(
+        `📦 Trop d’images encodées (${(totalImageSize / 1024 / 1024).toFixed(
+          2
+        )} Mo). Réduis leur taille !`
+      );
       return;
     }
 
@@ -167,10 +184,11 @@ const Settings: React.FC = () => {
         "http://localhost:5000/api/settings",
         settingsData
       );
-      toast.success("Les paramètres ont bien été enregistrés !");
+      toast.success("✅ Les paramètres ont bien été enregistrés !");
     } catch (error: any) {
       console.error("❌ Erreur lors de la sauvegarde :", error);
-      toast.error("Une erreur est survenue lors de la sauvegarde.");
+      const backendMsg = error.response?.data?.error || "Erreur inconnue.";
+      toast.error(`❌ Erreur serveur : ${backendMsg}`);
     }
   };
 
