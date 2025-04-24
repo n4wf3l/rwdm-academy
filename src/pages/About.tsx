@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -133,6 +133,21 @@ const About = () => {
     fetchTeamMembers();
   }, [toast]);
 
+  const tabs = ["histoire", "mission", "approche"] as const;
+
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("histoire");
+  const [prevTab, setPrevTab] = useState<(typeof tabs)[number]>("histoire");
+
+  const direction = tabs.indexOf(activeTab) > tabs.indexOf(prevTab) ? 1 : -1;
+  const tabs2 = ["histoire", "mission", "approche"] as const;
+  const [activeTab2, setActiveTab2] =
+    useState<(typeof tabs2)[number]>("histoire");
+  const [prevTab2, setPrevTab2] = useState<(typeof tabs2)[number]>("histoire");
+
+  const direction2 = useMemo(() => {
+    return tabs2.indexOf(activeTab2) > tabs2.indexOf(prevTab2) ? 1 : -1;
+  }, [activeTab2, prevTab2]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rwdm-lightblue/10 to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:via-rwdm-blue/10 dark:to-rwdm-blue/40">
       <Navbar />
@@ -188,133 +203,95 @@ const About = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-16"
         >
-          <Tabs defaultValue="histoire" className="w-full">
-            <div className="flex justify-center mb-8">
-              <TabsList className="grid grid-cols-3 md:w-auto w-full bg-white/70 dark:bg-rwdm-darkblue/70 p-1">
-                <TabsTrigger
-                  value="histoire"
-                  className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
+          {/* Onglets custom */}
+          <div className="flex justify-center mb-8">
+            <div className="grid grid-cols-3 md:w-auto w-full bg-white/70 dark:bg-rwdm-darkblue/70 p-1 rounded-lg overflow-hidden">
+              {["histoire", "mission", "approche"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setPrevTab(activeTab);
+                    setActiveTab(tab as typeof activeTab);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-md
+                 ${
+                   activeTab === tab
+                     ? "bg-rwdm-red text-white"
+                     : "text-gray-600 dark:text-gray-300 hover:text-rwdm-red"
+                 }`}
                 >
-                  <Book className="mr-2 h-4 w-4" />
-                  {t("tab_history")}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="mission"
-                  className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
-                >
-                  <Lightbulb className="mr-2 h-4 w-4" />
-                  {t("tab_mission")}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="approche"
-                  className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
-                >
-                  <Trophy className="mr-2 h-4 w-4" />
-                  {t("tab_approach")}
-                </TabsTrigger>
-              </TabsList>
+                  {tab === "histoire" && (
+                    <>
+                      <Book className="inline-block mr-2 h-4 w-4" />
+                      {t("tab_history")}
+                    </>
+                  )}
+                  {tab === "mission" && (
+                    <>
+                      <Lightbulb className="inline-block mr-2 h-4 w-4" />
+                      {t("tab_mission")}
+                    </>
+                  )}
+                  {tab === "approche" && (
+                    <>
+                      <Trophy className="inline-block mr-2 h-4 w-4" />
+                      {t("tab_approach")}
+                    </>
+                  )}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <TabsContent value="histoire" className="mt-0">
-              <motion.div
-                key="histoire"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="glass-panel border-0 shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                      <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
-                        <img
-                          src={aboutData.historyPhoto || "/fallback.png"}
-                          alt="Histoire"
-                          className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="w-full md:w-2/3">
-                        <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          {t("history_title")}
-                        </h3>
-                        <p className="whitespace-pre-line text-gray-600 dark:text-gray-300">
-                          {aboutData.historyDescription[currentLang]}
-                        </p>
-                      </div>
+          {/* Contenu animé */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 100 * direction }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 * direction }}
+              transition={{ duration: 0.8 }}
+            >
+              <Card className="glass-panel border-0 shadow-lg">
+                <CardContent className="p-8">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
+                      <img
+                        src={
+                          activeTab === "histoire"
+                            ? aboutData.historyPhoto
+                            : activeTab === "mission"
+                            ? aboutData.missionPhoto
+                            : aboutData.approachPhoto || "/fallback.png"
+                        }
+                        alt="Visuel"
+                        className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="mission" className="mt-0">
-              <motion.div
-                key="mission"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="glass-panel border-0 shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                      <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
-                        <img
-                          src={aboutData.missionPhoto || "/fallback.png"}
-                          alt="Histoire"
-                          className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="w-full md:w-2/3">
-                        <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          {t("mission_title")}
-                        </h3>
-                        <p className="whitespace-pre-line text-gray-600 dark:text-gray-300">
-                          {aboutData.missionDescription[currentLang]}
-                        </p>
-                      </div>
+                    <div className="w-full md:w-2/3">
+                      <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
+                        {activeTab === "histoire"
+                          ? t("history_title")
+                          : activeTab === "mission"
+                          ? t("mission_title")
+                          : t("approach_title")}
+                      </h3>
+                      <p className="whitespace-pre-line text-gray-600 dark:text-gray-300">
+                        {activeTab === "histoire"
+                          ? aboutData.historyDescription[currentLang]
+                          : activeTab === "mission"
+                          ? aboutData.missionDescription[currentLang]
+                          : aboutData.approachDescription[currentLang]}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="approche" className="mt-0">
-              <motion.div
-                key="approche"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="glass-panel border-0 shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                      <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
-                        <img
-                          src={aboutData.approachPhoto || "/fallback.png"}
-                          alt="Histoire"
-                          className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="w-full md:w-2/3">
-                        <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          {t("approach_title")}
-                        </h3>
-                        <p className="whitespace-pre-line  mb-4 text-gray-600 dark:text-gray-300">
-                          {aboutData.approachDescription[currentLang]}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
 
         {/* Tabs Section 2 */}
-
         <motion.div
           id="academies"
           initial={{ opacity: 0, y: 30 }}
@@ -332,134 +309,90 @@ const About = () => {
             />
           </h2>
 
-          <Tabs
-            value={tabValue}
-            onValueChange={setTabValue}
-            defaultValue="histoire"
-            className="w-full"
-          >
-            <div className="flex justify-center mb-8">
-              <TabsList className="grid grid-cols-3 md:w-auto w-full bg-white/70 dark:bg-rwdm-darkblue/70 p-1">
-                <TabsTrigger
-                  value="histoire"
-                  className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
+          <div className="flex justify-center mb-8">
+            <div className="grid grid-cols-3 md:w-auto w-full bg-white/70 dark:bg-rwdm-darkblue/70 p-1 rounded-lg overflow-hidden">
+              {tabs2.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setPrevTab2(activeTab2);
+                    setActiveTab2(tab);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-md
+            ${
+              activeTab2 === tab
+                ? "bg-rwdm-red text-white"
+                : "text-gray-600 dark:text-gray-300 hover:text-rwdm-red"
+            }`}
                 >
-                  <Book className="mr-2 h-4 w-4" />
-                  RWDM Aca.
-                </TabsTrigger>
-                <TabsTrigger
-                  value="mission"
-                  className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
-                >
-                  <Lightbulb className="mr-2 h-4 w-4" />
-                  BEF Aca.
-                </TabsTrigger>
-                <TabsTrigger
-                  value="approche"
-                  className="data-[state=active]:bg-rwdm-red data-[state=active]:text-white"
-                >
-                  <Trophy className="mr-2 h-4 w-4" />
-                  RFE Aca.
-                </TabsTrigger>
-              </TabsList>
+                  {tab === "histoire" && (
+                    <>
+                      <Book className="inline-block mr-2 h-4 w-4" />
+                      RWDM Aca.
+                    </>
+                  )}
+                  {tab === "mission" && (
+                    <>
+                      <Lightbulb className="inline-block mr-2 h-4 w-4" />
+                      BEF Aca.
+                    </>
+                  )}
+                  {tab === "approche" && (
+                    <>
+                      <Trophy className="inline-block mr-2 h-4 w-4" />
+                      RFE Aca.
+                    </>
+                  )}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <TabsContent value="histoire" className="mt-0">
-              <motion.div
-                key="histoire"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="glass-panel border-0 shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                      <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
-                        <img
-                          src={aboutData.academyPhotos1 || "/fallback.png"}
-                          alt="Académie 1"
-                          className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="w-full md:w-2/3">
-                        <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          {aboutData.academyNames1[currentLang]}
-                        </h3>
-                        <p className="whitespace-pre-line mb-4 text-gray-600 dark:text-gray-300">
-                          {aboutData.academyDescriptions1[currentLang]}
-                        </p>
-                      </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab2}
+              initial={{ opacity: 0, x: 100 * direction2 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 * direction2 }}
+              transition={{ duration: 0.8 }}
+            >
+              <Card className="glass-panel border-0 shadow-lg">
+                <CardContent className="p-8">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
+                      <img
+                        src={
+                          activeTab2 === "histoire"
+                            ? aboutData.academyPhotos1
+                            : activeTab2 === "mission"
+                            ? aboutData.academyPhotos2
+                            : aboutData.academyPhotos3 || "/fallback.png"
+                        }
+                        alt={`Académie ${activeTab2}`}
+                        className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="mission" className="mt-0">
-              <motion.div
-                key="mission"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="glass-panel border-0 shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                      <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
-                        <img
-                          src={aboutData.academyPhotos2 || "/fallback.png"}
-                          alt="Académie 1"
-                          className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="w-full md:w-2/3">
-                        <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          {aboutData.academyNames2[currentLang]}
-                        </h3>
-                        <p className="whitespace-pre-line mb-4 text-gray-600 dark:text-gray-300">
-                          {aboutData.academyDescriptions2[currentLang]}
-                        </p>
-                      </div>
+                    <div className="w-full md:w-2/3">
+                      <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
+                        {activeTab2 === "histoire"
+                          ? aboutData.academyNames1[currentLang]
+                          : activeTab2 === "mission"
+                          ? aboutData.academyNames2[currentLang]
+                          : aboutData.academyNames3[currentLang]}
+                      </h3>
+                      <p className="whitespace-pre-line mb-4 text-gray-600 dark:text-gray-300">
+                        {activeTab2 === "histoire"
+                          ? aboutData.academyDescriptions1[currentLang]
+                          : activeTab2 === "mission"
+                          ? aboutData.academyDescriptions2[currentLang]
+                          : aboutData.academyDescriptions3[currentLang]}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="approche" className="mt-0">
-              <motion.div
-                key="approche"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className="glass-panel border-0 shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
-                      <div className="w-full md:w-1/3 rounded-lg overflow-hidden">
-                        <img
-                          src={aboutData.academyPhotos3 || "/fallback.png"}
-                          alt="Académie 1"
-                          className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="w-full md:w-2/3">
-                        <h3 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-4">
-                          {aboutData.academyNames3[currentLang]}
-                        </h3>
-                        <p className="whitespace-pre-line mb-4 text-gray-600 dark:text-gray-300">
-                          {aboutData.academyDescriptions3[currentLang]}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
 
         {/* Nos valeurs */}

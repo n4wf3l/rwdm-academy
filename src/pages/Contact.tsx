@@ -375,17 +375,20 @@ const Contact = () => {
                       </h3>
                       <div className="text-gray-600 dark:text-gray-300">
                         {Object.entries(openingHours || {}).map(
-                          ([day, times]: any) =>
-                            times.open && times.close ? (
+                          ([day, times]: any) => {
+                            const isClosed =
+                              times.open === "00:00" && times.close === "00:00";
+                            return (
                               <div key={day}>
-                                {translateDay(day as Day, t)} : {times.open} -{" "}
-                                {times.close}
+                                {translateDay(day as Day, t)} :{" "}
+                                {isClosed
+                                  ? t("closed")
+                                  : `${times.open || "--:--"} - ${
+                                      times.close || "--:--"
+                                    }`}
                               </div>
-                            ) : (
-                              <div key={day}>
-                                {translateDay(day as Day, t)} : {t("closed")}
-                              </div>
-                            )
+                            );
+                          }
                         )}
                       </div>
                     </div>

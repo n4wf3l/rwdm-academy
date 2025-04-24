@@ -9,10 +9,19 @@ import AboutSettings from "@/components/settings/AboutSettings";
 import ContactSettings from "@/components/settings/ContactSettings";
 import axios from "axios";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Settings: React.FC = () => {
   const [language, setLanguage] = useState<"FR" | "NL" | "EN">("FR");
-
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   // General
   const [siteColor1, setSiteColor1] = useState("#003366");
   const [siteColor2, setSiteColor2] = useState("#FFFFFF");
@@ -184,7 +193,7 @@ const Settings: React.FC = () => {
         "http://localhost:5000/api/settings",
         settingsData
       );
-      toast.success("✅ Les paramètres ont bien été enregistrés !");
+      toast.success("Les paramètres ont bien été enregistrés !");
     } catch (error: any) {
       console.error("❌ Erreur lors de la sauvegarde :", error);
       const backendMsg = error.response?.data?.error || "Erreur inconnue.";
@@ -275,23 +284,41 @@ const Settings: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        <h1 className="text-3xl font-bold text-rwdm-blue mb-4">
-          Paramètres du site
-        </h1>
-        <div className="mb-6">
-          <label className="font-semibold mr-2">
-            Sélectionner la version :
-          </label>
-          <select
-            className="border p-2 rounded"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as "FR" | "NL" | "EN")}
-          >
-            <option value="FR">Version Français</option>
-            <option value="NL">Version Néerlandais</option>
-            <option value="EN">Version Anglais</option>
-          </select>
+      <div className="space-y-6">
+        {/* En-tête : même structure que Members */}
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+              Paramètres du site
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Gérez les paramètres du site
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                Sélectionner la version :
+              </label>
+              <Select
+                value={language}
+                onValueChange={(val) => setLanguage(val as "FR" | "NL" | "EN")}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Sélectionner la version" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FR">Version Français</SelectItem>
+                  <SelectItem value="NL">Version Néerlandais</SelectItem>
+                  <SelectItem value="EN">Version Anglais</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Link to="/dashboard">
+              <Button variant="outline">Retour au tableau de bord</Button>
+            </Link>
+          </div>
         </div>
 
         <Tabs defaultValue="general">
@@ -401,12 +428,22 @@ const Settings: React.FC = () => {
 
         <div className="mt-6 flex justify-center">
           <Button
-            onClick={handleSaveSettings}
+            onClick={() => setIsConfirmationOpen(true)}
             className="px-8 py-3 text-lg bg-rwdm-blue text-white rounded"
           >
             Sauvegarder les paramètres
           </Button>
         </div>
+        <ConfirmationDialog
+          open={isConfirmationOpen}
+          onClose={() => setIsConfirmationOpen(false)}
+          onConfirm={() => {
+            handleSaveSettings();
+            setIsConfirmationOpen(false);
+          }}
+          title="Confirmer la sauvegarde"
+          message="Es-tu sûr de vouloir enregistrer les modifications des paramètres ?"
+        />
       </div>
     </AdminLayout>
   );

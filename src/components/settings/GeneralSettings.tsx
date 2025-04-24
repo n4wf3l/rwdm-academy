@@ -1,8 +1,9 @@
 // src/components/settings/GeneralSettings.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import axios from "axios";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 type Lang = "FR" | "NL" | "EN";
 
@@ -106,157 +107,222 @@ const GeneralSettings: React.FC<Props> = ({
   instagramUrl,
   setInstagramUrl,
 }) => {
+  const [fileName, setFileName] = useState("");
   /* -------------------- RENDER -------------------- */
   return (
     <div className="space-y-6">
-      {/* Couleurs */}
-      <div className="flex space-x-4">
-        <div className="flex-1">
-          <label className="block font-semibold mb-1">Couleur 1 du site</label>
-          <Input
-            type="color"
-            value={siteColor1}
-            onChange={(e) => setSiteColor1(e.target.value)}
-          />
-        </div>
-        <div className="flex-1">
-          <label className="block font-semibold mb-1">Couleur 2 du site</label>
-          <Input
-            type="color"
-            value={siteColor2}
-            onChange={(e) => setSiteColor2(e.target.value)}
-          />
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Identité du site</CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Choisissez les couleurs officielles de votre club.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Couleurs */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 mb-1 font-medium">
+                Couleur 1 du site
+              </p>
+              <Input
+                type="color"
+                value={siteColor1}
+                onChange={(e) => setSiteColor1(e.target.value)}
+                className="h-10 p-1 rounded-md border transition-all duration-200"
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 mb-1 font-medium">
+                Couleur 2 du site
+              </p>
+              <Input
+                type="color"
+                value={siteColor2}
+                onChange={(e) => setSiteColor2(e.target.value)}
+                className="h-10 p-1 rounded-md border transition-all duration-200"
+              />
+            </div>
+          </div>
 
-      {/* Logo + nom du club */}
-      <div className="flex space-x-4">
-        {/* --- LOGO --- */}
-        <div className="flex-1">
-          <label className="block font-semibold mb-1">Logo (fichier)</label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
+          {/* Logo + nom du club */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Logo */}
+            <div className="flex-1">
+              <p className="text-sm text-gray-700 mb-1 font-medium">
+                Logo (fichier)
+              </p>
 
-              if (!checkImageSize(file)) {
-                e.target.value = "";
-                return;
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  className="cursor-pointer"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    setFileName(file.name); // ← met à jour le nom
+
+                    if (!checkImageSize(file)) {
+                      e.target.value = "";
+                      return;
+                    }
+
+                    const filePath = await uploadImageFile(file);
+                    if (filePath) {
+                      setLogo(filePath);
+                      toast.success("Logo uploadé avec succès !");
+                    }
+                  }}
+                />
+                {fileName && (
+                  <p className="text-xs text-center text-gray-500 mt-1">
+                    {fileName}
+                  </p>
+                )}
+              </div>
+
+              {logo && (
+                <div className="flex justify-center mt-4">
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="h-20 object-contain transition-all duration-200 rounded"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Nom du club */}
+            <div className="flex-1 relative">
+              <p className="text-sm text-gray-700 mb-1 font-medium">
+                Nom du club ({language})
+              </p>
+              <Input
+                value={clubName[language]}
+                onChange={(e) =>
+                  setClubName({ ...clubName, [language]: e.target.value })
+                }
+                className="pr-10 rounded-md border p-2 transition-all duration-200"
+              />
+              {clubName[language] && (
+                <button
+                  type="button"
+                  onClick={() => setClubName({ ...clubName, [language]: "" })}
+                  className="absolute right-2 top-8 text-gray-400 hover:text-gray-600 transition"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Coordonnées du club</CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Remplissez les informations d’adresse et de localisation.
+          </p>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Adresse du club */}
+          <div>
+            <label className="block font-semibold mb-1">
+              Adresse du club ({language})
+            </label>
+            <Input
+              value={clubAddress[language]}
+              onChange={(e) =>
+                setClubAddress({ ...clubAddress, [language]: e.target.value })
               }
+              className="rounded-md border p-2 transition-all duration-200"
+            />
+          </div>
 
-              const filePath = await uploadImageFile(file);
-              if (filePath) {
-                setLogo(filePath); // filePath est de type "/uploads/1234-logo.png"
-                toast.success("✅ Logo uploadé avec succès !");
+          {/* Code postal + Commune */}
+          <div className="flex space-x-4">
+            <div className="w-1/4">
+              <label className="block font-semibold mb-1">Code postal</label>
+              <Input
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                className="rounded-md border p-2 text-sm"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block font-semibold mb-1">
+                Commune ({language})
+              </label>
+              <Input
+                value={commune[language]}
+                onChange={(e) =>
+                  setCommune({ ...commune, [language]: e.target.value })
+                }
+                className="rounded-md border p-2 transition-all duration-200"
+              />
+            </div>
+          </div>
+
+          {/* Pays */}
+          <div>
+            <label className="block font-semibold mb-1">
+              Pays ({language})
+            </label>
+            <Input
+              value={country[language]}
+              onChange={(e) =>
+                setCountry({ ...country, [language]: e.target.value })
               }
-            }}
-          />
+              className="rounded-md border p-2 transition-all duration-200"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-          {/* Preview (relative path comme dans AboutSettings) */}
-          {logo && (
-            <img src={logo} alt="Logo" className="mt-2 h-20 object-contain" />
-          )}
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Contact & réseaux sociaux</CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Ces informations sont affichées publiquement sur le site.
+          </p>
+        </CardHeader>
 
-        {/* --- NOM CLUB --- */}
-        <div className="flex-1">
-          <label className="block font-semibold mb-1">
-            Nom du club ({language})
-          </label>
-          <Input
-            value={clubName[language]}
-            onChange={(e) =>
-              setClubName({ ...clubName, [language]: e.target.value })
-            }
-          />
-        </div>
+        <CardContent className="space-y-6">
+          {/* Email */}
+          <div>
+            <label className="block font-semibold mb-1">Email</label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="rounded-md border p-2 transition-all duration-200"
+            />
+          </div>
 
-        {/* --- NOM CLUB --- */}
-        <div className="flex-1">
-          <label className="block font-semibold mb-1">
-            Nom du club ({language})
-          </label>
-          <Input
-            value={clubName[language]}
-            onChange={(e) =>
-              setClubName({ ...clubName, [language]: e.target.value })
-            }
-          />
-        </div>
-      </div>
+          {/* Facebook */}
+          <div>
+            <label className="block font-semibold mb-1">URL Facebook</label>
+            <Input
+              value={facebookUrl}
+              onChange={(e) => setFacebookUrl(e.target.value)}
+              className="rounded-md border p-2 transition-all duration-200"
+            />
+          </div>
 
-      {/* Adresse */}
-      <div>
-        <label className="block font-semibold mb-1">
-          Adresse du club ({language})
-        </label>
-        <Input
-          value={clubAddress[language]}
-          onChange={(e) =>
-            setClubAddress({ ...clubAddress, [language]: e.target.value })
-          }
-        />
-      </div>
-
-      {/* CP + commune */}
-      <div className="flex space-x-4">
-        <div className="w-1/2">
-          <label className="block font-semibold mb-1">Code postal</label>
-          <Input
-            value={postalCode}
-            onChange={(e) => setPostalCode(e.target.value)}
-          />
-        </div>
-        <div className="w-1/2">
-          <label className="block font-semibold mb-1">
-            Commune ({language})
-          </label>
-          <Input
-            value={commune[language]}
-            onChange={(e) =>
-              setCommune({ ...commune, [language]: e.target.value })
-            }
-          />
-        </div>
-      </div>
-
-      {/* Pays */}
-      <div>
-        <label className="block font-semibold mb-1">Pays ({language})</label>
-        <Input
-          value={country[language]}
-          onChange={(e) =>
-            setCountry({ ...country, [language]: e.target.value })
-          }
-        />
-      </div>
-
-      {/* Email + réseaux sociaux */}
-      <div>
-        <label className="block font-semibold mb-1">Email</label>
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <label className="block font-semibold mb-1">URL Facebook</label>
-        <Input
-          value={facebookUrl}
-          onChange={(e) => setFacebookUrl(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block font-semibold mb-1">URL Instagram</label>
-        <Input
-          value={instagramUrl}
-          onChange={(e) => setInstagramUrl(e.target.value)}
-        />
-      </div>
+          {/* Instagram */}
+          <div>
+            <label className="block font-semibold mb-1">URL Instagram</label>
+            <Input
+              value={instagramUrl}
+              onChange={(e) => setInstagramUrl(e.target.value)}
+              className="rounded-md border p-2 transition-all duration-200"
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
