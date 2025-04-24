@@ -13,6 +13,7 @@ import {
   Settings,
   ArrowLeft,
   Globe,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -25,9 +26,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
+  newRequestsCount?: number;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+const AdminLayout: React.FC<AdminLayoutProps> = ({
+  children,
+  newRequestsCount = 0,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState({ firstName: "", lastName: "", role: "" });
   const location = useLocation();
@@ -204,7 +209,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <Button
                 variant={isActive("/dashboard") ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start",
+                  "w-full justify-start relative",
                   isActive("/dashboard")
                     ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
                     : ""
@@ -212,6 +217,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               >
                 <LayoutDashboard className="mr-2 h-5 w-5" />
                 {t("admin_dashboard")}
+                <span className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-semibold w-5 h-5">
+                  8
+                </span>
               </Button>
             </Link>
             <Link to="/documents">
@@ -240,6 +248,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               >
                 <Calendar className="mr-2 h-5 w-5" />
                 {t("admin_planning")}
+              </Button>
+            </Link>
+            <Link to="/inbox">
+              <Button
+                variant={isActive("/inbox") ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start relative",
+                  isActive("/inbox") ? "bg-rwdm-blue hover:bg-rwdm-blue/90" : ""
+                )}
+              >
+                <Inbox className="mr-2 h-5 w-5" />
+                {t("inbox")}
+                <span className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold w-5 h-5">
+                  2
+                </span>
               </Button>
             </Link>
             <Link to="/members">

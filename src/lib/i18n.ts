@@ -97,6 +97,7 @@ export const translations = {
     contact_subject_incident: "Incident",
     contact_subject_technical: "Problème technique",
     contact_subject_other: "Autre",
+    inbox: "Boîte de réception",
   },
   nl: {
     welcome:
@@ -194,6 +195,7 @@ export const translations = {
     contact_subject_incident: "Incident",
     contact_subject_technical: "Technisch probleem",
     contact_subject_other: "Anders",
+    inbox: "Inbox",
   },
   en: {
     welcome:
@@ -291,5 +293,6 @@ export const translations = {
     contact_subject_incident: "Incident",
     contact_subject_technical: "Technical issue",
     contact_subject_other: "Other",
+    inbox: "Inbox",
   },
 };

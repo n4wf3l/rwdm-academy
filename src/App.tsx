@@ -24,6 +24,7 @@ import Members from "./pages/Members";
 import Documents from "./pages/Documents";
 import Graphics from "./pages/Graphics";
 import Settings from "./pages/Settings";
+import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
@@ -98,6 +99,7 @@ function App() {
             <Route path="/graphics" element={<Graphics />} />
             <Route path="/planning" element={<Planning />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/inbox" element={<Inbox />} />
             <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"
