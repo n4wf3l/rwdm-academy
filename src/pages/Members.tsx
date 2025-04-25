@@ -42,6 +42,26 @@ const Members: React.FC = () => {
   // États de chargement distincts pour la création et la suppression
   const [isCreationLoading, setIsCreationLoading] = useState(false);
   const [isDeletionLoading, setIsDeletionLoading] = useState(false);
+  const [newRequestsCount, setNewRequestsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNewRequestsCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/requests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+        const count = data.filter((r: any) => r.status === "Nouveau").length;
+        setNewRequestsCount(count);
+      } catch (error) {
+        console.error("Erreur récupération demandes 'Nouveau':", error);
+      }
+    };
+
+    fetchNewRequestsCount();
+  }, []);
 
   // Messages pour le loader
   const creationMessages = [
@@ -241,7 +261,7 @@ const Members: React.FC = () => {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       <FullScreenLoader
         isLoading={isCreationLoading || isDeletionLoading}
         messages={isDeletionLoading ? deletionMessages : creationMessages}

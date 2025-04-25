@@ -401,6 +401,8 @@ const Dashboard = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const newRequestsCount = requests.filter((r) => r.status === "new").length;
+
   const completedRequests = requests.filter((r) => r.status === "completed");
 
   const totalCompletedPages = Math.ceil(
@@ -434,7 +436,6 @@ const Dashboard = () => {
   const handleAssignRequest = async (requestId: string, adminId: string) => {
     try {
       const newStatus: RequestStatus = adminId === "none" ? "new" : "assigned";
-      await handleUpdateStatus(requestId, newStatus);
 
       const bodyToSend = { assignedTo: adminId === "none" ? null : adminId };
       const headers: HeadersInit = { "Content-Type": "application/json" };
@@ -451,7 +452,10 @@ const Dashboard = () => {
 
       if (!response.ok) throw new Error("Erreur lors de l'assignation");
 
-      // 🔍 Trouver le nom complet de l’admin depuis la liste
+      // ✅ Mise à jour du statut selon adminId
+      await handleUpdateStatus(requestId, newStatus);
+
+      // ✅ Message utilisateur
       const assignedAdmin = admins.find((admin) => admin.id === adminId);
       const adminFullName =
         assignedAdmin && adminId !== "none"
@@ -657,7 +661,7 @@ const Dashboard = () => {
     setIsAppointmentDialogOpen(false);
   };
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>

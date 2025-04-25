@@ -108,9 +108,30 @@ const Planning = () => {
   const [newAppointmentNotes, setNewAppointmentNotes] = useState("");
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
+  const [newRequestsCount, setNewRequestsCount] = useState(0);
 
   const location = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchNewRequestsCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/requests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+
+        const count = data.filter((r: any) => r.status === "Nouveau").length;
+        setNewRequestsCount(count);
+      } catch (error) {
+        console.error("Erreur comptage demandes :", error);
+      }
+    };
+
+    fetchNewRequestsCount();
+  }, []);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -370,7 +391,7 @@ const Planning = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>

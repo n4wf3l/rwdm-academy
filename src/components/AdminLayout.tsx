@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -217,9 +218,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               >
                 <LayoutDashboard className="mr-2 h-5 w-5" />
                 {t("admin_dashboard")}
-                <span className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-semibold w-5 h-5">
-                  8
-                </span>
+                <AnimatePresence>
+                  {newRequestsCount > 0 && (
+                    <motion.span
+                      key="newRequestsBadge"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-semibold w-5 h-5"
+                    >
+                      {newRequestsCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Button>
             </Link>
             <Link to="/documents">
@@ -260,9 +272,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               >
                 <Inbox className="mr-2 h-5 w-5" />
                 {t("inbox")}
-                <span className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold w-5 h-5">
-                  2
-                </span>
+                <AnimatePresence>
+                  <motion.span
+                    key="inboxBadge"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold w-5 h-5"
+                  >
+                    2
+                  </motion.span>
+                </AnimatePresence>
               </Button>
             </Link>
             <Link to="/members">

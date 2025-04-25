@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +38,26 @@ const initialMessages: Message[] = [
 const Inbox = () => {
   const [newMessages, setNewMessages] = useState<Message[]>(initialMessages);
   const [repliedMessages, setRepliedMessages] = useState<Message[]>([]);
+  const [newRequestsCount, setNewRequestsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNewRequestsCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/requests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+        const count = data.filter((r: any) => r.status === "Nouveau").length;
+        setNewRequestsCount(count);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des demandes :", error);
+      }
+    };
+
+    fetchNewRequestsCount();
+  }, []);
 
   const handleReply = (message: Message) => {
     setNewMessages((prev) => prev.filter((m) => m.id !== message.id));
@@ -103,7 +123,7 @@ const Inbox = () => {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">
         {/* En-tête : même structure que Members */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">

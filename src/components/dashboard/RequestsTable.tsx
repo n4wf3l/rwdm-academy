@@ -334,6 +334,14 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                       <Select
                         value={assignedValue}
                         onValueChange={(value) => {
+                          // Si la demande était assignée et qu'on la désassigne
+                          if (
+                            value === "none" &&
+                            request.status === "assigned"
+                          ) {
+                            onUpdateStatus(request.id, "new");
+                          }
+
                           onAssignRequest(request.id, value);
                         }}
                       >

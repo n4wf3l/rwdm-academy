@@ -79,6 +79,44 @@ const Documents = () => {
     const names = documents.map((doc) => doc.assignedAdmin).filter(Boolean);
     return Array.from(new Set(names));
   }, [documents]);
+  const [newRequestsCount, setNewRequestsCount] = useState(0);
+
+  function mapDbStatus(dbStatus: string): RequestStatus {
+    switch (dbStatus) {
+      case "Nouveau":
+        return "new";
+      case "Assigné":
+        return "assigned";
+      case "En cours":
+        return "in-progress";
+      case "Terminé":
+        return "completed";
+      case "Rejeté":
+        return "rejected";
+      default:
+        return "new";
+    }
+  }
+
+  useEffect(() => {
+    const fetchNewRequestsCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/requests", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        const data = await response.json();
+
+        const filtered = data.filter(
+          (req: any) => mapDbStatus(req.status) === "new"
+        );
+        setNewRequestsCount(filtered.length);
+      } catch (error) {
+        console.error("Erreur lors du comptage des demandes :", error);
+      }
+    };
+
+    fetchNewRequestsCount();
+  }, []);
 
   const handleFilter = () => {
     const filtered = documents.filter((doc) => {
@@ -324,7 +362,7 @@ const Documents = () => {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">
         {/* En-tête */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">

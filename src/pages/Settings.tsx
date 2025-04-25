@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 
 const Settings: React.FC = () => {
+  const [newRequestsCount, setNewRequestsCount] = useState(0);
   const [language, setLanguage] = useState<"FR" | "NL" | "EN">("FR");
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   // General
@@ -157,6 +158,25 @@ const Settings: React.FC = () => {
     },
   };
 
+  useEffect(() => {
+    const fetchNewRequestsCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/requests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+        const count = data.filter((r: any) => r.status === "Nouveau").length;
+        setNewRequestsCount(count);
+      } catch (error) {
+        console.error("Erreur récupération demandes 'Nouveau':", error);
+      }
+    };
+
+    fetchNewRequestsCount();
+  }, []);
+
   const handleSaveSettings = async () => {
     const maxSize = 2 * 1024 * 1024; // 2 Mo
     const base64Size = (img: string) => {
@@ -283,7 +303,7 @@ const Settings: React.FC = () => {
   }, []);
 
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">
         {/* En-tête : même structure que Members */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">

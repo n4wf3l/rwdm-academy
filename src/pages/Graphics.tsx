@@ -129,6 +129,7 @@ const Graphics: React.FC = () => {
   >([]);
   const API_MEMBERS_DUES_URL = `${baseURL}/api/members-dues`;
   const API_TEAMS_ALL_URL = `${baseURL}/api/teams/all`;
+  const [newRequestsCount, setNewRequestsCount] = useState(0);
 
   // teamOptions calculé à partir des factures
   const teamOptions = useMemo(() => {
@@ -141,6 +142,25 @@ const Graphics: React.FC = () => {
       ),
     ];
   }, [invoices]);
+
+  useEffect(() => {
+    const fetchNewRequestsCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/requests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+        const count = data.filter((r: any) => r.status === "Nouveau").length;
+        setNewRequestsCount(count);
+      } catch (error) {
+        console.error("Erreur récupération demandes 'Nouveau':", error);
+      }
+    };
+
+    fetchNewRequestsCount();
+  }, []);
 
   // Récupération des données
   useEffect(() => {
@@ -328,7 +348,7 @@ const Graphics: React.FC = () => {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   return (
-    <AdminLayout>
+    <AdminLayout newRequestsCount={newRequestsCount}>
       {loading && (
         <FullScreenLoader
           isLoading={loading}
