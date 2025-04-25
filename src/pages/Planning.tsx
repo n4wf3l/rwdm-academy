@@ -84,6 +84,7 @@ import DayView from "@/components/planning/DayView";
 import WeekView from "@/components/planning/WeekView";
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 import AppointmentDetailsDialog from "@/components/planning/AppointmentDetailsDialog";
+import { motion } from "framer-motion";
 
 const Planning = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -392,18 +393,43 @@ const Planning = () => {
 
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="flex flex-col md:flex-row justify-between md:items-center gap-4"
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+            <motion.h1
+              className="text-3xl font-bold text-rwdm-blue dark:text-white"
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
               Planning
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            </motion.h1>
+            <motion.p
+              className="text-gray-600 dark:text-gray-300"
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               Consultez et gérez les rendez-vous au secrétariat
-            </p>
+            </motion.p>
           </div>
 
-          <div className="flex gap-2">
+          <motion.div
+            className="flex gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <Button
               className="bg-rwdm-blue"
               onClick={() => setIsScheduleModalOpen(true)}
@@ -417,46 +443,52 @@ const Planning = () => {
                 Retour au tableau de bord
               </Button>
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <Tabs
-          defaultValue="week"
-          className="w-full"
-          onValueChange={(value) => setCurrentView(value as "day" | "week")}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
         >
-          <TabsList className="grid w-full max-w-xs grid-cols-2">
-            <TabsTrigger value="day">Vue journalière</TabsTrigger>
-            <TabsTrigger value="week">Vue hebdomadaire</TabsTrigger>
-          </TabsList>
+          <Tabs
+            defaultValue="week"
+            className="w-full"
+            onValueChange={(value) => setCurrentView(value as "day" | "week")}
+          >
+            <TabsList className="grid w-full max-w-xs grid-cols-2">
+              <TabsTrigger value="day">Vue journalière</TabsTrigger>
+              <TabsTrigger value="week">Vue hebdomadaire</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="day" className="mt-4">
-            <DayView
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              hasAppointmentsOnDate={hasAppointmentsOnDate}
-              sortedAppointments={sortedAppointments}
-              setNewAppointmentDate={setNewAppointmentDate}
-              setIsScheduleModalOpen={setIsScheduleModalOpen}
-              showAppointmentDetails={showAppointmentDetails}
-            />
-          </TabsContent>
+            <TabsContent value="day" className="mt-4">
+              <DayView
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                hasAppointmentsOnDate={hasAppointmentsOnDate}
+                sortedAppointments={sortedAppointments}
+                setNewAppointmentDate={setNewAppointmentDate}
+                setIsScheduleModalOpen={setIsScheduleModalOpen}
+                showAppointmentDetails={showAppointmentDetails}
+              />
+            </TabsContent>
 
-          <TabsContent value="week" className="mt-4">
-            <WeekView
-              currentWeek={currentWeek}
-              daysOfWeek={daysOfWeek}
-              goToPreviousWeek={goToPreviousWeek}
-              goToCurrentWeek={goToCurrentWeek}
-              goToNextWeek={goToNextWeek}
-              hours={hours}
-              appointments={appointments}
-              handleTimeSlotClick={handleTimeSlotClick}
-              showAppointmentDetails={showAppointmentDetails}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+            <TabsContent value="week" className="mt-4">
+              <WeekView
+                currentWeek={currentWeek}
+                daysOfWeek={daysOfWeek}
+                goToPreviousWeek={goToPreviousWeek}
+                goToCurrentWeek={goToCurrentWeek}
+                goToNextWeek={goToNextWeek}
+                hours={hours}
+                appointments={appointments}
+                handleTimeSlotClick={handleTimeSlotClick}
+                showAppointmentDetails={showAppointmentDetails}
+              />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </motion.div>
 
       {/* Modal for adding an appointment */}
       <AddAppointmentDialog
@@ -482,6 +514,7 @@ const Planning = () => {
           setAppointments((prev) => [...prev, appointment])
         }
       />
+
       {/* Modal for appointment details */}
       <AppointmentDetailsDialog
         isOpen={isAppointmentDetailModalOpen}

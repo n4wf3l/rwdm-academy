@@ -1,7 +1,9 @@
-import { Navigate } from "react-router-dom";
+// ProtectedRoute.tsx
+import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem("token");
+  const location = useLocation();
 
   let user = null;
 
@@ -9,14 +11,17 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     try {
       user = JSON.parse(atob(token.split(".")[1]));
     } catch (error) {
-      console.error("Invalid token format:", error);
-      localStorage.removeItem("token"); // Optionnel : supprimer le token invalide
-      return <Navigate to="/auth" replace />;
+      console.error("Token invalide:", error);
+      localStorage.removeItem("token");
+      return <Navigate to="/auth" state={{ from: location }} replace />;
     }
   }
 
-  if (!user || user.role !== "superadmin") {
-    return <Navigate to="/auth" replace />;
+  if (!user || !["admin", "superadmin", "owner"].includes(user.role)) {
+    if (location.pathname !== "/auth") {
+      return <Navigate to="/auth" state={{ from: location }} replace />;
+    }
+    return null;
   }
 
   return children;

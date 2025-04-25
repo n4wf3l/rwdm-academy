@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,8 +13,9 @@ interface ConfirmationDialogProps {
   onClose: () => void;
   onConfirm: (sendEmail: boolean) => void; // ← on transmet l’état de la case
   title?: string;
-  message: string;
+  message: ReactNode;
   showEmailCheckbox?: boolean; // ← afficher ou non la case
+  confirmDisabled?: boolean;
 }
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -24,6 +25,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   title = "Confirmer l'action",
   message,
   showEmailCheckbox = false,
+  confirmDisabled = false,
 }) => {
   const [sendEmail, setSendEmail] = useState(false);
 
@@ -63,7 +65,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           </Button>
           <Button
             className="bg-rwdm-blue text-white"
-            onClick={() => onConfirm(sendEmail)} // ← on passe la valeur
+            onClick={() => onConfirm(sendEmail)}
+            disabled={confirmDisabled} // ← on désactive ici
           >
             Confirmer
           </Button>

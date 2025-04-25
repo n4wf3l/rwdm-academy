@@ -11,6 +11,7 @@ import {
   Legend,
   Chart as ChartJS,
 } from "chart.js";
+import { motion } from "framer-motion";
 
 // Inscription des modules Chart.js
 ChartJS.register(
@@ -53,70 +54,106 @@ interface StatisticsCardProps {
 
 // Carte statique avec les compteurs (ancienne version)
 const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  };
+
+  const itemVariants = {
+    hidden: { y: 10, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.4 } },
+  };
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>Statistiques des demandes</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-rwdm-blue">
-                  {requests.filter((r) => r.status === "new").length}
-                </div>
-                <div className="text-sm text-gray-600">Nouvelles demandes</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-rwdm-blue">
-                  {
-                    requests.filter(
-                      (r) =>
-                        r.status === "in-progress" &&
-                        r.type !== "accident-report"
-                    ).length
-                  }
-                </div>
-                <div className="text-sm text-gray-600">Demandes en cours</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-rwdm-blue">
-                  {requests.filter((r) => r.status === "completed").length}
-                </div>
-                <div className="text-sm text-gray-600">Demandes complétées</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-rwdm-blue">
-                  {
-                    requests.filter(
-                      (r) =>
-                        r.type === "accident-report" &&
-                        r.status === "in-progress"
-                    ).length
-                  }
-                </div>
-                <div className="text-sm text-gray-600">
-                  Accidents en attente
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div
+      className="mb-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Statistiques des demandes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            variants={containerVariants}
+          >
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-rwdm-blue">
+                      {requests.filter((r) => r.status === "new").length}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Nouvelles demandes
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-rwdm-blue">
+                      {
+                        requests.filter(
+                          (r) =>
+                            r.status === "in-progress" &&
+                            r.type !== "accident-report"
+                        ).length
+                      }
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Demandes en cours
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-rwdm-blue">
+                      {requests.filter((r) => r.status === "completed").length}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Demandes complétées
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-rwdm-blue">
+                      {
+                        requests.filter(
+                          (r) =>
+                            r.type === "accident-report" &&
+                            r.status === "in-progress"
+                        ).length
+                      }
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Accidents en attente
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 

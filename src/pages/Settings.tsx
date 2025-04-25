@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Settings: React.FC = () => {
   const [newRequestsCount, setNewRequestsCount] = useState(0);
@@ -107,6 +109,7 @@ const Settings: React.FC = () => {
   const [vatNumber, setVatNumber] = useState("");
   const [companyNumber, setCompanyNumber] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   const settingsData = {
     language: "FR", // langue par défaut sélectionnée
@@ -221,6 +224,22 @@ const Settings: React.FC = () => {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -304,19 +323,43 @@ const Settings: React.FC = () => {
 
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
-      <div className="space-y-6">
-        {/* En-tête : même structure que Members */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+      <motion.div
+        className="space-y-6"
+        initial="hidden"
+        animate="show"
+        variants={containerVariants}
+      >
+        {/* Header */}
+        <motion.div
+          className="flex flex-col md:flex-row justify-between md:items-center gap-4"
+          variants={itemVariants}
+        >
           <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+            <motion.h1
+              className="text-3xl font-bold text-rwdm-blue dark:text-white"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
               Paramètres du site
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            </motion.h1>
+            <motion.p
+              className="text-gray-600 dark:text-gray-300"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
               Gérez les paramètres du site
-            </p>
+            </motion.p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-3">
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 items-start sm:items-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="flex items-center gap-3"
+              whileHover={{ scale: 1.02 }}
+            >
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                 Sélectionner la version :
               </label>
@@ -333,138 +376,204 @@ const Settings: React.FC = () => {
                   <SelectItem value="EN">Version Anglais</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </motion.div>
 
             <Link to="/dashboard">
-              <Button variant="outline">Retour au tableau de bord</Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant="outline">Retour au tableau de bord</Button>
+              </motion.div>
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <Tabs defaultValue="general">
-          <TabsList className="mb-4 border-b">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="about">À propos</TabsTrigger>
-            <TabsTrigger value="contact">Contact</TabsTrigger>
-          </TabsList>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Attention</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">
+                Lorsqu’un mot est modifié dans une langue, n’oubliez pas de le
+                mettre à jour dans toutes les autres langues afin de garantir la{" "}
+                <strong>cohérence</strong>.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-          <TabsContent value="general">
-            <GeneralSettings
-              language={language}
-              siteColor1={siteColor1}
-              setSiteColor1={setSiteColor1}
-              siteColor2={siteColor2}
-              setSiteColor2={setSiteColor2}
-              logo={logo}
-              setLogo={setLogo}
-              clubName={clubName}
-              setClubName={setClubName}
-              clubAddress={clubAddress}
-              setClubAddress={setClubAddress}
-              postalCode={postalCode}
-              setPostalCode={setPostalCode}
-              commune={commune}
-              setCommune={setCommune}
-              country={country}
-              setCountry={setCountry}
-              email={email}
-              setEmail={setEmail}
-              facebookUrl={facebookUrl}
-              setFacebookUrl={setFacebookUrl}
-              instagramUrl={instagramUrl}
-              setInstagramUrl={setInstagramUrl}
-            />
-          </TabsContent>
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="general">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <TabsList className="grid grid-cols-3 w-full max-w-md mb-4 border-b">
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="about">À propos</TabsTrigger>
+                <TabsTrigger value="contact">Contact</TabsTrigger>
+              </TabsList>
+            </motion.div>
 
-          <TabsContent value="about">
-            <AboutSettings
-              language={language}
-              playersCount={playersCount}
-              setPlayersCount={setPlayersCount}
-              experienceYears={experienceYears}
-              setExperienceYears={setExperienceYears}
-              nationalTrophies={nationalTrophies}
-              setNationalTrophies={setNationalTrophies}
-              youngTalents={youngTalents}
-              setYoungTalents={setYoungTalents}
-              historyDescription={historyDescription}
-              setHistoryDescription={setHistoryDescription}
-              historyPhoto={historyPhoto}
-              setHistoryPhoto={setHistoryPhoto}
-              missionDescription={missionDescription}
-              setMissionDescription={setMissionDescription}
-              missionPhoto={missionPhoto}
-              setMissionPhoto={setMissionPhoto}
-              approachDescription={approachDescription}
-              setApproachDescription={setApproachDescription}
-              approachPhoto={approachPhoto}
-              setApproachPhoto={setApproachPhoto}
-              valueTitle1={valueTitle1}
-              setValueTitle1={setValueTitle1}
-              valueDesc1={valueDesc1}
-              setValueDesc1={setValueDesc1}
-              valueTitle2={valueTitle2}
-              setValueTitle2={setValueTitle2}
-              valueDesc2={valueDesc2}
-              setValueDesc2={setValueDesc2}
-              valueTitle3={valueTitle3}
-              setValueTitle3={setValueTitle3}
-              valueDesc3={valueDesc3}
-              setValueDesc3={setValueDesc3}
-              academyNames1={academyNames1}
-              setAcademyNames1={setAcademyNames1}
-              academyDescriptions1={academyDescriptions1}
-              setAcademyDescriptions1={setAcademyDescriptions1}
-              academyPhotos1={academyPhotos1}
-              setAcademyPhotos1={setAcademyPhotos1}
-              academyNames2={academyNames2}
-              setAcademyNames2={setAcademyNames2}
-              academyDescriptions2={academyDescriptions2}
-              setAcademyDescriptions2={setAcademyDescriptions2}
-              academyPhotos2={academyPhotos2}
-              setAcademyPhotos2={setAcademyPhotos2}
-              academyNames3={academyNames3}
-              setAcademyNames3={setAcademyNames3}
-              academyDescriptions3={academyDescriptions3}
-              setAcademyDescriptions3={setAcademyDescriptions3}
-              academyPhotos3={academyPhotos3}
-              setAcademyPhotos3={setAcademyPhotos3}
-            />
-          </TabsContent>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <TabsContent value="general">
+                <GeneralSettings
+                  language={language}
+                  siteColor1={siteColor1}
+                  setSiteColor1={setSiteColor1}
+                  siteColor2={siteColor2}
+                  setSiteColor2={setSiteColor2}
+                  logo={logo}
+                  setLogo={setLogo}
+                  clubName={clubName}
+                  setClubName={setClubName}
+                  clubAddress={clubAddress}
+                  setClubAddress={setClubAddress}
+                  postalCode={postalCode}
+                  setPostalCode={setPostalCode}
+                  commune={commune}
+                  setCommune={setCommune}
+                  country={country}
+                  setCountry={setCountry}
+                  email={email}
+                  setEmail={setEmail}
+                  facebookUrl={facebookUrl}
+                  setFacebookUrl={setFacebookUrl}
+                  instagramUrl={instagramUrl}
+                  setInstagramUrl={setInstagramUrl}
+                />
+              </TabsContent>
 
-          <TabsContent value="contact">
-            <ContactSettings
-              accountName={accountName}
-              setAccountName={setAccountName}
-              openingHours={openingHours}
-              setOpeningHours={setOpeningHours}
-              vatNumber={vatNumber}
-              setVatNumber={setVatNumber}
-              companyNumber={companyNumber}
-              setCompanyNumber={setCompanyNumber}
-            />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="about">
+                <AboutSettings
+                  language={language}
+                  playersCount={playersCount}
+                  setPlayersCount={setPlayersCount}
+                  experienceYears={experienceYears}
+                  setExperienceYears={setExperienceYears}
+                  nationalTrophies={nationalTrophies}
+                  setNationalTrophies={setNationalTrophies}
+                  youngTalents={youngTalents}
+                  setYoungTalents={setYoungTalents}
+                  historyDescription={historyDescription}
+                  setHistoryDescription={setHistoryDescription}
+                  historyPhoto={historyPhoto}
+                  setHistoryPhoto={setHistoryPhoto}
+                  missionDescription={missionDescription}
+                  setMissionDescription={setMissionDescription}
+                  missionPhoto={missionPhoto}
+                  setMissionPhoto={setMissionPhoto}
+                  approachDescription={approachDescription}
+                  setApproachDescription={setApproachDescription}
+                  approachPhoto={approachPhoto}
+                  setApproachPhoto={setApproachPhoto}
+                  valueTitle1={valueTitle1}
+                  setValueTitle1={setValueTitle1}
+                  valueDesc1={valueDesc1}
+                  setValueDesc1={setValueDesc1}
+                  valueTitle2={valueTitle2}
+                  setValueTitle2={setValueTitle2}
+                  valueDesc2={valueDesc2}
+                  setValueDesc2={setValueDesc2}
+                  valueTitle3={valueTitle3}
+                  setValueTitle3={setValueTitle3}
+                  valueDesc3={valueDesc3}
+                  setValueDesc3={setValueDesc3}
+                  academyNames1={academyNames1}
+                  setAcademyNames1={setAcademyNames1}
+                  academyDescriptions1={academyDescriptions1}
+                  setAcademyDescriptions1={setAcademyDescriptions1}
+                  academyPhotos1={academyPhotos1}
+                  setAcademyPhotos1={setAcademyPhotos1}
+                  academyNames2={academyNames2}
+                  setAcademyNames2={setAcademyNames2}
+                  academyDescriptions2={academyDescriptions2}
+                  setAcademyDescriptions2={setAcademyDescriptions2}
+                  academyPhotos2={academyPhotos2}
+                  setAcademyPhotos2={setAcademyPhotos2}
+                  academyNames3={academyNames3}
+                  setAcademyNames3={setAcademyNames3}
+                  academyDescriptions3={academyDescriptions3}
+                  setAcademyDescriptions3={setAcademyDescriptions3}
+                  academyPhotos3={academyPhotos3}
+                  setAcademyPhotos3={setAcademyPhotos3}
+                />
+              </TabsContent>
 
-        <div className="mt-6 flex justify-center">
+              <TabsContent value="contact">
+                <ContactSettings
+                  accountName={accountName}
+                  setAccountName={setAccountName}
+                  openingHours={openingHours}
+                  setOpeningHours={setOpeningHours}
+                  vatNumber={vatNumber}
+                  setVatNumber={setVatNumber}
+                  companyNumber={companyNumber}
+                  setCompanyNumber={setCompanyNumber}
+                />
+              </TabsContent>
+            </motion.div>
+          </Tabs>
+        </motion.div>
+
+        <motion.div
+          className="mt-6 flex justify-center"
+          variants={itemVariants}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
           <Button
             onClick={() => setIsConfirmationOpen(true)}
             className="px-8 py-3 text-lg bg-rwdm-blue text-white rounded"
           >
             Sauvegarder les paramètres
           </Button>
-        </div>
+        </motion.div>
+
         <ConfirmationDialog
           open={isConfirmationOpen}
-          onClose={() => setIsConfirmationOpen(false)}
+          onClose={() => {
+            setIsConfirmationOpen(false);
+            setAgreed(false);
+          }}
           onConfirm={() => {
             handleSaveSettings();
             setIsConfirmationOpen(false);
+            setAgreed(false);
           }}
           title="Confirmer la sauvegarde"
-          message="Es-tu sûr de vouloir enregistrer les modifications des paramètres ?"
+          message={
+            <>
+              <p>
+                Es-tu sûr de vouloir enregistrer les modifications des
+                paramètres ?
+              </p>
+              <label className="mt-4 flex items-center text-sm text-gray-500">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mr-2 h-4 w-4 border-gray-300 rounded"
+                />
+                En cas de changement de mot, j'atteste avoir mis à jour les
+                traductions dans toutes les langues.
+              </label>
+            </>
+          }
+          confirmDisabled={!agreed} // ← Là, on désactive tant que la case n’est pas cochée
         />
-      </div>
+      </motion.div>
     </AdminLayout>
   );
 };

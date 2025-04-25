@@ -70,9 +70,12 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-const superAdminMiddleware = (req, res, next) => {
-  if (req.user.role !== "superadmin") {
-    return res.status(403).json({ message: "Accès réservé aux superadmins" });
+const ownerOrSuperAdmin = (req, res, next) => {
+  const role = String(req.user.role).trim().toLowerCase();
+  if (role !== "superadmin" && role !== "owner") {
+    return res
+      .status(403)
+      .json({ message: "Accès réservé aux owners et superadmins" });
   }
   next();
 };
@@ -185,7 +188,7 @@ app.post(
 app.post(
   "/api/admins",
   authMiddleware,
-  superAdminMiddleware,
+  ownerOrSuperAdmin,
   [
     body("firstName").notEmpty(),
     body("lastName").notEmpty(),
@@ -266,7 +269,7 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
 app.delete(
   "/api/admins/:email",
   authMiddleware,
-  superAdminMiddleware,
+  ownerOrSuperAdmin,
   async (req, res) => {
     const { email } = req.params;
     try {
@@ -307,7 +310,7 @@ app.get("/api/team-members", async (req, res) => {
 app.put(
   "/api/admins/:id",
   authMiddleware,
-  superAdminMiddleware,
+  ownerOrSuperAdmin,
   async (req, res) => {
     const { id } = req.params;
     const {

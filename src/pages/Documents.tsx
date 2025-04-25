@@ -33,6 +33,7 @@ import RequestDetailsModal, {
 } from "@/components/RequestDetailsModal";
 import html2canvas from "html2canvas";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Types pour les documents
 type DocumentType =
@@ -363,236 +364,340 @@ const Documents = () => {
 
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
-      <div className="space-y-6">
-        {/* En-tête */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* En-tête avec animation */}
+        <motion.div
+          className="flex flex-col md:flex-row justify-between md:items-center gap-4"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+            <motion.h1
+              className="text-3xl font-bold text-rwdm-blue dark:text-white"
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
               Gestion des documents
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            </motion.h1>
+            <motion.p
+              className="text-gray-600 dark:text-gray-300"
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               Retrouvez les documents des membres
-            </p>
+            </motion.p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Filtres */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filtres de recherche</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  type="search"
-                  placeholder="Rechercher par nom, prénom, email ou téléphone..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Select
-                value={adminFilter}
-                onValueChange={(value) => setAdminFilter(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Assigné à" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les admins</SelectItem>
-                  {uniqueAdmins.map((admin) => (
-                    <SelectItem key={admin} value={admin}>
-                      {admin}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        {/* Filtres avec animation */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card>
+            <CardHeader>
+              <motion.div whileHover={{ scale: 1.01 }}>
+                <CardTitle>Filtres de recherche</CardTitle>
+              </motion.div>
+            </CardHeader>
+            <CardContent>
+              <motion.div className="flex flex-col md:flex-row gap-4" layout>
+                <motion.div
+                  className="flex relative flex-1"
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input
+                    type="search"
+                    placeholder="Rechercher par nom, prénom, email ou téléphone..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </motion.div>
 
-              <Select
-                value={typeFilter}
-                onValueChange={(value) =>
-                  setTypeFilter(value as DocumentType | "all")
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Select
+                    value={adminFilter}
+                    onValueChange={(value) => setAdminFilter(value)}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Assigné à" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les admins</SelectItem>
+                      {uniqueAdmins.map((admin) => (
+                        <SelectItem key={admin} value={admin}>
+                          {admin}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Select
+                    value={typeFilter}
+                    onValueChange={(value) =>
+                      setTypeFilter(value as DocumentType | "all")
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Type de document" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les types</SelectItem>
+                      <SelectItem value="registration">Inscriptions</SelectItem>
+                      <SelectItem value="selection-tests">
+                        Tests techniques
+                      </SelectItem>
+                      <SelectItem value="responsibility-waiver">
+                        Décharges de responsabilité
+                      </SelectItem>
+                      <SelectItem value="accident-report">
+                        Déclarations d'accident
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Tableau des documents avec animations */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <motion.div whileHover={{ scale: 1.01 }}>
+                <CardTitle>Documents ({filteredDocuments.length})</CardTitle>
+              </motion.div>
+            </CardHeader>
+            <CardContent>
+              <AnimatePresence>
+                {filteredDocuments.length === 0 ? (
+                  <motion.div
+                    className="text-center py-8 text-gray-500"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <p>
+                      Aucun document ne correspond à vos critères de recherche.
+                    </p>
+                  </motion.div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {[
+                          "ID",
+                          "Type",
+                          "Nom",
+                          "Email",
+                          "Téléphone",
+                          "Status",
+                          "Assigné à",
+                          "Date",
+                          "Actions",
+                        ].map((header, index) => (
+                          <motion.th
+                            key={header}
+                            className="px-4 py-2 text-left font-medium"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 * index }}
+                          >
+                            {header}
+                          </motion.th>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <AnimatePresence>
+                        {filteredDocuments.map((doc, index) => (
+                          <motion.tr
+                            key={doc.id}
+                            className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                            onClick={() => handleViewDetails(doc)}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            exit={{ opacity: 0 }}
+                            layout
+                          >
+                            <motion.td className="font-medium">
+                              {formatRequestId(doc.id)}
+                            </motion.td>
+                            <motion.td>
+                              {translateDocumentType(doc.type)}
+                              {doc.type === "accident-report" &&
+                                doc.data?.documentLabel ===
+                                  "Déclaration d'accident" &&
+                                " (1/2)"}
+                              {doc.type === "accident-report" &&
+                                doc.data?.documentLabel ===
+                                  "Certificat de guérison" &&
+                                " (2/2)"}
+                            </motion.td>
+                            <motion.td>
+                              {doc.name} {doc.surname}
+                            </motion.td>
+                            <motion.td>{doc.email}</motion.td>
+                            <motion.td>{doc.phone}</motion.td>
+                            <motion.td>
+                              <motion.span
+                                className="bg-green-500 text-white py-1 px-2 rounded"
+                                whileHover={{ scale: 1.05 }}
+                              >
+                                {doc.status}
+                              </motion.span>
+                            </motion.td>
+                            <motion.td>{doc.assignedAdmin}</motion.td>
+                            <motion.td>
+                              {doc.createdAt
+                                ? doc.createdAt.toLocaleDateString()
+                                : "N/A"}
+                            </motion.td>
+                            <motion.td>
+                              <div className="flex gap-2">
+                                <motion.div whileHover={{ scale: 1.1 }}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => handleViewDetails(doc, e)}
+                                    title="Voir détails"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+
+                                <motion.div whileHover={{ scale: 1.1 }}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setConfirmPDFRequest({
+                                        id: doc.id,
+                                        type: doc.type,
+                                        name: `${doc.name} ${doc.surname}`,
+                                        email: doc.email,
+                                        date: doc.createdAt
+                                          ? doc.createdAt
+                                          : new Date(),
+                                        status: mapStatus(doc.status),
+                                        assignedTo: doc.assignedAdmin,
+                                        details: doc.data,
+                                      });
+                                    }}
+                                    title="Générer PDF"
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+
+                                <motion.div whileHover={{ scale: 1.1 }}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setConfirmRevertId(doc.id);
+                                    }}
+                                    title="Mettre en cours"
+                                  >
+                                    <RotateCcw className="h-4 w-4" />
+                                  </Button>
+                                </motion.div>
+                              </div>
+                            </motion.td>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    </TableBody>
+                  </Table>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      {/* Modales avec animations */}
+      <AnimatePresence>
+        {selectedRequest && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <RequestDetailsModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              request={selectedRequest}
+              ref={modalRef}
+            />
+          </motion.div>
+        )}
+
+        {confirmPDFRequest && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ConfirmationDialog
+              open={!!confirmPDFRequest}
+              onClose={() => setConfirmPDFRequest(null)}
+              onConfirm={() => {
+                if (confirmPDFRequest) {
+                  setSelectedRequest(confirmPDFRequest);
+                  setIsModalOpen(true);
+                  waitForRefThenGeneratePDF();
+                  setConfirmPDFRequest(null);
                 }
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Type de document" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
-                  <SelectItem value="registration">Inscriptions</SelectItem>
-                  <SelectItem value="selection-tests">
-                    Tests techniques
-                  </SelectItem>
-                  <SelectItem value="responsibility-waiver">
-                    Décharges de responsabilité
-                  </SelectItem>
-                  <SelectItem value="accident-report">
-                    Déclarations d'accident
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+              }}
+              title="Générer le PDF"
+              message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
+            />
+          </motion.div>
+        )}
 
-        {/* Tableau des documents */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Documents ({filteredDocuments.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredDocuments.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>Aucun document ne correspond à vos critères de recherche.</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Téléphone</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Assigné à</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDocuments.map((doc) => (
-                    <TableRow
-                      key={doc.id}
-                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                      onClick={() => handleViewDetails(doc)}
-                    >
-                      <TableCell className="font-medium">
-                        {formatRequestId(doc.id)}
-                      </TableCell>
-                      <TableCell>
-                        {translateDocumentType(doc.type)}
-                        {doc.type === "accident-report" &&
-                          doc.data?.documentLabel ===
-                            "Déclaration d'accident" &&
-                          " (1/2)"}
-                        {doc.type === "accident-report" &&
-                          doc.data?.documentLabel ===
-                            "Certificat de guérison" &&
-                          " (2/2)"}
-                      </TableCell>
-
-                      <TableCell>
-                        {doc.name} {doc.surname}
-                      </TableCell>
-                      <TableCell>{doc.email}</TableCell>
-                      <TableCell>{doc.phone}</TableCell>
-                      <TableCell>
-                        <span className="bg-green-500 text-white py-1 px-2 rounded">
-                          {doc.status}
-                        </span>
-                      </TableCell>
-                      <TableCell>{doc.assignedAdmin}</TableCell>
-                      <TableCell>
-                        {doc.createdAt
-                          ? doc.createdAt.toLocaleDateString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => handleViewDetails(doc, e)}
-                            title="Voir détails"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmPDFRequest({
-                                id: doc.id,
-                                type: doc.type,
-                                name: `${doc.name} ${doc.surname}`,
-                                email: doc.email,
-                                date: doc.createdAt
-                                  ? doc.createdAt
-                                  : new Date(),
-                                status: mapStatus(doc.status),
-                                assignedTo: doc.assignedAdmin,
-                                details: doc.data,
-                              });
-                            }}
-                            title="Générer PDF"
-                          >
-                            <FileText className="h-4 w-4" />
-                          </Button>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmRevertId(doc.id);
-                            }}
-                            title="Mettre en cours"
-                          >
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Modale des détails */}
-      {selectedRequest && (
-        <RequestDetailsModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          request={selectedRequest}
-          ref={modalRef}
-        />
-      )}
-
-      <ConfirmationDialog
-        open={!!confirmPDFRequest}
-        onClose={() => setConfirmPDFRequest(null)}
-        onConfirm={() => {
-          if (confirmPDFRequest) {
-            setSelectedRequest(confirmPDFRequest);
-            setIsModalOpen(true);
-            waitForRefThenGeneratePDF();
-            setConfirmPDFRequest(null);
-          }
-        }}
-        title="Générer le PDF"
-        message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
-      />
-
-      <ConfirmationDialog
-        open={!!confirmRevertId}
-        onClose={() => setConfirmRevertId(null)}
-        onConfirm={() => {
-          if (confirmRevertId) {
-            handleRevertStatus(confirmRevertId);
-            setConfirmRevertId(null);
-          }
-        }}
-        title="Remettre en cours"
-        message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
-      />
+        {confirmRevertId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ConfirmationDialog
+              open={!!confirmRevertId}
+              onClose={() => setConfirmRevertId(null)}
+              onConfirm={() => {
+                if (confirmRevertId) {
+                  handleRevertStatus(confirmRevertId);
+                  setConfirmRevertId(null);
+                }
+              }}
+              title="Remettre en cours"
+              message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AdminLayout>
   );
 };

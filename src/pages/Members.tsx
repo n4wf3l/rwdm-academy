@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import RoleLegendCard from "@/components/members/RoleLegendCard";
+import { motion } from "framer-motion";
 
 interface Member {
   id: number;
@@ -43,6 +44,15 @@ const Members: React.FC = () => {
   const [isCreationLoading, setIsCreationLoading] = useState(false);
   const [isDeletionLoading, setIsDeletionLoading] = useState(false);
   const [newRequestsCount, setNewRequestsCount] = useState(0);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("postSaveToast");
+    if (raw) {
+      const { title, description } = JSON.parse(raw);
+      toast({ title, description });
+      sessionStorage.removeItem("postSaveToast");
+    }
+  }, [toast]);
 
   useEffect(() => {
     const fetchNewRequestsCount = async () => {
@@ -266,78 +276,140 @@ const Members: React.FC = () => {
         isLoading={isCreationLoading || isDeletionLoading}
         messages={isDeletionLoading ? deletionMessages : creationMessages}
       />
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <motion.div
+          className="flex flex-col md:flex-row justify-between md:items-center gap-4"
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+            <motion.h1
+              className="text-3xl font-bold text-rwdm-blue dark:text-white"
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
               Membres
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            </motion.h1>
+            <motion.p
+              className="text-gray-600 dark:text-gray-300"
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               Gérez les membres de l'académie
-            </p>
+            </motion.p>
           </div>
-          <div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <Link to="/dashboard">
               <Button variant="outline">Retour au tableau de bord</Button>
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <Tabs
-          defaultValue="list"
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "list" | "create")}
-          className="w-full"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
         >
-          <TabsList
-            className={`grid ${
-              user.role === "owner" || user.role === "superadmin"
-                ? "grid-cols-2"
-                : "grid-cols-1"
-            } w-full max-w-md`}
+          <Tabs
+            defaultValue="list"
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as "list" | "create")}
+            className="w-full"
           >
-            <TabsTrigger value="list">Tous les membres</TabsTrigger>
-            {(user.role === "owner" || user.role === "superadmin") && (
-              <TabsTrigger value="create">Créer un membre</TabsTrigger>
-            )}
-          </TabsList>
-          <RoleLegendCard className="mt-4" />
+            <motion.div
+              initial={{ y: 10 }}
+              animate={{ y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <TabsList
+                className={`grid ${
+                  user.role === "owner" || user.role === "superadmin"
+                    ? "grid-cols-2"
+                    : "grid-cols-1"
+                } w-full max-w-md`}
+              >
+                <TabsTrigger value="list">Tous les membres</TabsTrigger>
+                {(user.role === "owner" || user.role === "superadmin") && (
+                  <TabsTrigger value="create">Créer un membre</TabsTrigger>
+                )}
+              </TabsList>
+            </motion.div>
 
-          <TabsContent value="list">
-            <MemberList
-              members={members}
-              onEdit={openEditModal}
-              onDelete={openDeleteModal}
-              currentUserRole={user.role}
-            />
-          </TabsContent>
-          <TabsContent value="create">
-            <MemberForm
-              onMemberCreated={handleMemberCreated}
-              isLoading={isCreationLoading}
-              setIsLoading={setIsCreationLoading}
-              currentUserRole={user.role}
-            />
-          </TabsContent>
-        </Tabs>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <RoleLegendCard className="mt-4" />
+            </motion.div>
+
+            <TabsContent value="list">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                <MemberList
+                  members={members}
+                  onEdit={openEditModal}
+                  onDelete={openDeleteModal}
+                  currentUserRole={user.role}
+                />
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="create">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                <MemberForm
+                  onMemberCreated={handleMemberCreated}
+                  isLoading={isCreationLoading}
+                  setIsLoading={setIsCreationLoading}
+                  currentUserRole={user.role}
+                />
+              </motion.div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
 
         {editingMember && (
-          <EditMemberModal
-            member={editingMember}
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            onSave={handleSaveEditedMember}
-            currentUserRole={user.role}
-          />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <EditMemberModal
+              member={editingMember}
+              isOpen={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              onSave={handleSaveEditedMember}
+              currentUserRole={user.role}
+            />
+          </motion.div>
         )}
 
-        <DeleteMemberModal
-          isOpen={isDeleteModalOpen}
-          member={memberToDelete}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleConfirmDelete}
-        />
-      </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <DeleteMemberModal
+            isOpen={isDeleteModalOpen}
+            member={memberToDelete}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleConfirmDelete}
+          />
+        </motion.div>
+      </motion.div>
     </AdminLayout>
   );
 };

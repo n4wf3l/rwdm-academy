@@ -2,8 +2,23 @@ import React, { useState, useEffect } from "react";
 import Modal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Mail, Briefcase, FileText, Image } from "lucide-react";
+import {
+  User,
+  Mail,
+  Briefcase,
+  FileText,
+  Image,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface EditMemberModalProps {
   member: any;
@@ -28,6 +43,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const [profilePicture, setProfilePicture] = useState(
     member?.profilePicture || ""
   );
+
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState(member?.role || "admin");
   const [password, setPassword] = useState("");
 
@@ -58,20 +75,41 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const updatedMember = {
       ...member,
       firstName,
       lastName,
       email,
-      functionTitle: func, // ✅ Changement ici
+      functionTitle: func,
       profilePicture,
       role,
       password: password || undefined,
     };
 
     await onSave(updatedMember);
+
+    sessionStorage.setItem(
+      "postSaveToast",
+      JSON.stringify({
+        title: "Membre mis à jour",
+        description: `${updatedMember.firstName} ${updatedMember.lastName} a bien été modifié.`,
+      })
+    );
     onClose();
+    window.location.reload();
   };
+
+  const options: Array<{ value: typeof role; label: string }> = [
+    { value: "admin", label: "Admin" },
+    { value: "superadmin", label: "Superadmin" },
+    ...(currentUserRole === "owner"
+      ? [{ value: "owner", label: "Owner" }]
+      : []),
+  ];
+
+  const disabledOwnerOption =
+    currentUserRole === "superadmin" && role === "owner";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -131,52 +169,53 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           />
         </div>
 
-        {currentUserRole === "superadmin" && member.role === "owner" ? (
-          // ❌ Cas interdit : superadmin ne peut pas modifier un owner
-          <div className="flex items-center">
-            <span className="mr-2 font-semibold">Rôle :</span>
-            <span className="text-sm text-gray-500 capitalize">{role}</span>
-          </div>
-        ) : currentUserRole === "superadmin" && role === "owner" ? (
-          // ❌ Cas interdit : superadmin ne peut pas donner le rôle owner
-          <div className="flex items-center">
-            <span className="mr-2 font-semibold">Rôle :</span>
-            <span className="text-sm text-red-500">
-              Interdit de définir ce rôle
-            </span>
-          </div>
-        ) : (
-          // ✅ Cas autorisé
-          <div className="flex items-center">
-            <span className="mr-2 font-semibold">Rôle :</span>
-            <select
-              value={role}
-              onChange={(e) => {
-                const newRole = e.target.value;
-                // ❌ Protection supplémentaire : empêcher un superadmin de choisir "owner"
-                if (currentUserRole === "superadmin" && newRole === "owner")
-                  return;
-                setRole(newRole);
-              }}
-              className="border rounded p-2"
-            >
-              <option value="admin">Admin</option>
-              <option value="superadmin">Superadmin</option>
-              {currentUserRole === "owner" && (
-                <option value="owner">Owner</option>
-              )}
-            </select>
-          </div>
-        )}
-
         <div className="flex items-center">
-          <span className="mr-2 font-semibold">Mot de passe :</span>
-          <Input
-            type="password"
-            placeholder="Laisser vide pour ne pas changer"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <span className="mr-2 font-semibold">Rôle :</span>
+          <Select
+            value={role}
+            onValueChange={(newRole) => {
+              if (currentUserRole === "superadmin" && newRole === "owner")
+                return;
+              setRole(newRole as typeof role);
+            }}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Sélectionner un rôle" />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  disabled={opt.value === "owner" && disabledOwnerOption}
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <span className="whitespace-nowrap font-semibold">
+            Mot de passe :
+          </span>
+          <div className="relative">
+            <Input
+              type={showPassword ? "text" : "password"}
+              placeholder="Laisser vide pour ne pas changer"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-48 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         <Button type="submit" className="bg-rwdm-blue">

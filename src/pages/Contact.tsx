@@ -130,9 +130,16 @@ const Contact = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3 relative inline-block">
             {t("contact_title")}
+            <motion.div
+              className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 bg-rwdm-red rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: "60%" }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            />
           </h1>
+
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             {t("contact_description")}
           </p>
@@ -331,8 +338,8 @@ const Contact = () => {
             </Card>
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Card className="h-full glass-panel">
@@ -420,6 +427,7 @@ const Contact = () => {
             </Card>
           </motion.div>
         </div>
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

@@ -35,9 +35,20 @@ const queryClient = new QueryClient();
 
 const AuthRedirect = ({ children }) => {
   const token = localStorage.getItem("token");
-  return token ? <Navigate to="/dashboard" replace /> : children;
-};
+  let user = null;
 
+  if (token) {
+    try {
+      user = JSON.parse(atob(token.split(".")[1]));
+    } catch (error) {
+      console.error("Token JWT invalide :", error);
+      localStorage.removeItem("token");
+      return children; // Token invalide, afficher l'écran de login
+    }
+  }
+
+  return user ? <Navigate to="/dashboard" replace /> : children;
+};
 function App() {
   const [language, setLanguage] = useState<string | null>(() =>
     localStorage.getItem("language")

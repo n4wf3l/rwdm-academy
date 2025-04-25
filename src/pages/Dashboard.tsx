@@ -26,6 +26,7 @@ import {
 } from "@/components/planning/planningUtils";
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 import axios from "axios";
+import { motion } from "framer-motion";
 
 // Définition locale du type Admin
 export interface Admin {
@@ -663,7 +664,12 @@ const Dashboard = () => {
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col md:flex-row justify-between md:items-center gap-4"
+        >
           <div>
             <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
               Tableau de bord
@@ -680,109 +686,102 @@ const Dashboard = () => {
               </Button>
             </Link>
           </div>
-        </div>
+        </motion.div>
 
-        <Tabs defaultValue="requests" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="requests">Demandes</TabsTrigger>
-            <TabsTrigger value="stats">Statistiques</TabsTrigger>
-          </TabsList>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Tabs defaultValue="requests" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="requests">Demandes</TabsTrigger>
+              <TabsTrigger value="stats">Statistiques</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="requests" className="space-y-4">
-            <SearchFilters
-              searchQuery={searchQuery}
-              statusFilter={statusFilter}
-              typeFilter={typeFilter}
-              assignedAdminFilter={assignedAdminFilter} // 👈 AJOUTE CETTE LIGNE
-              onSearchChange={setSearchQuery}
-              onStatusFilterChange={setStatusFilter}
-              onTypeFilterChange={setTypeFilter}
-              onAssignedAdminFilterChange={setAssignedAdminFilter}
-              assignedAdminOptions={assignedAdminOptions}
-            />
+            <TabsContent value="requests" className="space-y-4">
+              <SearchFilters
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
+                typeFilter={typeFilter}
+                assignedAdminFilter={assignedAdminFilter}
+                onSearchChange={setSearchQuery}
+                onStatusFilterChange={setStatusFilter}
+                onTypeFilterChange={setTypeFilter}
+                onAssignedAdminFilterChange={setAssignedAdminFilter}
+                assignedAdminOptions={assignedAdminOptions}
+              />
 
-            <Card>
-              <CardHeader
-                className="
-    flex flex-row items-start justify-between
-    p-4   /* ou la valeur que vous voulez */
-  "
-              >
-                {/* ─── Titre aligné à gauche ───────────────────── */}
-                <CardTitle className="m-0 p-0">
-                  Liste des demandes ({filteredRequests.length})
-                </CardTitle>
+              <Card>
+                <CardHeader className="flex flex-row items-start justify-between p-4">
+                  <CardTitle className="m-0 p-0">
+                    Liste des demandes ({filteredRequests.length})
+                  </CardTitle>
 
-                {/* ─── Légende alignée à droite ─────────────────── */}
-                <div className="flex items-center gap-2 text-sm">
-                  <span
-                    className="
-        inline-block h-3 w-3 rounded-sm
-        bg-blue-50 ring-1 ring-blue-300
-        dark:bg-red-900 dark:ring-red-800
-      "
-                  />
-                  <span className="text-gray-600 dark:text-gray-300">
-                    Mes assignations
-                  </span>
-                </div>
-              </CardHeader>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="inline-block h-3 w-3 rounded-sm bg-blue-50 ring-1 ring-blue-300 dark:bg-red-900 dark:ring-red-800" />
+                    <span className="text-gray-600 dark:text-gray-300">
+                      Mes assignations
+                    </span>
+                  </div>
+                </CardHeader>
 
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <RequestsTable
-                    requests={filteredRequests}
-                    admins={admins}
-                    onAssignRequest={handleAssignRequest}
-                    onUpdateStatus={handleUpdateStatus}
-                    onViewDetails={openRequestDetails}
-                    onOpenAppointmentDialog={openAppointmentDialog}
-                    onRequestDeleted={handleRequestDeleted}
-                    currentUserRole={user.role}
-                    currentAdminId={user.id}
-                    currentUserFirstName={user.firstName}
-                    currentUserLastName={user.lastName}
-                    searchQuery={searchQuery} // ✅ Ajouté
-                    statusFilter={statusFilter} // ✅ Ajouté
-                    typeFilter={typeFilter} // ✅ Ajouté
-                    assignedAdminFilter={assignedAdminFilter} // ✅ Ajouté
-                  />
-                  <AppointmentDialog
-                    isOpen={isAppointmentDialogOpen}
-                    onClose={closeAppointmentDialog}
-                    onSelectAppointmentType={handleAppointmentTypeSelection}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <RequestsTable
+                      requests={filteredRequests}
+                      admins={admins}
+                      onAssignRequest={handleAssignRequest}
+                      onUpdateStatus={handleUpdateStatus}
+                      onViewDetails={openRequestDetails}
+                      onOpenAppointmentDialog={openAppointmentDialog}
+                      onRequestDeleted={handleRequestDeleted}
+                      currentUserRole={user.role}
+                      currentAdminId={user.id}
+                      currentUserFirstName={user.firstName}
+                      currentUserLastName={user.lastName}
+                      searchQuery={searchQuery}
+                      statusFilter={statusFilter}
+                      typeFilter={typeFilter}
+                      assignedAdminFilter={assignedAdminFilter}
+                    />
+                    <AppointmentDialog
+                      isOpen={isAppointmentDialogOpen}
+                      onClose={closeAppointmentDialog}
+                      onSelectAppointmentType={handleAppointmentTypeSelection}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-            <PendingAccidentsCard
-              pendingAccidents={paginatedPendingAccidents}
-              page={pendingAccidentReportsPage}
-              totalPages={totalPendingAccidentPages}
-              onPageChange={setPendingAccidentReportsPage}
-              onViewDetails={openRequestDetails}
-              admins={admins}
-              onSendDeclaration={sendAccidentDeclaration} // ✅ celui qui N’envoie PAS le statut
-              onSendHealingCertificate={sendHealingCertificate} // ✅ celui qui met les deux en "completed"
-            />
+              <PendingAccidentsCard
+                pendingAccidents={paginatedPendingAccidents}
+                page={pendingAccidentReportsPage}
+                totalPages={totalPendingAccidentPages}
+                onPageChange={setPendingAccidentReportsPage}
+                onViewDetails={openRequestDetails}
+                admins={admins}
+                onSendDeclaration={sendAccidentDeclaration}
+                onSendHealingCertificate={sendHealingCertificate}
+              />
 
-            <CompletedRequestsCard
-              completedRequests={paginatedCompletedRequests}
-              totalCompletedCount={completedRequests.length} // Ici, completedRequests est la liste complète
-              page={completedRequestsPage}
-              admins={admins}
-              totalPages={totalCompletedPages}
-              onPageChange={setCompletedRequestsPage}
-              onViewDetails={openRequestDetails}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          </TabsContent>
+              <CompletedRequestsCard
+                completedRequests={paginatedCompletedRequests}
+                totalCompletedCount={completedRequests.length}
+                page={completedRequestsPage}
+                admins={admins}
+                totalPages={totalCompletedPages}
+                onPageChange={setCompletedRequestsPage}
+                onViewDetails={openRequestDetails}
+                onUpdateStatus={handleUpdateStatus}
+              />
+            </TabsContent>
 
-          <TabsContent value="stats">
-            <StatisticsCard requests={requests} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="stats">
+              <StatisticsCard requests={requests} />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
 
       <RequestDetailsModal

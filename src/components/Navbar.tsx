@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
+import { toast } from "@/hooks/use-toast";
 
 interface NavbarProps {
   className?: string;
@@ -116,8 +117,17 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const isActivePath = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
+    // 1) On déconnecte l’utilisateur
     localStorage.removeItem("token");
     setIsLoggedIn(false);
+
+    // 2) On affiche le toast
+    toast({
+      title: "Déconnexion réussie",
+      description: "Vous avez été déconnecté.",
+    });
+
+    // 3) On redirige
     navigate("/");
   };
 

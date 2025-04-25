@@ -24,6 +24,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AnimatePresence, motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -37,6 +38,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState({ firstName: "", lastName: "", role: "" });
   const location = useLocation();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const currentLang = localStorage.getItem("language") || "fr";
   const { t } = useTranslation();
@@ -67,8 +69,19 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
+    // 1) On vire le token tout de suite
     localStorage.removeItem("token");
-    navigate("/");
+
+    // 2) On affiche le toast
+    toast({
+      title: "Déconnexion réussie",
+      description: "Vous avez été déconnecté.",
+    });
+
+    // 3) On attend un court instant avant de naviguer
+    setTimeout(() => {
+      navigate("/");
+    }, 300); // 300ms, tu peux ajuster
   };
 
   // Récupération des infos utilisateur depuis le backend

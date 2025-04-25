@@ -88,8 +88,14 @@ const Index = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3">
+                <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3 relative inline-block">
                   RWDM Academy
+                  <motion.div
+                    className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 bg-rwdm-red rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: "60%" }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                  />
                 </h1>
 
                 <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
