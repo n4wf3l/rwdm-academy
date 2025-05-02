@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CheckCircle, Home, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FormSubmissionSuccessProps {
   formType?:
@@ -25,6 +26,7 @@ const FormSubmissionSuccess: React.FC<FormSubmissionSuccessProps> = ({
   const navigate = useNavigate();
   const formName = formTypeNames[formType] || "";
   const [show, setShow] = useState(false);
+  const { t, lang } = useTranslation();
 
   useEffect(() => {
     setTimeout(() => setShow(true), 100);
@@ -59,7 +61,10 @@ const FormSubmissionSuccess: React.FC<FormSubmissionSuccessProps> = ({
                 </div>
 
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                  Formulaire {formName} envoyé avec succès !
+                  {t("form_submission_success").replace(
+                    "{{formType}}",
+                    t(`formType_${formType}`)
+                  )}
                 </h1>
 
                 <div className="space-y-6">
@@ -67,26 +72,25 @@ const FormSubmissionSuccess: React.FC<FormSubmissionSuccessProps> = ({
                     className="text-lg text-gray-700 dark:text-gray-300"
                     style={{ animation: "fadeIn 1s ease-out 0.3s both" }}
                   >
-                    Votre demande a été enregistrée et est en cours de
-                    traitement par notre équipe.
+                    {t("form_submission_desc1")}
                   </p>
                   <p
                     className="text-lg text-gray-600 dark:text-gray-400"
                     style={{ animation: "fadeIn 1s ease-out 0.6s both" }}
                   >
-                    Vous recevrez un email de confirmation et serez tenu informé
-                    des mises à jour concernant votre demande.
+                    {t("form_submission_desc2")}
                   </p>
 
                   <div
                     className="mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-l-4 border-l-red-700"
                     style={{ animation: "fadeIn 1s ease-out 0.9s both" }}
                   >
-                    <p className="text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                       <span className="block w-2 h-2 bg-red-700 rounded-full animate-pulse" />
-                      <strong>Attention</strong> Pour des raisons de sécurité,
-                      veuillez attendre au moins 10 minutes avant de soumettre
-                      un nouveau formulaire.
+                      <strong>{t("form_submission_warning_title")}</strong>
+                    </div>
+                    <p className="mt-2 text-gray-800 dark:text-gray-200">
+                      {t("form_submission_warning_text")}
                     </p>
                   </div>
                 </div>
@@ -101,7 +105,7 @@ const FormSubmissionSuccess: React.FC<FormSubmissionSuccessProps> = ({
                   className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-black hover:bg-gray-900 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   <Home className="w-6 h-6 mr-2" />
-                  Retour à l'accueil
+                  <button>{t("return_home")}</button>
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </button>
               </div>

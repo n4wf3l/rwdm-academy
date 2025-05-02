@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SpellCheckField {
   label: string;
@@ -29,8 +30,9 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
   onClose,
   onConfirm,
   fields,
-  title = "Vérification des informations",
+  title,
 }) => {
+  const { t } = useTranslation();
   const [checked, setChecked] = useState<boolean[]>(
     Array(fields.length).fill(false)
   );
@@ -56,9 +58,7 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
             <AlertCircle className="h-5 w-5 text-yellow-500" />
             {title}
           </DialogTitle>
-          <DialogDescription>
-            Veuillez vérifier et confirmer chaque champ en cochant la case.
-          </DialogDescription>
+          <DialogDescription>{t("spellcheck_description")}</DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-5">
@@ -77,7 +77,9 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
                     }`}
                 >
                   {field.value || (
-                    <span className="text-gray-400 italic">Non renseigné</span>
+                    <span className="text-gray-400 italic">
+                      {t("spellcheck_not_provided")}
+                    </span>
                   )}
                 </p>
 
@@ -94,7 +96,7 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
 
         <DialogFooter className="sm:justify-between mt-2">
           <Button variant="outline" onClick={onClose}>
-            Modifier
+            {t("spellcheck_modify")}
           </Button>
           <Button
             disabled={!allChecked}
@@ -106,7 +108,7 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
             }`}
           >
             <Check className="h-4 w-4" />
-            Confirmer et soumettre
+            {t("spellcheck_confirm_submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -162,7 +162,13 @@ const About = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-rwdm-blue dark:text-white mb-4 relative inline-block">
             {t("about_title")}
             <motion.div
-              className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 bg-rwdm-red rounded-full"
+              className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
+              style={{
+                background:
+                  "linear-gradient(to right, \
+      black 0%, black 50%, \
+      red 50%, red 100%)",
+              }}
               initial={{ width: 0 }}
               animate={{ width: "60%" }}
               transition={{ duration: 0.8, delay: 0.4 }}
