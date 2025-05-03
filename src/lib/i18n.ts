@@ -233,6 +233,140 @@ export const translations = {
 
     // Bouton retour
     return_home: "Retour à l'accueil",
+    // Sélection Tests
+    selection_tests_section_title: "Informations sur les tests",
+    selection_tests_section_subtitle:
+      "Veuillez sélectionner la catégorie et l’académie",
+
+    // Erreurs de dates
+    selection_error_start_date_past_title: "Erreur",
+    selection_error_start_date_past_desc:
+      "La date de début ne peut pas être dans le passé.",
+    selection_error_end_date_past_title: "Erreur",
+    selection_error_end_date_past_desc:
+      "La date de fin ne peut pas être dans le passé.",
+    selection_error_end_before_start_title: "Erreur",
+    selection_error_end_before_start_desc:
+      "La date de fin ne peut pas être avant la date de début.",
+
+    // Section « Informations du joueur »
+    selection_player_section_title: "Informations du joueur",
+    selection_player_section_subtitle:
+      "Veuillez remplir toutes les informations concernant le joueur",
+
+    // Labels joueur
+    selection_label_category: "Catégorie *",
+    selection_placeholder_category: "Sélectionnez une catégorie",
+    selection_label_academy: "Académie *",
+    selection_placeholder_academy: "Sélectionnez une académie",
+    selection_label_last_name: "Nom *",
+    selection_label_first_name: "Prénom *",
+    selection_label_birth_date: "Date de naissance *",
+    selection_label_phone: "Téléphone (GSM) du joueur",
+    selection_label_email: "Email du joueur",
+    selection_label_current_club: "Club actuel du joueur",
+    selection_tooltip_current_club:
+      "Si le joueur n'a pas de club, vous pouvez laisser vide.",
+    selection_label_previous_club: "Club précédent du joueur",
+    selection_tooltip_previous_club:
+      "Si le joueur n'a jamais joué en club, vous pouvez laisser vide.",
+    selection_label_position: "Position *",
+    selection_placeholder_position: "Sélectionnez une position",
+    selection_position_default: "Joueur de champ (U5-U9)",
+    // fr
+    selection_error_birthdate_missing_title: "Erreur",
+    selection_error_birthdate_missing_desc:
+      "Veuillez sélectionner la date de naissance du joueur.",
+    selection_error_age_invalid_title: "Âge non valide",
+    selection_error_age_invalid_desc:
+      "Le joueur doit avoir entre 4 et 20 ans pour passer le test technique.",
+    selection_error_academy_missing_title: "Erreur",
+    selection_error_academy_missing_desc: "Veuillez sélectionner une académie.",
+
+    // Section « Responsables légaux »
+    selection_legal_section_title: "Informations des responsables légaux",
+    selection_legal_section_subtitle:
+      "Veuillez remplir les informations concernant les responsables légaux du joueur. Vous êtes joueur et majeur ? Vous pouvez sélectionner 'Représentant légal'.",
+
+    // Labels responsable
+    selection_label_parent_last_name: "Nom *",
+    selection_label_parent_first_name: "Prénom *",
+    selection_label_parent_phone: "Téléphone (GSM) du responsable *",
+    selection_label_parent_email: "Email du responsable *",
+    selection_label_parent_relation: "Relation *",
+    selection_placeholder_parent_relation: "Sélectionnez la relation",
+    selection_option_parent: "Parent",
+    selection_option_representative: "Représentant légal",
+
+    // Section « Signature »
+    selection_signature_section_title: "Signature",
+    selection_signature_section_subtitle:
+      "Veuillez signer pour confirmer votre inscription aux tests de sélection",
+    selection_signature_info:
+      "La RWDM Academy décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords. En signant ce document, vous reconnaissez avoir pris connaissance de cette information.",
+    selection_signature_label:
+      "Signature du joueur ou des parents/tuteur légal (pour les enfants de moins de 18 ans)",
+    selection_signature_placeholder:
+      "Signez ici pour valider l'inscription aux tests",
+
+    // Politique de confidentialité
+    selection_accept_policy_html:
+      'J\'accepte la <a href="/legal" class="underline text-rwdm-blue" target="_blank" rel="noopener noreferrer">politique de confidentialité</a>.',
+
+    // Boutons & cooldown
+    selection_button_submit: "Soumettre la demande de test",
+    selection_button_cooldown: "Veuillez patienter ({{time}})",
+    selection_cooldown_message:
+      "Vous pourrez renvoyer un test de sélection dans {{time}}",
+
+    // Vérification orthographique
+    selection_spellcheck_title: "Vérification des informations pour les tests",
+    selection_spellcheck_field_player_last_name: "Nom du joueur",
+    selection_spellcheck_field_player_first_name: "Prénom du joueur",
+    selection_spellcheck_field_player_email: "Email du joueur",
+    selection_spellcheck_field_parent_last_name: "Nom du parent",
+    selection_spellcheck_field_parent_first_name: "Prénom du parent",
+    selection_spellcheck_field_parent_email: "Email du parent",
+
+    // Toasts de validation
+    selection_success_submission_title: "Formulaire soumis",
+    selection_success_submission_description:
+      "Votre demande de test a été envoyée avec succès.",
+    selection_error_submission_title: "Erreur",
+    selection_error_submission_description:
+      "Une erreur est survenue lors de l'envoi du formulaire.",
+    category_U5: "U5",
+    category_U6: "U6",
+    category_U7: "U7",
+    category_U8: "U8",
+    category_U9: "U9",
+    category_U10: "U10",
+    category_U11: "U11",
+    category_U12: "U12",
+    category_U13: "U13",
+    category_U14: "U14",
+    category_U15_full: "U15 (disponible à la RFE Academy)",
+    category_U16: "U16",
+    category_U17_full: "U17 (disponible à la RFE Academy)",
+    category_U18: "U18",
+    category_U19_full: "U19 (disponible à la RFE Academy)",
+    category_U21: "U21",
+
+    position_goalkeeper: "Gardien",
+    position_right_back: "Arrière droit",
+    position_left_back: "Arrière gauche",
+    position_center_back: "Défenseur central",
+    position_defensive_mid: "Milieu récupérateur",
+    position_central_mid: "Milieu relayeur",
+    position_attacking_mid: "Milieu offensif",
+    position_right_wing: "Ailier droit",
+    position_left_wing: "Ailier gauche",
+    position_striker: "Attaquant pointe",
+    academy_RWDM_elite: "RWDM Academy (Elite)",
+    academy_RFE_provincial: "Red For Ever Academy (Provinciaux)",
+
+    selection_error_date_past_title: "Erreur",
+    selection_error_date_past_desc: "La date ne peut pas être dans le passé.",
   },
 
   nl: {
@@ -462,6 +596,126 @@ export const translations = {
       "Om veiligheidsredenen dient u ten minste 10 minuten te wachten voordat u een nieuw formulier indient.",
 
     return_home: "Terug naar startpagina",
+    // NL
+    selection_tests_section_title: "Informatie over de tests",
+    selection_tests_section_subtitle: "Selecteer de categorie en de academie",
+
+    selection_error_start_date_past_title: "Fout",
+    selection_error_start_date_past_desc:
+      "De begindatum mag niet in het verleden liggen.",
+    selection_error_end_date_past_title: "Fout",
+    selection_error_end_date_past_desc:
+      "De einddatum mag niet in het verleden liggen.",
+    selection_error_end_before_start_title: "Fout",
+    selection_error_end_before_start_desc:
+      "De einddatum kan niet vóór de begindatum liggen.",
+
+    selection_player_section_title: "Spelerinformatie",
+    selection_player_section_subtitle: "Vul alle gegevens van de speler in",
+
+    selection_label_category: "Categorie *",
+    selection_placeholder_category: "Selecteer een categorie",
+    selection_label_academy: "Academie *",
+    selection_placeholder_academy: "Selecteer een academie",
+    selection_label_last_name: "Achternaam *",
+    selection_label_first_name: "Voornaam *",
+    selection_label_birth_date: "Geboortedatum *",
+    selection_label_phone: "Telefoon (GSM) van speler",
+    selection_label_email: "E-mail van speler",
+    selection_label_current_club: "Huidige club van speler",
+    selection_tooltip_current_club:
+      "Als de speler geen club heeft, kunt u dit leeg laten.",
+    selection_label_previous_club: "Vorige club van speler",
+    selection_tooltip_previous_club:
+      "Als de speler nog nooit in een club speelde, kunt u dit leeg laten.",
+    selection_label_position: "Positie *",
+    selection_placeholder_position: "Selecteer een positie",
+    selection_position_default: "Veldspeler (U5-U9)",
+
+    selection_legal_section_title: "Gegevens wettelijke vertegenwoordiger",
+    selection_legal_section_subtitle:
+      "Vul de gegevens in van de wettelijke vertegenwoordiger van de speler. Bent u meerderjarig? U kunt 'Wettelijk vertegenwoordiger' kiezen.",
+
+    selection_label_parent_last_name: "Achternaam *",
+    selection_label_parent_first_name: "Voornaam *",
+    selection_label_parent_phone: "Telefoon (GSM) van verantwoordelijke *",
+    selection_label_parent_email: "E-mail van verantwoordelijke *",
+    selection_label_parent_relation: "Relatie *",
+    selection_placeholder_parent_relation: "Selecteer de relatie",
+    selection_option_parent: "Ouder",
+    selection_option_representative: "Wettelijk vertegenwoordiger",
+
+    selection_signature_section_title: "Handtekening",
+    selection_signature_section_subtitle:
+      "Onderteken om uw inschrijving voor de selectietests te bevestigen",
+    selection_signature_info:
+      "De RWDM Academy is niet aansprakelijk voor incidenten, ongevallen of diefstal in of rond haar faciliteiten. Door te ondertekenen erkent u daarvan op de hoogte te zijn.",
+    selection_signature_label:
+      "Handtekening van speler of ouder/wettelijk vertegenwoordiger (voor minderjarigen)",
+    selection_signature_placeholder:
+      "Onderteken hier om uw inschrijving voor de tests te bevestigen",
+
+    selection_accept_policy_html:
+      'Ik ga akkoord met het <a href="/legal" class="underline text-rwdm-blue" target="_blank" rel="noopener noreferrer">privacybeleid</a>.',
+
+    selection_button_submit: "Verzend testaanvraag",
+    selection_button_cooldown: "Even geduld aub ({{time}})",
+    selection_cooldown_message:
+      "U kunt weer een testaanvraag indienen over {{time}}",
+
+    selection_spellcheck_title: "Controle van testgegevens",
+    selection_spellcheck_field_player_last_name: "Achternaam speler",
+    selection_spellcheck_field_player_first_name: "Voornaam speler",
+    selection_spellcheck_field_player_email: "E-mail speler",
+    selection_spellcheck_field_parent_last_name: "Achternaam ouder",
+    selection_spellcheck_field_parent_first_name: "Voornaam ouder",
+    selection_spellcheck_field_parent_email: "E-mail ouder",
+
+    selection_error_birthdate_missing_title: "Fout",
+    selection_error_birthdate_missing_desc:
+      "Selecteer de geboortedatum van de speler.",
+    selection_error_age_invalid_title: "Ongeldige leeftijd",
+    selection_error_age_invalid_desc:
+      "De speler moet tussen 4 en 20 jaar oud zijn om deel te nemen aan de technische test.",
+    selection_error_academy_missing_title: "Fout",
+    selection_error_academy_missing_desc: "Selecteer een academie.",
+    selection_success_submission_title: "Formulier verzonden",
+    selection_success_submission_description:
+      "Uw testaanvraag is succesvol verzonden.",
+    selection_error_submission_title: "Fout",
+    selection_error_submission_description:
+      "Er is een fout opgetreden bij het versturen van het formulier.",
+    category_U5: "U5",
+    category_U6: "U6",
+    category_U7: "U7",
+    category_U8: "U8",
+    category_U9: "U9",
+    category_U10: "U10",
+    category_U11: "U11",
+    category_U12: "U12",
+    category_U13: "U13",
+    category_U14: "U14",
+    category_U15_full: "U15 (beschikbaar bij RFE Academy)",
+    category_U16: "U16",
+    category_U17_full: "U17 (beschikbaar bij RFE Academy)",
+    category_U18: "U18",
+    category_U19_full: "U19 (beschikbaar bij RFE Academy)",
+    category_U21: "U21",
+
+    position_goalkeeper: "Doelman",
+    position_right_back: "Rechtsback",
+    position_left_back: "Linksback",
+    position_center_back: "Centrale verdediger",
+    position_defensive_mid: "Verdedigende middenvelder",
+    position_central_mid: "Controlerende middenvelder",
+    position_attacking_mid: "Offensieve middenvelder",
+    position_right_wing: "Rechtsbuiten",
+    position_left_wing: "Linksbuiten",
+    position_striker: "Spits",
+    academy_RWDM_elite: "RWDM Academy (Elite)",
+    academy_RFE_provincial: "Red For Ever Academy (Provincialen)",
+    selection_error_date_past_title: "Fout",
+    selection_error_date_past_desc: "De datum mag niet in het verleden liggen.",
   },
   en: {
     welcome:
@@ -686,5 +940,126 @@ export const translations = {
       "For security reasons, please wait at least 10 minutes before submitting another form.",
 
     return_home: "Back to home",
+    // EN
+    selection_tests_section_title: "Test information",
+    selection_tests_section_subtitle:
+      "Please select the category and the academy",
+
+    selection_error_start_date_past_title: "Error",
+    selection_error_start_date_past_desc:
+      "The start date cannot be in the past.",
+    selection_error_end_date_past_title: "Error",
+    selection_error_end_date_past_desc: "The end date cannot be in the past.",
+    selection_error_end_before_start_title: "Error",
+    selection_error_end_before_start_desc:
+      "The end date cannot be before the start date.",
+
+    selection_player_section_title: "Player information",
+    selection_player_section_subtitle:
+      "Please fill out all the player's information",
+
+    selection_label_category: "Category *",
+    selection_placeholder_category: "Select a category",
+    selection_label_academy: "Academy *",
+    selection_placeholder_academy: "Select an academy",
+    selection_label_last_name: "Last Name *",
+    selection_label_first_name: "First Name *",
+    selection_label_birth_date: "Birth Date *",
+    selection_label_phone: "Player's phone (mobile)",
+    selection_label_email: "Player's email",
+    selection_label_current_club: "Player's current club",
+    selection_tooltip_current_club:
+      "If the player has no club, you can leave this blank.",
+    selection_label_previous_club: "Player's previous club",
+    selection_tooltip_previous_club:
+      "If the player has never played for a club, you can leave this blank.",
+    selection_label_position: "Position *",
+    selection_placeholder_position: "Select a position",
+    selection_position_default: "Field player (U5-U9)",
+
+    selection_legal_section_title: "Legal guardian information",
+    selection_legal_section_subtitle:
+      "Please fill in the legal guardian's information for the player. Are you a player of legal age? You may select 'Legal representative'.",
+
+    selection_label_parent_last_name: "Last Name *",
+    selection_label_parent_first_name: "First Name *",
+    selection_label_parent_phone: "Guardian's phone (mobile) *",
+    selection_label_parent_email: "Guardian's email *",
+    selection_label_parent_relation: "Relation *",
+    selection_placeholder_parent_relation: "Select the relation",
+    selection_option_parent: "Parent",
+    selection_option_representative: "Legal representative",
+
+    selection_signature_section_title: "Signature",
+    selection_signature_section_subtitle:
+      "Please sign to confirm your registration for the selection tests",
+    selection_signature_info:
+      "The RWDM Academy disclaims any liability for incidents, accidents, or thefts occurring on its premises or nearby. By signing this document, you acknowledge this information.",
+    selection_signature_label:
+      "Signature of the player or parents/legal guardian (for minors under 18)",
+    selection_signature_placeholder:
+      "Sign here to validate registration for the tests",
+
+    selection_accept_policy_html:
+      'I accept the <a href="/legal" class="underline text-rwdm-blue" target="_blank" rel="noopener noreferrer">privacy policy</a>.',
+
+    selection_button_submit: "Submit test request",
+    selection_button_cooldown: "Please wait ({{time}})",
+    selection_cooldown_message:
+      "You can submit another test request in {{time}}",
+
+    selection_spellcheck_title: "Verification of test information",
+    selection_spellcheck_field_player_last_name: "Player's last name",
+    selection_spellcheck_field_player_first_name: "Player's first name",
+    selection_spellcheck_field_player_email: "Player's email",
+    selection_spellcheck_field_parent_last_name: "Parent's last name",
+    selection_spellcheck_field_parent_first_name: "Parent's first name",
+    selection_spellcheck_field_parent_email: "Parent's email",
+
+    selection_error_birthdate_missing_title: "Error",
+    selection_error_birthdate_missing_desc:
+      "Please select the player's birth date.",
+    selection_error_age_invalid_title: "Invalid age",
+    selection_error_age_invalid_desc:
+      "The player must be between 4 and 20 years old to take the technical test.",
+    selection_error_academy_missing_title: "Error",
+    selection_error_academy_missing_desc: "Please select an academy.",
+    selection_success_submission_title: "Form submitted",
+    selection_success_submission_description:
+      "Your test request has been sent successfully.",
+    selection_error_submission_title: "Error",
+    selection_error_submission_description:
+      "An error occurred while submitting the form.",
+    category_U5: "U5",
+    category_U6: "U6",
+    category_U7: "U7",
+    category_U8: "U8",
+    category_U9: "U9",
+    category_U10: "U10",
+    category_U11: "U11",
+    category_U12: "U12",
+    category_U13: "U13",
+    category_U14: "U14",
+    category_U15_full: "U15 (available at RFE Academy)",
+    category_U16: "U16",
+    category_U17_full: "U17 (available at RFE Academy)",
+    category_U18: "U18",
+    category_U19_full: "U19 (available at RFE Academy)",
+    category_U21: "U21",
+
+    position_goalkeeper: "Goalkeeper",
+    position_right_back: "Right back",
+    position_left_back: "Left back",
+    position_center_back: "Center back",
+    position_defensive_mid: "Defensive midfielder",
+    position_central_mid: "Central midfielder",
+    position_attacking_mid: "Attacking midfielder",
+    position_right_wing: "Right winger",
+    position_left_wing: "Left winger",
+    position_striker: "Striker",
+    academy_RWDM_elite: "RWDM Academy (Elite)",
+    academy_RFE_provincial: "Red For Ever Academy (Provincials)",
+    selection_error_date_past_title: "Error",
+    selection_error_date_past_desc: "Date cannot be in the past.",
   },
 };

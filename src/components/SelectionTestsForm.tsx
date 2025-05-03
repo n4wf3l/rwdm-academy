@@ -30,6 +30,7 @@ import SignaturePad from "./ui/SignaturePad";
 import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FormSectionProps {
   title: string;
@@ -54,43 +55,56 @@ const FormSection: React.FC<FormSectionProps> = ({
   </div>
 );
 
-const NOYAUX = [
-  "U5",
-  "U6",
-  "U7",
-  "U8",
-  "U9",
-  "U10",
-  "U11",
-  "U12",
-  "U13",
-  "U14",
-  "U15",
-  "U16",
-  "U17",
-  "U18",
-  "U19",
-  "U21",
-];
-const POSITIONS = [
-  "Gardien",
-  "Arrière droit",
-  "Arrière gauche",
-  "Défenseur central",
-  "Milieu récupérateur",
-  "Milieu relayeur",
-  "Milieu offensif",
-  "Ailier droit",
-  "Ailier gauche",
-  "Attaquant pointe",
-];
-
 const SelectionTestsForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, lang } = useTranslation();
 
+  const NOYAUX = React.useMemo(
+    () => [
+      t("category_U5"),
+      t("category_U6"),
+      t("category_U7"),
+      t("category_U8"),
+      t("category_U9"),
+      t("category_U10"),
+      t("category_U11"),
+      t("category_U12"),
+      t("category_U13"),
+      t("category_U14"),
+      t("category_U15_full"),
+      t("category_U16"),
+      t("category_U17_full"),
+      t("category_U18"),
+      t("category_U19_full"),
+      t("category_U21"),
+    ],
+    [t]
+  );
+
+  const POSITIONS = React.useMemo(
+    () => [
+      t("position_goalkeeper"),
+      t("position_right_back"),
+      t("position_left_back"),
+      t("position_center_back"),
+      t("position_defensive_mid"),
+      t("position_central_mid"),
+      t("position_attacking_mid"),
+      t("position_right_wing"),
+      t("position_left_wing"),
+      t("position_striker"),
+    ],
+    [t]
+  );
+
+  const ACADEMIES = React.useMemo(
+    () => [t("academy_RWDM_elite"), t("academy_RFE_provincial")],
+    [t]
+  );
   // États pour les informations sur les tests
   const [noyau, setNoyau] = useState<string>("");
+  const [academy, setAcademy] = useState<string>("");
   const [testStartDate, setTestStartDate] = useState<Date | null>(null);
   const [testEndDate, setTestEndDate] = useState<Date | null>(null);
 
@@ -125,8 +139,8 @@ const SelectionTestsForm: React.FC = () => {
     today.setHours(0, 0, 0, 0);
     if (date < today) {
       toast({
-        title: "Erreur",
-        description: "La date de début ne peut pas être dans le passé.",
+        title: t("selection_error_date_past_title"),
+        description: t("selection_error_date_past_desc"),
         variant: "destructive",
       });
       return;
@@ -135,8 +149,8 @@ const SelectionTestsForm: React.FC = () => {
     if (testEndDate && date > testEndDate) {
       setTestEndDate(null);
       toast({
-        title: "Erreur",
-        description: "La date de fin ne peut pas être avant la date de début.",
+        title: t("selection_error_end_before_start_title"),
+        description: t("selection_error_end_before_start_desc"),
         variant: "destructive",
       });
     }
@@ -148,16 +162,16 @@ const SelectionTestsForm: React.FC = () => {
     today.setHours(0, 0, 0, 0);
     if (date < today) {
       toast({
-        title: "Erreur",
-        description: "La date de fin ne peut pas être dans le passé.",
+        title: t("selection_error_date_past_title"),
+        description: t("selection_error_date_past_desc"),
         variant: "destructive",
       });
       return;
     }
     if (testStartDate && date < testStartDate) {
       toast({
-        title: "Erreur",
-        description: "La date de fin ne peut pas être avant la date de début.",
+        title: t("selection_error_end_before_start_title"),
+        description: t("selection_error_end_before_start_desc"),
         variant: "destructive",
       });
       return;
@@ -177,6 +191,21 @@ const SelectionTestsForm: React.FC = () => {
     }
     return age;
   };
+
+  useEffect(() => {
+    // est-ce qu'on est dans U15, U17 ou U19 ?
+    const isElite = ["U15", "U17", "U19"].some((prefix) =>
+      noyau.startsWith(prefix)
+    );
+
+    if (isElite) {
+      // Laisse le choix entre les deux académies
+      setAcademy((prev) => (ACADEMIES.includes(prev) ? prev : ""));
+    } else {
+      // Sinon, par défaut RWDM
+      setAcademy("RWDM Academy");
+    }
+  }, [noyau]);
 
   useEffect(() => {
     if (!isCooldown) return;
@@ -214,8 +243,8 @@ const SelectionTestsForm: React.FC = () => {
 
     if (!playerBirthDate) {
       toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner la date de naissance du joueur.",
+        title: t("selection_error_birthdate_missing_title"),
+        description: t("selection_error_birthdate_missing_desc"),
         variant: "destructive",
       });
       return;
@@ -223,9 +252,16 @@ const SelectionTestsForm: React.FC = () => {
     const age = getAge(playerBirthDate);
     if (age < 4 || age > 20) {
       toast({
-        title: "Âge non valide",
-        description:
-          "Le joueur doit avoir entre 4 et 20 ans pour passer le test technique.",
+        title: t("selection_error_age_invalid_title"),
+        description: t("selection_error_age_invalid_desc"),
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!academy) {
+      toast({
+        title: t("selection_error_academy_missing_title"),
+        description: t("selection_error_academy_missing_desc"),
         variant: "destructive",
       });
       return;
@@ -239,6 +275,7 @@ const SelectionTestsForm: React.FC = () => {
       formData: {
         // Informations sur les tests
         noyau,
+        academy,
         testStartDate,
         testEndDate,
         // Informations du joueur
@@ -290,8 +327,8 @@ const SelectionTestsForm: React.FC = () => {
       );
 
       toast({
-        title: "Formulaire soumis",
-        description: "Votre demande de test a été envoyée avec succès.",
+        title: t("selection_success_submission_title"),
+        description: t("selection_success_submission_description"),
       });
       setIsSpellCheckOpen(false);
       localStorage.setItem(
@@ -304,29 +341,41 @@ const SelectionTestsForm: React.FC = () => {
     } catch (error) {
       console.error("Erreur lors de la soumission :", error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        title: t("selection_error_submission_title"),
+        description: t("selection_error_submission_description"),
         variant: "destructive",
       });
     }
   };
 
   const spellCheckFields = [
-    { label: "Nom du joueur", value: lastName },
-    { label: "Prénom du joueur", value: firstName },
-    { label: "Email du joueur", value: email },
-    { label: "Nom du parent", value: parentLastName },
-    { label: "Prénom du parent", value: parentFirstName },
-    { label: "Email du parent", value: parentEmail },
+    {
+      label: t("selection_spellcheck_field_player_last_name"),
+      value: lastName,
+    },
+    {
+      label: t("selection_spellcheck_field_player_first_name"),
+      value: firstName,
+    },
+    { label: t("selection_spellcheck_field_player_email"), value: email },
+    {
+      label: t("selection_spellcheck_field_parent_last_name"),
+      value: parentLastName,
+    },
+    {
+      label: t("selection_spellcheck_field_parent_first_name"),
+      value: parentFirstName,
+    },
+    { label: t("selection_spellcheck_field_parent_email"), value: parentEmail },
   ];
 
   useEffect(() => {
     if (["U5", "U6", "U7", "U8", "U9"].includes(noyau)) {
-      setPosition("Joueur de champ (U5-U9)");
+      setPosition(t("selection_position_default"));
     } else {
       setPosition(""); // Réinitialiser si l'utilisateur choisit un autre noyau
     }
-  }, [noyau]);
+  }, [noyau, t]);
 
   return (
     <>
@@ -338,18 +387,56 @@ const SelectionTestsForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations sur les tests"
-              subtitle="Veuillez sélectionner le noyau"
+              title={t("selection_tests_section_title")}
+              subtitle={t("selection_tests_section_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Colonne 1 : Catégorie */}
                 <div className="space-y-2">
-                  <Label htmlFor="noyau">Noyau *</Label>
-                  <Select onValueChange={setNoyau}>
+                  <Label htmlFor="noyau">{t("selection_label_category")}</Label>
+                  <Select onValueChange={setNoyau} value={noyau} required>
                     <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez un noyau" />
+                      <SelectValue
+                        placeholder={t("selection_placeholder_category")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {NOYAUX.map((option) => (
+                      {NOYAUX.map((option) => {
+                        const [main, noteWithParen] = option.split("(");
+                        const note = noteWithParen
+                          ? noteWithParen.replace(")", "")
+                          : null;
+                        return (
+                          <SelectItem key={option} value={option}>
+                            <span>{main.trim()}</span>
+                            {note && (
+                              <span className="ml-1 text-xs text-gray-500">
+                                ({note.trim()})
+                              </span>
+                            )}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Colonne 2 : Académie */}
+                <div className="space-y-2">
+                  <Label htmlFor="academy">
+                    {t("selection_label_academy")}
+                  </Label>
+                  <Select onValueChange={setAcademy} value={academy} required>
+                    <SelectTrigger className="form-input-base">
+                      <SelectValue
+                        placeholder={t("selection_placeholder_academy")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(["U15", "U17", "U19"].some((p) => noyau.startsWith(p))
+                        ? ACADEMIES
+                        : ["RWDM Academy"]
+                      ).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -366,12 +453,14 @@ const SelectionTestsForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations du joueur"
-              subtitle="Veuillez remplir toutes les informations concernant le joueur"
+              title={t("selection_player_section_title")}
+              subtitle={t("selection_player_section_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom *</Label>
+                  <Label htmlFor="lastName">
+                    {t("selection_label_last_name")}
+                  </Label>
                   <Input
                     id="lastName"
                     className="form-input-base"
@@ -380,8 +469,11 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom *</Label>
+                  <Label htmlFor="firstName">
+                    {t("selection_label_first_name")}
+                  </Label>
                   <Input
                     id="firstName"
                     className="form-input-base"
@@ -390,17 +482,20 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="playerBirthDate" className="mr-3">
-                    Date de naissance *
+                    {t("selection_label_birth_date")}
                   </Label>
                   <BirthDatePicker
                     selectedDate={playerBirthDate}
                     onChange={setPlayerBirthDate}
+                    required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone (GSM) du joueur</Label>
+                  <Label htmlFor="phone">{t("selection_label_phone")}</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -409,8 +504,9 @@ const SelectionTestsForm: React.FC = () => {
                     onChange={(e) => setPhone(e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email du joueur</Label>
+                  <Label htmlFor="email">{t("selection_label_email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -419,27 +515,22 @@ const SelectionTestsForm: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label
                     htmlFor="currentClub"
                     className="flex items-center space-x-1"
                   >
-                    <span>Club actuel du joueur</span>
-
-                    {/* Icône d'information avec Tooltip */}
+                    <span>{t("selection_label_current_club")}</span>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          Si le joueur n'a pas de club, vous pouvez laisser
-                          vide.
-                        </p>
+                        <p>{t("selection_tooltip_current_club")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </Label>
-
                   <Input
                     id="currentClub"
                     className="form-input-base"
@@ -447,27 +538,22 @@ const SelectionTestsForm: React.FC = () => {
                     onChange={(e) => setCurrentClub(e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label
                     htmlFor="previousClub"
                     className="flex items-center space-x-1"
                   >
-                    <span>Club précédent du joueur</span>
-
-                    {/* Icône d'information avec Tooltip */}
+                    <span>{t("selection_label_previous_club")}</span>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          Si le joueur n'a jamais joué en club, vous pouvez
-                          laisser vide.
-                        </p>
+                        <p>{t("selection_tooltip_previous_club")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </Label>
-
                   <Input
                     id="previousClub"
                     className="form-input-base"
@@ -475,13 +561,16 @@ const SelectionTestsForm: React.FC = () => {
                     onChange={(e) => setPreviousClub(e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="position">Position *</Label>
+                  <Label htmlFor="position">
+                    {t("selection_label_position")}
+                  </Label>
                   {["U5", "U6", "U7", "U8", "U9"].includes(noyau) ? (
                     <Input
                       id="position"
                       className="form-input-base bg-gray-100 text-gray-500 cursor-not-allowed"
-                      value="Joueur de champ (U5-U9)"
+                      value={t("selection_position_default")}
                       disabled
                     />
                   ) : (
@@ -491,7 +580,9 @@ const SelectionTestsForm: React.FC = () => {
                       required
                     >
                       <SelectTrigger className="form-input-base">
-                        <SelectValue placeholder="Sélectionnez une position" />
+                        <SelectValue
+                          placeholder={t("selection_placeholder_position")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {POSITIONS.map((pos) => (
@@ -512,12 +603,14 @@ const SelectionTestsForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations des responsables légaux"
-              subtitle="Veuillez remplir les informations concernant les responsables légaux du joueur. Vous êtes joueur et majeur ? Vous avez le droit d'introduire vos propres données et de sélectionner 'Représentant légal'."
+              title={t("selection_legal_section_title")}
+              subtitle={t("selection_legal_section_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="parentLastName">Nom *</Label>
+                  <Label htmlFor="parentLastName">
+                    {t("selection_label_parent_last_name")}
+                  </Label>
                   <Input
                     id="parentLastName"
                     className="form-input-base"
@@ -526,8 +619,11 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="parentFirstName">Prénom *</Label>
+                  <Label htmlFor="parentFirstName">
+                    {t("selection_label_parent_first_name")}
+                  </Label>
                   <Input
                     id="parentFirstName"
                     className="form-input-base"
@@ -536,9 +632,10 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="parentPhone">
-                    Téléphone (GSM) du responsable *
+                    {t("selection_label_parent_phone")}
                   </Label>
                   <Input
                     id="parentPhone"
@@ -549,8 +646,11 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="parentEmail">Email du responsable *</Label>
+                  <Label htmlFor="parentEmail">
+                    {t("selection_label_parent_email")}
+                  </Label>
                   <Input
                     id="parentEmail"
                     type="email"
@@ -560,20 +660,27 @@ const SelectionTestsForm: React.FC = () => {
                     required
                   />
                 </div>
+
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="parentRelation">Relation *</Label>
+                  <Label htmlFor="parentRelation">
+                    {t("selection_label_parent_relation")}
+                  </Label>
                   <Select
                     onValueChange={setParentRelation}
-                    defaultValue="parent"
+                    value={parentRelation}
                     required
                   >
                     <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez la relation" />
+                      <SelectValue
+                        placeholder={t("selection_placeholder_parent_relation")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="parent">Parent</SelectItem>
+                      <SelectItem value="parent">
+                        {t("selection_option_parent")}
+                      </SelectItem>
                       <SelectItem value="representant">
-                        Représentant légal
+                        {t("selection_option_representative")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -587,25 +694,19 @@ const SelectionTestsForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Signature"
-              subtitle="Veuillez signer pour confirmer votre inscription aux tests de sélection"
+              title={t("selection_signature_section_title")}
+              subtitle={t("selection_signature_section_subtitle")}
             >
               <div className="space-y-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  La RWDM Academy décline toute responsabilité en cas
-                  d'incidents, d'accidents, de vols survenus dans ses
-                  installations et aux abords. En signant ce document, vous
-                  reconnaissez avoir pris connaissance de cette information.
+                  {t("selection_signature_info")}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <strong>
-                    Signature du joueur ou des parents/tuteur légal (pour les
-                    enfants de moins de 13 ans)
-                  </strong>
+                  <strong>{t("selection_signature_label")}</strong>
                 </p>
                 <SignaturePad
                   onChange={setSignature}
-                  placeholder="Signez ici pour valider l'inscription aux tests"
+                  placeholder={t("selection_signature_placeholder")}
                 />
               </div>
             </FormSection>
@@ -625,17 +726,10 @@ const SelectionTestsForm: React.FC = () => {
           <label
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
-          >
-            J'accepte la{" "}
-            <a
-              href="/legal"
-              target="_blank"
-              className="text-rwdm-blue underline"
-            >
-              politique de confidentialité
-            </a>
-            .
-          </label>
+            dangerouslySetInnerHTML={{
+              __html: t("selection_accept_policy_html"),
+            }}
+          />
         </div>
 
         <div className="flex justify-center">
@@ -645,23 +739,28 @@ const SelectionTestsForm: React.FC = () => {
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
             {isCooldown
-              ? `Veuillez patienter (${Math.floor(cooldownRemaining / 60)
-                  .toString()
-                  .padStart(2, "0")}:${(cooldownRemaining % 60)
-                  .toString()
-                  .padStart(2, "0")})`
-              : "Soumettre la demande de test"}
+              ? t("selection_button_cooldown").replace(
+                  "{{time}}",
+                  `${Math.floor(cooldownRemaining / 60)
+                    .toString()
+                    .padStart(2, "0")}:${(cooldownRemaining % 60)
+                    .toString()
+                    .padStart(2, "0")}`
+                )
+              : t("selection_button_submit")}
           </Button>
         </div>
       </form>
 
       {isCooldown && (
         <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
-          Vous pourrez renvoyer un test de sélection dans{" "}
-          {Math.floor(cooldownRemaining / 60)
-            .toString()
-            .padStart(2, "0")}
-          :{(cooldownRemaining % 60).toString().padStart(2, "0")}
+          {t("selection_cooldown_message").replace(
+            "{{time}}",
+            `${String(Math.floor(cooldownRemaining / 60)).padStart(
+              2,
+              "0"
+            )}:${String(cooldownRemaining % 60).padStart(2, "0")}`
+          )}
         </div>
       )}
 
