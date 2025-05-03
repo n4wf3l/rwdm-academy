@@ -184,6 +184,7 @@ export const translations = {
 
     // Vérification orthographique
     spellcheck_title: "Vérification des informations d'inscription",
+    spellcheck_title_2: "Vérification des informations de déclaration",
     spellcheck_field_player_last_name: "Nom du joueur",
     spellcheck_field_player_first_name: "Prénom du joueur",
     spellcheck_field_parent1_last_name: "Nom du parent principal",
@@ -429,7 +430,8 @@ export const translations = {
 
     upload_click_to_upload:
       '<span class="font-semibold">Cliquez pour télécharger</span> ou glissez-déposez',
-    upload_guidance_pdf: "Jusqu'à {{max}} fichiers PDF (MAX. 10MB chacun)",
+    upload_guidance_pdf:
+      "Jusqu'à {{max}} fichiers (PDF, JPG, PNG – max. 10 Mo chacun)",
     upload_guidance_single: "1 seul fichier PDF (MAX. 10MB)",
     button_remove_file: "Supprimer",
 
@@ -456,11 +458,10 @@ export const translations = {
     médicales me concernant relatives à l'accident dont j'ai été
     victime, comme décrit dans la
     <a href="https://arena-nv.be/fr/products/4" class="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
-      Déclaration de confidentialité
-    </a>.
+      Déclaration de confidentialité</a>.
     Conformément à la loi RGPD, j'ai le droit d'accès, de rectification, de portabilité, d'opposition et d'effacement de mes données (arena@arena-nv.be).`,
     signature_label_html:
-      "<strong>Signature victime ou des parents/tuteur légal (pour les enfants de moins de 13 ans)</strong>",
+      "<strong>Signature victime ou des parents/tuteur légal (pour les enfants de moins de 18 ans)</strong>",
     signature_placeholder_decla:
       "Signez ici pour valider la déclaration d'accident",
 
@@ -470,6 +471,63 @@ export const translations = {
 
     spellcheck_field_email: "Adresse e-mail",
     spellcheck_field_phone: "Numéro de téléphone",
+    label_academy: "Académie *",
+    placeholder_select_academy: "Sélectionnez une académie",
+    not_provided: "Non renseigné",
+    button_submit_accident: "Soumettre la déclaration",
+    button_submit_accident_loading: "Veuillez patienter...",
+    toast_too_many_files_title: "Trop de fichiers",
+    toast_too_many_files_desc:
+      "Maximum {{max}} fichier{{plural}} autorisé{{plural}}.",
+    toast_invalid_file_title: "Fichier invalide",
+    toast_invalid_file_desc:
+      "Seuls les PDF, JPG ou PNG de moins de 10 Mo sont autorisés.",
+    toast_file_error_title: "Erreur de fichier",
+    toast_file_error_healing_desc:
+      "Veuillez ajouter au moins un fichier PDF (max. 2).",
+    toast_file_error_accident_desc:
+      "Veuillez ajouter un fichier PDF pour la déclaration d’accident.",
+    toast_invalid_code_title: "Code de dossier invalide",
+    toast_invalid_code_desc:
+      "Veuillez entrer un code valide de déclaration existante.",
+    toast_upload_error_title: "Erreur d’upload",
+    toast_upload_error_desc:
+      "Une erreur est survenue lors de l’upload du fichier.",
+    toast_upload_too_large_title: "Fichier trop volumineux",
+    toast_upload_too_large_desc:
+      "Veuillez sélectionner des fichiers de moins de 10 Mo chacun.",
+    toast_submit_success_title: "Déclaration soumise avec succès",
+    toast_submit_success_desc: "Votre déclaration a été envoyée.",
+    toast_general_error_title: "Erreur",
+    toast_general_error_desc:
+      "Une erreur est survenue lors de l'envoi du formulaire.",
+    document_label_accident: "Déclaration d'accident",
+    document_label_healing: "Certificat de guérison",
+    medical_download_button: "Télécharger le formulaire médical",
+    medical_dialog_title: "Choisissez la langue du formulaire",
+    medical_dialog_description:
+      "Le formulaire PDF est disponible en français ou en néerlandais.",
+    medical_language_fr: "Français",
+    medical_language_nl: "Nederlands",
+    toast_download_title: "Téléchargement lancé",
+    toast_download_desc_fr:
+      "Le fichier en français est en cours de téléchargement.",
+    toast_download_desc_nl:
+      "Le formulaire néerlandais est en cours de téléchargement.",
+    date_invalid_title: "Date invalide",
+    date_invalid_desc: "Vous ne pouvez pas déclarer un accident dans le futur.",
+    declaration_refused_title: "Déclaration refusée",
+    declaration_refused_desc:
+      "Votre déclaration ne peut plus être prise en compte, car l'accident a eu lieu il y a plus de 19 jours.",
+    declaration_valid_title: "Déclaration valide",
+    declaration_valid_desc:
+      "Votre déclaration d'accident respecte la limite du délai de 19 jours.",
+    toast_generate_code_title: "Code généré avec succès",
+    toast_generate_code_desc:
+      "Conservez bien ce code pour pouvoir lier votre certificat de guérison plus tard.",
+    parse_data_error:
+      "Impossible de parser les données pour la requête d’ID {{id}}",
+    check_code_general_error: "Erreur lors de la vérification du code",
   },
 
   nl: {
@@ -653,6 +711,7 @@ export const translations = {
 
     // Vérification orthographique
     spellcheck_title: "Controle van inschrijvingsgegevens",
+    spellcheck_title_2: "Verificatie van aangiftegegevens",
     spellcheck_field_player_last_name: "Achternaam van de speler",
     spellcheck_field_player_first_name: "Voornaam van de speler",
     spellcheck_field_parent1_last_name: "Achternaam hoofdverantwoordelijke",
@@ -856,7 +915,8 @@ export const translations = {
       'Deze code is essentieel om later het genezingscertificaat uit te reiken. <span class="ml-1 font-medium text-red-500">Zonder deze code</span> kunt u geen genezingscertificaat koppelen aan deze aangifte.',
     upload_click_to_upload:
       '<span class="font-semibold">Klik om te uploaden</span> of sleep hierheen',
-    upload_guidance_pdf: "Tot {{max}} PDF-bestanden (MAX. 10MB elk)",
+    upload_guidance_pdf:
+      "Tot {{max}} bestanden (PDF, JPG, PNG – max. 10 MB elk)",
     upload_guidance_single: "1 PDF-bestand (MAX. 10MB)",
     button_remove_file: "Verwijderen",
     checkbox_healing_sent: "Ik heb al een ongevalsaangifte verzonden",
@@ -873,17 +933,68 @@ export const translations = {
     signature_privacy_html: `
       Voor een efficiënte afhandeling van mijn dossier geef ik alleen voor dit doel toestemming voor de verwerking van mijn medische gegevens met betrekking tot het ongeval waarvan ik het slachtoffer ben, zoals beschreven in de
       <a href="https://arena-nv.be/fr/products/4" class="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
-        Privacyverklaring
-      </a>.
+        Privacyverklaring</a>.
       Conform de AVG heb ik recht op inzage, rectificatie, overdraagbaarheid, bezwaar en verwijdering van mijn gegevens (arena@arena-nv.be).`,
     signature_label_html:
-      "<strong>Handtekening van het slachtoffer of de ouders/voogd (voor kinderen onder de 13 jaar)</strong>",
+      "<strong>Handtekening van het slachtoffer of de ouders/voogd (voor kinderen onder de 18 jaar)</strong>",
     signature_placeholder_decla:
       "Onderteken hier om de ongevalsaangifte te bevestigen",
     cooldown_message_html:
       "U kunt weer een aangifte indienen in <strong>{{time}}</strong>",
     spellcheck_field_email: "E-mailadres",
     spellcheck_field_phone: "Telefoonnummer",
+    label_academy: "Academie *",
+    placeholder_select_academy: "Selecteer een academie",
+    not_provided: "Niet ingevuld",
+    button_submit_accident: "Verzend de aangifte",
+    button_submit_accident_loading: "Even geduld aub...",
+    toast_too_many_files_title: "Te veel bestanden",
+    toast_too_many_files_desc: "Maximaal {{max}} bestand{{plural}} toegestaan.",
+    toast_invalid_file_title: "Ongeldig bestand",
+    toast_invalid_file_desc:
+      "Alleen PDF-, JPG- of PNG-bestanden kleiner dan 10 MB zijn toegestaan.",
+    toast_file_error_title: "Fout bestand",
+    toast_file_error_healing_desc:
+      "Voeg ten minste één PDF-bestand toe (max. 2).",
+    toast_file_error_accident_desc:
+      "Voeg een PDF-bestand toe voor de ongevalsaangifte.",
+    toast_invalid_code_title: "Ongeldige dossiercode",
+    toast_invalid_code_desc:
+      "Voer een geldige code van een bestaande aangifte in.",
+    toast_upload_error_title: "Uploadfout",
+    toast_upload_error_desc:
+      "Er is een fout opgetreden tijdens het uploaden van het bestand.",
+    toast_upload_too_large_title: "Bestand te groot",
+    toast_upload_too_large_desc: "Selecteer bestanden kleiner dan 10 MB.",
+    toast_submit_success_title: "Aangifte succesvol verzonden",
+    toast_submit_success_desc: "Uw aangifte is verzonden.",
+    toast_general_error_title: "Fout",
+    toast_general_error_desc:
+      "Er is een fout opgetreden bij het verzenden van het formulier.",
+    document_label_accident: "Ongevalsaangifte",
+    document_label_healing: "Geneescertificaat",
+    medical_download_button: "Download medisch formulier",
+    medical_dialog_title: "Kies de taal van het formulier",
+    medical_dialog_description:
+      "Het PDF-formulier is beschikbaar in het Frans of Nederlands.",
+    medical_language_fr: "Frans",
+    medical_language_nl: "Nederlands",
+    toast_download_title: "Download gestart",
+    toast_download_desc_fr: "Het Franstalige formulier wordt gedownload.",
+    toast_download_desc_nl: "Het Nederlandstalige formulier wordt gedownload.",
+    date_invalid_title: "Ongeldige datum",
+    date_invalid_desc: "U kunt geen ongeval melden in de toekomst.",
+    declaration_refused_title: "Aangifte geweigerd",
+    declaration_refused_desc:
+      "Uw aangifte kan niet meer in behandeling worden genomen, omdat het ongeval meer dan 19 dagen geleden heeft plaatsgevonden.",
+    declaration_valid_title: "Aangifte geldig",
+    declaration_valid_desc:
+      "Uw ongevalsaangifte voldoet aan de limiet van 19 dagen.",
+    toast_generate_code_title: "Code succesvol gegenereerd",
+    toast_generate_code_desc:
+      "Bewaar deze code goed om later uw geneescertificaat te koppelen.",
+    parse_data_error: "Kan gegevens niet parsen voor aanvraag-ID {{id}}",
+    check_code_general_error: "Fout bij het verifiëren van de code",
   },
   en: {
     welcome:
@@ -1064,6 +1175,7 @@ export const translations = {
 
     // Vérification orthographique
     spellcheck_title: "Registration information verification",
+    spellcheck_title_2: "Verification of declaration information",
     spellcheck_field_player_last_name: "Player's last name",
     spellcheck_field_player_first_name: "Player's first name",
     spellcheck_field_parent1_last_name: "Primary guardian's last name",
@@ -1267,7 +1379,8 @@ export const translations = {
       'This code is essential to issue the healing certificate later. <span class="ml-1 font-medium text-red-500">Without this code</span>, you will not be able to submit a healing certificate linked to this report.',
     upload_click_to_upload:
       '<span class="font-semibold">Click to upload</span> or drag and drop',
-    upload_guidance_pdf: "Up to {{max}} PDF files (MAX. 10MB each)",
+    upload_guidance_pdf:
+      "Up to {{max}} files (PDF, JPG, PNG – max. 10 MB each)",
     upload_guidance_single: "1 PDF file (MAX. 10MB)",
     button_remove_file: "Remove",
     checkbox_healing_sent: "I have already submitted an accident report",
@@ -1284,15 +1397,60 @@ export const translations = {
     signature_privacy_html: `
       For efficient handling of my case, and only for this purpose, I authorize the processing of my medical data related to the accident of which I was a victim, as described in the
       <a href="https://arena-nv.be/fr/products/4" class="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
-        Privacy Declaration
-      </a>.
+        Privacy Declaration</a>.
       In accordance with GDPR, I have the right of access, rectification, portability, objection, and erasure of my data (arena@arena-nv.be).`,
     signature_label_html:
-      "<strong>Signature of the victim or parents/legal guardian (for children under 13 years)</strong>",
+      "<strong>Signature of the victim or parents/legal guardian (for children under 18 years)</strong>",
     signature_placeholder_decla: "Sign here to confirm the accident report",
     cooldown_message_html:
       "You can submit another report in <strong>{{time}}</strong>",
     spellcheck_field_email: "Email address",
     spellcheck_field_phone: "Phone number",
+    label_academy: "Academy *",
+    placeholder_select_academy: "Select an academy",
+    not_provided: "Not provided",
+    button_submit_accident: "Submit accident report",
+    button_submit_accident_loading: "Please wait...",
+    toast_too_many_files_title: "Too many files",
+    toast_too_many_files_desc: "Maximum {{max}} file{{plural}} allowed.",
+    toast_invalid_file_title: "Invalid file",
+    toast_invalid_file_desc:
+      "Only PDF, JPG, or PNG files under 10 MB are allowed.",
+    toast_file_error_title: "File error",
+    toast_file_error_healing_desc: "Please add at least one PDF file (max. 2).",
+    toast_file_error_accident_desc:
+      "Please add a PDF file for the accident report.",
+    toast_invalid_code_title: "Invalid dossier code",
+    toast_invalid_code_desc: "Please enter a valid existing report code.",
+    toast_upload_error_title: "Upload error",
+    toast_upload_error_desc: "An error occurred while uploading the file.",
+    toast_upload_too_large_title: "File too large",
+    toast_upload_too_large_desc: "Please select files under 10 MB each.",
+    toast_submit_success_title: "Report submitted successfully",
+    toast_submit_success_desc: "Your report has been sent.",
+    toast_general_error_title: "Error",
+    toast_general_error_desc: "An error occurred while sending the form.",
+    document_label_accident: "Accident report",
+    document_label_healing: "Healing certificate",
+    medical_download_button: "Download medical form",
+    medical_dialog_title: "Choose form language",
+    medical_dialog_description: "The PDF form is available in French or Dutch.",
+    medical_language_fr: "French",
+    medical_language_nl: "Dutch",
+    toast_download_title: "Download started",
+    toast_download_desc_fr: "The French form is downloading.",
+    toast_download_desc_nl: "The Dutch form is downloading.",
+    date_invalid_title: "Invalid date",
+    date_invalid_desc: "You cannot report an accident in the future.",
+    declaration_refused_title: "Report refused",
+    declaration_refused_desc:
+      "Your report can no longer be accepted because the accident occurred more than 19 days ago.",
+    declaration_valid_title: "Report valid",
+    declaration_valid_desc: "Your accident report meets the 19-day deadline.",
+    toast_generate_code_title: "Code generated successfully",
+    toast_generate_code_desc:
+      "Keep this code safe so you can link your healing certificate later.",
+    parse_data_error: "Unable to parse data for request ID {{id}}",
+    check_code_general_error: "Error checking code validity",
   },
 };

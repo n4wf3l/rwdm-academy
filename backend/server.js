@@ -21,7 +21,11 @@ app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*", credentials: true }));
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+const uploadDir = path.resolve(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadDir));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -50,9 +54,6 @@ const dbPool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
-
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Clé secrète pour signer les tokens JWT à partir du .env
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -89,12 +90,8 @@ const dbConfig = {
 };
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Dossier où stocker les fichiers
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Renomme le fichier
-  },
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 
 const allowedExtensions = [".pdf", ".jpeg", ".jpg", ".png"];

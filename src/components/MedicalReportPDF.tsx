@@ -9,10 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const MedicalReportPDF = () => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const { t, lang } = useTranslation();
 
   const handleDownload = (lang: "fr" | "nl") => {
     const fileName =
@@ -27,11 +29,11 @@ const MedicalReportPDF = () => {
     document.body.removeChild(link);
 
     toast({
-      title: "Téléchargement lancé",
+      title: t("toast_download_title"),
       description:
         lang === "fr"
-          ? "Le fichier en français est en cours de téléchargement."
-          : "Het Nederlandstalige formulier wordt gedownload.",
+          ? t("toast_download_desc_fr")
+          : t("toast_download_desc_nl"),
     });
 
     setOpen(false);
@@ -45,16 +47,16 @@ const MedicalReportPDF = () => {
           onClick={() => setOpen(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          Télécharger le formulaire médical
+          {t("medical_download_button")}
         </Button>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md text-center">
           <DialogHeader>
-            <DialogTitle>Choisissez la langue du formulaire</DialogTitle>
+            <DialogTitle>{t("medical_dialog_title")}</DialogTitle>
             <DialogDescription>
-              Le formulaire PDF est disponible en français ou en néerlandais.
+              {t("medical_dialog_description")}
             </DialogDescription>
           </DialogHeader>
 
@@ -65,7 +67,7 @@ const MedicalReportPDF = () => {
               onClick={() => handleDownload("fr")}
             >
               <Download className="w-4 h-4 mr-2" />
-              Français
+              {t("medical_language_fr")}
             </Button>
             <Button
               variant="outline"
@@ -73,7 +75,7 @@ const MedicalReportPDF = () => {
               onClick={() => handleDownload("nl")}
             >
               <Download className="w-4 h-4 mr-2" />
-              Nederlands
+              {t("medical_language_nl")}
             </Button>
           </div>
         </DialogContent>

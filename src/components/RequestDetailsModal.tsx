@@ -543,8 +543,8 @@ const renderAccidentReportContent = (request: Request) => {
             icon={<CalendarIcon className="h-4 w-4" />}
           />
           <Field
-            label="Nom du club"
-            value={d.clubName || "-"}
+            label="Académie"
+            value={d.academy || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
