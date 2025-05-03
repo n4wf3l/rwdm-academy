@@ -109,51 +109,59 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
     <Card>
       <CardHeader className="border-b">
         <div className="flex justify-between items-center w-full">
+          {/* Titre à gauche */}
           <CardTitle>Déclarations d'accident en attente</CardTitle>
 
-          {/* Bouton pour modifier l'email de l'Union Belge */}
-          <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Modifier l’email de l’Union Belge</DialogTitle>
-              </DialogHeader>
-              <Input
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="Nouveau destinataire"
-              />
-              <DialogFooter>
-                <Button
-                  onClick={async () => {
-                    try {
-                      await axios.put(
-                        "http://localhost:5000/api/email-recipients/accident-report",
-                        {
-                          email: newEmail,
-                        }
-                      );
-                      setRecipientEmail(newEmail);
-                      setEmailDialogOpen(false);
-                    } catch (err) {
-                      console.error(
-                        "Erreur lors de l’enregistrement de l’email :",
-                        err
-                      );
-                      // Tu peux aussi afficher une notif ici si tu veux
-                    }
-                  }}
-                >
-                  Enregistrer
+          {/* Légende + bouton à droite */}
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-sm bg-green-100 ring-1 ring-green-300" />
+            <span className="text-gray-600 text-sm">
+              Les déclarations en ordre
+            </span>
+
+            <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Pencil className="h-4 w-4" />
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Modifier l’email de l’Union Belge</DialogTitle>
+                </DialogHeader>
+                <Input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Nouveau destinataire"
+                />
+                <DialogFooter>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await axios.put(
+                          "http://localhost:5000/api/email-recipients/accident-report",
+                          {
+                            email: newEmail,
+                          }
+                        );
+                        setRecipientEmail(newEmail);
+                        setEmailDialogOpen(false);
+                      } catch (err) {
+                        console.error(
+                          "Erreur lors de l’enregistrement de l’email :",
+                          err
+                        );
+                        // Tu peux aussi afficher une notif ici si tu veux
+                      }
+                    }}
+                  >
+                    Enregistrer
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
 
