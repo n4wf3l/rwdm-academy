@@ -13,7 +13,6 @@ import {
   Settings,
   ArrowLeft,
   Globe,
-  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -273,30 +272,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               >
                 <Calendar className="mr-2 h-5 w-5" />
                 {t("admin_planning")}
-              </Button>
-            </Link>
-            <Link to="/inbox">
-              <Button
-                variant={isActive("/inbox") ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start relative",
-                  isActive("/inbox") ? "bg-rwdm-blue hover:bg-rwdm-blue/90" : ""
-                )}
-              >
-                <Inbox className="mr-2 h-5 w-5" />
-                {t("inbox")}
-                <AnimatePresence>
-                  <motion.span
-                    key="inboxBadge"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold w-5 h-5"
-                  >
-                    2
-                  </motion.span>
-                </AnimatePresence>
               </Button>
             </Link>
             <Link to="/members">
