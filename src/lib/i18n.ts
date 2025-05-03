@@ -367,6 +367,109 @@ export const translations = {
 
     selection_error_date_past_title: "Erreur",
     selection_error_date_past_desc: "La date ne peut pas être dans le passé.",
+    accident_info_alert_title: "Important",
+    accident_info_alert_html: `
+    Veuillez noter qu’il est vivement recommandé d’envoyer votre
+    déclaration dans un délai maximum de <span class="text-red-500 font-semibold">19 jours</span>
+    suivant l’accident. Le dix-neuvième jour peut être refusé. Passé
+    ce délai, la demande ne pourra plus être prise en compte.
+    <br/><br/>
+    La déclaration sera d’abord validée par le club, puis transmise
+    à l’Union belge de football. Les frais médicaux sont dans un
+    premier temps à votre charge.
+    <br/><br/>
+    À la fin de la blessure, vous devrez téléverser sur cette page
+    votre certificat de guérison ainsi que les frais transmis par
+    votre médecin. Ces documents seront également approuvés par le
+    club avant d’être envoyés à l’Union belge pour un éventuel
+    remboursement.
+    <br/><br/>
+    <span class="font-semibold text-gray-700 dark:text-gray-300">
+      Veuillez également télécharger le PDF ci-dessous, le faire
+      remplir par votre médecin, puis le joindre en tant que fichier
+      PDF lors de la déclaration d’accident.
+    </span>`,
+
+    // Section « Informations sur l'accident »
+    accident_section_title: "Informations sur l'accident",
+    accident_section_subtitle:
+      "Veuillez fournir les informations de base concernant l'accident",
+
+    label_accident_date: "Date de l'accident *",
+    tooltip_accident_date: "Vous ne pouvez pas sélectionner une date future.",
+
+    label_club_name: "Nom du club *",
+
+    placeholder_category: "Sélectionnez une catégorie",
+
+    label_player_first_name: "Prénom du joueur *",
+    label_player_last_name: "Nom du joueur *",
+
+    label_email: "Adresse e-mail *",
+    label_phone: "Numéro de téléphone *",
+
+    label_accident_description: "Description de l'accident *",
+    placeholder_accident_description:
+      "Décrivez comment l'accident s'est produit, où, quand et les conséquences immédiates...",
+    accident_description_counter: "{{count}}/700 caractères",
+
+    // Section « Document justificatif »
+    document_section_title: "Document justificatif",
+    document_section_subtitle:
+      "Veuillez choisir le type de document à téléverser puis charger un fichier PDF justificatif (rapport médical, etc.)",
+
+    tabs_accident_report: "Déclaration d'accident",
+    tabs_healing_certificate: "Certificat de guérison",
+
+    label_accident_code: "Code du dossier",
+    placeholder_accident_code: "Cliquez sur 'Générer' pour obtenir un code",
+    button_generate_code: "Générer",
+    accident_code_info_html:
+      'Ce code est essentiel pour délivrer plus tard le certificat de guérison. <span class="ml-1 font-medium text-red-500">Sans ce code</span>, il ne sera pas possible d’envoyer un certificat de guérison lié à cette déclaration.',
+
+    upload_click_to_upload:
+      '<span class="font-semibold">Cliquez pour télécharger</span> ou glissez-déposez',
+    upload_guidance_pdf: "Jusqu'à {{max}} fichiers PDF (MAX. 10MB chacun)",
+    upload_guidance_single: "1 seul fichier PDF (MAX. 10MB)",
+    button_remove_file: "Supprimer",
+
+    // Tabs « Certificat de guérison »
+    checkbox_healing_sent:
+      "J’ai déjà effectué l’envoi d’une déclaration d’accident",
+
+    label_healing_code: "Code du dossier reçu lors de la déclaration *",
+    placeholder_healing_code: "Ex : XG72ZL",
+    healing_code_valid:
+      "Code valide ! Le dossier est bien lié à l’adresse : {{email}}",
+    healing_code_invalid:
+      "Aucun dossier ne correspond à ce code pour l’email : {{email}}",
+    healing_upload_prompt:
+      "Veuillez joindre votre certificat de guérison ci-dessous :",
+
+    // Section « Signature »
+    signature_section_title: "Signature",
+    signature_section_subtitle:
+      "Veuillez signer pour confirmer l'exactitude des informations fournies",
+
+    signature_privacy_html: `En vue d'une gestion efficace de mon dossier, et uniquement à
+    cet effet, je donne autorisation au traitement des données
+    médicales me concernant relatives à l'accident dont j'ai été
+    victime, comme décrit dans la
+    <a href="https://arena-nv.be/fr/products/4" class="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
+      Déclaration de confidentialité
+    </a>.
+    Conformément à la loi RGPD, j'ai le droit d'accès, de rectification, de portabilité, d'opposition et d'effacement de mes données (arena@arena-nv.be).`,
+    signature_label_html:
+      "<strong>Signature victime ou des parents/tuteur légal (pour les enfants de moins de 13 ans)</strong>",
+    signature_placeholder_decla:
+      "Signez ici pour valider la déclaration d'accident",
+
+    // Cooldown
+    cooldown_message_html:
+      "Vous pourrez renvoyer une déclaration dans <strong>{{time}}</strong>",
+
+    spellcheck_field_email: "Adresse e-mail",
+    spellcheck_field_phone: "Numéro de téléphone",
   },
 
   nl: {
@@ -716,6 +819,71 @@ export const translations = {
     academy_RFE_provincial: "Red For Ever Academy (Provincialen)",
     selection_error_date_past_title: "Fout",
     selection_error_date_past_desc: "De datum mag niet in het verleden liggen.",
+    accident_info_alert_title: "Belangrijk",
+    accident_info_alert_html: `
+      Zorg ervoor dat u uw verklaring binnen maximaal <span class="text-red-500 font-semibold">19 dagen</span> na het ongeval indient. De negentiende dag kan worden geweigerd. Na deze termijn kan de aanvraag niet meer in behandeling worden genomen.
+      <br/><br/>
+      De verklaring wordt eerst goedgekeurd door de club en vervolgens door de KBVB verwerkt. De medische kosten zijn in eerste instantie voor uw eigen rekening.
+      <br/><br/>
+      Na genezing moet u op deze pagina uw genezingscertificaat en de kosten van uw arts uploaden. Deze documenten worden ook door de club goedgekeurd voordat ze naar de KBVB worden gestuurd voor eventuele terugbetaling.
+      <br/><br/>
+      <span class="font-semibold text-gray-700 dark:text-gray-300">
+        Download ook de PDF hieronder, laat uw arts deze invullen en voeg hem toe als PDF-bestand bij de ongevalsaangifte.
+      </span>`,
+    accident_section_title: "Gegevens over het ongeval",
+    accident_section_subtitle: "Geef de basisinformatie over het ongeval op",
+    label_accident_date: "Datum van het ongeval *",
+    tooltip_accident_date: "U mag geen toekomstige datum selecteren.",
+    label_club_name: "Naam van de club *",
+    placeholder_category: "Selecteer een categorie",
+    label_player_first_name: "Voornaam van de speler *",
+    label_player_last_name: "Achternaam van de speler *",
+    label_email: "E-mailadres *",
+    label_phone: "Telefoonnummer *",
+    label_accident_description: "Beschrijving van het ongeval *",
+    placeholder_accident_description:
+      "Beschrijf hoe het ongeval is gebeurd, waar, wanneer en de directe gevolgen...",
+    accident_description_counter: "{{count}}/700 tekens",
+    document_section_title: "Bewijzendocument",
+    document_section_subtitle:
+      "Kies het type document en upload een PDF (medisch verslag, enz.)",
+    tabs_accident_report: "Ongevalsaangifte",
+    tabs_healing_certificate: "Genezingscertificaat",
+    label_accident_code: "Dossiercode",
+    placeholder_accident_code: "Klik op ‘Genereren’ om een code te krijgen",
+    button_generate_code: "Genereren",
+    accident_code_info_html:
+      'Deze code is essentieel om later het genezingscertificaat uit te reiken. <span class="ml-1 font-medium text-red-500">Zonder deze code</span> kunt u geen genezingscertificaat koppelen aan deze aangifte.',
+    upload_click_to_upload:
+      '<span class="font-semibold">Klik om te uploaden</span> of sleep hierheen',
+    upload_guidance_pdf: "Tot {{max}} PDF-bestanden (MAX. 10MB elk)",
+    upload_guidance_single: "1 PDF-bestand (MAX. 10MB)",
+    button_remove_file: "Verwijderen",
+    checkbox_healing_sent: "Ik heb al een ongevalsaangifte verzonden",
+    label_healing_code: "Dossiercode ontvangen bij de aangifte *",
+    placeholder_healing_code: "Bijv.: XG72ZL",
+    healing_code_valid:
+      "Code geldig! Het dossier is gekoppeld aan het e-mailadres: {{email}}",
+    healing_code_invalid:
+      "Geen dossier gevonden voor deze code en e-mailadres: {{email}}",
+    healing_upload_prompt: "Upload hier uw genezingscertificaat:",
+    signature_section_title: "Handtekening",
+    signature_section_subtitle:
+      "Onderteken om de juistheid van de informatie te bevestigen",
+    signature_privacy_html: `
+      Voor een efficiënte afhandeling van mijn dossier geef ik alleen voor dit doel toestemming voor de verwerking van mijn medische gegevens met betrekking tot het ongeval waarvan ik het slachtoffer ben, zoals beschreven in de
+      <a href="https://arena-nv.be/fr/products/4" class="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
+        Privacyverklaring
+      </a>.
+      Conform de AVG heb ik recht op inzage, rectificatie, overdraagbaarheid, bezwaar en verwijdering van mijn gegevens (arena@arena-nv.be).`,
+    signature_label_html:
+      "<strong>Handtekening van het slachtoffer of de ouders/voogd (voor kinderen onder de 13 jaar)</strong>",
+    signature_placeholder_decla:
+      "Onderteken hier om de ongevalsaangifte te bevestigen",
+    cooldown_message_html:
+      "U kunt weer een aangifte indienen in <strong>{{time}}</strong>",
+    spellcheck_field_email: "E-mailadres",
+    spellcheck_field_phone: "Telefoonnummer",
   },
   en: {
     welcome:
@@ -1061,5 +1229,70 @@ export const translations = {
     academy_RFE_provincial: "Red For Ever Academy (Provincials)",
     selection_error_date_past_title: "Error",
     selection_error_date_past_desc: "Date cannot be in the past.",
+    accident_info_alert_title: "Important",
+    accident_info_alert_html: `
+      Please submit your report within a maximum of <span class="text-red-500 font-semibold">19 days</span> after the accident. The nineteenth day may be refused. After this period, the request can no longer be processed.
+      <br/><br/>
+      The report is first validated by the club and then forwarded to the Belgian FA. Medical expenses are initially at your own charge.
+      <br/><br/>
+      At the end of your recovery, you must upload your healing certificate and your doctor's fees on this page. These documents will also be approved by the club before being sent to the Belgian FA for possible reimbursement.
+      <br/><br/>
+      <span class="font-semibold text-gray-700 dark:text-gray-300">
+        Please also download the PDF below, have your doctor complete it, then attach it as a PDF when reporting the accident.
+      </span>`,
+    accident_section_title: "Accident information",
+    accident_section_subtitle:
+      "Please provide the basic information about the accident",
+    label_accident_date: "Date of the accident *",
+    tooltip_accident_date: "You cannot select a future date.",
+    label_club_name: "Club name *",
+    placeholder_category: "Select a category",
+    label_player_first_name: "Player’s first name *",
+    label_player_last_name: "Player’s last name *",
+    label_email: "Email address *",
+    label_phone: "Phone number *",
+    label_accident_description: "Accident description *",
+    placeholder_accident_description:
+      "Describe how the accident happened, where, when, and the immediate consequences...",
+    accident_description_counter: "{{count}}/700 characters",
+    document_section_title: "Supporting document",
+    document_section_subtitle:
+      "Please choose the document type and upload a supporting PDF (medical report, etc.)",
+    tabs_accident_report: "Accident report",
+    tabs_healing_certificate: "Healing certificate",
+    label_accident_code: "Report code",
+    placeholder_accident_code: "Click ‘Generate’ to get a code",
+    button_generate_code: "Generate",
+    accident_code_info_html:
+      'This code is essential to issue the healing certificate later. <span class="ml-1 font-medium text-red-500">Without this code</span>, you will not be able to submit a healing certificate linked to this report.',
+    upload_click_to_upload:
+      '<span class="font-semibold">Click to upload</span> or drag and drop',
+    upload_guidance_pdf: "Up to {{max}} PDF files (MAX. 10MB each)",
+    upload_guidance_single: "1 PDF file (MAX. 10MB)",
+    button_remove_file: "Remove",
+    checkbox_healing_sent: "I have already submitted an accident report",
+    label_healing_code: "Report code received during the report *",
+    placeholder_healing_code: "e.g.: XG72ZL",
+    healing_code_valid:
+      "Valid code! The report is successfully linked to the email: {{email}}",
+    healing_code_invalid:
+      "No report matches this code for the email: {{email}}",
+    healing_upload_prompt: "Please attach your healing certificate below:",
+    signature_section_title: "Signature",
+    signature_section_subtitle:
+      "Please sign to confirm the accuracy of the information provided",
+    signature_privacy_html: `
+      For efficient handling of my case, and only for this purpose, I authorize the processing of my medical data related to the accident of which I was a victim, as described in the
+      <a href="https://arena-nv.be/fr/products/4" class="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
+        Privacy Declaration
+      </a>.
+      In accordance with GDPR, I have the right of access, rectification, portability, objection, and erasure of my data (arena@arena-nv.be).`,
+    signature_label_html:
+      "<strong>Signature of the victim or parents/legal guardian (for children under 13 years)</strong>",
+    signature_placeholder_decla: "Sign here to confirm the accident report",
+    cooldown_message_html:
+      "You can submit another report in <strong>{{time}}</strong>",
+    spellcheck_field_email: "Email address",
+    spellcheck_field_phone: "Phone number",
   },
 };

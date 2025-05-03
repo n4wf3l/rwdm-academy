@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"; // Assurez-vous que ce chemin est correct
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FormSectionProps {
   title: string;
@@ -64,6 +65,7 @@ const FormSection: React.FC<FormSectionProps> = ({
 const AccidentReportForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, lang } = useTranslation();
   const [accidentDate, setAccidentDate] = useState<Date | undefined>();
   const [accidentCode, setAccidentCode] = useState<string>(""); // Pour déclaration d'accident
   const [healingCode, setHealingCode] = useState<string>("");
@@ -156,6 +158,11 @@ const AccidentReportForm: React.FC = () => {
       if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     };
   }, [isCooldown]);
+
+  useEffect(() => {
+    // à chaque fois qu'on change de type de document, on vide la zone d'upload
+    setPdfFiles([]);
+  }, [documentType]);
 
   const generateCode = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -348,40 +355,48 @@ const AccidentReportForm: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
+    // Convertit la FileList en tableau et supprime les doublons par nom
     const newFiles = Array.from(e.target.files);
-
     const allFiles = [...pdfFiles, ...newFiles].filter(
       (file, index, self) =>
         index === self.findIndex((f) => f.name === file.name)
     );
 
-    const maxFiles = documentType === "healing-certificate" ? 2 : 1;
+    // 3 fichiers max pour le certificat, 1 pour la déclaration
+    const maxFiles = documentType === "healing-certificate" ? 3 : 1;
 
-    if (documentType === "accident-report" && allFiles.length > 1) {
+    if (allFiles.length > maxFiles) {
       toast({
         title: "Trop de fichiers",
-        description:
-          "Une seule pièce justificative est autorisée pour une déclaration d'accident.",
+        description: `Maximum ${maxFiles} fichier${
+          maxFiles > 1 ? "s" : ""
+        } autorisé${maxFiles > 1 ? "s" : ""}.`,
         variant: "destructive",
       });
       return;
     }
 
+    // On ne conserve que les maxFiles premiers
     const limitedFiles = allFiles.slice(0, maxFiles);
 
+    // Autorise PDF, JPG/JPEG, PNG, taille 10 Mo max
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
     const invalidFiles = limitedFiles.filter(
-      (file) => file.type !== "application/pdf" || file.size > 10 * 1024 * 1024
+      (file) =>
+        !allowedTypes.includes(file.type) || file.size > 10 * 1024 * 1024
     );
 
     if (invalidFiles.length > 0) {
       toast({
         title: "Fichier invalide",
-        description: "Seuls les fichiers PDF de moins de 10 Mo sont autorisés.",
+        description:
+          "Seuls les PDF, JPG ou PNG de moins de 10 Mo sont autorisés.",
         variant: "destructive",
       });
       return;
     }
 
+    // Tout est OK
     setPdfFiles(limitedFiles);
   };
 
@@ -397,6 +412,12 @@ const AccidentReportForm: React.FC = () => {
     documentType: "accident-report" | "healing-certificate";
   }) => {
     const inputId = `pdfUpload-${documentType}`;
+    const acceptAttr =
+      documentType === "accident-report"
+        ? "application/pdf"
+        : "application/pdf,image/jpeg,image/png";
+
+    const multipleAttr = documentType === "healing-certificate";
 
     return (
       <div className="space-y-4">
@@ -413,17 +434,17 @@ const AccidentReportForm: React.FC = () => {
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {documentType === "healing-certificate"
-                  ? "Jusqu'à 2 fichiers PDF (MAX. 10MB chacun)"
-                  : "1 seul fichier PDF (MAX. 10MB)"}
+                  ? "Jusqu'à 3 fichiers (PDF, JPG, PNG – max. 10 Mo chacun)"
+                  : "1 seul fichier PDF (max. 10 Mo)"}
               </p>
             </div>
             <input
               id={inputId}
               name="pdfFiles"
               type="file"
-              accept="application/pdf"
+              accept={acceptAttr}
+              multiple={multipleAttr}
               className="hidden"
-              multiple={documentType === "healing-certificate"}
               onChange={handleFileChange}
             />
           </label>
