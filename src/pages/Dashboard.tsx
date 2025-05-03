@@ -56,7 +56,7 @@ const Dashboard = () => {
   const completedRequestsPerPage = 5;
   const [pendingAccidentReportsPage, setPendingAccidentReportsPage] =
     useState(1);
-  const pendingAccidentReportsPerPage = 5;
+  const pendingAccidentReportsPerPage = 10;
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -402,6 +402,11 @@ const Dashboard = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const requestsForMainTable = filteredRequests.filter(
+    // on exclut uniquement les accident‑report déjà “En cours”
+    (req) => !(req.type === "accident-report" && req.status === "in-progress")
+  );
+
   const newRequestsCount = requests.filter((r) => r.status === "new").length;
 
   const completedRequests = requests.filter((r) => r.status === "completed");
@@ -414,19 +419,33 @@ const Dashboard = () => {
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
   );
+
   const pendingAccidentReports = requests.filter(
-    (r) =>
-      r.type === "accident-report" &&
-      r.status !== "completed" &&
-      r.status !== "rejected"
+    (r) => r.type === "accident-report" && r.status === "in-progress"
   );
 
+  // 2) Grouper par codeDossier
+  const groupedByCodeArray = Object.entries(
+    pendingAccidentReports.reduce((acc, req) => {
+      const code = req.details?.codeDossier ?? `NO_CODE_${req.id}`;
+      if (!acc[code]) acc[code] = [];
+      acc[code].push(req);
+      return acc;
+    }, {} as Record<string, Request[]>)
+  ).map(([code, items]) => ({ code, items }));
+
+  // 3) Pagination au niveau des groupes
+  const groupsPerPage = pendingAccidentReportsPerPage;
+  const start = (pendingAccidentReportsPage - 1) * groupsPerPage;
+  const end = start + groupsPerPage;
+  const paginatedGroups = groupedByCodeArray.slice(start, end);
+
+  // 4) “Déplier” les groupes pour passer un Request[] à la carte
+  const paginatedPendingAccidents = paginatedGroups.flatMap((g) => g.items);
+
+  // 5) Calcul du nombre total de pages sur les groupes
   const totalPendingAccidentPages = Math.ceil(
-    pendingAccidentReports.length / pendingAccidentReportsPerPage
-  );
-  const paginatedPendingAccidents = pendingAccidentReports.slice(
-    (pendingAccidentReportsPage - 1) * pendingAccidentReportsPerPage,
-    pendingAccidentReportsPage * pendingAccidentReportsPerPage
+    groupedByCodeArray.length / pendingAccidentReportsPerPage
   );
 
   const handleRequestDeleted = (id: string) => {
@@ -629,25 +648,18 @@ const Dashboard = () => {
   const handleAppointmentTypeSelection = (type: "test" | "secretariat") => {
     if (!selectedRequest) return;
 
-    if (type === "secretariat") {
-      // Ouvrir le modal AddAppointmentDialog
-      setIsAppointmentDialogOpen(false); // Fermer le premier modal
-      setIsAddAppointmentDialogOpen(true);
-
-      // Préremplir les champs avec les infos de la demande
-      setNewAppointmentPerson(selectedRequest.name);
-      setNewAppointmentEmail(selectedRequest.email);
-      setNewAppointmentType("registration");
-    } else if (type === "test") {
-      // Afficher une notification pour le test technique
-      toast({
-        title: "Test technique sélectionné",
-        description: "Un email devra être envoyé aux coordinateurs plus tard.",
-      });
-    }
-
-    // Fermer le modal AppointmentDialog après sélection
+    // Toujours fermer le 1er modal et ouvrir le 2ᵉ
     setIsAppointmentDialogOpen(false);
+    setIsAddAppointmentDialogOpen(true);
+
+    // Pré‑remplir person & email
+    setNewAppointmentPerson(selectedRequest.name);
+    setNewAppointmentEmail(selectedRequest.email);
+
+    // Choisir le bon type de rdv pour AddAppointmentDialog
+    setNewAppointmentType(
+      type === "secretariat" ? "registration" : "selection-tests"
+    );
   };
 
   const openAppointmentDialog = (request: Request) => {
@@ -729,7 +741,7 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="overflow-x-auto">
                     <RequestsTable
-                      requests={filteredRequests}
+                      requests={requestsForMainTable}
                       admins={admins}
                       onAssignRequest={handleAssignRequest}
                       onUpdateStatus={handleUpdateStatus}

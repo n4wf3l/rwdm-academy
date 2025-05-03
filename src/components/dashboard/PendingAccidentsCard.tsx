@@ -174,19 +174,26 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             </TableHeader>
             <TableBody>
               {Object.entries(groupedByCode).map(([code, requests]) => {
-                const declaration = requests.find(
-                  (r) => r.details?.documentLabel === "Déclaration d'accident"
+                // 1) trier les deux (ou une) request(s) du même dossier par date
+                const sorted = [...requests].sort(
+                  (a, b) =>
+                    new Date(a.date).getTime() - new Date(b.date).getTime()
                 );
-                const healing = requests.find(
-                  (r) => r.details?.documentLabel === "Certificat de guérison"
-                );
+                // 2) la première est la déclaration, la seconde (s’il y en a) le certificat
+                const declaration = sorted[0];
+                const healing = sorted.length > 1 ? sorted[1] : undefined;
 
                 const isDeclarationSent = Boolean(
                   (declaration as any)?.sent_at
                 );
-                const isHealingSent = !!(healing && (healing as any).sent_at);
+                const isHealingSent = Boolean(
+                  healing && (healing as any).sent_at
+                );
 
+                // s’il n’y a même pas de déclaration, on skip
                 if (!declaration) return null;
+
+                const duoBg = healing ? "bg-green-100" : "";
 
                 return (
                   <React.Fragment key={code}>
@@ -194,7 +201,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     {declaration && (
                       <TableRow
                         onClick={() => onViewDetails(declaration)}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className={`${duoBg} hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer`}
                       >
                         <TableCell>{formatRequestId(declaration.id)}</TableCell>
                         <TableCell>
@@ -260,7 +267,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     {healing && (
                       <TableRow
                         onClick={() => onViewDetails(healing)}
-                        className="bg-gray-50 dark:bg-gray-900 text-sm"
+                        className={`${duoBg} bg-opacity-50 dark:bg-opacity-50 text-sm`}
                       >
                         <TableCell>{formatRequestId(healing.id)}</TableCell>
                         <TableCell></TableCell>
