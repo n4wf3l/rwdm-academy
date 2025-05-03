@@ -528,6 +528,48 @@ export const translations = {
     parse_data_error:
       "Impossible de parser les données pour la requête d’ID {{id}}",
     check_code_general_error: "Erreur lors de la vérification du code",
+    waiver_player_info_title: "Informations du joueur",
+    waiver_player_info_subtitle:
+      "Veuillez remplir les informations concernant le joueur",
+    label_player_birth_date: "Date de naissance *",
+
+    waiver_parent_info_title: "Informations du parent/tuteur",
+    waiver_parent_info_subtitle:
+      "Veuillez remplir vos informations en tant que responsable légal. Vous êtes joueur et majeur ? Vous avez le droit d'introduire vos propres données.",
+    waiver_waiver_title: "Décharge de responsabilité",
+    waiver_waiver_subtitle: "Lisez attentivement avant de signer",
+
+    waiver_date_confirmation_title: "Date et confirmation",
+    waiver_date_confirmation_subtitle:
+      "Veuillez confirmer la date et saisir 'Lu et approuvé'",
+    label_waiver_date: "Date de signature",
+    label_approval_text: 'Mention "Lu et approuvé"',
+    placeholder_approval_text: "Sélectionnez votre accord",
+    option_approval_text: "Lu et approuvé",
+
+    signature_placeholder_waiver:
+      "Signez ici pour valider la décharge de responsabilité",
+
+    button_submit_waiver: "Soumettre la décharge",
+    cooldown_message_waiver_html:
+      "Vous pourrez renvoyer une décharge de responsabilité dans <strong>{{time}}</strong>",
+
+    spellcheck_title_waiver: "Vérification des informations de la décharge",
+    spellcheck_field_parent_first_name: "Prénom du responsable",
+    spellcheck_field_parent_last_name: "Nom du responsable",
+    spellcheck_field_parent_email: "Email du responsable",
+    toast_error_description_required:
+      "Veuillez remplir tous les champs obligatoires.",
+    toast_success_waiver_title: "Décharge soumise avec succès",
+    toast_success_waiver_description:
+      "Votre décharge de responsabilité a été envoyée.",
+    toast_error_generic_description:
+      "Une erreur est survenue lors de l'envoi du formulaire.",
+
+    toast_error_upload_signature: "Erreur lors de l’upload de la signature.",
+    toast_error_api: "Erreur API.",
+    waiver_text_template:
+      "Je soussigné(e), {{parentFirstName}} {{parentLastName}}, représentant légal du joueur {{playerFirstName}} {{playerLastName}}, né le {{playerBirthDate}}, et affilié au club {{currentClub}}, décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.",
   },
 
   nl: {
@@ -995,6 +1037,46 @@ export const translations = {
       "Bewaar deze code goed om later uw geneescertificaat te koppelen.",
     parse_data_error: "Kan gegevens niet parsen voor aanvraag-ID {{id}}",
     check_code_general_error: "Fout bij het verifiëren van de code",
+    waiver_player_info_title: "Spelerinformatie",
+    waiver_player_info_subtitle: "Vul de informatie over de speler in",
+    label_player_birth_date: "Geboortedatum *",
+
+    waiver_parent_info_title: "Informatie over ouder/voogd",
+    waiver_parent_info_subtitle:
+      "Vul uw gegevens in als wettelijke vertegenwoordiger. Bent u speler en meerderjarig? U mag uw eigen gegevens invullen.",
+    waiver_waiver_title: "Aansprakelijkheidsontheffing",
+    waiver_waiver_subtitle: "Lees aandachtig voordat u tekent",
+
+    waiver_date_confirmation_title: "Datum en bevestiging",
+    waiver_date_confirmation_subtitle:
+      "Bevestig de datum en voer 'Gelezen en goedgekeurd' in",
+    label_waiver_date: "Handtekeningdatum",
+    label_approval_text: 'Vermelding "Gelezen en goedgekeurd"',
+    placeholder_approval_text: "Selecteer uw akkoord",
+    option_approval_text: "Gelezen en goedgekeurd",
+
+    signature_placeholder_waiver:
+      "Onderteken hier om de aansprakelijkheidsontheffing te bevestigen",
+
+    button_submit_waiver: "Verzend de ontheffing",
+    cooldown_message_waiver_html:
+      "U kunt de aansprakelijkheidsontheffing opnieuw verzenden in {{time}}",
+
+    spellcheck_title_waiver: "Controle van de ontheffingsgegevens",
+    spellcheck_field_parent_first_name: "Voornaam verantwoordelijke",
+    spellcheck_field_parent_last_name: "Achternaam verantwoordelijke",
+    spellcheck_field_parent_email: "E-mail verantwoordelijke",
+
+    toast_error_description_required: "Vul alle verplichte velden in.",
+    toast_success_waiver_title: "Ontheffing succesvol verzonden",
+    toast_success_waiver_description:
+      "Uw aansprakelijkheidsontheffing is verzonden.",
+    toast_error_generic_description:
+      "Er is een fout opgetreden tijdens het verzenden van het formulier.",
+    toast_error_upload_signature: "Fout bij uploaden van de handtekening.",
+    toast_error_api: "API-fout.",
+    waiver_text_template:
+      "Ondergetekende, {{parentFirstName}} {{parentLastName}}, wettelijke vertegenwoordiger van de speler {{playerFirstName}} {{playerLastName}}, geboren op {{playerBirthDate}}, en aangesloten bij club {{currentClub}}, ontheft RWDM Academy van alle verantwoordelijkheid in geval van een ongeval tijdens trainingen en/of vriendschappelijke wedstrijden waaraan de speler vanaf vandaag deelneemt.",
   },
   en: {
     welcome:
@@ -1452,5 +1534,43 @@ export const translations = {
       "Keep this code safe so you can link your healing certificate later.",
     parse_data_error: "Unable to parse data for request ID {{id}}",
     check_code_general_error: "Error checking code validity",
+    waiver_player_info_title: "Player information",
+    waiver_player_info_subtitle: "Please fill out the player's information",
+    label_player_birth_date: "Birth date *",
+
+    waiver_parent_info_title: "Parent/guardian information",
+    waiver_parent_info_subtitle:
+      "Please fill in your information as the legal guardian. Are you a player and over 18? You may enter your own data.",
+    waiver_waiver_title: "Liability waiver",
+    waiver_waiver_subtitle: "Please read carefully before signing",
+
+    waiver_date_confirmation_title: "Date and confirmation",
+    waiver_date_confirmation_subtitle:
+      "Please confirm the date and enter 'Read and approved'",
+    label_waiver_date: "Signature date",
+    label_approval_text: 'Mention "Read and approved"',
+    placeholder_approval_text: "Select your agreement",
+    option_approval_text: "Read and approved",
+
+    signature_placeholder_waiver: "Sign here to validate the liability waiver",
+
+    button_submit_waiver: "Submit waiver",
+    cooldown_message_waiver_html:
+      "You can submit the liability waiver again in <strong>{{time}}</strong>",
+
+    spellcheck_title_waiver: "Verification of waiver information",
+    spellcheck_field_parent_first_name: "Guardian’s first name",
+    spellcheck_field_parent_last_name: "Guardian’s last name",
+    spellcheck_field_parent_email: "Guardian’s email",
+
+    toast_error_description_required: "Please fill out all required fields.",
+    toast_success_waiver_title: "Waiver submitted successfully",
+    toast_success_waiver_description: "Your liability waiver has been sent.",
+    toast_error_generic_description:
+      "An error occurred while sending the form.",
+    toast_error_upload_signature: "Error uploading the signature.",
+    toast_error_api: "API error.",
+    waiver_text_template:
+      "I, {{parentFirstName}} {{parentLastName}}, legal guardian of the player {{playerFirstName}} {{playerLastName}}, born on {{playerBirthDate}}, and affiliated with club {{currentClub}}, hereby release RWDM Academy from any liability for accidents that may occur during training sessions and/or friendly matches in which the player participates from this day forward.",
   },
 };

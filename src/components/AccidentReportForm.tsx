@@ -478,8 +478,8 @@ const AccidentReportForm: React.FC = () => {
   };
 
   const spellCheckFields = [
-    { label: t("spellcheck_field_player_first_name"), value: playerFirstName },
     { label: t("spellcheck_field_player_last_name"), value: playerLastName },
+    { label: t("spellcheck_field_player_first_name"), value: playerFirstName },
     { label: t("spellcheck_field_email"), value: email },
     { label: t("spellcheck_field_phone"), value: phone },
   ];
@@ -626,20 +626,6 @@ const AccidentReportForm: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Prénom du joueur */}
-                <div className="space-y-2">
-                  <Label htmlFor="playerFirstName">
-                    {t("label_player_first_name")}
-                  </Label>
-                  <Input
-                    id="playerFirstName"
-                    className="form-input-base"
-                    value={playerFirstName}
-                    onChange={(e) => setPlayerFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-
                 {/* Nom du joueur */}
                 <div className="space-y-2">
                   <Label htmlFor="playerLastName">
@@ -650,6 +636,20 @@ const AccidentReportForm: React.FC = () => {
                     className="form-input-base"
                     value={playerLastName}
                     onChange={(e) => setPlayerLastName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Prénom du joueur */}
+                <div className="space-y-2">
+                  <Label htmlFor="playerFirstName">
+                    {t("label_player_first_name")}
+                  </Label>
+                  <Input
+                    id="playerFirstName"
+                    className="form-input-base"
+                    value={playerFirstName}
+                    onChange={(e) => setPlayerFirstName(e.target.value)}
                     required
                   />
                 </div>
