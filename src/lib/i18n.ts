@@ -570,6 +570,216 @@ export const translations = {
     toast_error_api: "Erreur API.",
     waiver_text_template:
       "Je soussigné(e), {{parentFirstName}} {{parentLastName}}, représentant légal du joueur {{playerFirstName}} {{playerLastName}}, né le {{playerBirthDate}}, et affilié au club {{currentClub}}, décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.",
+    tab_confidentiality: "Confidentialité",
+    tab_terms: "CGU",
+    tab_legal: "Mentions Légales",
+    tab_cookies: "Cookies",
+    btn_back_home: "Retour à l'accueil",
+    page_legal_title: "Informations Légales",
+    confidentiality_title: "Politique de Confidentialité",
+    confidentiality_last_updated: "Dernière mise à jour :",
+    confidentiality_section1_title: "1. Introduction",
+    confidentiality_section1_text:
+      "Bienvenue sur la plateforme RWDM Academy. Nous nous engageons à protéger la vie privée et les données personnelles des utilisateurs de notre service. Cette politique de confidentialité explique comment nous recueillons, utilisons, partageons et protégeons vos informations personnelles.",
+    confidentiality_section2_title: "2. Données collectées",
+    confidentiality_section2_intro:
+      "Nous collectons les données suivantes lors de votre utilisation :",
+    confidentiality_li_name: "Nom, prénom, date et lieu de naissance",
+    confidentiality_li_contact:
+      "Adresse, code postal, ville, email, téléphone (GSM)",
+    confidentiality_li_sport:
+      "Saison d’inscription, académie, catégorie, position",
+    confidentiality_li_club: "Club actuel et club précédent",
+    confidentiality_li_responsible:
+      "Type de responsable (père/mère/tuteur), nom, prénom, téléphone, email, adresse",
+    confidentiality_li_consent:
+      "Consentement à l’image et signature (date, mention “Lu et approuvé”)",
+    confidentiality_li_accident:
+      "Date et description de l’accident, code de dossier, document PDF justificatif",
+    confidentiality_li_navigation:
+      "Données de navigation (stockées en localStorage)",
+    confidentiality_li_minors:
+      "Les mineurs de moins de 18 ans ne sont pas autorisés à remplir ces formulaires.",
+    confidentiality_section3_title: "3. Utilisation des données",
+    confidentiality_section3_li1:
+      "Gérer vos demandes (inscription, test, accident, décharge)",
+    confidentiality_section3_li2: "Vous contacter pour rendez‑vous et suivi",
+    confidentiality_section3_li3:
+      "Améliorer nos services et la sécurité de la plateforme",
+    confidentiality_section4_title: "4. Base légale du traitement",
+    confidentiality_section4_li1: "Consentement explicite",
+    confidentiality_section4_li2: "Exécution du contrat",
+    confidentiality_section4_li3: "Intérêt légitime",
+    confidentiality_section4_li4: "Obligations légales",
+    confidentiality_section5_title: "5. Partage des données",
+    confidentiality_section5_li1: "URBSFA pour les inscriptions officielles",
+    confidentiality_section5_li2: "Prestataires informatiques",
+    confidentiality_section5_li3: "Autorités compétentes si la loi l’exige",
+    confidentiality_section5_text:
+      "Nous ne vendons jamais vos données personnelles à des tiers.",
+    confidentiality_section6_title: "6. Durée de conservation",
+    confidentiality_section6_li1:
+      "Durée de traitement de la demande et suivi associé",
+    confidentiality_section6_li2: "Périodes légales de conservation",
+    confidentiality_section6_li3: "Jusqu’à 3 ans après dernière activité",
+    confidentiality_section7_title: "7. Vos droits",
+    confidentiality_section7_li1:
+      "Droit d’accès, de rectification, d’effacement",
+    confidentiality_section7_li2: "Droit à la limitation et à la portabilité",
+    confidentiality_section7_li3:
+      "Droit d’opposition et de retrait de consentement",
+    confidentiality_section7_contact: "Pour exercer ces droits, contactez",
+    confidentiality_section8_title: "8. Sécurité des données",
+    confidentiality_section8_text:
+      "Nous appliquons des mesures techniques et organisationnelles pour protéger vos données contre la perte, l’accès non autorisé et la divulgation.",
+    confidentiality_section9_title: "9. Transferts internationaux",
+    confidentiality_section9_text:
+      "Données stockées et traitées dans l’Union européenne. Tout transfert hors UE bénéficie de garanties conformes au RGPD.",
+    confidentiality_section10_title: "10. Contact",
+    confidentiality_section10_text: "Pour toute question, écrivez à",
+    last_updated: "Dernière mise à jour",
+    confidentiality_section3_intro: "Nous utilisons vos données pour :",
+    confidentiality_section3_text:
+      "Nous utilisons vos données pour : gérer vos demandes (inscription, test, accident, décharge), vous contacter pour rendez‑vous et suivi, améliorer nos services et la sécurité de la plateforme.",
+    cgu_title: "Conditions Générales d’Utilisation",
+    cgu_section1_title: "1. Acceptation des conditions",
+    cgu_section1_text:
+      "En envoyant des demandes via la plateforme RWDM Academy, vous acceptez d’être lié par les présentes Conditions Générales d’Utilisation. Si vous n’acceptez pas ces conditions, veuillez ne pas utiliser notre service.",
+    cgu_section2_title: "2. Description du service",
+    cgu_section2_text1:
+      "La plateforme RWDM Academy permet d’envoyer des demandes pour :",
+    cgu_section2_li1: "demande d’inscription à l’académie RWDM",
+    cgu_section2_li2: "demande de test de sélection",
+    cgu_section2_li3: "déclaration d’accident",
+    cgu_section2_li4: "signature d’une décharge de responsabilité",
+    cgu_section2_text2:
+      "Vous recevrez un accusé de réception automatique par email, puis une confirmation ultérieure (acceptation, rendez‑vous, suite) par email.",
+    cgu_section3_title: "3. Conditions d’accès et d’envoi de demandes",
+    cgu_section3_text1: "Pour soumettre une demande, vous devez :",
+    cgu_section3_li1:
+      "Être âgé d’au moins 18 ans ou, si mineur, représenté par un parent/tuteur",
+    cgu_section3_li2: "Fournir des informations exactes, complètes et à jour",
+    cgu_section3_li3: "Respecter toutes les lois applicables",
+    cgu_section4_title: "4. Gestion des comptes administratifs",
+    cgu_section4_text:
+      "Seuls owner, superadmin et admin disposent de comptes créés manuellement par le propriétaire. Les utilisateurs finaux n’ont pas de fonctionnalité de création de compte.",
+    cgu_section5_title: "5. Utilisation acceptable",
+    cgu_section5_text1: "Vous vous engagez à ne pas :",
+    cgu_section5_li1: "Endommager ou rendre indisponible le service",
+    cgu_section5_li2: "Soumettre des informations fausses ou trompeuses",
+    cgu_section5_li3:
+      "Tenter d’accéder aux demandes ou comptes d’autres utilisateurs",
+    cgu_section5_li4: "Utiliser des moyens automatisés non autorisés",
+    cgu_section5_li5: "Contourner les mesures de sécurité",
+    cgu_section6_title: "6. Propriété intellectuelle",
+    cgu_section6_text:
+      "Tous les contenus (logos, textes, images) sont protégés. Toute reproduction sans autorisation écrite est interdite.",
+    cgu_section7_title: "7. Responsabilité",
+    cgu_section7_text:
+      "Le service est fourni « tel quel » et « selon disponibilité ». Nous ne garantissons pas une disponibilité continue et ne sommes pas responsables des dommages indirects.",
+    cgu_section8_title: "8. Modification des conditions",
+    cgu_section8_text:
+      "Nous pouvons modifier ces conditions à tout moment. Les changements prennent effet dès publication ; l’utilisation continue vaut acceptation.",
+    cgu_section9_title: "9. Résiliation",
+    cgu_section9_text:
+      "Nous pouvons suspendre ou résilier l’accès en cas de violation. Vous pouvez demander la suppression de vos données de demande à tout moment.",
+    cgu_section10_title: "10. Loi applicable et juridiction",
+    cgu_section10_text:
+      "Ces conditions sont régies par le droit belge. Tout litige sera soumis aux tribunaux de Bruxelles.",
+    cgu_section11_title: "11. Contact",
+    cgu_section11_text:
+      "Pour toute question, contactez : RWDM Academy, Rue Charles Malis 61, 1080 Molenbeek‑Saint‑Jean, {{email}}",
+    cgu_section2_intro:
+      "La plateforme RWDM Academy permet d’envoyer des demandes pour :",
+    cgu_section2_item1: "demande d’inscription à l’académie RWDM",
+    cgu_section2_item2: "demande de test de sélection",
+    cgu_section2_item3: "déclaration d’accident",
+    cgu_section2_item4: "signature d’une décharge de responsabilité",
+    cgu_section2_text:
+      "Vous recevrez un accusé de réception automatique par email, puis une confirmation ultérieure (acceptation, rendez‑vous, suite) par email.",
+    cgu_section3_intro: "Pour soumettre une demande, vous devez :",
+    cgu_section3_item1:
+      "Être âgé d’au moins 18 ans ou, si mineur, représenté par un parent/tuteur",
+    cgu_section3_item2: "Fournir des informations exactes, complètes et à jour",
+    cgu_section3_item3: "Respecter toutes les lois applicables",
+    cgu_section5_intro: "Vous vous engagez à ne pas :",
+    cgu_section5_item1: "Endommager ou rendre indisponible le service",
+    cgu_section5_item2: "Soumettre des informations fausses ou trompeuses",
+    cgu_section5_item3:
+      "Tenter d’accéder aux demandes ou comptes d’autres utilisateurs",
+    cgu_section5_item4: "Utiliser des moyens automatisés non autorisés",
+    cgu_section5_item5: "Contourner les mesures de sécurité",
+    cgu_section11_contact_intro: "Pour toute question, contactez :",
+
+    // Section 1
+    legal_section1_title: "1. Informations légales",
+    legal_section1_intro: "Cette plateforme est éditée par :",
+    legal_section1_name_label: "Nom",
+    legal_section1_address_label: "Adresse",
+    legal_section1_country_label: "Pays",
+    legal_section1_email_label: "Email",
+
+    // Section 2
+    legal_section2_title: "2. Responsable de publication",
+    legal_section2_text:
+      "Le responsable de publication est Nawfel Ajari, ingénieur logiciel, stagiaire chez RWDM Academy.",
+    legal_section2_subtitle: "Développement technique",
+    legal_section2_dev_text: "Le site a été développé par Nawfel Ajari.",
+
+    // Section 3
+    legal_section3_title: "3. Hébergement",
+    legal_section3_intro: "Cette plateforme est hébergée par :",
+    legal_section3_provider: "Hostinger",
+    legal_section3_address:
+      "Adresse : Hostinger International Ltd, 61 Lordou Vironos Street, 6023 Larnaca, Chypre",
+    legal_section3_website: "Site web : https://www.hostinger.fr",
+
+    // Section 4
+    legal_section4_title: "4. Propriété intellectuelle",
+    legal_section4_text:
+      "Tout le contenu (textes, images, logos, etc.) est la propriété exclusive de RWDM Academy ou de ses partenaires. Toute reproduction ou adaptation sans autorisation écrite préalable est interdite.",
+
+    // Section 5
+    legal_section5_title: "5. Liens hypertextes",
+    legal_section5_text:
+      "La plateforme peut contenir des liens vers d’autres sites. Nous n’exerçons aucun contrôle sur leur contenu et déclinons toute responsabilité.",
+
+    // Section 6
+    legal_section6_title: "6. Responsabilité",
+    legal_section6_text:
+      "Nous nous efforçons d’assurer l’exactitude des informations. Toutefois, nous ne garantissons ni exhaustivité ni précision et déclinons toute responsabilité pour omissions ou inexactitudes.",
+
+    // Section 7
+    legal_section7_title: "7. Droit applicable et juridiction compétente",
+    legal_section7_text:
+      "Ces mentions légales sont régies par le droit belge. En cas de litige, seuls les tribunaux de Bruxelles sont compétents.",
+    cookie_policy_title: "Politique de Cookies",
+    cookie_policy_last_updated: "Dernière mise à jour",
+    cookie_section1_title: "1. Pas de cookies HTTP",
+    cookie_section1_text:
+      "Nous n’utilisons aucun cookie HTTP. Toutes les préférences (langue, affichage) sont stockées en localStorage côté client.",
+    cookie_section2_title: "2. Pourquoi pas de cookies ?",
+    cookie_section2_text: "En stockant les préférences en localStorage, nous :",
+    cookie_section2_point1:
+      "Allégeons les requêtes HTTP (pas d’en‑têtes de cookie)",
+    cookie_section2_point2:
+      "Conservons les données plus longtemps sans expiration automatique",
+    cookie_section2_point3:
+      "Évitons les contraintes de taille et de parsing des cookies",
+    cookie_section3_title: "3. Gestion du stockage local",
+    cookie_section3_text:
+      "Vous pouvez effacer ou désactiver le localStorage via les outils de votre navigateur ; cela réinitialisera vos préférences (langue, thème, etc.).",
+    cookie_section4_title: "4. Impact fonctionnel",
+    cookie_section4_text:
+      "La suppression des données en localStorage peut entraîner un retour à la langue et aux paramètres par défaut à chaque nouvelle visite.",
+    cookie_section5_title: "5. Contact",
+    cookie_section5_text: "Pour toute question sur cette politique, contactez",
+    cookie_section2_li1:
+      "Allégeons les requêtes HTTP (pas d’en‑têtes de cookie)",
+    cookie_section2_li2:
+      "Conservons les données plus longtemps sans expiration automatique",
+    cookie_section2_li3:
+      "Évitons les contraintes de taille et de parsing des cookies",
   },
 
   nl: {
@@ -1077,6 +1287,219 @@ export const translations = {
     toast_error_api: "API-fout.",
     waiver_text_template:
       "Ondergetekende, {{parentFirstName}} {{parentLastName}}, wettelijke vertegenwoordiger van de speler {{playerFirstName}} {{playerLastName}}, geboren op {{playerBirthDate}}, en aangesloten bij club {{currentClub}}, ontheft RWDM Academy van alle verantwoordelijkheid in geval van een ongeval tijdens trainingen en/of vriendschappelijke wedstrijden waaraan de speler vanaf vandaag deelneemt.",
+    tab_confidentiality: "Privacybeleid",
+    tab_terms: "Gebruiksvoorwaarden",
+    tab_legal: "Juridische Vermelding",
+    tab_cookies: "Cookies",
+    btn_back_home: "Terug naar start",
+    page_legal_title: "Juridische informatie",
+    confidentiality_title: "Privacybeleid",
+    confidentiality_last_updated: "Laatst bijgewerkt:",
+    confidentiality_section1_title: "1. Inleiding",
+    confidentiality_section1_text:
+      "Welkom op het RWDM Academy-platform. Wij zetten ons in voor de bescherming van de privacy en persoonsgegevens van de gebruikers van onze dienst. Dit privacybeleid legt uit hoe we uw persoonlijke gegevens verzamelen, gebruiken, delen en beschermen.",
+    confidentiality_section2_title: "2. Verzamelde gegevens",
+    confidentiality_section2_intro:
+      "We verzamelen de volgende gegevens tijdens uw gebruik:",
+    confidentiality_li_name: "Naam, voornaam, geboortedatum en geboorteplaats",
+    confidentiality_li_contact: "Adres, postcode, stad, e-mail, telefoon (gsm)",
+    confidentiality_li_sport:
+      "Inschrijvingsseizoen, academie, categorie, positie",
+    confidentiality_li_club: "Huidige en vorige club",
+    confidentiality_li_responsible:
+      "Type verantwoordelijke (vader/moeder/voogd), naam, voornaam, telefoon, e-mail, adres",
+    confidentiality_li_consent:
+      "Beeldtoestemming en handtekening (datum, vermelding “Gelezen en goedgekeurd”)",
+    confidentiality_li_accident:
+      "Datum en beschrijving van het ongeval, dossiercode, PDF-bewijsdocument",
+    confidentiality_li_navigation:
+      "Navigatiegegevens (opgeslagen in localStorage)",
+    confidentiality_li_minors:
+      "Minderjarigen jonger dan 18 jaar mogen deze formulieren niet invullen.",
+    confidentiality_section3_title: "3. Gebruik van gegevens",
+    confidentiality_section3_li1:
+      "Beheren van uw aanvragen (inschrijving, test, ongeval, vrijwaring)",
+    confidentiality_section3_li2:
+      "Contact met u opnemen voor afspraken en opvolging",
+    confidentiality_section3_li3:
+      "Onze dienstverlening en de veiligheid van het platform verbeteren",
+    confidentiality_section4_title: "4. Rechtsgrondslag van de verwerking",
+    confidentiality_section4_li1: "Uitdrukkelijke toestemming",
+    confidentiality_section4_li2: "Contractuele uitvoering",
+    confidentiality_section4_li3: "Legitiem belang",
+    confidentiality_section4_li4: "Wettelijke verplichtingen",
+    confidentiality_section5_title: "5. Delen van gegevens",
+    confidentiality_section5_li1: "URBSFA voor officiële inschrijvingen",
+    confidentiality_section5_li2: "IT‑dienstverleners",
+    confidentiality_section5_li3:
+      "Bevoegde autoriteiten indien wettelijk vereist",
+    confidentiality_section5_text:
+      "We verkopen uw persoonsgegevens nooit aan derden.",
+    confidentiality_section6_title: "6. Bewaartermijn",
+    confidentiality_section6_li1:
+      "Duur van de aanvraagverwerking en bijbehorende opvolging",
+    confidentiality_section6_li2: "Wettelijke bewaartermijnen",
+    confidentiality_section6_li3: "Tot 3 jaar na de laatste activiteit",
+    confidentiality_section7_title: "7. Uw rechten",
+    confidentiality_section7_li1: "Recht op toegang, rectificatie, wissen",
+    confidentiality_section7_li2: "Recht op beperking en overdraagbaarheid",
+    confidentiality_section7_li3:
+      "Recht van verzet en intrekking van toestemming",
+    confidentiality_section7_contact:
+      "Om deze rechten uit te oefenen, neem contact op met",
+    confidentiality_section8_title: "8. Gegevensbeveiliging",
+    confidentiality_section8_text:
+      "We passen technische en organisatorische maatregelen toe om uw gegevens te beschermen tegen verlies, ongeautoriseerde toegang en openbaarmaking.",
+    confidentiality_section9_title: "9. Internationale overdrachten",
+    confidentiality_section9_text:
+      "Gegevens worden opgeslagen en verwerkt in de Europese Unie. Elke overdracht buiten de EU is gedekt door GDPR-conforme waarborgen.",
+    confidentiality_section10_title: "10. Contact",
+    confidentiality_section10_text: "Voor vragen, schrijf naar",
+    last_updated: "Laatst bijgewerkt",
+    confidentiality_section3_intro: "We gebruiken uw gegevens om:",
+    confidentiality_section3_text:
+      "We gebruiken uw gegevens om: uw aanvragen te verwerken (inschrijving, selectie‑tests, ongevalsaangifte, vrijwaring), contact met u op te nemen voor afspraken en opvolging, onze diensten en de beveiliging van het platform te verbeteren.",
+    cgu_title: "Algemene Gebruiksvoorwaarden",
+    cgu_section1_title: "1. Acceptatie van de voorwaarden",
+    cgu_section1_text:
+      "Door verzoeken via het RWDM Academy‑platform te verzenden, stemt u in met deze Algemene Gebruiksvoorwaarden. Als u niet akkoord gaat, gebruik dan onze service niet.",
+    cgu_section2_title: "2. Beschrijving van de dienst",
+    cgu_section2_text1:
+      "Het RWDM Academy‑platform maakt het mogelijk om verzoeken in te dienen voor:",
+    cgu_section2_li1: "inschrijvingsverzoek voor de RWDM‑academie",
+    cgu_section2_li2: "verzoek om selectie‑tests",
+    cgu_section2_li3: "ongevalsaangifte",
+    cgu_section2_li4: "ondertekening van een vrijwaring",
+    cgu_section2_text2:
+      "U ontvangt een automatische ontvangstbevestiging per e‑mail, gevolgd door een definitieve bevestiging (acceptatie, afspraak, vervolg) per e‑mail.",
+    cgu_section3_title: "3. Toegang en indieningsvoorwaarden",
+    cgu_section3_text1: "Om een verzoek in te dienen, moet u:",
+    cgu_section3_li1:
+      "Minstens 18 jaar oud zijn of, indien minderjarig, vertegenwoordigd door een ouder/voogd",
+    cgu_section3_li2:
+      "Nauwkeurige, volledige en actuele informatie verstrekken",
+    cgu_section3_li3: "Alle toepasselijke wetten naleven",
+    cgu_section4_title: "4. Beheer van beheerdersaccounts",
+    cgu_section4_text:
+      "Alleen owner, superadmin en admin hebben handmatig aangemaakte accounts door de eigenaar. Eindgebruikers hebben geen account‑aanmaakfunctionaliteit.",
+    cgu_section5_title: "5. Acceptabel gebruik",
+    cgu_section5_text1: "U stemt ermee in niet:",
+    cgu_section5_li1: "De service te beschadigen of onbeschikbaar te maken",
+    cgu_section5_li2: "Valse of misleidende informatie in te dienen",
+    cgu_section5_li3:
+      "Te proberen toegang te krijgen tot verzoeken of accounts van anderen",
+    cgu_section5_li4: "Ongeautoriseerde geautomatiseerde middelen te gebruiken",
+    cgu_section5_li5: "Beveiligingsmaatregelen te omzeilen",
+    cgu_section6_title: "6. Intellectuele eigendom",
+    cgu_section6_text:
+      "Alle inhoud (logo’s, teksten, afbeeldingen) is beschermd. Elk gebruik zonder schriftelijke toestemming is verboden.",
+    cgu_section7_title: "7. Aansprakelijkheid",
+    cgu_section7_text:
+      "De service wordt geleverd “zoals het is” en “indien beschikbaar”. We garanderen geen ononderbroken beschikbaarheid en zijn niet aansprakelijk voor indirecte schade.",
+    cgu_section8_title: "8. Wijziging van de voorwaarden",
+    cgu_section8_text:
+      "We kunnen deze voorwaarden op elk moment wijzigen. Wijzigingen worden van kracht bij publicatie; voortgezet gebruik geldt als acceptatie.",
+    cgu_section9_title: "9. Beëindiging",
+    cgu_section9_text:
+      "We kunnen de toegang schorsen of beëindigen bij schending. U kunt op elk moment verzoeken om verwijdering van uw gegevens.",
+    cgu_section10_title: "10. Toepasselijk recht en jurisdictie",
+    cgu_section10_text:
+      "Deze voorwaarden worden beheerst door Belgisch recht. Elk geschil wordt voorgelegd aan de rechtbanken van Brussel.",
+    cgu_section11_title: "11. Contact",
+    cgu_section11_text:
+      "Voor vragen kunt u contact opnemen met: RWDM Academy, Rue Charles Malis 61, 1080 Molenbeek‑Saint‑Jean, {{email}}",
+    cgu_section2_intro:
+      "Het RWDM Academy-platform stelt u in staat om aanvragen in te dienen voor:",
+    cgu_section2_item1: "aanvraag voor inschrijving bij de RWDM-academie",
+    cgu_section2_item2: "aanvraag selectieproef",
+    cgu_section2_item3: "ongevallenmelding",
+    cgu_section2_item4: "ondertekening van een vrijwaringsformulier",
+    cgu_section2_text:
+      "U ontvangt een automatische ontvangstbevestiging per e-mail en later een bevestiging (acceptatie, afspraak, vervolg) per e-mail.",
+    cgu_section3_intro: "Om een aanvraag in te dienen moet u:",
+    cgu_section3_item1:
+      "Minimaal 18 jaar oud zijn of, indien minderjarig, vertegenwoordigd door een ouder/voogd",
+    cgu_section3_item2:
+      "Nauwkeurige, volledige en actuele informatie verstrekken",
+    cgu_section3_item3: "Alle toepasselijke wetten naleven",
+    cgu_section5_intro: "U verbindt zich ertoe niet te:",
+    cgu_section5_item1: "De service te beschadigen of onbeschikbaar te maken",
+    cgu_section5_item2: "Valse of misleidende informatie in te dienen",
+    cgu_section5_item3:
+      "Te proberen toegang te krijgen tot aanvragen of accounts van anderen",
+    cgu_section5_item4:
+      "Ongeautoriseerde geautomatiseerde middelen te gebruiken",
+    cgu_section5_item5: "Beveiligingsmaatregelen te omzeilen",
+    cgu_section11_contact_intro: "Voor vragen kunt u contact opnemen met:",
+
+    // Sectie 1
+    legal_section1_title: "1. Wettelijke informatie",
+    legal_section1_intro: "Dit platform wordt uitgegeven door:",
+    legal_section1_name_label: "Naam",
+    legal_section1_address_label: "Adres",
+    legal_section1_country_label: "Land",
+    legal_section1_email_label: "E‑mail",
+
+    // Sectie 2
+    legal_section2_title: "2. Publicatieverantwoordelijke",
+    legal_section2_text:
+      "De publicatieverantwoordelijke is Nawfel Ajari, software‑ingenieur, stagiair bij RWDM Academy.",
+    legal_section2_subtitle: "Technische ontwikkeling",
+    legal_section2_dev_text: "De site is ontwikkeld door Nawfel Ajari.",
+
+    // Sectie 3
+    legal_section3_title: "3. Hosting",
+    legal_section3_intro: "Dit platform wordt gehost door:",
+    legal_section3_provider: "Hostinger",
+    legal_section3_address:
+      "Adres: Hostinger International Ltd, 61 Lordou Vironos Street, 6023 Larnaca, Cyprus",
+    legal_section3_website: "Website: https://www.hostinger.com",
+
+    // Sectie 4
+    legal_section4_title: "4. Intellectueel eigendom",
+    legal_section4_text:
+      "Alle inhoud (teksten, afbeeldingen, logo’s, enz.) is exclusief eigendom van RWDM Academy of haar partners. Elk gebruik zonder schriftelijke toestemming is verboden.",
+
+    // Sectie 5
+    legal_section5_title: "5. Hyperlinks",
+    legal_section5_text:
+      "Het platform kan links naar andere sites bevatten. Wij hebben geen controle over de inhoud en wijzen alle aansprakelijkheid af.",
+
+    // Sectie 6
+    legal_section6_title: "6. Aansprakelijkheid",
+    legal_section6_text:
+      "Wij streven naar nauwkeurigheid van informatie. Wij garanderen echter geen volledigheid of juistheid en wijzen alle aansprakelijkheid voor weglatingen of onjuistheden af.",
+
+    // Sectie 7
+    legal_section7_title: "7. Toepasselijk recht en jurisdictie",
+    legal_section7_text:
+      "Deze wettelijke vermeldingen vallen onder Belgisch recht. In geval van geschil zijn alleen de rechtbanken van Brussel bevoegd.",
+    cookie_policy_title: "Cookiebeleid",
+    cookie_policy_last_updated: "Laatst bijgewerkt",
+    cookie_section1_title: "1. Geen HTTP‑cookies",
+    cookie_section1_text:
+      "We gebruiken geen HTTP‑cookies. Alle voorkeuren (taal, weergave) worden in client‑side localStorage opgeslagen.",
+    cookie_section2_title: "2. Waarom geen cookies?",
+    cookie_section2_text: "Door voorkeuren in localStorage op te slaan, :",
+    cookie_section2_point1:
+      "Verminderen we HTTP‑overhead (geen cookie‑headers)",
+    cookie_section2_point2:
+      "Bewaren we gegevens langer zonder automatische vervaldatum",
+    cookie_section2_point3:
+      "Vermijden we grootte‑ en parseerbeperkingen van cookies",
+    cookie_section3_title: "3. Beheer van lokale opslag",
+    cookie_section3_text:
+      "U kunt localStorage wissen of uitschakelen via uw browser; dit zet uw voorkeuren (taal, thema, enz.) terug.",
+    cookie_section4_title: "4. Functionele impact",
+    cookie_section4_text:
+      "Verwijdering van gegevens uit localStorage kan ervoor zorgen dat uw taal en instellingen bij elk bezoek terugvallen op de standaardwaarden.",
+    cookie_section5_title: "5. Contact",
+    cookie_section5_text:
+      "Voor vragen over dit beleid kunt u contact opnemen met",
+    cookie_section2_li1: "Verminderen HTTP‑verzoeken (geen cookie‑headers)",
+    cookie_section2_li2:
+      "Bewaren gegevens langer zonder automatische vervaldatum",
+    cookie_section2_li3: "Vermijden grootte‑/parsing‑beperkingen van cookies",
   },
   en: {
     welcome:
@@ -1572,5 +1995,203 @@ export const translations = {
     toast_error_api: "API error.",
     waiver_text_template:
       "I, {{parentFirstName}} {{parentLastName}}, legal guardian of the player {{playerFirstName}} {{playerLastName}}, born on {{playerBirthDate}}, and affiliated with club {{currentClub}}, hereby release RWDM Academy from any liability for accidents that may occur during training sessions and/or friendly matches in which the player participates from this day forward.",
+    tab_confidentiality: "Privacy Policy",
+    tab_terms: "Terms of Use",
+    tab_legal: "Legal Notice",
+    tab_cookies: "Cookies",
+    btn_back_home: "Back to Home",
+    page_legal_title: "Legal Information",
+    confidentiality_title: "Privacy Policy",
+    confidentiality_last_updated: "Last updated:",
+    confidentiality_section1_title: "1. Introduction",
+    confidentiality_section1_text:
+      "Welcome to the RWDM Academy platform. We are committed to protecting the privacy and personal data of our service users. This privacy policy explains how we collect, use, share, and safeguard your personal information.",
+    confidentiality_section2_title: "2. Data Collected",
+    confidentiality_section2_intro:
+      "We collect the following data during your use:",
+    confidentiality_li_name: "Name, first name, date and place of birth",
+    confidentiality_li_contact:
+      "Address, postal code, city, email, phone (mobile)",
+    confidentiality_li_sport:
+      "Registration season, academy, category, position",
+    confidentiality_li_club: "Current and previous club",
+    confidentiality_li_responsible:
+      "Type of guardian (father/mother/guardian), name, first name, phone, email, address",
+    confidentiality_li_consent:
+      "Image consent and signature (date, “Read and approved”)",
+    confidentiality_li_accident:
+      "Date and description of the accident, dossier code, PDF supporting document",
+    confidentiality_li_navigation: "Navigation data (stored in localStorage)",
+    confidentiality_li_minors:
+      "Minors under 18 are not allowed to complete these forms.",
+    confidentiality_section3_title: "3. Use of Data",
+    confidentiality_section3_li1:
+      "Manage your requests (registration, test, accident, waiver)",
+    confidentiality_section3_li2: "Contact you for appointments and follow‑up",
+    confidentiality_section3_li3: "Improve our services and platform security",
+    confidentiality_section4_title: "4. Legal Basis for Processing",
+    confidentiality_section4_li1: "Explicit consent",
+    confidentiality_section4_li2: "Contract performance",
+    confidentiality_section4_li3: "Legitimate interest",
+    confidentiality_section4_li4: "Legal obligations",
+    confidentiality_section5_title: "5. Data Sharing",
+    confidentiality_section5_li1: "URBSFA for official registrations",
+    confidentiality_section5_li2: "IT service providers",
+    confidentiality_section5_li3: "Competent authorities when required by law",
+    confidentiality_section5_text:
+      "We never sell your personal data to third parties.",
+    confidentiality_section6_title: "6. Retention Period",
+    confidentiality_section6_li1:
+      "Duration of request processing and associated follow‑up",
+    confidentiality_section6_li2: "Statutory retention periods",
+    confidentiality_section6_li3: "Up to 3 years after last activity",
+    confidentiality_section7_title: "7. Your Rights",
+    confidentiality_section7_li1: "Right of access, rectification, erasure",
+    confidentiality_section7_li2: "Right to restriction and portability",
+    confidentiality_section7_li3: "Right to object and withdraw consent",
+    confidentiality_section7_contact: "To exercise these rights, contact",
+    confidentiality_section8_title: "8. Data Security",
+    confidentiality_section8_text:
+      "We implement technical and organizational measures to protect your data against loss, unauthorized access, and disclosure.",
+    confidentiality_section9_title: "9. International Transfers",
+    confidentiality_section9_text:
+      "Data is stored and processed within the European Union. Any transfer outside the EU is covered by GDPR‑compliant safeguards.",
+    confidentiality_section10_title: "10. Contact",
+    confidentiality_section10_text: "For any questions, write to",
+    last_updated: "Last updated",
+    confidentiality_section3_intro: "We use your data to:",
+    confidentiality_section3_text:
+      "We use your data to process your requests (registration, selection tests, accident report, waiver), contact you for appointments and follow‑up, improve our services and platform security.",
+    cgu_title: "Terms of Use",
+    cgu_section1_title: "1. Acceptance of Terms",
+    cgu_section1_text:
+      "By submitting requests via the RWDM Academy platform, you agree to be bound by these Terms of Use. If you do not agree, please do not use our service.",
+    cgu_section2_title: "2. Service Description",
+    cgu_section2_text1:
+      "The RWDM Academy platform allows you to submit requests for:",
+    cgu_section2_li1: "academy registration request",
+    cgu_section2_li2: "selection test request",
+    cgu_section2_li3: "accident report",
+    cgu_section2_li4: "liability waiver signature",
+    cgu_section2_text2:
+      "You will receive an automatic acknowledgement by email, followed by a confirmation (acceptance, appointment, next steps) by email.",
+    cgu_section3_title: "3. Access and Submission Requirements",
+    cgu_section3_text1: "To submit a request you must:",
+    cgu_section3_li1:
+      "Be at least 18 years old or, if a minor, be represented by a parent/guardian",
+    cgu_section3_li2: "Provide accurate, complete and up‑to‑date information",
+    cgu_section3_li3: "Comply with all applicable laws",
+    cgu_section4_title: "4. Administrative Account Management",
+    cgu_section4_text:
+      "Only owner, superadmin and admin accounts are created manually by the platform owner. End users have no account creation functionality.",
+    cgu_section5_title: "5. Acceptable Use",
+    cgu_section5_text1: "You agree not to:",
+    cgu_section5_li1: "Damage or disable the service",
+    cgu_section5_li2: "Submit false or misleading information",
+    cgu_section5_li3: "Attempt to access other users’ requests or accounts",
+    cgu_section5_li4: "Use unauthorized automated means",
+    cgu_section5_li5: "Bypass security measures",
+    cgu_section6_title: "6. Intellectual Property",
+    cgu_section6_text:
+      "All content (logos, texts, images) is protected. Any reproduction without written permission is prohibited.",
+    cgu_section7_title: "7. Liability",
+    cgu_section7_text:
+      "The service is provided “as is” and “as available.” We do not guarantee continuous availability and are not liable for indirect damages.",
+    cgu_section8_title: "8. Changes to Terms",
+    cgu_section8_text:
+      "We may modify these terms at any time. Changes take effect upon posting; continued use constitutes acceptance.",
+    cgu_section9_title: "9. Termination",
+    cgu_section9_text:
+      "We may suspend or terminate access for violations. You may request deletion of your request data at any time.",
+    cgu_section10_title: "10. Governing Law and Jurisdiction",
+    cgu_section10_text:
+      "These terms are governed by Belgian law. Any dispute will be subject to the courts of Brussels.",
+    cgu_section11_title: "11. Contact",
+    cgu_section11_text:
+      "For any questions, contact: RWDM Academy, Rue Charles Malis 61, 1080 Molenbeek‑Saint‑Jean, {{email}}",
+    cgu_section2_intro:
+      "The RWDM Academy platform allows you to submit requests for:",
+    cgu_section2_item1: "academy enrollment request",
+    cgu_section2_item2: "selection test request",
+    cgu_section2_item3: "accident report",
+    cgu_section2_item4: "liability waiver signing",
+    cgu_section2_text:
+      "You will receive an automatic acknowledgment by email, followed by a confirmation (acceptance, appointment, next steps) by email.",
+    cgu_section3_intro: "To submit a request, you must:",
+    cgu_section3_item1:
+      "Be at least 18 years old or, if a minor, represented by a parent/guardian",
+    cgu_section3_item2: "Provide accurate, complete and up‑to‑date information",
+    cgu_section3_item3: "Comply with all applicable laws",
+    cgu_section5_intro: "You agree not to:",
+    cgu_section5_item1: "Damage or disable the service",
+    cgu_section5_item2: "Submit false or misleading information",
+    cgu_section5_item3: "Attempt to access other users’ requests or accounts",
+    cgu_section5_item4: "Use unauthorized automated means",
+    cgu_section5_item5: "Bypass security measures",
+    cgu_section11_contact_intro: "For any questions, please contact:",
+    // Section 1
+    legal_section1_title: "1. Legal information",
+    legal_section1_intro: "This platform is published by:",
+    legal_section1_name_label: "Name",
+    legal_section1_address_label: "Address",
+    legal_section1_country_label: "Country",
+    legal_section1_email_label: "Email",
+
+    // Section 2
+    legal_section2_title: "2. Publication responsible",
+    legal_section2_text:
+      "The publication responsible is Nawfel Ajari, software engineer, intern at RWDM Academy.",
+    legal_section2_subtitle: "Technical development",
+    legal_section2_dev_text: "The site was developed by Nawfel Ajari.",
+
+    // Section 3
+    legal_section3_title: "3. Hosting",
+    legal_section3_intro: "This platform is hosted by:",
+    legal_section3_provider: "Hostinger",
+    legal_section3_address:
+      "Address: Hostinger International Ltd, 61 Lordou Vironos Street, 6023 Larnaca, Cyprus",
+    legal_section3_website: "Website: https://www.hostinger.com",
+
+    // Section 4
+    legal_section4_title: "4. Intellectual property",
+    legal_section4_text:
+      "All content (texts, images, logos, etc.) is the exclusive property of RWDM Academy or its partners. Any reproduction or adaptation without prior written permission is prohibited.",
+
+    // Section 5
+    legal_section5_title: "5. Hyperlinks",
+    legal_section5_text:
+      "The platform may contain links to other sites. We have no control over their content and disclaim all liability.",
+
+    // Section 6
+    legal_section6_title: "6. Liability",
+    legal_section6_text:
+      "We strive for accuracy of information. However, we do not guarantee completeness or correctness and disclaim all liability for omissions or inaccuracies.",
+
+    // Section 7
+    legal_section7_title: "7. Applicable law and jurisdiction",
+    legal_section7_text:
+      "These legal notices are governed by Belgian law. In case of dispute, only the courts of Brussels have jurisdiction.",
+    cookie_policy_title: "Cookie Policy",
+    cookie_policy_last_updated: "Last updated",
+    cookie_section1_title: "1. No HTTP cookies",
+    cookie_section1_text:
+      "We do not use any HTTP cookies. All preferences (language, display) are stored in client‑side localStorage.",
+    cookie_section2_title: "2. Why no cookies?",
+    cookie_section2_text: "By storing preferences in localStorage, we:",
+    cookie_section2_point1: "Reduce HTTP overhead (no cookie headers)",
+    cookie_section2_point2: "Keep data longer without automatic expiration",
+    cookie_section2_point3: "Avoid size and parsing constraints of cookies",
+    cookie_section3_title: "3. Managing local storage",
+    cookie_section3_text:
+      "You can clear or disable localStorage via your browser tools; this will reset your preferences (language, theme, etc.).",
+    cookie_section4_title: "4. Functional impact",
+    cookie_section4_text:
+      "Removing data from localStorage may cause your language and settings to revert to defaults on each visit.",
+    cookie_section5_title: "5. Contact",
+    cookie_section5_text:
+      "For any questions about this policy, please contact {email}.",
+    cookie_section2_li1: "Reduce HTTP requests (no cookie headers)",
+    cookie_section2_li2: "Keep data longer without automatic expiration",
+    cookie_section2_li3: "Avoid size‑ and parsing‑limitations of cookies",
   },
 };

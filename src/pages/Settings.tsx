@@ -217,6 +217,7 @@ const Settings: React.FC = () => {
         settingsData
       );
       toast.success("Les paramètres ont bien été enregistrés !");
+      window.location.reload();
     } catch (error: any) {
       console.error("❌ Erreur lors de la sauvegarde :", error);
       const backendMsg = error.response?.data?.error || "Erreur inconnue.";
