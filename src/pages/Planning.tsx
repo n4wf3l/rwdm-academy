@@ -110,7 +110,7 @@ const Planning = () => {
   const [currentView, setCurrentView] = useState<"day" | "week">("day");
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [newRequestsCount, setNewRequestsCount] = useState(0);
-
+  const [adminFilter, setAdminFilter] = useState<string>("all");
   const location = useLocation();
   const { toast } = useToast();
 
@@ -190,6 +190,20 @@ const Planning = () => {
   const sortedAppointments = sortAppointmentsByTime(
     appointmentsForSelectedDate
   );
+  const [appointmentFilter, setAppointmentFilter] = useState<"all" | "mine">(
+    "all"
+  );
+
+  const filteredAppointments = useMemo(() => {
+    if (adminFilter === "all") {
+      return appointments;
+    }
+    return appointments.filter(
+      (appointment) =>
+        `${appointment.adminFirstName} ${appointment.adminLastName}` ===
+        adminFilter
+    );
+  }, [appointments, adminFilter]);
 
   // Créneaux disponibles pour la date sélectionnée du nouveau rendez-vous
   const availableTimeSlots = useMemo(() => {
@@ -332,6 +346,18 @@ const Planning = () => {
     return `${hour.toString().padStart(2, "0")}:${minutes}`;
   });
 
+  const uniqueAdmins = useMemo(() => {
+    const admins = appointments
+      .map((appointment) => ({
+        fullName: `${appointment.adminFirstName} ${appointment.adminLastName}`,
+        id: `${appointment.adminFirstName}-${appointment.adminLastName}`, // Générer un ID basé sur le nom
+      }))
+      .filter((admin) => admin.fullName.trim() !== ""); // Filtrer les noms vides
+    return Array.from(
+      new Map(admins.map((admin) => [admin.id, admin])).values()
+    ); // Supprimer les doublons par ID
+  }, [appointments]);
+
   async function handleCancelAppointment(
     appointmentId: number,
     sendEmail = false
@@ -456,20 +482,45 @@ const Planning = () => {
             className="w-full"
             onValueChange={(value) => setCurrentView(value as "day" | "week")}
           >
-            <TabsList className="grid w-full max-w-xs grid-cols-2">
-              <TabsTrigger value="day">Vue journalière</TabsTrigger>
-              <TabsTrigger value="week">Vue hebdomadaire</TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between mt-4">
+              <TabsList className="grid max-w-xs grid-cols-2">
+                <TabsTrigger value="day">Vue journalière</TabsTrigger>
+                <TabsTrigger value="week">Vue hebdomadaire</TabsTrigger>
+              </TabsList>
+
+              <Select
+                value={adminFilter}
+                onValueChange={(value) => setAdminFilter(value)}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filtrer par admin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les admins</SelectItem>
+                  {uniqueAdmins.map((admin) => (
+                    <SelectItem key={admin.id} value={admin.fullName}>
+                      {admin.fullName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <TabsContent value="day" className="mt-4">
               <DayView
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 hasAppointmentsOnDate={hasAppointmentsOnDate}
-                sortedAppointments={sortedAppointments}
+                sortedAppointments={sortAppointmentsByTime(
+                  filteredAppointments.filter(
+                    (appointment) =>
+                      format(appointment.date, "yyyy-MM-dd") === selectedDateStr
+                  )
+                )}
                 setNewAppointmentDate={setNewAppointmentDate}
                 setIsScheduleModalOpen={setIsScheduleModalOpen}
                 showAppointmentDetails={showAppointmentDetails}
+                adminFilter={adminFilter}
               />
             </TabsContent>
 
@@ -481,7 +532,7 @@ const Planning = () => {
                 goToCurrentWeek={goToCurrentWeek}
                 goToNextWeek={goToNextWeek}
                 hours={hours}
-                appointments={appointments}
+                appointments={filteredAppointments}
                 handleTimeSlotClick={handleTimeSlotClick}
                 showAppointmentDetails={showAppointmentDetails}
               />

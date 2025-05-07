@@ -22,6 +22,7 @@ import {
 } from "./planningUtils";
 
 interface WeekViewProps {
+  currentWeek: Date; // Ajout de la propriété currentWeek
   daysOfWeek: Date[];
   goToPreviousWeek: () => void;
   goToCurrentWeek: () => void;
@@ -205,7 +206,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                                     }}
                                     transition={{ duration: 0.15 }}
                                   >
-                                    <span className="text-xs text-gray-400">
+                                    <span className="text-xs text-gray-400 p-6">
                                       Disponible
                                     </span>
                                   </motion.div>

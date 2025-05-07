@@ -476,36 +476,27 @@ app.get("/api/requests", authMiddleware, async (req, res) => {
 
 app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  let { status, assignedTo } = req.body;
+  const { details, status, assignedTo } = req.body;
 
   try {
     const connection = await mysql.createConnection(dbConfig);
 
-    // Si on assigne un admin sans fournir de status, on force le status "Assigné"
-    if (assignedTo !== undefined && status === undefined) {
-      status = "Assigné";
-    }
-
     const columnsToUpdate = [];
     const values = [];
+
+    if (details) {
+      columnsToUpdate.push("data = ?");
+      values.push(JSON.stringify(details));
+    }
 
     if (status !== undefined) {
       columnsToUpdate.push("status = ?");
       values.push(status);
-
-      // Met à jour rejected_at si le statut est "Rejeté"
-      if (status === "Rejeté" || status === "rejected") {
-        columnsToUpdate.push("rejected_at = NOW()");
-        console.log("🛠️ PATCH reçu avec:", { status, assignedTo });
-      } else {
-        columnsToUpdate.push("rejected_at = NULL");
-      }
     }
 
     if (assignedTo !== undefined) {
       columnsToUpdate.push("assigned_to = ?");
-      const assignedValue = assignedTo === "none" ? null : assignedTo;
-      values.push(assignedValue);
+      values.push(assignedTo === "none" ? null : assignedTo);
     }
 
     columnsToUpdate.push("updated_at = CURRENT_TIMESTAMP");
@@ -551,6 +542,30 @@ app.delete("/api/requests/:id", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 });
+
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { details } = req.body;
+
+  if (!details || typeof details !== "object") {
+    return res.status(400).json({ error: "Détails invalides" });
+  }
+
+  try {
+    // On stringify le JSON et on met à jour la colonne `data`
+    await db.execute(
+      "UPDATE requests SET data = ?, updated_at = NOW() WHERE id = ?",
+      [JSON.stringify(details), id]
+    );
+
+    res.json({ message: "Mise à jour réussie" });
+  } catch (err) {
+    console.error("Erreur update request:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+module.exports = router;
 
 // Vérifie si un code de dossier existe (utile avant d'envoyer un certificat de guérison)
 app.get("/api/check-code/:code", async (req, res) => {
