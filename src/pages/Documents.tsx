@@ -18,6 +18,7 @@ import {
   Eye,
   RotateCcw,
   Settings,
+  CalendarIcon,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import {
@@ -49,6 +50,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
+import { Link } from "react-router-dom";
 
 // Types pour les documents
 type DocumentType =
@@ -414,28 +416,27 @@ const Documents = () => {
       >
         {/* En-tête avec animation */}
         <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           className="flex flex-col md:flex-row justify-between md:items-center gap-4"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
         >
           <div>
-            <motion.h1
-              className="text-3xl font-bold text-rwdm-blue dark:text-white"
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
               Gestion des documents
-            </motion.h1>
-            <motion.p
-              className="text-gray-600 dark:text-gray-300"
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
               Retrouvez les documents des membres
-            </motion.p>
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              className="bg-rwdm-blue"
+              onClick={() => window.open("/?tab=create-request", "_blank")}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Créer une demande
+            </Button>
           </div>
         </motion.div>
 
