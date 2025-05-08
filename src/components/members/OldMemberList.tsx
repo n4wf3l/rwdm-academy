@@ -11,9 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash } from "lucide-react";
 import RestoreMemberModal from "@/components/members/RestoreMemberModal";
 import { Badge } from "../ui/badge";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import { toast } from "@/hooks/use-toast";
 
 interface OldMember {
   id: number;
@@ -34,6 +36,11 @@ const OldMemberList: React.FC = () => {
   // États pour la modal de restauration
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [selectedRestoreMember, setSelectedRestoreMember] =
+    useState<OldMember | null>(null);
+
+  // États pour la modal de suppression définitive
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedDeleteMember, setSelectedDeleteMember] =
     useState<OldMember | null>(null);
 
   const fetchOldMembers = async () => {
@@ -94,13 +101,40 @@ const OldMemberList: React.FC = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        // Recharger la page Members pour mettre à jour la liste
         window.location.reload();
       } else {
         console.error("Erreur lors de la réactivation du compte:", data);
       }
     } catch (error) {
       console.error("Erreur lors de la réactivation du compte:", error);
+    }
+  };
+
+  const permanentlyDeleteMember = async (id: number) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/admins/permanent/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Membre supprimé définitivement",
+          description: "Le membre a été supprimé définitivement.",
+        });
+        window.location.reload();
+      } else {
+        console.error("Erreur lors de la suppression définitive:", data);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression définitive:", error);
     }
   };
 
@@ -155,23 +189,33 @@ const OldMemberList: React.FC = () => {
                         ? format(
                             new Date(member.deletedAt),
                             "dd MMMM yyyy à HH:mm",
-                            {
-                              locale: fr,
-                            }
+                            { locale: fr }
                           )
                         : "—"}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRestoreMember(member);
-                          setRestoreModalOpen(true);
-                        }}
-                      >
-                        Réactiver
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedRestoreMember(member);
+                            setRestoreModalOpen(true);
+                          }}
+                        >
+                          Réactiver
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedDeleteMember(member);
+                            setDeleteModalOpen(true);
+                          }}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -220,6 +264,18 @@ const OldMemberList: React.FC = () => {
             restoreMember(selectedRestoreMember.id);
             setRestoreModalOpen(false);
           }}
+        />
+      )}
+      {selectedDeleteMember && (
+        <ConfirmationDialog
+          open={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={() => {
+            permanentlyDeleteMember(selectedDeleteMember.id);
+            setDeleteModalOpen(false);
+          }}
+          title="Supprimer définitivement"
+          message="Êtes-vous sûr de vouloir supprimer ce membre définitivement ? Cette action est irréversible. Elle laissera les assignations sans responsable."
         />
       )}
     </Card>

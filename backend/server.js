@@ -150,6 +150,11 @@ app.post(
           .json({ message: "Email ou mot de passe incorrect" });
       }
 
+      if (user.deleted && user.deleted == 1) {
+        console.log("❌ Compte inactif pour l'utilisateur :", email);
+        return res.status(403).json({ message: "Votre compte est inactif." });
+      }
+
       const isValid = user
         ? await bcrypt.compare(password, user.password)
         : false;
@@ -253,9 +258,10 @@ app.post(
 // Endpoint pour récupérer tous les membres admins
 app.get("/api/admins", authMiddleware, async (req, res) => {
   try {
-    const [rows] = await dbPool.execute("SELECT * FROM users");
-
-    res.json(rows); // Retourne les membres sous forme de JSON
+    const [rows] = await dbPool.execute(
+      "SELECT * FROM users WHERE deleted IS NULL OR deleted <> 1"
+    );
+    res.json(rows); // Retourne tous les membres sauf ceux soft deleted
   } catch (error) {
     console.error("Erreur lors de la récupération des membres :", error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -271,18 +277,44 @@ app.delete(
     const { email } = req.params;
     try {
       const connection = await mysql.createConnection(dbConfig);
+      // Soft delete : mettre à jour la colonne "deleted" à 1 ou stocker la date de suppression dans "deletedAt"
       const [result] = await connection.execute(
-        "DELETE FROM users WHERE email = ?",
+        "UPDATE users SET deleted = 1, deletedAt = NOW() WHERE email = ?",
         [email]
       );
       await connection.end();
       if (result.affectedRows > 0) {
-        res.json({ message: "Membre supprimé avec succès" });
+        res.json({ message: "Membre supprimé (soft delete) avec succès" });
       } else {
         res.status(404).json({ message: "Membre non trouvé" });
       }
     } catch (error) {
       console.error("Erreur lors de la suppression du membre :", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  }
+);
+
+app.patch(
+  "/api/admins/restore/:id",
+  authMiddleware,
+  ownerOrSuperAdmin,
+  async (req, res) => {
+    const { id } = req.params;
+    try {
+      const connection = await mysql.createConnection(dbConfig);
+      const [result] = await connection.execute(
+        "UPDATE users SET deleted = NULL, deletedAt = NULL WHERE id = ?",
+        [id]
+      );
+      await connection.end();
+      if (result.affectedRows > 0) {
+        res.json({ message: "Compte réactivé avec succès" });
+      } else {
+        res.status(404).json({ message: "Compte non trouvé" });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la réactivation du compte :", error);
       res.status(500).json({ message: "Erreur serveur" });
     }
   }
@@ -318,17 +350,27 @@ app.put(
       functionTitle,
       profilePicture,
       role,
+      status, // on peut recevoir un statut à mettre à jour
     } = req.body;
 
-    // Vérifier les champs obligatoires...
+    // Vérification des champs obligatoires...
     try {
       const connection = await mysql.createConnection(dbConfig);
       let query = "";
       let params = [];
+      // Si un statut est fourni et qu'il vaut "rejected", on met rejected_at à NOW()
+      const updateRejectedAt =
+        status && status.toLowerCase() === "rejected"
+          ? ", rejected_at = NOW()"
+          : "";
+
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         query =
-          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, profilePicture = ? WHERE id = ?";
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, profilePicture = ?" +
+          (status ? ", status = ?" : "") +
+          updateRejectedAt +
+          " WHERE id = ?";
         params = [
           firstName,
           lastName,
@@ -337,11 +379,17 @@ app.put(
           role,
           functionTitle || "",
           profilePicture || "",
-          id,
         ];
+        if (status) {
+          params.push(status);
+        }
+        params.push(id);
       } else {
         query =
-          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, profilePicture = ? WHERE id = ?";
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, profilePicture = ?" +
+          (status ? ", status = ?" : "") +
+          updateRejectedAt +
+          " WHERE id = ?";
         params = [
           firstName,
           lastName,
@@ -349,8 +397,11 @@ app.put(
           role,
           functionTitle || "",
           profilePicture || "",
-          id,
         ];
+        if (status) {
+          params.push(status);
+        }
+        params.push(id);
       }
       const [result] = await connection.execute(query, params);
       await connection.end();
@@ -369,6 +420,7 @@ app.put(
 app.get("/api/admins", authMiddleware, async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
+    // Retourne tous les admins, même les soft deleted, pour pouvoir afficher leurs noms
     const [rows] = await connection.execute(
       "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, role FROM users"
     );
@@ -376,6 +428,20 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error("Erreur lors de la récupération des admins :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get("/api/all-admins", authMiddleware, async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(
+      "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, role, deleted FROM users"
+    );
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de tous les admins :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -474,6 +540,31 @@ app.get("/api/requests", authMiddleware, async (req, res) => {
   }
 });
 
+app.delete("/api/admins/permanent/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    // Supprime définitivement l'utilisateur de la table "users"
+    const [result] = await connection.execute(
+      "DELETE FROM users WHERE id = ?",
+      [id]
+    );
+    await connection.end();
+
+    if (result.affectedRows > 0) {
+      res.json({ message: "Membre supprimé définitivement" });
+    } else {
+      res.status(404).json({ message: "Membre non trouvé" });
+    }
+  } catch (error) {
+    console.error(
+      "Erreur lors de la suppression définitive du membre :",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
   const { details, status, assignedTo } = req.body;
@@ -492,6 +583,10 @@ app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
     if (status !== undefined) {
       columnsToUpdate.push("status = ?");
       values.push(status);
+      // Ajout de rejected_at = NOW() si le nouveau statut est "Rejeté"
+      if (String(status).toLowerCase() === "rejeté") {
+        columnsToUpdate.push("rejected_at = NOW()");
+      }
     }
 
     if (assignedTo !== undefined) {
@@ -562,6 +657,26 @@ router.patch("/:id", async (req, res) => {
   } catch (err) {
     console.error("Erreur update request:", err);
     res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+app.get("/api/deleted-admins", authMiddleware, async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(
+      `SELECT u.id, u.firstName, u.lastName, u.email, u.role, u.deletedAt,
+              (SELECT COUNT(*) FROM requests r WHERE r.assigned_to = u.id) AS assignmentsCount
+       FROM users u
+       WHERE u.deleted = 1`
+    );
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des anciens membres :",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 

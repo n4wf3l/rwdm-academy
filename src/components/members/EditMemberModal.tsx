@@ -53,7 +53,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       setFirstName(member.firstName);
       setLastName(member.lastName);
       setEmail(member.email);
-      setFunc(member.function || member.functionTitle || ""); // 🧠 support backward
+      setFunc(member.function || member.functionTitle || ""); // support backward
       setProfilePicture(member.profilePicture);
       setRole(member.role);
       setPassword("");
@@ -113,115 +113,121 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <form onSubmit={handleSave} className="space-y-4">
-        <h2 className="text-lg font-bold">Modifier le membre</h2>
+      <div className="w-full max-w-xl mx-auto">
+        <form onSubmit={handleSave} className="space-y-4">
+          <h2 className="text-lg font-bold">Modifier le membre</h2>
 
-        <div className="flex items-center">
-          <User className="mr-2" />
-          <Input
-            type="text"
-            placeholder="Prénom"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="flex items-center">
-          <User className="mr-2" />
-          <Input
-            type="text"
-            placeholder="Nom"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="flex items-center">
-          <Mail className="mr-2" />
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="flex items-center">
-          <Briefcase className="mr-2" />
-          <Input
-            type="text"
-            placeholder="Fonction"
-            value={func}
-            onChange={(e) => setFunc(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center">
-          <Image className="mr-2" />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="border rounded p-2"
-          />
-        </div>
-
-        <div className="flex items-center">
-          <span className="mr-2 font-semibold">Rôle :</span>
-          <Select
-            value={role}
-            onValueChange={(newRole) => {
-              if (currentUserRole === "superadmin" && newRole === "owner")
-                return;
-              setRole(newRole as typeof role);
-            }}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Sélectionner un rôle" />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((opt) => (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                  disabled={opt.value === "owner" && disabledOwnerOption}
-                >
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <span className="whitespace-nowrap font-semibold">
-            Mot de passe :
-          </span>
-          <div className="relative">
+          <div className="flex items-center">
+            <User className="mr-2" />
             <Input
-              type={showPassword ? "text" : "password"}
-              placeholder="Laisser vide pour ne pas changer"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-48 pr-10"
+              type="text"
+              placeholder="Prénom"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="w-full"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-2 flex items-center text-gray-500"
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
           </div>
-        </div>
 
-        <Button type="submit" className="bg-rwdm-blue">
-          Sauvegarder
-        </Button>
-      </form>
+          <div className="flex items-center">
+            <User className="mr-2" />
+            <Input
+              type="text"
+              placeholder="Nom"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <Mail className="mr-2" />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <Briefcase className="mr-2" />
+            <Input
+              type="text"
+              placeholder="Fonction"
+              value={func}
+              onChange={(e) => setFunc(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <Image className="mr-2" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="border rounded p-2 w-full"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <span className="mr-2 font-semibold whitespace-nowrap">Rôle :</span>
+            <Select
+              value={role}
+              onValueChange={(newRole) => {
+                if (currentUserRole === "superadmin" && newRole === "owner")
+                  return;
+                setRole(newRole as typeof role);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sélectionner un rôle" />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    disabled={opt.value === "owner" && disabledOwnerOption}
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="whitespace-nowrap font-semibold">
+              Mot de passe :
+            </span>
+            <div className="relative w-full">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Laisser vide pour ne pas changer"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <Button type="submit" className="bg-rwdm-blue">
+            Sauvegarder
+          </Button>
+        </form>
+      </div>
     </Modal>
   );
 };
