@@ -9,7 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Eye, Send, Pencil } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Send,
+  Pencil,
+  Info,
+} from "lucide-react";
 import { Request } from "@/components/RequestDetailsModal";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { cn } from "@/lib/utils";
@@ -107,64 +114,64 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
 
   return (
     <Card>
-      <CardHeader className="border-b">
-        <div className="flex justify-between items-center w-full">
-          {/* Titre à gauche */}
+      <CardHeader className="border-b p-4 grid grid-cols-2">
+        <div className="flex flex-col">
           <CardTitle>Déclarations d'accident en attente</CardTitle>
-
-          {/* Légende + bouton à droite */}
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-3 w-3 rounded-sm bg-green-100 ring-1 ring-green-300" />
-            <span className="text-gray-600 text-sm">
-              Les déclarations en ordre
-            </span>
-
-            <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Modifier l’email de l’Union Belge</DialogTitle>
-                </DialogHeader>
-                <Input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Nouveau destinataire"
-                />
-                <DialogFooter>
-                  <Button
-                    onClick={async () => {
-                      try {
-                        await axios.put(
-                          "http://localhost:5000/api/email-recipients/accident-report",
-                          {
-                            email: newEmail,
-                          }
-                        );
-                        setRecipientEmail(newEmail);
-                        setEmailDialogOpen(false);
-                      } catch (err) {
-                        console.error(
-                          "Erreur lors de l’enregistrement de l’email :",
-                          err
-                        );
-                        // Tu peux aussi afficher une notif ici si tu veux
-                      }
-                    }}
-                  >
-                    Enregistrer
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+          <div className="mt-1 flex items-center">
+            <Info className="mr-1 h-4 w-4 text-gray-500" />
+            <p className="text-xs text-gray-500">
+              Les déclarations d'accidents sont mises en attente ici en attente
+              du certificat de guérison respectif.
+            </p>
           </div>
         </div>
+        <div className="flex items-center justify-end gap-2 text-sm">
+          <span className="inline-block h-3 w-3 rounded-sm bg-green-100 ring-1 ring-green-300" />
+          <span className="text-gray-600 text-sm">
+            Les déclarations en ordre
+          </span>
+          <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Modifier l’email de l’Union Belge</DialogTitle>
+              </DialogHeader>
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Nouveau destinataire"
+              />
+              <DialogFooter>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await axios.put(
+                        "http://localhost:5000/api/email-recipients/accident-report",
+                        { email: newEmail }
+                      );
+                      setRecipientEmail(newEmail);
+                      setEmailDialogOpen(false);
+                    } catch (err) {
+                      console.error(
+                        "Erreur lors de l’enregistrement de l’email :",
+                        err
+                      );
+                      // Vous pouvez également afficher une notification ici
+                    }
+                  }}
+                >
+                  Enregistrer
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
-
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>

@@ -93,7 +93,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
             <div className="p-5 flex justify-center">
               <div className="p-5 flex justify-center">
                 <motion.div
-                  className="h-24 w-24 rounded-full flex items-center justify-center mb-2"
+                  className="h-24 w-24 rounded-full flex items-center justify-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 1 }}
@@ -105,7 +105,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
 
             <CardContent className="p-6 pt-0">
               <motion.div
-                className="text-center mb-6"
+                className="text-center mb-12"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.8 }}

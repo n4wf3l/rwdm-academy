@@ -206,18 +206,48 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     return;
   }
 
+  function formatRejectedTime(rejectedAt: Date | undefined, now: Date): string {
+    if (!rejectedAt || isNaN(rejectedAt.getTime())) return "Rejeté";
+
+    const diffMs = now.getTime() - rejectedAt.getTime();
+    const totalMinutes = Math.floor(diffMs / 60000);
+
+    if (totalMinutes < 59) {
+      return "Rejeté il y a quelques minutes";
+    } else {
+      const hours = Math.floor(totalMinutes / 60);
+      return `Rejeté il y a ${hours} heure${hours > 1 ? "s" : ""}`;
+    }
+  }
+
   function formatRemainingTime(
     rejectedAt: Date | undefined,
     now: Date
   ): string {
     if (!rejectedAt || isNaN(rejectedAt.getTime())) return "--:--";
 
+    // Calcul de la date limite de suppression : 24h après rejectedAt
     const deletionDeadline = new Date(rejectedAt);
     deletionDeadline.setHours(deletionDeadline.getHours() + 24);
 
     const diffMs = deletionDeadline.getTime() - now.getTime();
-    if (diffMs <= 0) return "00:00";
+    if (diffMs <= 0) {
+      // La demande est supprimée définitivement, on affiche le temps écoulé depuis la suppression
+      const elapsedMs = now.getTime() - deletionDeadline.getTime();
+      const hours = Math.floor(elapsedMs / 3600000);
+      const minutes = Math.floor((elapsedMs % 3600000) / 60000);
 
+      // Exemple de format : "Supprimé il y a 3 heures et 15 minutes"
+      if (hours > 0) {
+        return `Supprimé il y a ${hours} heure${hours > 1 ? "s" : ""}${
+          minutes > 0 ? ` et ${minutes} minute${minutes > 1 ? "s" : ""}` : ""
+        }`;
+      } else {
+        return `Supprimé il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
+      }
+    }
+
+    // Sinon, on affiche le compte à rebours au format HH:MM
     const totalMinutes = Math.floor(diffMs / 60000);
     const hours = Math.floor(totalMinutes / 60)
       .toString()
@@ -240,7 +270,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     const interval = setInterval(() => {
       setNow(new Date());
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -512,13 +541,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                       )}
                     </TableCell>
 
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border-l">
                       {request.status === "rejected" ? (
                         <div className="flex justify-between items-center w-full">
                           <div className="text-xs text-red-600 text-center leading-tight w-full">
-                            <div>Suppression dans</div>
                             <div className="font-semibold">
-                              {formatRemainingTime(request.rejectedAt, now)}
+                              {formatRejectedTime(request.rejectedAt, now)}
                             </div>
                           </div>
                           <Button

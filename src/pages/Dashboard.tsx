@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -721,12 +721,20 @@ const Dashboard = () => {
               />
 
               <Card>
-                <CardHeader className="flex flex-row items-start justify-between p-4">
-                  <CardTitle className="m-0 p-0">
-                    Liste des demandes ({filteredRequests.length})
-                  </CardTitle>
-
-                  <div className="flex items-center gap-2 text-sm">
+                <CardHeader className="p-4 grid grid-cols-2">
+                  <div className="flex flex-col">
+                    <CardTitle className="m-0 p-0">
+                      Liste des demandes ({filteredRequests.length})
+                    </CardTitle>
+                    <div className="mt-1 flex items-center">
+                      <Info className="mr-1 h-4 w-4 text-gray-500" />
+                      <p className="text-xs text-gray-500">
+                        Les demandes rejetées sont supprimées définitivement de
+                        la base de données après 24 heures.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 text-sm">
                     <span className="inline-block h-3 w-3 rounded-sm bg-blue-50 ring-1 ring-blue-300 dark:bg-red-900 dark:ring-red-800" />
                     <span className="text-gray-600 dark:text-gray-300">
                       Mes assignations
