@@ -176,10 +176,8 @@ const Dashboard = () => {
 
       // On transforme chaque ligne en un objet "Request"
       const formattedRequests: Request[] = rows.map((req: any) => {
-        // On parse la colonne data (JSON)
         const dataParsed = JSON.parse(req.data || "{}");
 
-        // On détermine name / email (simplifié ici)
         let nameFromData = "inconnu";
         let emailFromData = "Non spécifié";
 
@@ -192,44 +190,41 @@ const Dashboard = () => {
             emailFromData =
               dataParsed.parent1Email || dataParsed.email || "Non spécifié";
             break;
-
           case "accident-report":
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
               nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
             }
             emailFromData = dataParsed.email || "Non spécifié";
             break;
-
           case "responsibility-waiver":
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
               nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
             }
             emailFromData = dataParsed.parentEmail || "Non spécifié";
             break;
-
           default:
             break;
         }
 
-        // On stocke tout le JSON dans `details` :
-        // (ainsi RequestDetailsModal aura access à request.details)
         return {
           id: req.id.toString(),
           type: req.type,
           name: nameFromData,
           email: emailFromData,
-          // si besoin : phone: dataParsed.phone ?? dataParsed.parent1Phone ?? null,
           date: new Date(req.created_at),
           status: mapDbStatus(req.status),
           assignedTo: req.admin_id ? req.admin_id.toString() : "none",
           rejectedAt: req.rejected_at
             ? new Date(req.rejected_at.replace(" ", "T"))
             : undefined,
-
-          details: dataParsed, // <= c'est le plus important
+          details: dataParsed,
+          // Ajout du nom complet via le join (même si l'user est soft deleted)
+          assignedAdminName:
+            req.admin_firstName && req.admin_lastName
+              ? `${req.admin_firstName} ${req.admin_lastName}`
+              : null,
         };
       });
-
       setRequests(formattedRequests);
       // 🔁 Vérifier si des demandes déjà "rejected" doivent être supprimées automatiquement
       formattedRequests.forEach((req) => {
@@ -302,7 +297,7 @@ const Dashboard = () => {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const response = await fetch("http://localhost:5000/api/admins", {
+      const response = await fetch("http://localhost:5000/api/all-admins", {
         headers,
       });
       if (!response.ok) {
@@ -320,6 +315,7 @@ const Dashboard = () => {
         functionTitle: user.functionTitle,
         description: user.description,
         role: user.role,
+        deleted: user.deleted, // <-- Ajout de la propriété "deleted"
         name: `${user.firstName} ${user.lastName}`,
       }));
 

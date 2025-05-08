@@ -54,11 +54,13 @@ interface Request {
   assignedTo?: string | null;
   rejectedAt?: Date;
   details?: any;
+  assignedAdminName?: string; // Added property
 }
 
 interface Admin {
   id: string;
   name: string;
+  deleted?: number; // Optional property to indicate deletion status
 }
 
 export interface RequestsTableProps {
@@ -191,6 +193,17 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     if (days < 3) return `Il y a ${days} jour${days > 1 ? "s" : ""}`;
 
     return past.toLocaleDateString("fr-BE");
+  }
+
+  const assignedValue = "none"; // Define a default value for assignedValue
+  const selectedAdmin = admins.find((a) => a.id === assignedValue);
+  if (selectedAdmin && Number(selectedAdmin.deleted) === 1) {
+    toast({
+      title: "Erreur d'assignation",
+      description: "Vous ne pouvez pas assigner un utilisateur inactif.",
+      variant: "destructive",
+    });
+    return;
   }
 
   function formatRemainingTime(
@@ -357,6 +370,15 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
               // Affichage des données
               paginatedRequests.map((request) => {
                 const assignedValue = request.assignedTo ?? "none";
+                const adminRecord = admins?.find(
+                  (a) => Number(a.id) === Number(request.assignedTo)
+                );
+                const assignedName =
+                  !request.assignedTo || request.assignedTo === "none"
+                    ? "Non assigné"
+                    : adminRecord
+                    ? adminRecord.name
+                    : request.assignedAdminName || "Inconnu";
                 const assignedAdminName = admins.find(
                   (a) => a.id === assignedValue
                 )?.name;
@@ -403,9 +425,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     </TableCell>
 
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
-
                     <TableCell>
-                      {["owner", "superadmin"].includes(
+                      {["owner", "superadmin", "admin"].includes(
                         currentUserRole.trim()
                       ) ? (
                         <Select
@@ -416,6 +437,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               request.status === "assigned"
                             ) {
                               onUpdateStatus(request.id, "new");
+                              return;
+                            }
+                            const selectedAdmin = admins.find(
+                              (a) => a.id === value
+                            );
+                            if (selectedAdmin?.deleted === 1) {
+                              toast({
+                                title: "Erreur d'assignation",
+                                description:
+                                  "Vous ne pouvez pas assigner un utilisateur inactif.",
+                                variant: "destructive",
+                              });
+                              return;
                             }
                             onAssignRequest(request.id, value);
                           }}
@@ -430,15 +464,31 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             <SelectItem value="none">Non assigné</SelectItem>
                             {admins.map((admin) => (
                               <SelectItem key={admin.id} value={admin.id}>
-                                {admin.name}
+                                {admin.name}{" "}
+                                {admin.deleted === 1 && (
+                                  <span className="text-red-600">
+                                    (inactif)
+                                  </span>
+                                )}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       ) : (
+                        // Pour l'affichage, on recherche dans les admins actifs ;
+                        // si l'admin assigné (id) n'est pas trouvé, on utilise le nom historique enregistré (assignedAdminName)
                         <span>
-                          {admins.find((a) => a.id === assignedValue)?.name ||
-                            "Non assigné"}
+                          {!request.assignedTo || request.assignedTo === "none"
+                            ? "Non assigné"
+                            : admins?.find(
+                                (a) =>
+                                  Number(a.id) === Number(request.assignedTo)
+                              )
+                            ? admins.find(
+                                (a) =>
+                                  Number(a.id) === Number(request.assignedTo)
+                              )!.name
+                            : request.assignedAdminName || "Inconnu"}
                         </span>
                       )}
                     </TableCell>

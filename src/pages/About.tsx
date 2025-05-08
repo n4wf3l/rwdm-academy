@@ -108,7 +108,11 @@ const About = () => {
         });
         const data = await response.json();
         if (response.ok) {
-          setTeamMembers(data);
+          // Filtrer les membres soft deleted (supposant que deleted vaut 1 pour un membre inactif)
+          const activeMembers = data.filter(
+            (member: any) => !member.deleted || member.deleted !== 1
+          );
+          setTeamMembers(activeMembers);
         } else {
           toast({
             title: "Erreur",

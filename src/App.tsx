@@ -63,9 +63,16 @@ function App() {
           payload.role &&
           ["admin", "superadmin", "owner"].includes(payload.role.toLowerCase())
         ) {
-          // Si nous ne sommes pas déjà sur le sous-domaine admin, rediriger
-          if (!window.location.hostname.startsWith("admin.")) {
-            window.location.href = "https://admin.example.com/dashboard";
+          // Si nous ne sommes pas déjà sur le sous-domaine admin et pas déjà sur le dashboard, rediriger
+          if (
+            !window.location.hostname.startsWith("admin.") &&
+            window.location.pathname !== "/dashboard"
+          ) {
+            const dashboardUrl =
+              window.location.hostname === "localhost"
+                ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
+                : "https://admin.example.com/dashboard";
+            window.location.href = dashboardUrl;
           }
         }
       } catch (error) {

@@ -463,12 +463,6 @@ const Planning = () => {
               <Plus className="mr-2 h-4 w-4" />
               Ajouter un rendez-vous
             </Button>
-            <Link to="/dashboard">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour au tableau de bord
-              </Button>
-            </Link>
           </motion.div>
         </motion.div>
 

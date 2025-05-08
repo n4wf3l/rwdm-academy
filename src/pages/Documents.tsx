@@ -19,6 +19,7 @@ import {
   RotateCcw,
   Settings,
   CalendarIcon,
+  Plus,
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import {
@@ -434,7 +435,7 @@ const Documents = () => {
               className="bg-rwdm-blue"
               onClick={() => window.open("/?tab=create-request", "_blank")}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" />
               Créer une demande
             </Button>
           </div>

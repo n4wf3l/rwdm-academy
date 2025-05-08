@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import RoleLegendCard from "@/components/members/RoleLegendCard";
 import { motion } from "framer-motion";
+import OldMemberList from "@/components/members/OldMemberList";
+import { Plus } from "lucide-react";
 
 interface Member {
   id: number;
@@ -30,7 +32,7 @@ const Members: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
-  const [activeTab, setActiveTab] = useState<"list" | "create">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "create" | "old">("list");
   const [user, setUser] = useState<{
     firstName: string;
     lastName: string;
@@ -307,18 +309,23 @@ const Members: React.FC = () => {
               Gérez les membres de l'académie
             </motion.p>
           </div>
-
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <Link to="/dashboard">
-              <Button variant="outline">Retour au tableau de bord</Button>
-            </Link>
+            {/* Bouton bleu foncé pour ouvrir le formulaire de création */}
+            <Button
+              className="bg-rwdm-blue"
+              onClick={() => setActiveTab("create")}
+            >
+              <Plus className="h-5 w-5" />
+              Créer un membre
+            </Button>
           </motion.div>
         </motion.div>
 
+        {/* Section des onglets */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -327,7 +334,9 @@ const Members: React.FC = () => {
           <Tabs
             defaultValue="list"
             value={activeTab}
-            onValueChange={(value) => setActiveTab(value as "list" | "create")}
+            onValueChange={(value) =>
+              setActiveTab(value as "list" | "create" | "old")
+            }
             className="w-full"
           >
             <motion.div
@@ -344,7 +353,7 @@ const Members: React.FC = () => {
               >
                 <TabsTrigger value="list">Tous les membres</TabsTrigger>
                 {(user.role === "owner" || user.role === "superadmin") && (
-                  <TabsTrigger value="create">Créer un membre</TabsTrigger>
+                  <TabsTrigger value="old">Anciens membres</TabsTrigger>
                 )}
               </TabsList>
             </motion.div>
@@ -384,6 +393,16 @@ const Members: React.FC = () => {
                   setIsLoading={setIsCreationLoading}
                   currentUserRole={user.role}
                 />
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="old">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                <OldMemberList />
               </motion.div>
             </TabsContent>
           </Tabs>
