@@ -54,6 +54,27 @@ function App() {
   );
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        // Vérifier si le rôle est admin, superadmin ou owner
+        if (
+          payload.role &&
+          ["admin", "superadmin", "owner"].includes(payload.role.toLowerCase())
+        ) {
+          // Si nous ne sommes pas déjà sur le sous-domaine admin, rediriger
+          if (!window.location.hostname.startsWith("admin.")) {
+            window.location.href = "https://admin.example.com/dashboard";
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors du décodage du token :", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const handleLanguageChange = () => {
       const newLang = localStorage.getItem("language");
       if (newLang) setLanguage(newLang);
