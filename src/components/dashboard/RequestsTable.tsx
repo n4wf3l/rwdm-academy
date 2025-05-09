@@ -54,11 +54,13 @@ interface Request {
   assignedTo?: string | null;
   rejectedAt?: Date;
   details?: any;
+  assignedAdminName?: string; // Added property
 }
 
 interface Admin {
   id: string;
   name: string;
+  deleted?: number; // Optional property to indicate deletion status
 }
 
 export interface RequestsTableProps {
@@ -195,18 +197,59 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     return past.toLocaleDateString("fr-BE");
   }
 
+  const assignedValue = "none"; // Define a default value for assignedValue
+  const selectedAdmin = admins.find((a) => a.id === assignedValue);
+  if (selectedAdmin && Number(selectedAdmin.deleted) === 1) {
+    toast({
+      title: "Erreur d'assignation",
+      description: "Vous ne pouvez pas assigner un utilisateur inactif.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  function formatRejectedTime(rejectedAt: Date | undefined, now: Date): string {
+    if (!rejectedAt || isNaN(rejectedAt.getTime())) return "Rejeté";
+
+    const diffMs = now.getTime() - rejectedAt.getTime();
+    const totalMinutes = Math.floor(diffMs / 60000);
+
+    if (totalMinutes < 59) {
+      return "Rejeté il y a quelques minutes";
+    } else {
+      const hours = Math.floor(totalMinutes / 60);
+      return `Rejeté il y a ${hours} heure${hours > 1 ? "s" : ""}`;
+    }
+  }
+
   function formatRemainingTime(
     rejectedAt: Date | undefined,
     now: Date
   ): string {
     if (!rejectedAt || isNaN(rejectedAt.getTime())) return "--:--";
 
+    // Calcul de la date limite de suppression : 24h après rejectedAt
     const deletionDeadline = new Date(rejectedAt);
     deletionDeadline.setHours(deletionDeadline.getHours() + 24);
 
     const diffMs = deletionDeadline.getTime() - now.getTime();
-    if (diffMs <= 0) return "00:00";
+    if (diffMs <= 0) {
+      // La demande est supprimée définitivement, on affiche le temps écoulé depuis la suppression
+      const elapsedMs = now.getTime() - deletionDeadline.getTime();
+      const hours = Math.floor(elapsedMs / 3600000);
+      const minutes = Math.floor((elapsedMs % 3600000) / 60000);
 
+      // Exemple de format : "Supprimé il y a 3 heures et 15 minutes"
+      if (hours > 0) {
+        return `Supprimé il y a ${hours} heure${hours > 1 ? "s" : ""}${
+          minutes > 0 ? ` et ${minutes} minute${minutes > 1 ? "s" : ""}` : ""
+        }`;
+      } else {
+        return `Supprimé il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
+      }
+    }
+
+    // Sinon, on affiche le compte à rebours au format HH:MM
     const totalMinutes = Math.floor(diffMs / 60000);
     const hours = Math.floor(totalMinutes / 60)
       .toString()
@@ -229,7 +272,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     const interval = setInterval(() => {
       setNow(new Date());
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -359,6 +401,15 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
               // Affichage des données
               paginatedRequests.map((request) => {
                 const assignedValue = request.assignedTo ?? "none";
+                const adminRecord = admins?.find(
+                  (a) => Number(a.id) === Number(request.assignedTo)
+                );
+                const assignedName =
+                  !request.assignedTo || request.assignedTo === "none"
+                    ? "Non assigné"
+                    : adminRecord
+                    ? adminRecord.name
+                    : request.assignedAdminName || "Inconnu";
                 const assignedAdminName = admins.find(
                   (a) => a.id === assignedValue
                 )?.name;
@@ -405,9 +456,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     </TableCell>
 
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
-
                     <TableCell>
-                      {["owner", "superadmin"].includes(
+                      {["owner", "superadmin", "admin"].includes(
                         currentUserRole.trim()
                       ) ? (
                         <Select
@@ -418,6 +468,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               request.status === "assigned"
                             ) {
                               onUpdateStatus(request.id, "new");
+                              return;
+                            }
+                            const selectedAdmin = admins.find(
+                              (a) => a.id === value
+                            );
+                            if (selectedAdmin?.deleted === 1) {
+                              toast({
+                                title: "Erreur d'assignation",
+                                description:
+                                  "Vous ne pouvez pas assigner un utilisateur inactif.",
+                                variant: "destructive",
+                              });
+                              return;
                             }
                             onAssignRequest(request.id, value);
                           }}
@@ -432,15 +495,31 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             <SelectItem value="none">Non assigné</SelectItem>
                             {admins.map((admin) => (
                               <SelectItem key={admin.id} value={admin.id}>
-                                {admin.name}
+                                {admin.name}{" "}
+                                {admin.deleted === 1 && (
+                                  <span className="text-red-600">
+                                    (inactif)
+                                  </span>
+                                )}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       ) : (
+                        // Pour l'affichage, on recherche dans les admins actifs ;
+                        // si l'admin assigné (id) n'est pas trouvé, on utilise le nom historique enregistré (assignedAdminName)
                         <span>
-                          {admins.find((a) => a.id === assignedValue)?.name ||
-                            "Non assigné"}
+                          {!request.assignedTo || request.assignedTo === "none"
+                            ? "Non assigné"
+                            : admins?.find(
+                                (a) =>
+                                  Number(a.id) === Number(request.assignedTo)
+                              )
+                            ? admins.find(
+                                (a) =>
+                                  Number(a.id) === Number(request.assignedTo)
+                              )!.name
+                            : request.assignedAdminName || "Inconnu"}
                         </span>
                       )}
                     </TableCell>
@@ -464,13 +543,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                       )}
                     </TableCell>
 
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border-l">
                       {request.status === "rejected" ? (
                         <div className="flex justify-between items-center w-full">
                           <div className="text-xs text-red-600 text-center leading-tight w-full">
-                            <div>Suppression dans</div>
                             <div className="font-semibold">
-                              {formatRemainingTime(request.rejectedAt, now)}
+                              {formatRejectedTime(request.rejectedAt, now)}
                             </div>
                           </div>
                           <Button

@@ -415,10 +415,18 @@ const renderSelectionTestsContent = (request: Request) => {
     <>
       <Section title="Informations sur les tests">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Noyau */}
           <Field
-            label="Noyau"
+            label="Catégorie"
             value={d.noyau || "-"}
             icon={<FileText className="h-4 w-4" />}
+          />
+
+          {/* Académie */}
+          <Field
+            label="Académie"
+            value={d.academy || "-"}
+            icon={<GraduationCap className="h-4 w-4" />}
           />
         </div>
       </Section>
@@ -535,8 +543,8 @@ const renderAccidentReportContent = (request: Request) => {
             icon={<CalendarIcon className="h-4 w-4" />}
           />
           <Field
-            label="Nom du club"
-            value={d.clubName || "-"}
+            label="Académie"
+            value={d.academy || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field

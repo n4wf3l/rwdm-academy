@@ -11,7 +11,16 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
-import { Search, RefreshCcw, FileText, Eye, RotateCcw } from "lucide-react";
+import {
+  Search,
+  RefreshCcw,
+  FileText,
+  Eye,
+  RotateCcw,
+  Settings,
+  CalendarIcon,
+  Plus,
+} from "lucide-react";
 import { jsPDF } from "jspdf";
 import {
   Table,
@@ -25,6 +34,8 @@ import { generateAccidentReportPDF } from "@/utils/generateAccidentReportPDF";
 import { generateResponsibilityWaiverPDF } from "@/utils/generateResponsibilityWaiverPDF";
 import generateRegistrationPDF from "@/utils/generateRegistrationPDF";
 import generateSelectionTestsPDF from "@/utils/generateSelectionTestsPDF";
+import EditRequestModal from "@/components/documents/EditRequestModal";
+import { Pencil } from "lucide-react";
 
 // Importation de la modale et de ses types
 import RequestDetailsModal, {
@@ -34,6 +45,13 @@ import RequestDetailsModal, {
 import html2canvas from "html2canvas";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { Link } from "react-router-dom";
 
 // Types pour les documents
 type DocumentType =
@@ -81,6 +99,8 @@ const Documents = () => {
     return Array.from(new Set(names));
   }, [documents]);
   const [newRequestsCount, setNewRequestsCount] = useState(0);
+  const [editRequest, setEditRequest] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   function mapDbStatus(dbStatus: string): RequestStatus {
     switch (dbStatus) {
@@ -176,19 +196,44 @@ const Documents = () => {
         (doc: any) => doc.status === "Terminé"
       );
 
+      function extractEmail(parsedData: any): string {
+        const keys = ["parent1Email", "parentEmail", "email", "contactEmail"];
+        for (const k of keys) {
+          if (parsedData[k]) return parsedData[k];
+        }
+        return "Non spécifié";
+      }
+
+      // helper pour extraire le téléphone
+      function extractPhone(parsedData: any): string {
+        const keys = ["parent1Phone", "phone", "contactPhone", "parentPhone"];
+        for (const k of keys) {
+          if (parsedData[k]) return parsedData[k];
+        }
+        return "Non spécifié";
+      }
+
       const formattedDocuments: Document[] = completedDocuments.map(
         (doc: any) => {
           const parsedData = JSON.parse(doc.data || "{}");
+
           return {
             id: doc.id,
             type: doc.type,
-            name: parsedData.firstName || "Inconnu",
-            surname: parsedData.lastName || "Inconnu",
-            email: parsedData.parent1Email || "Non spécifié",
-            phone: parsedData.parent1Phone || "Non spécifié",
+            name:
+              parsedData.parent1FirstName ||
+              parsedData.parentFirstName || // Ajout de parentFirstName comme fallback
+              parsedData.playerFirstName ||
+              "Inconnu",
+            surname:
+              parsedData.parent1LastName ||
+              parsedData.parentLastName || // Ajout de parentLastName comme fallback
+              parsedData.playerLastName ||
+              "Inconnu",
+            email: extractEmail(parsedData),
+            phone: extractPhone(parsedData),
             documentUrl: doc.documentUrl || "#",
             status: doc.status,
-            // Utilise les colonnes admin_firstName et admin_lastName si présentes, sinon fallback
             assignedAdmin: doc.admin_id
               ? `${doc.admin_firstName} ${doc.admin_lastName}`
               : parsedData.assignedAdmin || "Non assigné",
@@ -372,28 +417,27 @@ const Documents = () => {
       >
         {/* En-tête avec animation */}
         <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           className="flex flex-col md:flex-row justify-between md:items-center gap-4"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4 }}
         >
           <div>
-            <motion.h1
-              className="text-3xl font-bold text-rwdm-blue dark:text-white"
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
               Gestion des documents
-            </motion.h1>
-            <motion.p
-              className="text-gray-600 dark:text-gray-300"
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
               Retrouvez les documents des membres
-            </motion.p>
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              className="bg-rwdm-blue"
+              onClick={() => window.open("/?tab=create-request", "_blank")}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Créer une demande
+            </Button>
           </div>
         </motion.div>
 
@@ -573,57 +617,101 @@ const Documents = () => {
                                 : "N/A"}
                             </motion.td>
                             <motion.td>
-                              <div className="flex gap-2">
-                                <motion.div whileHover={{ scale: 1.1 }}>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => handleViewDetails(doc, e)}
-                                    title="Voir détails"
+                              <motion.td>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      title="Actions"
+                                      className="data-[state=open]:bg-gray-200 data-[state=open]:text-gray-800"
+                                    >
+                                      <Settings className="h-5 w-5" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    side="right" // Ouvre le menu vers la droite
+                                    align="start" // Aligne le menu en haut à droite
+                                    className="w-56 bg-gray-100 shadow-md rounded-md transition-all duration-200 ease-in-out py-2"
                                   >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleViewDetails(doc);
+                                      }}
+                                      title="Voir détails"
+                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                                    >
+                                      <Eye className="h-5 w-5 text-gray-600" />
+                                      <span className="text-sm text-gray-800">
+                                        Voir détails
+                                      </span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const req: ModalRequest = {
+                                          id: doc.id,
+                                          type: doc.type,
+                                          name: `${doc.name} ${doc.surname}`,
+                                          email: doc.email,
+                                          date: doc.createdAt || new Date(),
+                                          status: mapStatus(doc.status),
+                                          assignedTo: doc.assignedAdmin,
+                                          details: doc.data,
+                                        };
+                                        setEditRequest(req);
+                                        setIsEditOpen(true);
+                                      }}
+                                      title="Modifier"
+                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                                    >
+                                      <Pencil className="h-5 w-5 text-gray-600" />
+                                      <span className="text-sm text-gray-800">
+                                        Modifier
+                                      </span>
+                                    </DropdownMenuItem>
 
-                                <motion.div whileHover={{ scale: 1.1 }}>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setConfirmPDFRequest({
-                                        id: doc.id,
-                                        type: doc.type,
-                                        name: `${doc.name} ${doc.surname}`,
-                                        email: doc.email,
-                                        date: doc.createdAt
-                                          ? doc.createdAt
-                                          : new Date(),
-                                        status: mapStatus(doc.status),
-                                        assignedTo: doc.assignedAdmin,
-                                        details: doc.data,
-                                      });
-                                    }}
-                                    title="Générer PDF"
-                                  >
-                                    <FileText className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-
-                                <motion.div whileHover={{ scale: 1.1 }}>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setConfirmRevertId(doc.id);
-                                    }}
-                                    title="Mettre en cours"
-                                  >
-                                    <RotateCcw className="h-4 w-4" />
-                                  </Button>
-                                </motion.div>
-                              </div>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setConfirmRevertId(doc.id);
+                                      }}
+                                      title="Mettre en cours"
+                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                                    >
+                                      <RotateCcw className="h-5 w-5 text-gray-600" />
+                                      <span className="text-sm text-gray-800">
+                                        Mettre en cours
+                                      </span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setConfirmPDFRequest({
+                                          id: doc.id,
+                                          type: doc.type,
+                                          name: `${doc.name} ${doc.surname}`,
+                                          email: doc.email,
+                                          date: doc.createdAt
+                                            ? doc.createdAt
+                                            : new Date(),
+                                          status: mapStatus(doc.status),
+                                          assignedTo: doc.assignedAdmin,
+                                          details: doc.data,
+                                        });
+                                      }}
+                                      title="Générer PDF"
+                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                                    >
+                                      <FileText className="h-5 w-5 text-gray-600" />
+                                      <span className="text-sm text-gray-800">
+                                        Générer PDF
+                                      </span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </motion.td>
                             </motion.td>
                           </motion.tr>
                         ))}
@@ -653,7 +741,6 @@ const Documents = () => {
             />
           </motion.div>
         )}
-
         {confirmPDFRequest && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -676,7 +763,6 @@ const Documents = () => {
             />
           </motion.div>
         )}
-
         {confirmRevertId && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -696,6 +782,27 @@ const Documents = () => {
               message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
             />
           </motion.div>
+        )}
+
+        {editRequest && (
+          <EditRequestModal
+            isOpen={isEditOpen}
+            onClose={() => setIsEditOpen(false)}
+            request={editRequest}
+            onSaved={(updated) => {
+              // Met à jour le state pour refléter les changements
+              setDocuments((docs) =>
+                docs.map((d) =>
+                  d.id === updated.id ? { ...d, details: updated.details } : d
+                )
+              );
+              setFilteredDocuments((docs) =>
+                docs.map((d) =>
+                  d.id === updated.id ? { ...d, details: updated.details } : d
+                )
+              );
+            }}
+          />
         )}
       </AnimatePresence>
     </AdminLayout>

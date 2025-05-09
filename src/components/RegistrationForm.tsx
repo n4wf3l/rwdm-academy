@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FormSectionProps {
   title: string;
@@ -73,7 +74,8 @@ const RegistrationForm = () => {
   const { toast } = useToast();
   const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
-
+  const { t, lang } = useTranslation();
+  const currentLang = lang.toUpperCase();
   // États pour les informations du joueur
   const [season, setSeason] = useState(SEASONS[1]);
   const [academy, setAcademy] = useState("");
@@ -116,17 +118,27 @@ const RegistrationForm = () => {
   const currentDate = format(new Date(), "dd/MM/yyyy");
 
   const spellCheckFields = [
-    { label: "Nom du joueur", value: lastName },
-    { label: "Prénom du joueur", value: firstName },
-    { label: "Nom du parent principal", value: parent1LastName },
-    { label: "Prénom du parent principal", value: parent1FirstName },
-    { label: "Email du parent principal", value: parent1Email },
+    { label: t("spellcheck_field_player_last_name"), value: lastName },
+    { label: t("spellcheck_field_player_first_name"), value: firstName },
+    { label: t("spellcheck_field_parent1_last_name"), value: parent1LastName },
+    {
+      label: t("spellcheck_field_parent1_first_name"),
+      value: parent1FirstName,
+    },
+    { label: t("spellcheck_field_parent1_email"), value: parent1Email },
   ];
+
   if (parent2LastName || parent2FirstName || parent2Email) {
     spellCheckFields.push(
-      { label: "Nom du parent secondaire", value: parent2LastName },
-      { label: "Prénom du parent secondaire", value: parent2FirstName },
-      { label: "Email du parent secondaire", value: parent2Email }
+      {
+        label: t("spellcheck_field_parent2_last_name"),
+        value: parent2LastName,
+      },
+      {
+        label: t("spellcheck_field_parent2_first_name"),
+        value: parent2FirstName,
+      },
+      { label: t("spellcheck_field_parent2_email"), value: parent2Email }
     );
   }
 
@@ -135,8 +147,8 @@ const RegistrationForm = () => {
 
     if (!birthDate) {
       toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner la date de naissance du joueur.",
+        title: t("toast_birthdate_missing_title"),
+        description: t("toast_birthdate_missing_desc"),
         variant: "destructive",
       });
       return;
@@ -145,9 +157,8 @@ const RegistrationForm = () => {
     const age = getAge(birthDate);
     if (age < 4 || age > 9) {
       toast({
-        title: "Âge non valide",
-        description:
-          "Le joueur doit avoir entre 4 ans et 9 ans pour pouvoir s'inscrire.",
+        title: t("toast_age_invalid_title"),
+        description: t("toast_age_invalid_desc"),
         variant: "destructive",
       });
       return;
@@ -257,8 +268,8 @@ const RegistrationForm = () => {
 
       // 4. Toast + Redirection
       toast({
-        title: "Formulaire soumis",
-        description: "Votre inscription a été envoyée avec succès.",
+        title: t("toast_success_title"),
+        description: t("toast_success_description"),
       });
 
       setIsSpellCheckOpen(false);
@@ -267,8 +278,8 @@ const RegistrationForm = () => {
     } catch (error) {
       console.error("Erreur lors de la soumission :", error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        title: t("toast_error_title"),
+        description: t("toast_error_description"),
         variant: "destructive",
       });
     }
@@ -305,6 +316,25 @@ const RegistrationForm = () => {
     return `${minutes}:${seconds}`;
   };
 
+  const handleBirthDateChange = (date: Date | null) => {
+    if (!date) {
+      setBirthDate(undefined);
+      return;
+    }
+    const age = getAge(date);
+    if (age < 4 || age > 9) {
+      toast({
+        title: t("toast_age_invalid_title"),
+        description: t("toast_age_invalid_desc"),
+        variant: "destructive",
+      });
+      // on peut choisir de réinitialiser le champ
+      setBirthDate(undefined);
+      return;
+    }
+    setBirthDate(date);
+  };
+
   return (
     <>
       <form
@@ -322,12 +352,12 @@ const RegistrationForm = () => {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Sélection de la saison */}
               <FormSection
-                title="Saison d'inscription"
-                subtitle="Veuillez sélectionner la saison pour laquelle vous souhaitez inscrire le joueur"
+                title={t("season_selection")}
+                subtitle={t("season_selection_desc")}
               >
                 <Select value={season} onValueChange={setSeason}>
                   <SelectTrigger className="form-input-base">
-                    <SelectValue placeholder="Sélectionnez une saison" />
+                    <SelectValue placeholder={t("select_season_placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {SEASONS.map((s) => (
@@ -341,13 +371,15 @@ const RegistrationForm = () => {
 
               {/* Sélection de l'académie */}
               <FormSection
-                title="Académie"
-                subtitle="Veuillez sélectionner l'académie souhaitée pour l'inscription du joueur."
+                title={t("academy_selection")}
+                subtitle={t("academy_selection_desc")}
               >
                 {/* Sélecteur */}
                 <Select value={academy} onValueChange={setAcademy}>
                   <SelectTrigger className="form-input-base">
-                    <SelectValue placeholder="Sélectionnez une académie" />
+                    <SelectValue
+                      placeholder={t("select_academy_placeholder")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Brussels Eagles Football Academy">
@@ -361,16 +393,10 @@ const RegistrationForm = () => {
                 </Select>
 
                 {/* Lien vers la page À propos */}
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Plus d'informations sur la page{" "}
-                  <a
-                    href="/about?tab=histoire#academies"
-                    className="underline text-rwdm-blue hover:text-rwdm-red transition-colors"
-                  >
-                    À propos
-                  </a>
-                  .
-                </p>
+                <p
+                  className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+                  dangerouslySetInnerHTML={{ __html: t("academy_info_html") }}
+                />
               </FormSection>
             </div>
           </CardContent>
@@ -379,12 +405,12 @@ const RegistrationForm = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations du joueur"
-              subtitle="Veuillez remplir toutes les informations concernant le joueur"
+              title={t("player_info")}
+              subtitle={t("player_info_desc")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom *</Label>
+                  <Label htmlFor="lastName">{t("label_last_name")}</Label>
                   <Input
                     id="lastName"
                     className="form-input-base"
@@ -394,7 +420,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom *</Label>
+                  <Label htmlFor="firstName">{t("label_first_name")}</Label>
                   <Input
                     id="firstName"
                     className="form-input-base"
@@ -405,15 +431,15 @@ const RegistrationForm = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="birthDate" className="mr-3">
-                    Date de naissance *
+                    {t("label_birth_date")}
                   </Label>
                   <BirthDatePicker
                     selectedDate={birthDate ?? null}
-                    onChange={setBirthDate}
+                    onChange={handleBirthDateChange}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthPlace">Lieu de naissance *</Label>
+                  <Label htmlFor="birthPlace">{t("label_birth_place")}</Label>
                   <Input
                     id="birthPlace"
                     className="form-input-base"
@@ -422,7 +448,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Adresse *</Label>
+                  <Label htmlFor="address"> {t("label_address")}</Label>
                   <Input
                     id="address"
                     className="form-input-base"
@@ -431,7 +457,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code postal *</Label>
+                  <Label htmlFor="postalCode">{t("label_postal_code")}</Label>
                   <Input
                     id="postalCode"
                     className="form-input-base"
@@ -440,7 +466,7 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville *</Label>
+                  <Label htmlFor="city"> {t("label_city")}</Label>
                   <Input
                     id="city"
                     className="form-input-base"
@@ -453,7 +479,7 @@ const RegistrationForm = () => {
                     htmlFor="currentClub"
                     className="flex items-center space-x-1"
                   >
-                    <span>Club actuel</span>
+                    <span>{t("label_current_club")}</span>
 
                     {/* Icône d'information avec Tooltip */}
                     <Tooltip>
@@ -461,10 +487,7 @@ const RegistrationForm = () => {
                         <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          Si le joueur n'a pas de club, vous pouvez laisser
-                          vide.
-                        </p>
+                        <p>{t("tooltip_current_club")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </Label>
@@ -476,10 +499,12 @@ const RegistrationForm = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Catégorie *</Label>
+                  <Label htmlFor="category"> {t("label_category")}</Label>
                   <Select onValueChange={setCategory} value={category}>
                     <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez une catégorie" />
+                      <SelectValue
+                        placeholder={t("select_category_placeholder")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.map((cat) => (
@@ -498,34 +523,46 @@ const RegistrationForm = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations des responsables légaux"
-              subtitle="Veuillez remplir les informations concernant les responsables légaux du joueur"
+              title={t("legal_info")}
+              subtitle={t("legal_info_desc")}
             >
               <div className="space-y-6">
                 <div>
                   <h4 className="text-base font-medium mb-3">
-                    Responsable principal
+                    {t("primary_guardian")}
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Type">Type *</Label>
+                      <Label htmlFor="parent1Type">
+                        {t("label_guardian_type")}
+                      </Label>
                       <Select
                         onValueChange={setParent1Type}
                         value={parent1Type}
                       >
                         <SelectTrigger className="form-input-base">
-                          <SelectValue placeholder="Sélectionnez le type" />
+                          <SelectValue
+                            placeholder={t("select_type_placeholder")}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="père">Père</SelectItem>
-                          <SelectItem value="mère">Mère</SelectItem>
-                          <SelectItem value="tuteur">Tuteur légal</SelectItem>
+                          <SelectItem value="père">
+                            {t("option_father")}
+                          </SelectItem>
+                          <SelectItem value="mère">
+                            {t("option_mother")}
+                          </SelectItem>
+                          <SelectItem value="tuteur">
+                            {t("option_legal_guardian")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="grid grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <Label htmlFor="parent1LastName">Nom *</Label>
+                        <Label htmlFor="parent1LastName">
+                          {t("label_parent_last_name")}
+                        </Label>
                         <Input
                           id="parent1LastName"
                           className="form-input-base"
@@ -535,7 +572,9 @@ const RegistrationForm = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent1FirstName">Prénom *</Label>
+                        <Label htmlFor="parent1FirstName">
+                          {t("label_parent_first_name")}
+                        </Label>
                         <Input
                           id="parent1FirstName"
                           className="form-input-base"
@@ -546,7 +585,9 @@ const RegistrationForm = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Phone">Téléphone *</Label>
+                      <Label htmlFor="parent1Phone">
+                        {t("label_parent_phone")}
+                      </Label>
                       <Input
                         id="parent1Phone"
                         className="form-input-base"
@@ -556,7 +597,9 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Email">Email *</Label>
+                      <Label htmlFor="parent1Email">
+                        {t("label_parent_email")}
+                      </Label>
                       <Input
                         id="parent1Email"
                         className="form-input-base"
@@ -567,7 +610,9 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Address">Adresse *</Label>
+                      <Label htmlFor="parent1Address">
+                        {t("label_parent_address")}
+                      </Label>
                       <Input
                         id="parent1Address"
                         className="form-input-base"
@@ -576,7 +621,9 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1PostalCode">Code postal *</Label>
+                      <Label htmlFor="parent1PostalCode">
+                        {t("label_parent_postal_code")}
+                      </Label>
                       <Input
                         id="parent1PostalCode"
                         className="form-input-base"
@@ -585,7 +632,10 @@ const RegistrationForm = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="parent1Gsm">GSM</Label>
+                      <Label htmlFor="parent1Gsm">
+                        {" "}
+                        {t("label_parent_gsm")}
+                      </Label>
                       <Input
                         id="parent1Gsm"
                         className="form-input-base"
@@ -604,7 +654,7 @@ const RegistrationForm = () => {
                       setShowSecondaryGuardian(!showSecondaryGuardian)
                     }
                   >
-                    Responsable secondaire (optionnel)
+                    {t("secondary_guardian_button")}
                     <motion.div
                       animate={{ rotate: showSecondaryGuardian ? 180 : 0 }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -623,24 +673,36 @@ const RegistrationForm = () => {
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-3">
                       <div className="space-y-2">
-                        <Label htmlFor="parent2Type">Type</Label>
+                        <Label htmlFor="parent2Type">
+                          {t("label_guardian_type")}
+                        </Label>
                         <Select
                           value={parent2Type}
                           onValueChange={setParent2Type}
                         >
                           <SelectTrigger className="form-input-base">
-                            <SelectValue placeholder="Sélectionnez le type" />
+                            <SelectValue
+                              placeholder={t("select_type_placeholder")}
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="père">Père</SelectItem>
-                            <SelectItem value="mère">Mère</SelectItem>
-                            <SelectItem value="tuteur">Tuteur légal</SelectItem>
+                            <SelectItem value="père">
+                              {t("option_father")}
+                            </SelectItem>
+                            <SelectItem value="mère">
+                              {t("option_mother")}
+                            </SelectItem>
+                            <SelectItem value="tuteur">
+                              {t("option_legal_guardian")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="grid grid-cols-2 gap-5">
                         <div className="space-y-2">
-                          <Label htmlFor="parent2LastName">Nom</Label>
+                          <Label htmlFor="parent2LastName">
+                            {t("label_parent_last_name")}
+                          </Label>
                           <Input
                             id="parent2LastName"
                             className="form-input-base"
@@ -649,7 +711,9 @@ const RegistrationForm = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="parent2FirstName">Prénom</Label>
+                          <Label htmlFor="parent2FirstName">
+                            {t("label_parent_first_name")}
+                          </Label>
                           <Input
                             id="parent2FirstName"
                             className="form-input-base"
@@ -661,7 +725,10 @@ const RegistrationForm = () => {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent2Phone">Téléphone</Label>
+                        <Label htmlFor="parent2Phone">
+                          {" "}
+                          {t("label_parent_phone")}
+                        </Label>
                         <Input
                           id="parent2Phone"
                           className="form-input-base"
@@ -670,7 +737,10 @@ const RegistrationForm = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent2Email">Email</Label>
+                        <Label htmlFor="parent2Email">
+                          {" "}
+                          {t("label_parent_email")}
+                        </Label>
                         <Input
                           id="parent2Email"
                           className="form-input-base"
@@ -680,7 +750,10 @@ const RegistrationForm = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent2Address">Adresse</Label>
+                        <Label htmlFor="parent2Address">
+                          {" "}
+                          {t("label_parent_address")}
+                        </Label>
                         <Input
                           id="parent2Address"
                           className="form-input-base"
@@ -688,7 +761,10 @@ const RegistrationForm = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent2PostalCode">Code postal</Label>
+                        <Label htmlFor="parent2PostalCode">
+                          {" "}
+                          {t("label_parent_postal_code")}
+                        </Label>
                         <Input
                           id="parent2PostalCode"
                           className="form-input-base"
@@ -696,7 +772,10 @@ const RegistrationForm = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="parent2Gsm">GSM</Label>
+                        <Label htmlFor="parent2Gsm">
+                          {" "}
+                          {t("label_parent_gsm")}
+                        </Label>
                         <Input
                           id="parent2Gsm"
                           className="form-input-base"
@@ -715,8 +794,8 @@ const RegistrationForm = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Consentement à l'image"
-              subtitle="Veuillez donner votre consentement pour l'utilisation d'images"
+              title={t("consent_image")}
+              subtitle={t("consent_image_desc")}
             >
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -725,8 +804,7 @@ const RegistrationForm = () => {
                   onCheckedChange={(checked) => setImageConsent(!!checked)}
                 />
                 <Label htmlFor="imageConsent" className="cursor-pointer">
-                  J'accepte que des photos de mon enfant soient prises et
-                  utilisées à des fins promotionnelles.
+                  {t("consent_image_label")}
                 </Label>
               </div>
             </FormSection>
@@ -735,21 +813,19 @@ const RegistrationForm = () => {
 
         <Card className="glass-panel">
           <CardContent className="pt-6">
-            <FormSection
-              title="Signature"
-              subtitle="Veuillez signer ci-dessous"
-            >
+            <FormSection title={t("signature")} subtitle={t("signature_desc")}>
               <div className="space-y-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <strong>Pour rappel :</strong> ce formulaire concerne une{" "}
-                  <u>demande d'inscription</u> à la RWDM Academy et ne constitue
-                  en aucun cas une inscription définitive. Vous recevrez une
-                  réponse dans les prochaines heures ou jours de la part de la
-                  direction, via l'adresse email que vous avez fournie.
+                  <div
+                    className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: t("signature_reminder_html"),
+                    }}
+                  />
                 </p>
                 <SignaturePad onChange={setSignature} />
                 <p className="text-sm text-gray-500 mt-2">
-                  Date : {currentDate}
+                  {t("label_date")} {currentDate}
                 </p>
               </div>
             </FormSection>
@@ -757,48 +833,41 @@ const RegistrationForm = () => {
         </Card>
 
         <div className="flex items-start space-x-3">
-          <input
-            type="checkbox"
+          <Checkbox
             id="privacyPolicy"
             checked={hasAcceptedPolicy}
-            onChange={(e) => setHasAcceptedPolicy(e.target.checked)}
+            onCheckedChange={(checked) => setHasAcceptedPolicy(!!checked)}
             className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
-            required
           />
           <label
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
-          >
-            J'accepte la{" "}
-            <a
-              href="/legal"
-              target="_blank"
-              className="text-rwdm-blue underline"
-            >
-              politique de confidentialité
-            </a>
-            .
-          </label>
+            dangerouslySetInnerHTML={{ __html: t("accept_policy_html") }}
+          />
         </div>
 
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={isCooldown || !signature}
-            className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
+            disabled={isCooldown || !signature || !hasAcceptedPolicy}
+            className={`
+     px-8 py-6 rounded-lg text-base
+     ${
+       isCooldown || !signature || !hasAcceptedPolicy
+         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+         : "bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white"
+     }
+     button-transition
+   `}
           >
-            {isCooldown
-              ? "Veuillez patienter..."
-              : "Soumettre la demande d'inscription"}
+            {isCooldown ? t("button_submit_loading") : t("button_submit")}
           </Button>
         </div>
       </form>
 
-      {/* ⏳ Chrono visible en bas à gauche */}
       {isCooldown && (
         <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
-          Vous pourrez renvoyer une demande d'inscription dans{" "}
-          {formatTime(timeLeft)}
+          {t("cooldown_message").replace("{{time}}", formatTime(timeLeft))}
         </div>
       )}
 
@@ -807,7 +876,7 @@ const RegistrationForm = () => {
         onClose={() => setIsSpellCheckOpen(false)}
         onConfirm={finalSubmit}
         fields={spellCheckFields}
-        title="Vérification des informations d'inscription"
+        title={t("spellcheck_title")}
       />
     </>
   );

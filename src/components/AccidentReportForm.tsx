@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"; // Assurez-vous que ce chemin est correct
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FormSectionProps {
   title: string;
@@ -64,8 +65,10 @@ const FormSection: React.FC<FormSectionProps> = ({
 const AccidentReportForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, lang } = useTranslation();
   const [accidentDate, setAccidentDate] = useState<Date | undefined>();
-  const [accidentCode, setAccidentCode] = useState<string>(""); // Pour déclaration d'accident
+  const [accidentCode, setAccidentCode] = useState<string>("");
+  const [codeDossier, setCodeDossier] = useState<string>("");
   const [healingCode, setHealingCode] = useState<string>("");
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
@@ -74,6 +77,7 @@ const AccidentReportForm: React.FC = () => {
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+
   const [phone, setPhone] = useState<string>("");
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
@@ -82,10 +86,10 @@ const AccidentReportForm: React.FC = () => {
   const [isCooldown, setIsCooldown] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [codeDossier, setCodeDossier] = useState<string>("");
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [hasSentDeclaration, setHasSentDeclaration] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
+  const [academy, setAcademy] = useState<string>("RWDM Academy");
   const [documentType, setDocumentType] = useState<
     "accident-report" | "healing-certificate"
   >("accident-report");
@@ -99,22 +103,20 @@ const AccidentReportForm: React.FC = () => {
 
     if (date > today) {
       toast({
-        title: "Date invalide",
-        description: "Vous ne pouvez pas déclarer un accident dans le futur.",
+        title: t("date_invalid_title"),
+        description: t("date_invalid_desc"),
         variant: "destructive",
       });
     } else if (differenceInDays > 19) {
       toast({
-        title: "Déclaration refusée",
-        description:
-          "Votre déclaration ne peut plus être prise en compte, car l'accident a eu lieu il y a plus de 19 jours.",
+        title: t("declaration_refused_title"),
+        description: t("declaration_refused_desc"),
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Déclaration valide",
-        description:
-          "Votre déclaration d'accident respecte la limite du délai de 19 jours.",
+        title: t("declaration_valid_title"),
+        description: t("declaration_valid_desc"),
         variant: "default",
       });
       setAccidentDate(date);
@@ -157,15 +159,19 @@ const AccidentReportForm: React.FC = () => {
     };
   }, [isCooldown]);
 
+  useEffect(() => {
+    // à chaque fois qu'on change de type de document, on vide la zone d'upload
+    setPdfFiles([]);
+  }, [documentType]);
+
   const generateCode = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setAccidentCode(code);
     setCodeDossier(code);
-
     toast({
-      title: "Code généré avec succès",
-      description:
-        "Conservez bien ce code pour pouvoir lier votre certificat de guérison plus tard.",
-      variant: "default", // tu peux mettre "success" si tu veux un style spécial
+      title: t("toast_generate_code_title"),
+      description: t("toast_generate_code_desc"),
+      variant: "default",
     });
   };
 
@@ -196,58 +202,51 @@ const AccidentReportForm: React.FC = () => {
 
       const matching = allRequests.find((req) => {
         if (req.type !== "accident-report") return false;
-
-        try {
-          const parsedData = JSON.parse(req.data);
-
-          return (
-            parsedData.codeDossier === code &&
-            parsedData.documentLabel === "Déclaration d'accident" &&
-            parsedData.email?.toLowerCase() === emailToMatch.toLowerCase()
-          );
-        } catch (e) {
-          console.warn("Impossible de parser req.data pour req.id =", req.id);
-          return false;
-        }
+        const parsed = JSON.parse(req.data);
+        return (
+          parsed.codeDossier?.toLowerCase() === code.toLowerCase() &&
+          parsed.email?.toLowerCase() === emailToMatch.toLowerCase()
+        );
       });
 
       setCodeValid(!!matching);
     } catch (err) {
-      console.error("Erreur lors de la vérification du code :", err);
+      console.error(t("check_code_general_error"), err);
       setCodeValid(false);
     }
   };
 
   const finalSubmit = async () => {
+    // Vérification du nombre de fichiers
     if (
       (documentType === "healing-certificate" && pdfFiles.length === 0) ||
       (documentType === "accident-report" && pdfFiles.length !== 1)
     ) {
       toast({
-        title: "Erreur de fichier",
+        title: t("toast_file_error_title"),
         description:
           documentType === "healing-certificate"
-            ? "Veuillez ajouter au moins un fichier PDF (max 2)."
-            : "Veuillez ajouter un fichier PDF pour la déclaration d’accident.",
+            ? t("toast_file_error_healing_desc")
+            : t("toast_file_error_accident_desc"),
         variant: "destructive",
       });
       return;
     }
 
+    // Vérification du code pour le certificat
     if (documentType === "healing-certificate" && !codeValid) {
       toast({
-        title: "Code de dossier invalide",
-        description: "Veuillez entrer un code valide de déclaration existante.",
+        title: t("toast_invalid_code_title"),
+        description: t("toast_invalid_code_desc"),
         variant: "destructive",
       });
       return;
     }
 
     try {
+      // Upload des fichiers
       const formData = new FormData();
-      pdfFiles.forEach((file) => {
-        formData.append("pdfFiles", file); // ton backend doit accepter "pdfFiles"
-      });
+      pdfFiles.forEach((file) => formData.append("pdfFiles", file));
 
       const response = await fetch("http://localhost:5000/api/upload", {
         method: "POST",
@@ -255,91 +254,101 @@ const AccidentReportForm: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de l'upload du fichier");
+        throw new Error("upload_error");
       }
-
-      const fileData = await response.json();
-
-      if (!fileData.filePaths || !Array.isArray(fileData.filePaths)) {
-        throw new Error("Chemin des fichiers non reçu ou invalide !");
-      }
-
       if (response.status === 413) {
         toast({
-          title: "Fichier trop volumineux",
-          description:
-            "Veuillez sélectionner des fichiers PDF de moins de 10 Mo chacun.",
+          title: t("toast_upload_too_large_title"),
+          description: t("toast_upload_too_large_desc"),
           variant: "destructive",
         });
         return;
       }
 
+      const fileData = await response.json();
+      if (!fileData.filePaths || !Array.isArray(fileData.filePaths)) {
+        throw new Error("invalid_file_paths");
+      }
+
+      // Préparation de la requête finale
       const requestData = {
         type: "accident-report",
         formData: {
           clubName,
+          academy,
           playerLastName,
           playerFirstName,
           email,
           phone,
           accidentDate,
           description: accidentDescription,
-          filePaths: fileData.filePaths, // tableau ici
+          filePaths: fileData.filePaths,
           signature,
           category,
           codeDossier:
             documentType === "accident-report" ? accidentCode : healingCode,
           documentLabel:
             documentType === "healing-certificate"
-              ? "Certificat de guérison"
-              : "Déclaration d'accident",
+              ? t("document_label_healing")
+              : t("document_label_accident"),
         },
         assignedTo: null,
       };
 
+      // Envoi du formulaire
       const requestResponse = await fetch(
         "http://localhost:5000/api/requests",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestData),
         }
       );
-
       if (!requestResponse.ok) {
-        throw new Error("Erreur lors de l'envoi du formulaire");
+        throw new Error("submit_error");
       }
 
       const { requestId } = await requestResponse.json();
 
+      // Envoi de l'email de confirmation
       await fetch(
         "http://localhost:5000/api/form-mail/send-accident-report-email",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            formData: requestData.formData,
-            requestId,
-          }),
+          body: JSON.stringify({ formData: requestData.formData, requestId }),
         }
       );
 
+      // Toast de succès
       toast({
-        title: "Déclaration soumise avec succès",
-        description: "Votre déclaration a été envoyée.",
+        title: t("toast_submit_success_title"),
+        description: t("toast_submit_success_desc"),
       });
 
+      // Cooldown et redirection
       localStorage.setItem("accidentLastSubmitTime", Date.now().toString());
       setIsCooldown(true);
       setCooldownRemaining(600);
       navigate("/success/accidentReport");
     } catch (error) {
       console.error("❌ Erreur lors de la soumission :", error);
+      // Choix du message d'erreur
+      let titleKey = "toast_general_error_title";
+      let descKey = "toast_general_error_desc";
+      if ((error as Error).message === "upload_error") {
+        titleKey = "toast_upload_error_title";
+        descKey = "toast_upload_error_desc";
+      }
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        title:
+          error.message === "upload_error"
+            ? t("toast_upload_error_title")
+            : t("toast_general_error_title"),
+        description:
+          error.message === "upload_error"
+            ? t("toast_upload_error_desc")
+            : t("toast_general_error_desc"),
         variant: "destructive",
       });
     }
@@ -348,40 +357,48 @@ const AccidentReportForm: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
+    // Convertit la FileList en tableau et supprime les doublons par nom
     const newFiles = Array.from(e.target.files);
-
     const allFiles = [...pdfFiles, ...newFiles].filter(
       (file, index, self) =>
         index === self.findIndex((f) => f.name === file.name)
     );
 
-    const maxFiles = documentType === "healing-certificate" ? 2 : 1;
+    // 3 fichiers max pour le certificat, 1 pour la déclaration
+    const maxFiles = documentType === "healing-certificate" ? 3 : 1;
 
-    if (documentType === "accident-report" && allFiles.length > 1) {
+    if (allFiles.length > maxFiles) {
       toast({
         title: "Trop de fichiers",
-        description:
-          "Une seule pièce justificative est autorisée pour une déclaration d'accident.",
+        description: `Maximum ${maxFiles} fichier${
+          maxFiles > 1 ? "s" : ""
+        } autorisé${maxFiles > 1 ? "s" : ""}.`,
         variant: "destructive",
       });
       return;
     }
 
+    // On ne conserve que les maxFiles premiers
     const limitedFiles = allFiles.slice(0, maxFiles);
 
+    // Autorise PDF, JPG/JPEG, PNG, taille 10 Mo max
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
     const invalidFiles = limitedFiles.filter(
-      (file) => file.type !== "application/pdf" || file.size > 10 * 1024 * 1024
+      (file) =>
+        !allowedTypes.includes(file.type) || file.size > 10 * 1024 * 1024
     );
 
     if (invalidFiles.length > 0) {
       toast({
         title: "Fichier invalide",
-        description: "Seuls les fichiers PDF de moins de 10 Mo sont autorisés.",
+        description:
+          "Seuls les PDF, JPG ou PNG de moins de 10 Mo sont autorisés.",
         variant: "destructive",
       });
       return;
     }
 
+    // Tout est OK
     setPdfFiles(limitedFiles);
   };
 
@@ -396,7 +413,13 @@ const AccidentReportForm: React.FC = () => {
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     documentType: "accident-report" | "healing-certificate";
   }) => {
+    const { t } = useTranslation();
     const inputId = `pdfUpload-${documentType}`;
+    const acceptAttr =
+      documentType === "accident-report"
+        ? "application/pdf"
+        : "application/pdf,image/jpeg,image/png";
+    const multipleAttr = documentType === "healing-certificate";
 
     return (
       <div className="space-y-4">
@@ -407,23 +430,25 @@ const AccidentReportForm: React.FC = () => {
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <Upload className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400" />
-              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                <span className="font-semibold">Cliquez pour télécharger</span>{" "}
-                ou glissez-déposez
-              </p>
+              <div
+                className="mb-2 text-sm text-gray-500 dark:text-gray-400"
+                dangerouslySetInnerHTML={{
+                  __html: t("upload_click_to_upload"),
+                }}
+              />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {documentType === "healing-certificate"
-                  ? "Jusqu'à 2 fichiers PDF (MAX. 10MB chacun)"
-                  : "1 seul fichier PDF (MAX. 10MB)"}
+                  ? t("upload_guidance_pdf").replace("{{max}}", "3")
+                  : t("upload_guidance_single")}
               </p>
             </div>
             <input
               id={inputId}
               name="pdfFiles"
               type="file"
-              accept="application/pdf"
+              accept={acceptAttr}
+              multiple={multipleAttr}
               className="hidden"
-              multiple={documentType === "healing-certificate"}
               onChange={handleFileChange}
             />
           </label>
@@ -442,7 +467,7 @@ const AccidentReportForm: React.FC = () => {
                   onClick={() => setFiles(files.filter((_, i) => i !== idx))}
                   className="text-xs text-rwdm-red hover:text-rwdm-red/80 transition-colors"
                 >
-                  Supprimer
+                  {t("button_remove_file")}
                 </button>
               </li>
             ))}
@@ -453,10 +478,10 @@ const AccidentReportForm: React.FC = () => {
   };
 
   const spellCheckFields = [
-    { label: "Prénom du joueur", value: playerFirstName },
-    { label: "Nom du joueur", value: playerLastName },
-    { label: "Adresse e-mail", value: email },
-    { label: "Numéro de téléphone", value: phone },
+    { label: t("spellcheck_field_player_last_name"), value: playerLastName },
+    { label: t("spellcheck_field_player_first_name"), value: playerFirstName },
+    { label: t("spellcheck_field_email"), value: email },
+    { label: t("spellcheck_field_phone"), value: phone },
   ];
 
   return (
@@ -464,34 +489,14 @@ const AccidentReportForm: React.FC = () => {
       <Card className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up pb-6">
         <CardContent className="pt-6">
           <FormSection
-            title="Important"
+            title={t("accident_info_alert_title")}
             subtitle={
-              <>
-                Veuillez noter qu’il est vivement recommandé d’envoyer votre
-                déclaration dans un délai maximum de{" "}
-                <span className="text-red-500 font-semibold">19 jours</span>{" "}
-                suivant l’accident. Le dix-neuvième jour peut être refusé. Passé
-                ce délai, la demande ne pourra plus être prise en compte.
-                <br />
-                <br />
-                La déclaration sera d’abord validée par le club, puis transmise
-                à l’Union belge de football. Les frais médicaux sont dans un
-                premier temps à votre charge.
-                <br />
-                <br />
-                À la fin de la blessure, vous devrez téléverser sur cette page
-                votre certificat de guérison ainsi que les frais transmis par
-                votre médecin. Ces documents seront également approuvés par le
-                club avant d’être envoyés à l’Union belge pour un éventuel
-                remboursement.
-                <br />
-                <br />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">
-                  Veuillez également télécharger le PDF ci-dessous, le faire
-                  remplir par votre médecin, puis le joindre en tant que fichier
-                  PDF lors de la déclaration d’accident.
-                </span>
-              </>
+              <div
+                className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: t("accident_info_alert_html"),
+                }}
+              />
             }
             children={null}
           />
@@ -511,26 +516,26 @@ const AccidentReportForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations sur l'accident"
-              subtitle="Veuillez fournir les informations de base concernant l'accident"
+              title={t("accident_section_title")}
+              subtitle={t("accident_section_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Date de l'accident */}
                 <div className="space-y-2">
                   <Label
                     htmlFor="accidentDate"
                     className="flex items-center space-x-1"
                   >
-                    <span>Date de l'accident *</span>
+                    <span>{t("label_accident_date")}</span>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Vous ne pouvez pas sélectionner une date future.</p>
+                        <p>{t("tooltip_accident_date")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </Label>
-
                   <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -544,7 +549,7 @@ const AccidentReportForm: React.FC = () => {
                         {accidentDate ? (
                           format(accidentDate, "PPP", { locale: fr })
                         ) : (
-                          <span>Sélectionnez une date</span>
+                          <span>{t("select_date_placeholder")}</span>
                         )}
                       </Button>
                     </PopoverTrigger>
@@ -565,8 +570,9 @@ const AccidentReportForm: React.FC = () => {
                   </Popover>
                 </div>
 
+                {/* Nom du club */}
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="clubName">Nom du club *</Label>
+                  <Label htmlFor="clubName">{t("label_club_name")}</Label>
                   <Input
                     id="clubName"
                     className="form-input-base"
@@ -576,37 +582,55 @@ const AccidentReportForm: React.FC = () => {
                   />
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="category">Catégorie *</Label>
-                  <Select onValueChange={setCategory} required>
-                    <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez une catégorie" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 17 }, (_, i) => i + 5)
-                        .filter((age) => age !== 20)
-                        .map((age) => (
-                          <SelectItem key={`U${age}`} value={`U${age}`}>
-                            {`U${age}`}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                {/* Académie & Catégorie côte à côte */}
+                <div className="space-y-2 md:col-span-2 grid md:grid-cols-2 gap-5">
+                  {/* Académie */}
+                  <div className="space-y-2">
+                    <Label htmlFor="academy">{t("label_academy")}</Label>
+                    <Select value={academy} onValueChange={setAcademy} required>
+                      <SelectTrigger className="form-input-base">
+                        <SelectValue
+                          placeholder={t("placeholder_select_academy")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="RWDM Academy">
+                          RWDM Academy
+                        </SelectItem>
+                        <SelectItem value="Brussels Eagles Football Academy">
+                          Brussels Eagles Football Academy
+                        </SelectItem>
+                        <SelectItem value="Red For Ever Academy">
+                          Red For Ever Academy
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Catégorie */}
+                  <div className="space-y-2">
+                    <Label htmlFor="category">{t("label_category")}</Label>
+                    <Select onValueChange={setCategory} required>
+                      <SelectTrigger className="form-input-base">
+                        <SelectValue placeholder={t("placeholder_category")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 17 }, (_, i) => i + 5)
+                          .filter((age) => age !== 20)
+                          .map((age) => (
+                            <SelectItem key={`U${age}`} value={`U${age}`}>
+                              {`U${age}`}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
+                {/* Nom du joueur */}
                 <div className="space-y-2">
-                  <Label htmlFor="playerFirstName">Prénom du joueur *</Label>
-                  <Input
-                    id="playerFirstName"
-                    className="form-input-base"
-                    value={playerFirstName}
-                    onChange={(e) => setPlayerFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="playerLastName">Nom du joueur *</Label>
+                  <Label htmlFor="playerLastName">
+                    {t("label_player_last_name")}
+                  </Label>
                   <Input
                     id="playerLastName"
                     className="form-input-base"
@@ -615,11 +639,26 @@ const AccidentReportForm: React.FC = () => {
                     required
                   />
                 </div>
+
+                {/* Prénom du joueur */}
+                <div className="space-y-2">
+                  <Label htmlFor="playerFirstName">
+                    {t("label_player_first_name")}
+                  </Label>
+                  <Input
+                    id="playerFirstName"
+                    className="form-input-base"
+                    value={playerFirstName}
+                    onChange={(e) => setPlayerFirstName(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
+              {/* E-mail & Téléphone */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Adresse e-mail *</Label>
+                  <Label htmlFor="email">{t("label_email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -629,9 +668,8 @@ const AccidentReportForm: React.FC = () => {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Numéro de téléphone *</Label>
+                  <Label htmlFor="phone">{t("label_phone")}</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -643,21 +681,25 @@ const AccidentReportForm: React.FC = () => {
                 </div>
               </div>
 
+              {/* Description de l'accident */}
               <div className="space-y-2 mt-4">
                 <Label htmlFor="accidentDescription">
-                  Description de l'accident *
+                  {t("label_accident_description")}
                 </Label>
                 <Textarea
                   id="accidentDescription"
                   className="form-input-base min-h-32"
-                  placeholder="Décrivez comment l'accident s'est produit, où, quand et les conséquences immédiates..."
+                  placeholder={t("placeholder_accident_description")}
                   required
-                  maxLength={700} // Limite côté HTML
+                  maxLength={700}
                   value={accidentDescription}
                   onChange={(e) => setAccidentDescription(e.target.value)}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                  {accidentDescription.length}/700 caractères
+                  {t("accident_description_counter").replace(
+                    "{{count}}",
+                    accidentDescription.length.toString()
+                  )}
                 </p>
               </div>
             </FormSection>
@@ -667,8 +709,8 @@ const AccidentReportForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Document justificatif"
-              subtitle="Veuillez choisir le type de document à téléverser puis charger un fichier PDF justificatif (rapport médical, etc.)"
+              title={t("document_section_title")}
+              subtitle={t("document_section_subtitle")}
             >
               <Tabs
                 defaultValue="accident-report"
@@ -682,10 +724,10 @@ const AccidentReportForm: React.FC = () => {
               >
                 <TabsList className="grid w-full grid-cols-2 mb-4">
                   <TabsTrigger value="accident-report">
-                    Déclaration d'accident
+                    {t("tabs_accident_report")}
                   </TabsTrigger>
                   <TabsTrigger value="healing-certificate">
-                    Certificat de guérison
+                    {t("tabs_healing_certificate")}
                   </TabsTrigger>
                 </TabsList>
 
@@ -694,42 +736,29 @@ const AccidentReportForm: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex gap-3 items-end">
                       <div className="w-full">
-                        <Label htmlFor="accidentCode">Code du dossier</Label>
+                        <Label htmlFor="accidentCode">
+                          {t("label_accident_code")}
+                        </Label>
                         <Input
                           id="accidentCode"
                           value={accidentCode}
                           readOnly
-                          placeholder="Cliquez sur 'Générer' pour obtenir un code"
+                          placeholder={t("placeholder_accident_code")}
                           className="form-input-base bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                           required
                         />
                       </div>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          const newCode = Math.random()
-                            .toString(36)
-                            .substring(2, 8)
-                            .toUpperCase();
-                          setAccidentCode(newCode);
-                          toast({
-                            title: "Code généré",
-                            description: `Voici votre code : ${newCode}`,
-                          });
-                        }}
-                      >
-                        Générer
+                      <Button type="button" onClick={generateCode}>
+                        {t("button_generate_code")}
                       </Button>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Ce code est essentiel pour délivrer plus tard le
-                      certificat de guérison.
-                      <span className="ml-1 font-medium text-red-500">
-                        Sans ce code
-                      </span>
-                      , il ne sera pas possible d’envoyer un certificat de
-                      guérison lié à cette déclaration.
-                    </p>
+
+                    <div
+                      className="text-sm text-gray-500 dark:text-gray-400"
+                      dangerouslySetInnerHTML={{
+                        __html: t("accident_code_info_html"),
+                      }}
+                    />
 
                     <UploadSection
                       files={pdfFiles}
@@ -757,7 +786,7 @@ const AccidentReportForm: React.FC = () => {
                         htmlFor="confirmSent"
                         className="text-sm text-gray-700 dark:text-gray-300"
                       >
-                        J’ai déjà effectué l’envoi d’une déclaration d’accident
+                        {t("checkbox_healing_sent")}
                       </label>
                     </div>
 
@@ -765,7 +794,7 @@ const AccidentReportForm: React.FC = () => {
                       <>
                         <div>
                           <Label htmlFor="healingCode">
-                            Code du dossier reçu lors de la déclaration *
+                            {t("label_healing_code")}
                           </Label>
                           <Input
                             id="healingCode"
@@ -775,7 +804,7 @@ const AccidentReportForm: React.FC = () => {
                               setHealingCode(val);
                               checkCodeValidity(val, email);
                             }}
-                            placeholder="Ex : XG72ZL"
+                            placeholder={t("placeholder_healing_code")}
                             className={`form-input-base ${
                               codeValid === false
                                 ? "border-red-500"
@@ -785,33 +814,29 @@ const AccidentReportForm: React.FC = () => {
                             }`}
                             required
                           />
-
-                          {codeValid === true && (
-                            <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                              <CheckCircle className="w-4 h-4" />
-                              Code valide ! Le dossier est bien lié à l’adresse
-                              :
-                              <span className="font-semibold ml-1">
-                                {email}
-                              </span>
-                            </p>
-                          )}
-
-                          {codeValid === false && (
-                            <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                              <XCircle className="w-4 h-4" />
-                              Aucun dossier ne correspond à ce code pour l’email
-                              :
-                              <span className="font-semibold ml-1">
-                                {email || "non renseigné"}
-                              </span>
-                            </p>
-                          )}
                         </div>
 
+                        {codeValid === true && (
+                          <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4" />
+                            {t("healing_code_valid").replace(
+                              "{{email}}",
+                              email
+                            )}
+                          </p>
+                        )}
+                        {codeValid === false && (
+                          <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                            <XCircle className="w-4 h-4" />
+                            {t("healing_code_invalid").replace(
+                              "{{email}}",
+                              email || t("not_provided")
+                            )}
+                          </p>
+                        )}
+
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Veuilllez joindre votre certificat de guérison
-                          ci-dessous :
+                          {t("healing_upload_prompt")}
                         </p>
 
                         <UploadSection
@@ -832,37 +857,25 @@ const AccidentReportForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Signature"
-              subtitle="Veuillez signer pour confirmer l'exactitude des informations fournies"
+              title={t("signature_section_title")}
+              subtitle={t("signature_section_subtitle")}
             >
               <div className="space-y-4">
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  En vue d'une gestion efficace de mon dossier, et uniquement à
-                  cet effet, je donne autorisation au traitement des données
-                  médicales me concernant relatives à l'accident dont j'ai été
-                  victime, comme décrit dans la{" "}
-                  <a
-                    href="https://arena-nv.be/fr/products/4"
-                    className="text-blue-600 underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Déclaration de confidentialité
-                  </a>{" "}
-                  qui peut être consultée ici. Conformément à la loi RGPD, j'ai
-                  le droit d'accès, de rectification, de portabilité,
-                  d'opposition et d'effacement de mes données
-                  (arena@arena-nv.be).
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <strong>
-                    Signature victime ou des parents/tuteur légal (pour les
-                    enfants de moins de 13 ans)
-                  </strong>
-                </p>
+                <div
+                  className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: t("signature_privacy_html"),
+                  }}
+                />
+                <div
+                  className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: t("signature_label_html"),
+                  }}
+                />
                 <SignaturePad
                   onChange={setSignature}
-                  placeholder="Signez ici pour valider la déclaration d'accident"
+                  placeholder={t("signature_placeholder_decla")}
                 />
               </div>
             </FormSection>
@@ -882,15 +895,9 @@ const AccidentReportForm: React.FC = () => {
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
           >
-            J'accepte la{" "}
-            <a
-              href="/legal"
-              target="_blank"
-              className="text-rwdm-blue underline"
-            >
-              politique de confidentialité
-            </a>
-            .
+            <div
+              dangerouslySetInnerHTML={{ __html: t("accept_policy_html") }}
+            />
           </label>
         </div>
 
@@ -903,6 +910,7 @@ const AccidentReportForm: React.FC = () => {
               !hasAcceptedPolicy ||
               !accidentDate ||
               !clubName ||
+              !academy ||
               !playerLastName ||
               !playerFirstName ||
               !email ||
@@ -919,7 +927,9 @@ const AccidentReportForm: React.FC = () => {
             }
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
-            {isCooldown ? "Veuillez patienter..." : "Soumettre la déclaration"}
+            {isCooldown
+              ? t("button_submit_accident_loading")
+              : t("button_submit_accident")}
           </Button>
         </div>
       </form>
@@ -940,7 +950,7 @@ const AccidentReportForm: React.FC = () => {
         onClose={() => setIsSpellCheckOpen(false)}
         onConfirm={finalSubmit}
         fields={spellCheckFields}
-        title="Vérification des informations de la déclaration"
+        title={t("spellcheck_title_2")}
       />
     </>
   );

@@ -105,16 +105,15 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
               </TableHeader>
               <TableBody>
                 {completedRequests.map((request) => {
+                  const adminRecord = admins?.find(
+                    (admin) => Number(admin.id) === Number(request.assignedTo)
+                  );
                   const assignedName =
                     !request.assignedTo || request.assignedTo === "none"
                       ? "Non assigné"
-                      : (admins &&
-                          admins.find(
-                            (admin) =>
-                              admin.id.toString() ===
-                              request.assignedTo.toString()
-                          )?.name) ||
-                        "Inconnu";
+                      : adminRecord
+                      ? adminRecord.name
+                      : "Inconnu";
 
                   return (
                     <TableRow

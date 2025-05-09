@@ -1,6 +1,6 @@
-
-import React, { useRef, useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import React, { useRef, useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SignaturePadProps {
   onChange: (signatureData: string | null) => void;
@@ -12,65 +12,67 @@ interface SignaturePadProps {
 const SignaturePad: React.FC<SignaturePadProps> = ({
   onChange,
   className,
-  label = "Signature",
-  placeholder = "Signez ici"
+  label,
+  placeholder,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
+  const { t } = useTranslation();
+
+  // Use translation defaults if props not provided
+  const labelText = label ?? t("signature");
+  const placeholderText = placeholder ?? t("signature_placeholder");
+  const clearText = t("clear");
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext("2d");
     if (!context) return;
 
-    // Set canvas to be responsive
+    // Responsive canvas sizing
     const resizeCanvas = () => {
       const rect = canvas.parentElement?.getBoundingClientRect();
       if (rect) {
         canvas.width = rect.width;
         canvas.height = 150;
       }
-      
-      // Reset canvas with white background
-      context.fillStyle = '#ffffff';
+
+      // White background
+      context.fillStyle = "#ffffff";
       context.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Set drawing style
+
+      // Drawing style
       context.lineWidth = 2;
-      context.lineCap = 'round';
-      context.lineJoin = 'round';
-      context.strokeStyle = '#1A365D'; // RWDM Blue
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.strokeStyle = "#1A365D";
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     setIsDrawing(true);
     const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
+    const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
 
     let clientX: number, clientY: number;
+    const rect = canvas.getBoundingClientRect();
 
-    if ('touches' in e) {
-      // Touch event
+    if ("touches" in e) {
       e.preventDefault();
       const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
       clientX = touch.clientX - rect.left;
       clientY = touch.clientY - rect.top;
     } else {
-      // Mouse event
-      const rect = canvas.getBoundingClientRect();
       clientX = e.clientX - rect.left;
       clientY = e.clientY - rect.top;
     }
@@ -79,25 +81,23 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
     context.moveTo(clientX, clientY);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const draw = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     if (!isDrawing) return;
-    
     const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
+    const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
 
     let clientX: number, clientY: number;
+    const rect = canvas.getBoundingClientRect();
 
-    if ('touches' in e) {
-      // Touch event
+    if ("touches" in e) {
       e.preventDefault();
       const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
       clientX = touch.clientX - rect.left;
       clientY = touch.clientY - rect.top;
     } else {
-      // Mouse event
-      const rect = canvas.getBoundingClientRect();
       clientX = e.clientX - rect.left;
       clientY = e.clientY - rect.top;
     }
@@ -110,18 +110,18 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
   const endDrawing = () => {
     setIsDrawing(false);
     if (hasSignature) {
-      const signatureData = canvasRef.current?.toDataURL('image/png');
+      const signatureData = canvasRef.current?.toDataURL("image/png");
       onChange(signatureData || null);
     }
   };
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
+    const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = '#ffffff';
+    context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
     onChange(null);
@@ -129,12 +129,12 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {label && (
+      {labelText && (
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {label}
+          {labelText}
         </label>
       )}
-      
+
       <div className="relative border border-border rounded-lg overflow-hidden bg-white">
         <canvas
           ref={canvasRef}
@@ -147,21 +147,21 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
           onTouchMove={draw}
           onTouchEnd={endDrawing}
         />
-        
+
         {!hasSignature && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-400 text-sm">
-            {placeholder}
+            {placeholderText}
           </div>
         )}
       </div>
-      
+
       <div className="flex justify-end">
         <button
           type="button"
           onClick={clearSignature}
           className="text-xs text-rwdm-blue hover:text-rwdm-red dark:text-blue-400 dark:hover:text-red-400 transition-colors"
         >
-          Effacer
+          {clearText}
         </button>
       </div>
     </div>

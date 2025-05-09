@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -56,7 +56,7 @@ const Dashboard = () => {
   const completedRequestsPerPage = 5;
   const [pendingAccidentReportsPage, setPendingAccidentReportsPage] =
     useState(1);
-  const pendingAccidentReportsPerPage = 5;
+  const pendingAccidentReportsPerPage = 10;
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -176,10 +176,8 @@ const Dashboard = () => {
 
       // On transforme chaque ligne en un objet "Request"
       const formattedRequests: Request[] = rows.map((req: any) => {
-        // On parse la colonne data (JSON)
         const dataParsed = JSON.parse(req.data || "{}");
 
-        // On détermine name / email (simplifié ici)
         let nameFromData = "inconnu";
         let emailFromData = "Non spécifié";
 
@@ -192,44 +190,41 @@ const Dashboard = () => {
             emailFromData =
               dataParsed.parent1Email || dataParsed.email || "Non spécifié";
             break;
-
           case "accident-report":
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
               nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
             }
             emailFromData = dataParsed.email || "Non spécifié";
             break;
-
           case "responsibility-waiver":
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
               nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
             }
             emailFromData = dataParsed.parentEmail || "Non spécifié";
             break;
-
           default:
             break;
         }
 
-        // On stocke tout le JSON dans `details` :
-        // (ainsi RequestDetailsModal aura access à request.details)
         return {
           id: req.id.toString(),
           type: req.type,
           name: nameFromData,
           email: emailFromData,
-          // si besoin : phone: dataParsed.phone ?? dataParsed.parent1Phone ?? null,
           date: new Date(req.created_at),
           status: mapDbStatus(req.status),
           assignedTo: req.admin_id ? req.admin_id.toString() : "none",
           rejectedAt: req.rejected_at
             ? new Date(req.rejected_at.replace(" ", "T"))
             : undefined,
-
-          details: dataParsed, // <= c'est le plus important
+          details: dataParsed,
+          // Ajout du nom complet via le join (même si l'user est soft deleted)
+          assignedAdminName:
+            req.admin_firstName && req.admin_lastName
+              ? `${req.admin_firstName} ${req.admin_lastName}`
+              : null,
         };
       });
-
       setRequests(formattedRequests);
       // 🔁 Vérifier si des demandes déjà "rejected" doivent être supprimées automatiquement
       formattedRequests.forEach((req) => {
@@ -302,7 +297,7 @@ const Dashboard = () => {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const response = await fetch("http://localhost:5000/api/admins", {
+      const response = await fetch("http://localhost:5000/api/all-admins", {
         headers,
       });
       if (!response.ok) {
@@ -320,6 +315,7 @@ const Dashboard = () => {
         functionTitle: user.functionTitle,
         description: user.description,
         role: user.role,
+        deleted: user.deleted, // <-- Ajout de la propriété "deleted"
         name: `${user.firstName} ${user.lastName}`,
       }));
 
@@ -402,6 +398,11 @@ const Dashboard = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
+  const requestsForMainTable = filteredRequests.filter(
+    // on exclut uniquement les accident‑report déjà “En cours”
+    (req) => !(req.type === "accident-report" && req.status === "in-progress")
+  );
+
   const newRequestsCount = requests.filter((r) => r.status === "new").length;
 
   const completedRequests = requests.filter((r) => r.status === "completed");
@@ -414,19 +415,33 @@ const Dashboard = () => {
     (completedRequestsPage - 1) * completedRequestsPerPage,
     completedRequestsPage * completedRequestsPerPage
   );
+
   const pendingAccidentReports = requests.filter(
-    (r) =>
-      r.type === "accident-report" &&
-      r.status !== "completed" &&
-      r.status !== "rejected"
+    (r) => r.type === "accident-report" && r.status === "in-progress"
   );
 
+  // 2) Grouper par codeDossier
+  const groupedByCodeArray = Object.entries(
+    pendingAccidentReports.reduce((acc, req) => {
+      const code = req.details?.codeDossier ?? `NO_CODE_${req.id}`;
+      if (!acc[code]) acc[code] = [];
+      acc[code].push(req);
+      return acc;
+    }, {} as Record<string, Request[]>)
+  ).map(([code, items]) => ({ code, items }));
+
+  // 3) Pagination au niveau des groupes
+  const groupsPerPage = pendingAccidentReportsPerPage;
+  const start = (pendingAccidentReportsPage - 1) * groupsPerPage;
+  const end = start + groupsPerPage;
+  const paginatedGroups = groupedByCodeArray.slice(start, end);
+
+  // 4) “Déplier” les groupes pour passer un Request[] à la carte
+  const paginatedPendingAccidents = paginatedGroups.flatMap((g) => g.items);
+
+  // 5) Calcul du nombre total de pages sur les groupes
   const totalPendingAccidentPages = Math.ceil(
-    pendingAccidentReports.length / pendingAccidentReportsPerPage
-  );
-  const paginatedPendingAccidents = pendingAccidentReports.slice(
-    (pendingAccidentReportsPage - 1) * pendingAccidentReportsPerPage,
-    pendingAccidentReportsPage * pendingAccidentReportsPerPage
+    groupedByCodeArray.length / pendingAccidentReportsPerPage
   );
 
   const handleRequestDeleted = (id: string) => {
@@ -629,25 +644,18 @@ const Dashboard = () => {
   const handleAppointmentTypeSelection = (type: "test" | "secretariat") => {
     if (!selectedRequest) return;
 
-    if (type === "secretariat") {
-      // Ouvrir le modal AddAppointmentDialog
-      setIsAppointmentDialogOpen(false); // Fermer le premier modal
-      setIsAddAppointmentDialogOpen(true);
-
-      // Préremplir les champs avec les infos de la demande
-      setNewAppointmentPerson(selectedRequest.name);
-      setNewAppointmentEmail(selectedRequest.email);
-      setNewAppointmentType("registration");
-    } else if (type === "test") {
-      // Afficher une notification pour le test technique
-      toast({
-        title: "Test technique sélectionné",
-        description: "Un email devra être envoyé aux coordinateurs plus tard.",
-      });
-    }
-
-    // Fermer le modal AppointmentDialog après sélection
+    // Toujours fermer le 1er modal et ouvrir le 2ᵉ
     setIsAppointmentDialogOpen(false);
+    setIsAddAppointmentDialogOpen(true);
+
+    // Pré‑remplir person & email
+    setNewAppointmentPerson(selectedRequest.name);
+    setNewAppointmentEmail(selectedRequest.email);
+
+    // Choisir le bon type de rdv pour AddAppointmentDialog
+    setNewAppointmentType(
+      type === "secretariat" ? "registration" : "selection-tests"
+    );
   };
 
   const openAppointmentDialog = (request: Request) => {
@@ -713,12 +721,20 @@ const Dashboard = () => {
               />
 
               <Card>
-                <CardHeader className="flex flex-row items-start justify-between p-4">
-                  <CardTitle className="m-0 p-0">
-                    Liste des demandes ({filteredRequests.length})
-                  </CardTitle>
-
-                  <div className="flex items-center gap-2 text-sm">
+                <CardHeader className="p-4 grid grid-cols-2">
+                  <div className="flex flex-col">
+                    <CardTitle className="m-0 p-0">
+                      Liste des demandes ({filteredRequests.length})
+                    </CardTitle>
+                    <div className="mt-1 flex items-center">
+                      <Info className="mr-1 h-4 w-4 text-gray-500" />
+                      <p className="text-xs text-gray-500">
+                        Les demandes rejetées sont supprimées définitivement de
+                        la base de données après 24 heures.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 text-sm">
                     <span className="inline-block h-3 w-3 rounded-sm bg-blue-50 ring-1 ring-blue-300 dark:bg-red-900 dark:ring-red-800" />
                     <span className="text-gray-600 dark:text-gray-300">
                       Mes assignations
@@ -729,7 +745,7 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="overflow-x-auto">
                     <RequestsTable
-                      requests={filteredRequests}
+                      requests={requestsForMainTable}
                       admins={admins}
                       onAssignRequest={handleAssignRequest}
                       onUpdateStatus={handleUpdateStatus}

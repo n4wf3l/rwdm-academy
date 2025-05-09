@@ -9,7 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Eye, Send, Pencil } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Send,
+  Pencil,
+  Info,
+} from "lucide-react";
 import { Request } from "@/components/RequestDetailsModal";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { cn } from "@/lib/utils";
@@ -107,11 +114,22 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
 
   return (
     <Card>
-      <CardHeader className="border-b">
-        <div className="flex justify-between items-center w-full">
+      <CardHeader className="border-b p-4 grid grid-cols-2">
+        <div className="flex flex-col">
           <CardTitle>Déclarations d'accident en attente</CardTitle>
-
-          {/* Bouton pour modifier l'email de l'Union Belge */}
+          <div className="mt-1 flex items-center">
+            <Info className="mr-1 h-4 w-4 text-gray-500" />
+            <p className="text-xs text-gray-500">
+              Les déclarations d'accidents sont mises en attente ici en attente
+              du certificat de guérison respectif.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-2 text-sm">
+          <span className="inline-block h-3 w-3 rounded-sm bg-green-100 ring-1 ring-green-300" />
+          <span className="text-gray-600 text-sm">
+            Les déclarations en ordre
+          </span>
           <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -134,9 +152,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     try {
                       await axios.put(
                         "http://localhost:5000/api/email-recipients/accident-report",
-                        {
-                          email: newEmail,
-                        }
+                        { email: newEmail }
                       );
                       setRecipientEmail(newEmail);
                       setEmailDialogOpen(false);
@@ -145,7 +161,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                         "Erreur lors de l’enregistrement de l’email :",
                         err
                       );
-                      // Tu peux aussi afficher une notif ici si tu veux
+                      // Vous pouvez également afficher une notification ici
                     }
                   }}
                 >
@@ -156,7 +172,6 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
           </Dialog>
         </div>
       </CardHeader>
-
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
@@ -174,19 +189,26 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             </TableHeader>
             <TableBody>
               {Object.entries(groupedByCode).map(([code, requests]) => {
-                const declaration = requests.find(
-                  (r) => r.details?.documentLabel === "Déclaration d'accident"
+                // 1) trier les deux (ou une) request(s) du même dossier par date
+                const sorted = [...requests].sort(
+                  (a, b) =>
+                    new Date(a.date).getTime() - new Date(b.date).getTime()
                 );
-                const healing = requests.find(
-                  (r) => r.details?.documentLabel === "Certificat de guérison"
-                );
+                // 2) la première est la déclaration, la seconde (s’il y en a) le certificat
+                const declaration = sorted[0];
+                const healing = sorted.length > 1 ? sorted[1] : undefined;
 
                 const isDeclarationSent = Boolean(
                   (declaration as any)?.sent_at
                 );
-                const isHealingSent = !!(healing && (healing as any).sent_at);
+                const isHealingSent = Boolean(
+                  healing && (healing as any).sent_at
+                );
 
+                // s’il n’y a même pas de déclaration, on skip
                 if (!declaration) return null;
+
+                const duoBg = healing ? "bg-green-100" : "";
 
                 return (
                   <React.Fragment key={code}>
@@ -194,7 +216,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     {declaration && (
                       <TableRow
                         onClick={() => onViewDetails(declaration)}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className={`${duoBg} hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer`}
                       >
                         <TableCell>{formatRequestId(declaration.id)}</TableCell>
                         <TableCell>
@@ -260,7 +282,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     {healing && (
                       <TableRow
                         onClick={() => onViewDetails(healing)}
-                        className="bg-gray-50 dark:bg-gray-900 text-sm"
+                        className={`${duoBg} bg-opacity-50 dark:bg-opacity-50 text-sm`}
                       >
                         <TableCell>{formatRequestId(healing.id)}</TableCell>
                         <TableCell></TableCell>

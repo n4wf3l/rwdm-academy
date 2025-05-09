@@ -26,6 +26,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface FormSection {
   title: string;
@@ -55,6 +56,7 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
 const ResponsibilityWaiverForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, lang } = useTranslation();
   const [parentLastName, setParentLastName] = useState<string>("");
   const [parentFirstName, setParentFirstName] = useState<string>("");
   const [parentPhone, setParentPhone] = useState<string>("");
@@ -90,7 +92,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
 
   const finalSubmit = async () => {
     try {
-      // ✅ Vérification des champs obligatoires
+      // 1️⃣ Vérification des champs obligatoires
       if (
         !parentLastName ||
         !parentFirstName ||
@@ -104,37 +106,40 @@ const ResponsibilityWaiverForm: React.FC = () => {
         !approvalText ||
         !signature
       ) {
-        console.error("❌ Données incomplètes avant envoi !");
+        console.error("❌", t("toast_error_description_required"));
         toast({
-          title: "Erreur",
-          description: "Veuillez remplir tous les champs obligatoires.",
+          title: t("toast_error_title"),
+          description: t("toast_error_description_required"),
           variant: "destructive",
         });
         return;
       }
 
-      // ✅ Étape 1 : Upload de la signature
-      let filePath = null;
+      // 2️⃣ Upload de la signature
+      let filePath: string | null = null;
       if (signature) {
-        const formData = new FormData();
+        const signatureFormData = new FormData();
         const blob = await fetch(signature).then((res) => res.blob());
-        formData.append("pdfFile", blob, "signature.png");
+        signatureFormData.append("pdfFiles", blob, "signature.png");
 
         const uploadResponse = await fetch("http://localhost:5000/api/upload", {
           method: "POST",
-          body: formData,
+          body: signatureFormData,
         });
-
         if (!uploadResponse.ok) {
-          const uploadError = await uploadResponse.json();
-          throw new Error(uploadError.error || "Erreur upload signature.");
+          toast({
+            title: t("toast_error_title"),
+            description: t("toast_error_upload_signature"),
+            variant: "destructive",
+          });
+          const err = await uploadResponse.json();
+          throw new Error(err.error || t("toast_error_upload_signature"));
         }
-
         const uploadData = await uploadResponse.json();
         filePath = uploadData.filePath;
       }
 
-      // ✅ Étape 2 : Construction des données
+      // 3️⃣ Construction de requestData
       const requestData = {
         type: "responsibility-waiver",
         formData: {
@@ -155,54 +160,46 @@ const ResponsibilityWaiverForm: React.FC = () => {
         assignedTo: null,
       };
 
-      // ✅ Étape 3 : Enregistrement en base
+      // 4️⃣ Enregistrement en base
       const response = await fetch("http://localhost:5000/api/requests", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
       });
-
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erreur API.");
+        const errData = await response.json();
+        throw new Error(errData.error || t("toast_error_api"));
+      }
+      const { requestId } = await response.json();
+
+      // 5️⃣ Envoi de l’email de confirmation
+      const emailResponse = await fetch("/api/form-mail/send-waiver-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          formData: requestData.formData,
+          requestId,
+        }),
+      });
+      if (!emailResponse.ok) {
+        console.warn("Email send failed:", await emailResponse.text());
       }
 
-      const responseData = await response.json();
-      const requestId = responseData.requestId;
-
-      // ✅ Étape 4 : Envoi de l’email de confirmation
-      const emailResponse = await fetch(
-        "http://localhost:5000/api/form-mail/send-waiver-email",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ formData: requestData.formData, requestId }),
-        }
-      );
-
-      const emailData = await emailResponse.json();
-      console.log("✅ Email envoyé :", emailData);
-
-      // ✅ Succès final
+      // 6️⃣ Succès final
       toast({
-        title: "Décharge soumise avec succès",
-        description: "Votre décharge de responsabilité a été envoyée.",
+        title: t("toast_success_waiver_title"),
+        description: t("toast_success_waiver_description"),
       });
-
       const now = Date.now();
       localStorage.setItem("waiverLastSubmitTime", now.toString());
       setIsCooldown(true);
-      setCooldownRemaining(600); // 10 minutes
+      setCooldownRemaining(600);
       navigate("/success/responsibilityWaiver");
     } catch (error) {
-      console.error("❌ Erreur lors de la soumission :", error);
+      console.error("❌", error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        title: t("toast_error_title"),
+        description: t("toast_error_generic_description"),
         variant: "destructive",
       });
     }
@@ -238,22 +235,26 @@ const ResponsibilityWaiverForm: React.FC = () => {
     }
   }, []);
 
-  const waiverText = `Je soussigné(e), ${parentFirstName || ""} ${
-    parentLastName || "[Prénom du représentant]" + " [Nom de famille]"
-  }, représentant légal du joueur ${playerFirstName || "[Prénom du joueur]"} ${
-    playerLastName || "[Nom de famille]"
-  }, né le ${
-    playerBirthDate ? format(playerBirthDate, "dd/MM/yyyy") : "[JJ-MM-AAAA]"
-  }, et affilié au club ${
-    currentClub || "[Club actuel]"
-  } décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.`;
+  const raw = t("waiver_text_template");
+
+  // 2. replace each placeholder
+  const waiverText = raw
+    .replace("{{parentFirstName}}", parentFirstName || "")
+    .replace("{{parentLastName}}", parentLastName || "")
+    .replace("{{playerFirstName}}", playerFirstName || "")
+    .replace("{{playerLastName}}", playerLastName || "")
+    .replace(
+      "{{playerBirthDate}}",
+      playerBirthDate ? format(playerBirthDate, "dd/MM/yyyy") : ""
+    )
+    .replace("{{currentClub}}", currentClub || "");
 
   const spellCheckFields = [
-    { label: "Prénom du responsable", value: parentFirstName },
-    { label: "Nom du responsable", value: parentLastName },
-    { label: "Email du responsable", value: parentEmail },
-    { label: "Prénom du joueur", value: playerFirstName },
-    { label: "Nom du joueur", value: playerLastName },
+    { label: t("spellcheck_field_parent_last_name"), value: parentLastName },
+    { label: t("spellcheck_field_parent_first_name"), value: parentFirstName },
+    { label: t("spellcheck_field_parent_email"), value: parentEmail },
+    { label: t("spellcheck_field_player_last_name"), value: playerLastName },
+    { label: t("spellcheck_field_player_first_name"), value: playerFirstName },
   ];
 
   return (
@@ -274,12 +275,14 @@ const ResponsibilityWaiverForm: React.FC = () => {
         >
           <CardContent className="pt-6">
             <FormSection
-              title="Informations du joueur"
-              subtitle="Veuillez remplir les informations concernant le joueur"
+              title={t("waiver_player_info_title")}
+              subtitle={t("waiver_player_info_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="playerLastName">Nom *</Label>
+                  <Label htmlFor="playerLastName">
+                    {t("label_player_last_name")}
+                  </Label>
                   <Input
                     id="playerLastName"
                     className="form-input-base"
@@ -290,7 +293,9 @@ const ResponsibilityWaiverForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="playerFirstName">Prénom *</Label>
+                  <Label htmlFor="playerFirstName">
+                    {t("label_player_first_name")}
+                  </Label>
                   <Input
                     id="playerFirstName"
                     className="form-input-base"
@@ -302,22 +307,24 @@ const ResponsibilityWaiverForm: React.FC = () => {
 
                 {/* Gestion dynamique de l'affichage du calendrier */}
                 <div className="space-y-2 relative">
-                  <Label htmlFor="birthDate">Date de naissance *</Label>
+                  <Label htmlFor="birthDate">
+                    {t("label_player_birth_date")}
+                  </Label>
                   <div className="space-y-4">
                     <BirthDatePicker
                       selectedDate={playerBirthDate}
                       onChange={(date) => {
                         setPlayerBirthDate(date);
-                        setIsCalendarOpen(false); // Ferme le calendrier après sélection
+                        setIsCalendarOpen(false);
                       }}
-                      onCalendarOpen={() => setIsCalendarOpen(true)} // Ouvre la card
-                      onCalendarClose={() => setIsCalendarOpen(false)} // Ferme la card
+                      onCalendarOpen={() => setIsCalendarOpen(true)}
+                      onCalendarClose={() => setIsCalendarOpen(false)}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="currentClub">Nom du club *</Label>
+                  <Label htmlFor="currentClub">{t("label_current_club")}</Label>
                   <Input
                     id="currentClub"
                     className="form-input-base"
@@ -334,14 +341,16 @@ const ResponsibilityWaiverForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Informations du parent/tuteur"
-              subtitle="Veuillez remplir vos informations en tant que responsable légal. Vous êtes joueur et majeur ? Vous avez le droit d'introduire vos propres données."
+              title={t("waiver_parent_info_title")}
+              subtitle={t("waiver_parent_info_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="parentLastName">Nom</Label>
+                  <Label htmlFor="parentLastName">
+                    {t("label_parent_last_name")}
+                  </Label>
                   <Input
-                    id="parentLast Name"
+                    id="parentLastName"
                     className="form-input-base"
                     value={parentLastName}
                     onChange={(e) => setParentLastName(e.target.value)}
@@ -350,7 +359,9 @@ const ResponsibilityWaiverForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentFirstName">Prénom</Label>
+                  <Label htmlFor="parentFirstName">
+                    {t("label_parent_first_name")}
+                  </Label>
                   <Input
                     id="parentFirstName"
                     className="form-input-base"
@@ -361,7 +372,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentPhone">Téléphone</Label>
+                  <Label htmlFor="parentPhone">{t("label_parent_phone")}</Label>
                   <Input
                     id="parentPhone"
                     type="tel"
@@ -373,7 +384,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentEmail">Email</Label>
+                  <Label htmlFor="parentEmail">{t("label_parent_email")}</Label>
                   <Input
                     id="parentEmail"
                     type="email"
@@ -391,8 +402,8 @@ const ResponsibilityWaiverForm: React.FC = () => {
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Décharge de responsabilité"
-              subtitle="Lisez attentivement avant de signer"
+              title={t("waiver_waiver_title")}
+              subtitle={t("waiver_waiver_subtitle")}
             >
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
@@ -401,26 +412,24 @@ const ResponsibilityWaiverForm: React.FC = () => {
               </div>
             </FormSection>
           </CardContent>
-        </Card>
 
-        <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection
-              title="Date et confirmation"
-              subtitle="Veuillez confirmer la date et saisir 'Lu et approuvé'"
+              title={t("waiver_date_confirmation_title")}
+              subtitle={t("waiver_date_confirmation_subtitle")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="waiverDate">Date de signature</Label>
+                  <Label htmlFor="waiverDate">{t("label_waiver_date")}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
                           "form-input-base justify-start text-left font-normal",
-                          "text-muted-foreground" // Toujours grisé, car l'utilisateur ne peut pas changer la date
+                          "text-muted-foreground"
                         )}
-                        disabled // Empêche l'édition manuelle
+                        disabled
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {format(signatureDate, "PPP", { locale: fr })}
@@ -434,7 +443,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
                       <Calendar
                         mode="single"
                         selected={signatureDate}
-                        disabled={() => true} // Toutes les dates sont désactivées
+                        disabled={() => true}
                         locale={fr}
                         className="p-3"
                       />
@@ -443,15 +452,18 @@ const ResponsibilityWaiverForm: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="approvalText">Mention "Lu et approuvé"</Label>
-
+                  <Label htmlFor="approvalText">
+                    {t("label_approval_text")}
+                  </Label>
                   <Select onValueChange={setApprovalText} required>
                     <SelectTrigger className="form-input-base">
-                      <SelectValue placeholder="Sélectionnez votre accord" />
+                      <SelectValue
+                        placeholder={t("placeholder_approval_text")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Lu et approuvé">
-                        Lu et approuvé
+                      <SelectItem value={t("option_approval_text")}>
+                        {t("option_approval_text")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -459,22 +471,15 @@ const ResponsibilityWaiverForm: React.FC = () => {
               </div>
             </FormSection>
           </CardContent>
-        </Card>
 
-        <Card
-          className={cn(
-            "glass-panel overflow-visible transition-all duration-300",
-            isCalendarOpen ? "min-h-[550px]" : "min-h-[250px]"
-          )}
-        >
           <CardContent className="pt-6">
             <FormSection
-              title="Signature"
-              subtitle="Veuillez signer cette décharge de responsabilité"
+              title={t("signature_section_title")}
+              subtitle={t("signature_section_subtitle")}
             >
               <SignaturePad
                 onChange={setSignature}
-                placeholder="Signez ici pour valider la décharge de responsabilité"
+                placeholder={t("signature_placeholder_waiver")}
               />
             </FormSection>
           </CardContent>
@@ -493,15 +498,10 @@ const ResponsibilityWaiverForm: React.FC = () => {
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
           >
-            J'accepte la{" "}
-            <a
-              href="/legal"
-              target="_blank"
-              className="text-rwdm-blue underline"
-            >
-              politique de confidentialité
-            </a>
-            .
+            <div
+              className="inline"
+              dangerouslySetInnerHTML={{ __html: t("accept_policy_html") }}
+            />
           </label>
         </div>
 
@@ -509,24 +509,32 @@ const ResponsibilityWaiverForm: React.FC = () => {
           <Button
             type="submit"
             disabled={
-              !signature || approvalText !== "Lu et approuvé" || isCooldown
+              !signature ||
+              approvalText !== t("option_approval_text") ||
+              !hasAcceptedPolicy ||
+              isCooldown
             }
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
-            Soumettre la décharge
+            {t("button_submit_waiver")}
           </Button>
         </div>
       </form>
 
       {/* Timer en bas à gauche */}
       {isCooldown && (
-        <div className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100">
-          Vous pourrez renvoyer une décharge de responsabilité dans{" "}
-          <span className="font-semibold">
-            {String(Math.floor(cooldownRemaining / 60)).padStart(2, "0")}:
-            {String(cooldownRemaining % 60).padStart(2, "0")}
-          </span>
-        </div>
+        <div
+          className="fixed bottom-4 left-4 bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded shadow text-sm text-gray-800 dark:text-gray-100"
+          dangerouslySetInnerHTML={{
+            __html: t("cooldown_message_waiver_html").replace(
+              "{{time}}",
+              `<strong>${String(Math.floor(cooldownRemaining / 60)).padStart(
+                2,
+                "0"
+              )}:${String(cooldownRemaining % 60).padStart(2, "0")}</strong>`
+            ),
+          }}
+        />
       )}
 
       <SpellCheckModal
@@ -534,7 +542,7 @@ const ResponsibilityWaiverForm: React.FC = () => {
         onClose={() => setIsSpellCheckOpen(false)}
         onConfirm={finalSubmit}
         fields={spellCheckFields}
-        title="Vérification des informations de la décharge"
+        title={t("spellcheck_title_waiver")}
       />
     </>
   );

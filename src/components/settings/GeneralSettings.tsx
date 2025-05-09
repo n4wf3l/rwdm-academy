@@ -146,13 +146,15 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1"
               >
                 <p className="text-sm text-gray-700 mb-1 font-medium">
-                  Couleur 1 du site
+                  Couleur 1 du site
                 </p>
                 <Input
                   type="color"
                   value={siteColor1}
                   onChange={(e) => setSiteColor1(e.target.value)}
-                  className="h-10 p-1 rounded-md border transition-all duration-200"
+                  disabled
+                  className="h-10 p-1 rounded-md border transition-all duration-200 bg-gray-200 cursor-not-allowed"
+                  title="Non disponible pour l’instant"
                 />
               </motion.div>
               <motion.div
@@ -162,13 +164,15 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1"
               >
                 <p className="text-sm text-gray-700 mb-1 font-medium">
-                  Couleur 2 du site
+                  Couleur 2 du site
                 </p>
                 <Input
                   type="color"
                   value={siteColor2}
                   onChange={(e) => setSiteColor2(e.target.value)}
-                  className="h-10 p-1 rounded-md border transition-all duration-200"
+                  disabled
+                  className="h-10 p-1 rounded-md border transition-all duration-200 bg-gray-200 cursor-not-allowed"
+                  title="Non disponible pour l’instant"
                 />
               </motion.div>
             </div>

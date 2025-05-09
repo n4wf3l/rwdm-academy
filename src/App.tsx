@@ -24,7 +24,6 @@ import Members from "./pages/Members";
 import Documents from "./pages/Documents";
 import Graphics from "./pages/Graphics";
 import Settings from "./pages/Settings";
-import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
@@ -53,6 +52,34 @@ function App() {
   const [language, setLanguage] = useState<string | null>(() =>
     localStorage.getItem("language")
   );
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        // Vérifier si le rôle est admin, superadmin ou owner
+        if (
+          payload.role &&
+          ["admin", "superadmin", "owner"].includes(payload.role.toLowerCase())
+        ) {
+          // Si nous ne sommes pas déjà sur le sous-domaine admin et pas déjà sur le dashboard, rediriger
+          if (
+            !window.location.hostname.startsWith("admin.") &&
+            window.location.pathname !== "/dashboard"
+          ) {
+            const dashboardUrl =
+              window.location.hostname === "localhost"
+                ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
+                : "https://admin.example.com/dashboard";
+            window.location.href = dashboardUrl;
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors du décodage du token :", error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleLanguageChange = () => {
@@ -110,7 +137,6 @@ function App() {
             <Route path="/graphics" element={<Graphics />} />
             <Route path="/planning" element={<Planning />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/inbox" element={<Inbox />} />
             <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"

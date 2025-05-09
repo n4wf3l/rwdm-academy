@@ -102,25 +102,31 @@ router.post("/send-selection-test-email", async (req, res) => {
     });
 
     const html = `
-    <p>Bonjour ${formData.parentFirstName ?? ""},</p>
+   <p>Bonjour ${formData.parentFirstName ?? ""},</p>
   
-    <p>Nous vous confirmons que nous avons bien reçu la demande de test de sélection de <strong>${
+<p>Nous vous confirmons que nous avons bien reçu la demande de test de sélection de <strong>${
       formData.firstName
     } ${formData.lastName}</strong> pour le noyau <strong>${
       formData.noyau
     }</strong>.</p>
   
-    <p>📢 Cette demande sera étudiée par notre staff technique.</p>
+<p>📢 Cette demande sera étudiée par notre staff technique.</p>
   
-    <p>En cas d'acceptation, un membre du staff vous contactera par email afin de vous inviter à une séance de test à une date et une heure précises.</p>
+<p>En cas d'acceptation, un membre du staff vous contactera par email afin de vous inviter à une séance de test à une date et une heure précises.</p>
   
-    <p>🕒 Nous vous recommandons de rester attentif à vos emails pour ne manquer aucune information importante liée à cette candidature.</p>
+<p>🕒 Nous vous recommandons de rester attentif à vos emails pour ne manquer aucune information importante liée à cette candidature.</p>
   
-    <p><strong>Numéro de référence de la demande :</strong> ${requestId}</p>
+<p><strong>Numéro de référence de la demande :</strong> ${requestId}</p>
   
-    <br/>
-    <p>Cordialement,</p>
-    <p><strong>RWDM Academy</strong><br/>Cellule détection</p>
+<br/>
+<p>Cordialement,</p>
+<p><strong>RWDM Academy</strong><br/>Cellule détection</p>
+
+<!-- Clause de non‑responsabilité -->
+<p style="font-size:0.85em; color:#555; margin-top:1.5em;">
+  La RWDM Academy décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords.  
+  En signant ce document, vous reconnaissez avoir pris connaissance de cette information.
+</p>
   `;
 
     await transporter.sendMail({

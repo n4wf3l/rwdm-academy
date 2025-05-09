@@ -23,6 +23,7 @@ interface DayViewProps {
   setNewAppointmentDate: (date: Date | undefined) => void;
   setIsScheduleModalOpen: (isOpen: boolean) => void;
   showAppointmentDetails: (appointment: Appointment) => void;
+  adminFilter: string;
 }
 
 const containerVariants = {

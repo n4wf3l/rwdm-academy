@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Lock, Briefcase, FileText, Image } from "lucide-react";
 import FullScreenLoader from "@/components/FullScreenLoader";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface MemberFormProps {
   onMemberCreated: (member: any) => void;
@@ -187,17 +194,21 @@ const MemberForm: React.FC<MemberFormProps> = ({
                 </div>
                 <div className="flex items-center">
                   <span className="mr-2 font-semibold">Rôle :</span>
-                  <select
+                  <Select
                     value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="border rounded p-2"
+                    onValueChange={(newRole) => setRole(newRole)}
                   >
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Superadmin</option>
-                    {currentUserRole === "owner" && (
-                      <option value="owner">Owner</option>
-                    )}
-                  </select>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue placeholder="Sélectionner un rôle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="superadmin">Superadmin</SelectItem>
+                      {currentUserRole === "owner" && (
+                        <SelectItem value="owner">Owner</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>

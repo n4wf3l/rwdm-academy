@@ -21,7 +21,11 @@ app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*", credentials: true }));
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+const uploadDir = path.resolve(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadDir));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -50,9 +54,6 @@ const dbPool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
-
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Clé secrète pour signer les tokens JWT à partir du .env
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -89,12 +90,8 @@ const dbConfig = {
 };
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Dossier où stocker les fichiers
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Renomme le fichier
-  },
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 
 const allowedExtensions = [".pdf", ".jpeg", ".jpg", ".png"];
@@ -151,6 +148,11 @@ app.post(
         return res
           .status(500)
           .json({ message: "Email ou mot de passe incorrect" });
+      }
+
+      if (user.deleted && user.deleted == 1) {
+        console.log("❌ Compte inactif pour l'utilisateur :", email);
+        return res.status(403).json({ message: "Votre compte est inactif." });
       }
 
       const isValid = user
@@ -256,9 +258,10 @@ app.post(
 // Endpoint pour récupérer tous les membres admins
 app.get("/api/admins", authMiddleware, async (req, res) => {
   try {
-    const [rows] = await dbPool.execute("SELECT * FROM users");
-
-    res.json(rows); // Retourne les membres sous forme de JSON
+    const [rows] = await dbPool.execute(
+      "SELECT * FROM users WHERE deleted IS NULL OR deleted <> 1"
+    );
+    res.json(rows); // Retourne tous les membres sauf ceux soft deleted
   } catch (error) {
     console.error("Erreur lors de la récupération des membres :", error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -274,18 +277,44 @@ app.delete(
     const { email } = req.params;
     try {
       const connection = await mysql.createConnection(dbConfig);
+      // Soft delete : mettre à jour la colonne "deleted" à 1 ou stocker la date de suppression dans "deletedAt"
       const [result] = await connection.execute(
-        "DELETE FROM users WHERE email = ?",
+        "UPDATE users SET deleted = 1, deletedAt = NOW() WHERE email = ?",
         [email]
       );
       await connection.end();
       if (result.affectedRows > 0) {
-        res.json({ message: "Membre supprimé avec succès" });
+        res.json({ message: "Membre supprimé (soft delete) avec succès" });
       } else {
         res.status(404).json({ message: "Membre non trouvé" });
       }
     } catch (error) {
       console.error("Erreur lors de la suppression du membre :", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  }
+);
+
+app.patch(
+  "/api/admins/restore/:id",
+  authMiddleware,
+  ownerOrSuperAdmin,
+  async (req, res) => {
+    const { id } = req.params;
+    try {
+      const connection = await mysql.createConnection(dbConfig);
+      const [result] = await connection.execute(
+        "UPDATE users SET deleted = NULL, deletedAt = NULL WHERE id = ?",
+        [id]
+      );
+      await connection.end();
+      if (result.affectedRows > 0) {
+        res.json({ message: "Compte réactivé avec succès" });
+      } else {
+        res.status(404).json({ message: "Compte non trouvé" });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la réactivation du compte :", error);
       res.status(500).json({ message: "Erreur serveur" });
     }
   }
@@ -321,17 +350,27 @@ app.put(
       functionTitle,
       profilePicture,
       role,
+      status, // on peut recevoir un statut à mettre à jour
     } = req.body;
 
-    // Vérifier les champs obligatoires...
+    // Vérification des champs obligatoires...
     try {
       const connection = await mysql.createConnection(dbConfig);
       let query = "";
       let params = [];
+      // Si un statut est fourni et qu'il vaut "rejected", on met rejected_at à NOW()
+      const updateRejectedAt =
+        status && status.toLowerCase() === "rejected"
+          ? ", rejected_at = NOW()"
+          : "";
+
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         query =
-          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, profilePicture = ? WHERE id = ?";
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, password = ?, role = ?, `function` = ?, profilePicture = ?" +
+          (status ? ", status = ?" : "") +
+          updateRejectedAt +
+          " WHERE id = ?";
         params = [
           firstName,
           lastName,
@@ -340,11 +379,17 @@ app.put(
           role,
           functionTitle || "",
           profilePicture || "",
-          id,
         ];
+        if (status) {
+          params.push(status);
+        }
+        params.push(id);
       } else {
         query =
-          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, profilePicture = ? WHERE id = ?";
+          "UPDATE users SET firstName = ?, lastName = ?, email = ?, role = ?, `function` = ?, profilePicture = ?" +
+          (status ? ", status = ?" : "") +
+          updateRejectedAt +
+          " WHERE id = ?";
         params = [
           firstName,
           lastName,
@@ -352,8 +397,11 @@ app.put(
           role,
           functionTitle || "",
           profilePicture || "",
-          id,
         ];
+        if (status) {
+          params.push(status);
+        }
+        params.push(id);
       }
       const [result] = await connection.execute(query, params);
       await connection.end();
@@ -372,6 +420,7 @@ app.put(
 app.get("/api/admins", authMiddleware, async (req, res) => {
   try {
     const connection = await mysql.createConnection(dbConfig);
+    // Retourne tous les admins, même les soft deleted, pour pouvoir afficher leurs noms
     const [rows] = await connection.execute(
       "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, role FROM users"
     );
@@ -383,20 +432,34 @@ app.get("/api/admins", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/api/all-admins", authMiddleware, async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(
+      "SELECT id, firstName, lastName, email, profilePicture, `function` as functionTitle, role, deleted FROM users"
+    );
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de tous les admins :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 // Ajoute cette route dans ton backend (par exemple, à la fin de ton fichier)
 app.get("/api/me", authMiddleware, async (req, res) => {
   console.log("User décodé:", req.user);
   const userId = req.user.id;
   try {
     const [rows] = await dbPool.execute(
-      "SELECT firstName, lastName, role FROM users WHERE id = ?",
+      "SELECT firstName, lastName, role, profilePicture FROM users WHERE id = ?",
       [userId]
     );
     console.log("Résultat DB:", rows);
     if (rows.length === 0) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json(rows[0]); // maintenant contient aussi "role"
+    res.json(rows[0]);
   } catch (error) {
     console.error("Erreur lors de la récupération de l'utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -477,38 +540,58 @@ app.get("/api/requests", authMiddleware, async (req, res) => {
   }
 });
 
+app.delete("/api/admins/permanent/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    // Supprime définitivement l'utilisateur de la table "users"
+    const [result] = await connection.execute(
+      "DELETE FROM users WHERE id = ?",
+      [id]
+    );
+    await connection.end();
+
+    if (result.affectedRows > 0) {
+      res.json({ message: "Membre supprimé définitivement" });
+    } else {
+      res.status(404).json({ message: "Membre non trouvé" });
+    }
+  } catch (error) {
+    console.error(
+      "Erreur lors de la suppression définitive du membre :",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 app.patch("/api/requests/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  let { status, assignedTo } = req.body;
+  const { details, status, assignedTo } = req.body;
 
   try {
     const connection = await mysql.createConnection(dbConfig);
 
-    // Si on assigne un admin sans fournir de status, on force le status "Assigné"
-    if (assignedTo !== undefined && status === undefined) {
-      status = "Assigné";
-    }
-
     const columnsToUpdate = [];
     const values = [];
+
+    if (details) {
+      columnsToUpdate.push("data = ?");
+      values.push(JSON.stringify(details));
+    }
 
     if (status !== undefined) {
       columnsToUpdate.push("status = ?");
       values.push(status);
-
-      // Met à jour rejected_at si le statut est "Rejeté"
-      if (status === "Rejeté" || status === "rejected") {
+      // Ajout de rejected_at = NOW() si le nouveau statut est "Rejeté"
+      if (String(status).toLowerCase() === "rejeté") {
         columnsToUpdate.push("rejected_at = NOW()");
-        console.log("🛠️ PATCH reçu avec:", { status, assignedTo });
-      } else {
-        columnsToUpdate.push("rejected_at = NULL");
       }
     }
 
     if (assignedTo !== undefined) {
       columnsToUpdate.push("assigned_to = ?");
-      const assignedValue = assignedTo === "none" ? null : assignedTo;
-      values.push(assignedValue);
+      values.push(assignedTo === "none" ? null : assignedTo);
     }
 
     columnsToUpdate.push("updated_at = CURRENT_TIMESTAMP");
@@ -554,6 +637,50 @@ app.delete("/api/requests/:id", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 });
+
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { details } = req.body;
+
+  if (!details || typeof details !== "object") {
+    return res.status(400).json({ error: "Détails invalides" });
+  }
+
+  try {
+    // On stringify le JSON et on met à jour la colonne `data`
+    await db.execute(
+      "UPDATE requests SET data = ?, updated_at = NOW() WHERE id = ?",
+      [JSON.stringify(details), id]
+    );
+
+    res.json({ message: "Mise à jour réussie" });
+  } catch (err) {
+    console.error("Erreur update request:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+app.get("/api/deleted-admins", authMiddleware, async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute(
+      `SELECT u.id, u.firstName, u.lastName, u.email, u.role, u.deletedAt,
+              (SELECT COUNT(*) FROM requests r WHERE r.assigned_to = u.id) AS assignmentsCount
+       FROM users u
+       WHERE u.deleted = 1`
+    );
+    await connection.end();
+    res.json(rows);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des anciens membres :",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+module.exports = router;
 
 // Vérifie si un code de dossier existe (utile avant d'envoyer un certificat de guérison)
 app.get("/api/check-code/:code", async (req, res) => {

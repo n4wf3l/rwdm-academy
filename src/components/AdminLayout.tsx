@@ -13,7 +13,6 @@ import {
   Settings,
   ArrowLeft,
   Globe,
-  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -25,6 +24,8 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "./ui/badge";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -36,7 +37,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   newRequestsCount = 0,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [user, setUser] = useState({ firstName: "", lastName: "", role: "" });
+  const [user, setUser] = useState({
+    firstName: "",
+    lastName: "",
+    role: "",
+    profilePicture: "",
+  });
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const location = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -49,64 +56,64 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
     en: "English",
   };
 
+  // Récupération du logo
   useEffect(() => {
     const fetchLogo = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/settings");
         const data = await res.json();
-        if (data.general.logo.startsWith("/uploads/")) {
+        if (data.general.logo && data.general.logo.startsWith("/uploads/")) {
           setLogoUrl(data.general.logo);
         } else {
-          setLogoUrl(null); // ou une URL distante si tu gères les fichiers côté serveur
+          setLogoUrl(null);
         }
       } catch (err) {
         console.error("Erreur chargement logo :", err);
       }
     };
-
     fetchLogo();
   }, []);
-  const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    // 1) On vire le token tout de suite
-    localStorage.removeItem("token");
-
-    // 2) On affiche le toast
-    toast({
-      title: "Déconnexion réussie",
-      description: "Vous avez été déconnecté.",
-    });
-
-    // 3) On attend un court instant avant de naviguer
-    setTimeout(() => {
-      navigate("/");
-    }, 300); // 300ms, tu peux ajuster
-  };
-
-  // Récupération des infos utilisateur depuis le backend
+  // Récupération des infos utilisateur, identique à MemberList et About
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-
     fetch("http://localhost:5000/api/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log("Données utilisateur récupérées :", data);
+        // Si l'URL est relative, on la transforme en absolue
+        let profilePictureUrl = data.profilePicture;
+        if (profilePictureUrl && profilePictureUrl.startsWith("/uploads/")) {
+          profilePictureUrl = `http://localhost:5000${profilePictureUrl}`;
+        }
+        console.log("ProfilePicture URL utilisée :", profilePictureUrl);
         setUser({
           firstName: data.firstName,
           lastName: data.lastName,
           role: data.role,
+          profilePicture: profilePictureUrl,
         });
-        console.log("👤 Utilisateur connecté :", data); // ← ajoute ça ici
       })
       .catch((err) =>
         console.error("Erreur lors de la récupération de l'utilisateur:", err)
       );
   }, []);
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const confirmLogout = () => {
+    localStorage.removeItem("token");
+    toast({
+      title: "Déconnexion réussie",
+      description: "Vous avez été déconnecté.",
+    });
+    setTimeout(() => {
+      navigate("/");
+    }, 300);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
@@ -156,31 +163,29 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               <Link to="/" className="flex items-center">
                 <ArrowLeft size={24} className="text-rwdm-blue" />
               </Link>
-
               <div className="flex items-center space-x-2">
                 <div className="h-10 w-10 flex items-center justify-center text-white font-bold text-xl">
                   {logoUrl ? (
                     <img
-                      src={logoUrl} // ✅ URL relative comme "/uploads/monlogo.png"
+                      src={logoUrl}
                       alt="Logo"
                       className="h-full w-full object-contain"
                     />
                   ) : (
                     <img
-                      src="/placeholder-logo.png" // 🔁 fallback si aucun logo uploadé
+                      src="/placeholder-logo.png"
                       alt="Logo par défaut"
                       className="h-full w-full object-contain"
                     />
                   )}
                 </div>
-
                 <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
                   {t("admin_panel")}
                 </span>
               </div>
             </div>
 
-            {/* Ligne inférieure : choix de langue centré */}
+            {/* Choix de langue */}
             <div className="flex justify-center">
               <DropdownMenu>
                 <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-rwdm-red dark:hover:text-white transition">
@@ -218,7 +223,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
 
           <nav className="flex-1 p-4 space-y-2">
-            {/* Liens de navigation */}
             <Link to="/dashboard">
               <Button
                 variant={isActive("/dashboard") ? "default" : "ghost"}
@@ -275,30 +279,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                 {t("admin_planning")}
               </Button>
             </Link>
-            <Link to="/inbox">
-              <Button
-                variant={isActive("/inbox") ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start relative",
-                  isActive("/inbox") ? "bg-rwdm-blue hover:bg-rwdm-blue/90" : ""
-                )}
-              >
-                <Inbox className="mr-2 h-5 w-5" />
-                {t("inbox")}
-                <AnimatePresence>
-                  <motion.span
-                    key="inboxBadge"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute top-2 right-3 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold w-5 h-5"
-                  >
-                    2
-                  </motion.span>
-                </AnimatePresence>
-              </Button>
-            </Link>
             <Link to="/members">
               <Button
                 variant={isActive("/members") ? "default" : "ghost"}
@@ -346,11 +326,58 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               </Link>
             )}
           </nav>
+
+          {/* Bloc en bas du sidebar */}
           <div className="p-4 border-t">
+            <div className="flex flex-col items-center mb-4">
+              <img
+                src={
+                  user.profilePicture
+                    ? user.profilePicture
+                    : "https://via.placeholder.com/150"
+                }
+                alt="Avatar"
+                className="h-12 w-12 rounded-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src !== "https://via.placeholder.com/150") {
+                    target.src = "https://via.placeholder.com/150";
+                  }
+                }}
+              />
+              <span className="mt-2 text-gray-800 dark:text-white font-medium">
+                {user.firstName} {user.lastName}
+              </span>
+              {/* Affichage du rôle en utilisant les variants du Badge */}
+              {user.role === "owner" && (
+                <Badge variant="default">
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </Badge>
+              )}
+              {user.role === "superadmin" && (
+                <Badge variant="secondary">
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </Badge>
+              )}
+              {user.role === "admin" && (
+                <Badge variant="outline">
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </Badge>
+              )}
+            </div>
+            <Link to="/account" className="block mb-4">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-gray-600 dark:text-gray-300 hover:bg-rwdm-blue/90 hover:text-white"
+              >
+                <UserCircleIcon className="mr-2 h-5 w-5" />
+                Mon compte
+              </Button>
+            </Link>
             <Button
               variant="ghost"
-              className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/20"
-              onClick={handleLogout}
+              className="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white"
+              onClick={() => setLogoutModalOpen(true)}
             >
               <LogOut className="mr-2 h-5 w-5" />
               {t("admin_logout")}
@@ -363,6 +390,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       <div className="md:pl-64 min-h-screen">
         <main className="container mx-auto px-4 pt-28 pb-20">{children}</main>
       </div>
+
+      {/* Confirmation modal pour la déconnexion */}
+      <ConfirmationDialog
+        open={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirm={() => {
+          setLogoutModalOpen(false);
+          confirmLogout();
+        }}
+        title="Déconnexion"
+        message="Êtes-vous sûr de vouloir vous déconnecter ?"
+      />
     </div>
   );
 };
