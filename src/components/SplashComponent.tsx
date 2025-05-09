@@ -22,7 +22,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimationComplete(true);
-    }, 2000);
+    }, 2500); // délai augmenté à 4000 ms
     return () => clearTimeout(timer);
   }, []);
 
@@ -71,8 +71,8 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
 
           {/* "A legend never dies" uniquement dans le splashscreen */}
           <motion.p
-            className="text-gray-600 text-3xl" // Augmenter la taille du texte
-            style={{ fontFamily: "'Dancing Script', cursive" }} // Appliquer la police manuscrite
+            className="text-gray-600 text-5xl mt-4" // taille augmentée et margin top ajouté
+            style={{ fontFamily: "'Dancing Script', cursive" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}

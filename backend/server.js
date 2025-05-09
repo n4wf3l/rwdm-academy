@@ -452,14 +452,14 @@ app.get("/api/me", authMiddleware, async (req, res) => {
   const userId = req.user.id;
   try {
     const [rows] = await dbPool.execute(
-      "SELECT firstName, lastName, role FROM users WHERE id = ?",
+      "SELECT firstName, lastName, role, profilePicture FROM users WHERE id = ?",
       [userId]
     );
     console.log("Résultat DB:", rows);
     if (rows.length === 0) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json(rows[0]); // maintenant contient aussi "role"
+    res.json(rows[0]);
   } catch (error) {
     console.error("Erreur lors de la récupération de l'utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur" });
