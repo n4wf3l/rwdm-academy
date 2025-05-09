@@ -439,15 +439,18 @@ const Contact = () => {
                 {t("how_to_find_us")}
               </h2>
               <div className="rounded-lg overflow-hidden h-96 bg-gray-200">
-                <iframe
-                  src={`https://www.google.com/maps?q=${mapQuery}&t=&z=17&ie=UTF8&iwloc=near&output=embed`}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
+              <iframe
+  src="https://www.google.com/maps?q=50.855638154278545,4.3111228865063325&z=17&output=embed"
+  width="100%"
+  height="100%"
+  style={{ border: 0 }}
+  allowFullScreen
+  loading="lazy"
+  referrerPolicy="no-referrer-when-downgrade"
+/>
+
+
+
               </div>
             </CardContent>
           </Card>

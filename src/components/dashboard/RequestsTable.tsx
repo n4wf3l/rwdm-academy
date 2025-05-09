@@ -117,14 +117,16 @@ export function getStatusBadge(status: RequestStatus) {
     case "assigned":
       return <Badge className={`${baseClass} bg-purple-500`}>Assigné</Badge>;
     case "in-progress":
-      return <Badge className="bg-yellow-500">En cours</Badge>;
+      return (
+        <Badge className={`bg-yellow-500 whitespace-nowrap`}>En cours</Badge>
+      );
     case "completed":
       return <Badge className={`${baseClass} bg-green-500`}>Terminé</Badge>;
     case "rejected":
       return <Badge className={`${baseClass} bg-red-500`}>Rejeté</Badge>;
     default:
       return <Badge className={baseClass}>Inconnu</Badge>;
-  }
+  }  
 }
 
 const formatRequestId = (id: string | number): string => {
