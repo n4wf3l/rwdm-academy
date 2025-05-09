@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import axios from "axios";
 import { translations } from "@/lib/i18n";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -277,45 +278,41 @@ const Contact = () => {
                     </div>
                   </div>
                   <div>
-                    <label
-                      htmlFor="subject"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      {t("contact_subject")}
-                    </label>
-                    <select
-                      id="subject"
-                      className="form-input-base"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                    >
-                      <option value="">{t("contact_select_subject")}</option>
-                      <option value="registration">
-                        {t("contact_subject_registration")}
-                      </option>
-                      <option value="selection_tests">
-                        {t("contact_subject_selection")}
-                      </option>
-                      <option value="liability_waiver">
-                        {t("contact_subject_waiver")}
-                      </option>
-                      <option value="accident_report">
-                        {t("contact_subject_accident")}
-                      </option>
-                      <option value="recruitment">
-                        {t("contact_subject_recruitment")}
-                      </option>
-                      <option value="incident">
-                        {t("contact_subject_incident")}
-                      </option>
-                      <option value="technical">
-                        {t("contact_subject_technical")}
-                      </option>
-                      <option value="other">
-                        {t("contact_subject_other")}
-                      </option>
-                    </select>
-                  </div>
+                  <Select
+  value={subject}
+  onValueChange={(value) => setSubject(value)}
+>
+  <SelectTrigger id="subject" className="form-input-base">
+    <SelectValue placeholder={t("contact_select_subject")} />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="registration">
+      {t("contact_subject_registration")}
+    </SelectItem>
+    <SelectItem value="selection_tests">
+      {t("contact_subject_selection")}
+    </SelectItem>
+    <SelectItem value="liability_waiver">
+      {t("contact_subject_waiver")}
+    </SelectItem>
+    <SelectItem value="accident_report">
+      {t("contact_subject_accident")}
+    </SelectItem>
+    <SelectItem value="recruitment">
+      {t("contact_subject_recruitment")}
+    </SelectItem>
+    <SelectItem value="incident">
+      {t("contact_subject_incident")}
+    </SelectItem>
+    <SelectItem value="technical">
+      {t("contact_subject_technical")}
+    </SelectItem>
+    <SelectItem value="other">
+      {t("contact_subject_other")}
+    </SelectItem>
+  </SelectContent>
+</Select>
+</div>
                   <div>
                     <label
                       htmlFor="message"

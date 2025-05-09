@@ -617,7 +617,12 @@ const Documents = () => {
                                 : "N/A"}
                             </motion.td>
                             <motion.td>
-                              <motion.td>
+                            <motion.td
+  className="flex justify-center items-center"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  exit={{ opacity: 0 }}
+>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button

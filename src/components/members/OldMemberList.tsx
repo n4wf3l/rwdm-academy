@@ -141,7 +141,7 @@ const OldMemberList: React.FC = () => {
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>Anciens Membres ({oldMembers.length})</CardTitle>
+        <CardTitle>Anciens membres ({oldMembers.length})</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

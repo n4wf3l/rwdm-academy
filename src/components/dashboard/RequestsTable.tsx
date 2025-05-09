@@ -24,11 +24,13 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from "lucide-react"; // Importer l'icône Calendar
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "../ui/ConfirmationDialog";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 
 // Types localement
 export type RequestStatus =
@@ -430,9 +432,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     )}
                     onClick={() => onViewDetails(request)}
                   >
-                    <TableCell className="font-medium">
-                      {formatRequestId(request.id)}
-                    </TableCell>
+        <TableCell className="font-medium whitespace-nowrap">
+  {formatRequestId(request.id)}
+</TableCell>
 
                     <TableCell>
                       {translateRequestType(request.type)}
@@ -486,7 +488,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                           }}
                         >
                           <SelectTrigger
-                            className="w-[180px]"
+                             className="w-[180px] text-left"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <SelectValue placeholder="Assigner à" />
@@ -527,21 +529,65 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     <TableCell>{formatElapsedTime(request.date)}</TableCell>
 
                     <TableCell className="text-center border-l">
-                      {request.type === "registration" ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenAppointmentDialog(request);
-                          }}
-                        >
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button
+        variant="outline"
+        size="sm"
+        title="Actions"
+        className="data-[state=open]:bg-gray-200 data-[state=open]:text-gray-800"
+      >
+        <Settings className="h-5 w-5" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      side="right"
+      align="start"
+      className="w-56 bg-gray-100 shadow-md rounded-md transition-all duration-200 ease-in-out py-2"
+    >
+      {/* Option 1: Voir la demande */}
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewDetails(request);
+        }}
+        title="Voir la demande"
+        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+      >
+        <Eye className="h-5 w-5 text-gray-600" />
+        <span className="text-sm text-gray-800">Voir la demande</span>
+      </DropdownMenuItem>
+
+      {/* Option 2: Mettre en cours */}
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          handleUpdateStatus(request.id, "in-progress");
+        }}
+        title="Mettre en cours"
+        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+      >
+        <Clock className="h-5 w-5 text-gray-600" />
+        <span className="text-sm text-gray-800">Mettre en cours</span>
+      </DropdownMenuItem>
+
+      {/* Option 3: Rendez-vous */}
+      {request.type === "registration" && (
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenAppointmentDialog(request);
+          }}
+          title="Rendez-vous"
+          className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+        >
+          <Calendar className="h-5 w-5 text-gray-600" />
+          <span className="text-sm text-gray-800">Rendez-vous</span>
+        </DropdownMenuItem>
+      )}
+    </DropdownMenuContent>
+  </DropdownMenu>
+</TableCell>
 
                     <TableCell className="text-center border-l">
                       {request.status === "rejected" ? (
@@ -551,41 +597,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               {formatRejectedTime(request.rejectedAt, now)}
                             </div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="ml-2 text-yellow-600 border-yellow-600 hover:bg-yellow-700"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateStatus(request.id, "in-progress");
-                            }}
-                          >
-                            <Clock className="h-4 w-4" />
-                          </Button>
+                    
                         </div>
                       ) : (
                         <div className="flex gap-2 justify-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onViewDetails(request);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateStatus(request.id, "in-progress");
-                            }}
-                            disabled={request.status === "in-progress"}
-                          >
-                            <Clock className="h-4 w-4" />
-                          </Button>
+                          
+                        
                           <Button
                             variant="outline"
                             size="sm"
