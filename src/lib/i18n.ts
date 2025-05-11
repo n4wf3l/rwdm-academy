@@ -12,7 +12,8 @@ export const translations = {
     admin_space: "Espace Admin",
     champ: "* : Champ obligatoire",
     champ2: "Icône information (survol de la souris)",
-
+    choose_language: "Choisissez votre langue",
+    cancel: "Annuler",
     academy_registration: "Demande d'inscription à l'académie",
     academy_registration_desc:
       "Formulaire d'inscription pour rejoindre l'académie RWDM",
@@ -794,7 +795,8 @@ export const translations = {
     admin_space: "Beheerdersgebied",
     champ: "* : Verplicht veld",
     champ2: "Informatiepictogram (muis erover)",
-
+    choose_language: "Kies uw taal",
+    cancel: "Annuleren",
     academy_registration: "Inschrijvingsaanvraag voor de academie",
     academy_registration_desc:
       "Inschrijvingsformulier om lid te worden van de RWDM Academy",
@@ -1513,7 +1515,8 @@ export const translations = {
     admin_space: "Admin area",
     champ: "* : Required field",
     champ2: "Information icon (mouse over)",
-
+    choose_language: "Choose your language",
+    cancel: "Cancel",
     academy_registration: "Academy Registration Request",
     academy_registration_desc: "Form to register and join the RWDM Academy",
     selection_tests: "Selection Tests",

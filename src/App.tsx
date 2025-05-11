@@ -29,6 +29,7 @@ import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
 import ForgetPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/ResetPassword";
+import DesktopOnlyWrapper from "./components/DesktopOnlyWrapper";
 
 const queryClient = new QueryClient();
 
@@ -58,20 +59,29 @@ function App() {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
-        // Vérifier si le rôle est admin, superadmin ou owner
         if (
           payload.role &&
           ["admin", "superadmin", "owner"].includes(payload.role.toLowerCase())
         ) {
-          // Si nous ne sommes pas déjà sur le sous-domaine admin et pas déjà sur le dashboard, rediriger
-          if (
-            !window.location.hostname.startsWith("admin.") &&
-            window.location.pathname !== "/dashboard"
-          ) {
+          // Liste des routes admin
+          const adminRoutes = [
+            "/dashboard",
+            "/members",
+            "/planning",
+            "/documents",
+            "/graphics",
+            "/settings",
+          ];
+
+          const isOnAdminPage = adminRoutes.includes(window.location.pathname);
+          const isOnHomepage = window.location.pathname === "/";
+
+          if (!isOnAdminPage && !isOnHomepage) {
             const dashboardUrl =
               window.location.hostname === "localhost"
                 ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
                 : "https://admin.example.com/dashboard";
+
             window.location.href = dashboardUrl;
           }
         }
@@ -128,15 +138,62 @@ function App() {
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <DesktopOnlyWrapper>
+                    <Dashboard />
+                  </DesktopOnlyWrapper>
                 </ProtectedRoute>
               }
             />
-            <Route path="/members" element={<Members />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/graphics" element={<Graphics />} />
-            <Route path="/planning" element={<Planning />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route
+              path="/members"
+              element={
+                <ProtectedRoute>
+                  <DesktopOnlyWrapper>
+                    <Members />
+                  </DesktopOnlyWrapper>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documents"
+              element={
+                <ProtectedRoute>
+                  <DesktopOnlyWrapper>
+                    <Documents />
+                  </DesktopOnlyWrapper>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/graphics"
+              element={
+                <ProtectedRoute>
+                  <DesktopOnlyWrapper>
+                    <Graphics />
+                  </DesktopOnlyWrapper>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/planning"
+              element={
+                <ProtectedRoute>
+                  <DesktopOnlyWrapper>
+                    <Planning />
+                  </DesktopOnlyWrapper>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <DesktopOnlyWrapper>
+                    <Settings />
+                  </DesktopOnlyWrapper>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"

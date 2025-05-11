@@ -25,6 +25,10 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const navigate = useNavigate();
   const currentLang = localStorage.getItem("language") || "fr";
   const { t } = useTranslation();
+  const [isLangModalOpen, setIsLangModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const langLabels = {
     fr: "Français",
     nl: "Nederlands",
@@ -40,6 +44,23 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     NL: "",
     EN: "",
   });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setShowNavbar(false); // Scroll vers le bas → cache le navbar
+      } else {
+        setShowNavbar(true); // Scroll vers le haut → montre le navbar
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   useEffect(() => {
     const fetchClubName = async () => {
@@ -137,9 +158,19 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     navigate(location.pathname + location.search); // rester sur la même page
   };
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile(); // au montage
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <>
-      <header
+      <motion.header
+        initial={{ y: 0 }}
+        animate={{ y: showNavbar ? 0 : -100 }}
+        transition={{ duration: 0.3 }}
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
@@ -175,23 +206,46 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                   "RWDM Academy"}
               </span>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger className="text-sm flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-rwdm-red dark:hover:text-white transition">
+              {isMobile ? (
+                <button
+                  onClick={() => setIsLangModalOpen(true)}
+                  className="text-sm flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-rwdm-red dark:hover:text-white transition"
+                >
                   <Globe className="h-4 w-4" />
                   <span>{langLabels[currentLang]}</span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="mt-1 z-[9999]">
-                  <DropdownMenuItem onClick={() => changeLanguage("fr")}>
-                    Français
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => changeLanguage("nl")}>
-                    Nederlands
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => changeLanguage("en")}>
-                    English
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </button>
+              ) : (
+                <div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      onClick={() => {
+                        if (isMobile) setIsLangModalOpen(true);
+                      }}
+                      className="text-sm flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-rwdm-red dark:hover:text-white transition"
+                    >
+                      <Globe className="h-4 w-4" />
+                      <span>{langLabels[currentLang]}</span>
+                    </DropdownMenuTrigger>
+
+                    {!isMobile && (
+                      <DropdownMenuContent
+                        align="start"
+                        className="mt-1 z-[9999]"
+                      >
+                        <DropdownMenuItem onClick={() => changeLanguage("fr")}>
+                          Français
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => changeLanguage("nl")}>
+                          Nederlands
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => changeLanguage("en")}>
+                          English
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    )}
+                  </DropdownMenu>
+                </div>
+              )}
             </div>
           </div>
 
@@ -264,7 +318,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 >
                   <div className="flex items-center gap-2">
                     <Home size={18} />
-                    <span>Accueil</span>
+                    <span>{t("home")}</span>
                   </div>
                 </MobileNavLink>
 
@@ -275,7 +329,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 >
                   <div className="flex items-center gap-2">
                     <Info size={18} />
-                    <span>À propos</span>
+                    <span>{t("about")}</span>
                   </div>
                 </MobileNavLink>
 
@@ -286,14 +340,14 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 >
                   <div className="flex items-center gap-2">
                     <Mail size={18} />
-                    <span>Contact</span>
+                    <span>{t("contact")}</span>
                   </div>
                 </MobileNavLink>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </header>
+      </motion.header>
 
       {/* Bloc utilisateur + bouton de déconnexion côte à côte en bas à droite */}
       {isLoggedIn && (
@@ -321,6 +375,51 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           </div>
         </div>
       )}
+      <AnimatePresence>
+        {isLangModalOpen && (
+          <motion.div
+            key="language-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsLangModalOpen(false)} // clique n'importe où ferme le modal
+            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center"
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()} // empêche que le clic dans le contenu ferme
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white dark:bg-rwdm-darkblue p-6 rounded-xl shadow-xl w-full max-w-sm mx-auto"
+            >
+              <h2 className="text-xl font-bold text-center mb-4 text-rwdm-blue dark:text-white">
+                {t("choose_language")}
+              </h2>
+              <div className="space-y-3">
+                {["fr", "nl", "en"].map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => {
+                      changeLanguage(lang as "fr" | "nl" | "en");
+                      setIsLangModalOpen(false);
+                    }}
+                    className="w-full py-3 rounded-md bg-rwdm-blue text-white text-lg font-semibold shadow hover:bg-rwdm-blue/90 transition"
+                  >
+                    {langLabels[lang]}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setIsLangModalOpen(false)}
+                className="mt-5 w-full text-sm text-gray-500 dark:text-gray-300 hover:underline text-center"
+              >
+                {t("cancel")}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

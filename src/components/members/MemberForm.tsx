@@ -3,7 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, Briefcase, FileText, Image } from "lucide-react";
+import {
+  User,
+  Mail,
+  Lock,
+  Briefcase,
+  FileText,
+  Image,
+  UserCheck,
+  User2,
+} from "lucide-react";
 import FullScreenLoader from "@/components/FullScreenLoader";
 import {
   Select,
@@ -136,17 +145,37 @@ const MemberForm: React.FC<MemberFormProps> = ({
                     type="text"
                     placeholder="Prénom"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    maxLength={30}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Autorise uniquement lettres, accents et espaces et max 20 lettres
+                      if (
+                        value.length <= 30 &&
+                        /^[A-Za-zÀ-ÖØ-öø-ÿ\s]*$/.test(value)
+                      ) {
+                        setFirstName(value);
+                      }
+                    }}
                     required
                   />
                 </div>
                 <div className="flex items-center">
-                  <User className="mr-2" />
+                  <User2 className="mr-2" />
                   <Input
                     type="text"
                     placeholder="Nom"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    maxLength={30}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Autorise uniquement lettres, accents et espaces et max 20 lettres
+                      if (
+                        value.length <= 30 &&
+                        /^[A-Za-zÀ-ÖØ-öø-ÿ\s]*$/.test(value)
+                      ) {
+                        setLastName(value);
+                      }
+                    }}
                     required
                   />
                 </div>
@@ -156,7 +185,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
                     type="email"
                     placeholder="Email"
                     value={email}
+                    maxLength={30}
                     onChange={(e) => setEmail(e.target.value)}
+                    // Ce pattern exige au moins un caractère avant et après le "@", et après le point.
+                    pattern="[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+"
                     required
                   />
                 </div>
@@ -189,7 +221,13 @@ const MemberForm: React.FC<MemberFormProps> = ({
                     type="text"
                     placeholder="Fonction"
                     value={func}
-                    onChange={(e) => setFunc(e.target.value)}
+                    maxLength={50}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 50) {
+                        setFunc(value);
+                      }
+                    }}
                   />
                 </div>
                 <div className="flex items-center">

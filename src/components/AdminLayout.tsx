@@ -13,6 +13,7 @@ import {
   Settings,
   ArrowLeft,
   Globe,
+  UserIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -26,10 +27,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "./ui/badge";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import ViewProfile from "@/components/members/ViewProfile"; // Nouvel import
 
 interface AdminLayoutProps {
   children: React.ReactNode;
   newRequestsCount?: number;
+}
+interface User {
+  firstName: string;
+  lastName: string;
+  role: string;
+  profilePicture: string;
+  email: string;
+  function?: string;
+  createdAt?: string;
+  assignmentsCount?: number;
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({
@@ -37,13 +49,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   newRequestsCount = 0,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [user, setUser] = useState({
+  const [user, setUser] = useState<User>({
     firstName: "",
     lastName: "",
     role: "",
     profilePicture: "",
+    email: "",
   });
+
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false); // Nouvel état
   const location = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -74,7 +89,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
     fetchLogo();
   }, []);
 
-  // Récupération des infos utilisateur, identique à MemberList et About
+  // Récupération des infos utilisateur
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -83,18 +98,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Données utilisateur récupérées :", data);
-        // Si l'URL est relative, on la transforme en absolue
+        // Si l'URL de la photo est relative, le modifier
         let profilePictureUrl = data.profilePicture;
         if (profilePictureUrl && profilePictureUrl.startsWith("/uploads/")) {
           profilePictureUrl = `http://localhost:5000${profilePictureUrl}`;
         }
-        console.log("ProfilePicture URL utilisée :", profilePictureUrl);
         setUser({
           firstName: data.firstName,
           lastName: data.lastName,
           role: data.role,
           profilePicture: profilePictureUrl,
+          email: data.email,
+          function: data.function, // Ajouté pour la fonction (profession)
+          createdAt: data.createdAt, // Ajouté pour la date de création
+          assignmentsCount: data.assignmentsCount,
         });
       })
       .catch((err) =>
@@ -163,26 +180,32 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               <Link to="/" className="flex items-center">
                 <ArrowLeft size={24} className="text-rwdm-blue" />
               </Link>
-              <div className="flex items-center space-x-2">
-                <div className="h-10 w-10 flex items-center justify-center text-white font-bold text-xl">
-                  {logoUrl ? (
-                    <img
-                      src={logoUrl}
-                      alt="Logo"
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <img
-                      src="/placeholder-logo.png"
-                      alt="Logo par défaut"
-                      className="h-full w-full object-contain"
-                    />
-                  )}
+              <motion.div
+                className="flex items-center space-x-3"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <div className="h-10 w-10 overflow-hidden shadow-md border bg-white flex items-center justify-center">
+                  <motion.img
+                    key={logoUrl || "/placeholder-logo.png"}
+                    src={logoUrl || "/placeholder-logo.png"}
+                    alt="Logo"
+                    className="h-full w-full object-contain"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  />
                 </div>
-                <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
+                <motion.span
+                  className="text-rwdm-blue dark:text-white font-semibold text-xl"
+                  initial={{ x: -10, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
                   {t("admin_panel")}
-                </span>
-              </div>
+                </motion.span>
+              </motion.div>
             </div>
 
             {/* Choix de langue */}
@@ -365,15 +388,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                 </Badge>
               )}
             </div>
-            <Link to="/account" className="block mb-4">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-gray-600 dark:text-gray-300 hover:bg-rwdm-blue/90 hover:text-white"
-              >
-                <UserCircleIcon className="mr-2 h-5 w-5" />
-                Mon compte
-              </Button>
-            </Link>
+            {/* Remplacement du Link par un Button pour ouvrir le modal ViewProfile */}
+            <Button
+              variant="ghost"
+              onClick={() => setProfileModalOpen(true)}
+              className="flex w-full justify-start items-center text-gray-600 dark:text-gray-300 hover:bg-rwdm-blue/90 hover:text-white mb-4"
+            >
+              <UserIcon className="mr-2 h-5 w-5" />
+              Mon compte
+            </Button>
             <Button
               variant="ghost"
               className="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white"
@@ -390,6 +413,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       <div className="md:pl-64 min-h-screen">
         <main className="container mx-auto px-4 pt-28 pb-20">{children}</main>
       </div>
+
+      {/* Modal de profil */}
+      <ViewProfile
+        open={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        user={user}
+      />
 
       {/* Confirmation modal pour la déconnexion */}
       <ConfirmationDialog

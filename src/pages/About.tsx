@@ -338,7 +338,7 @@ const About = () => {
                   {tab === "histoire" && (
                     <>
                       <Book className="inline-block mr-2 h-4 w-4" />
-                      RWDM Aca.
+                      RWDM
                     </>
                   )}
                   {tab === "mission" && (

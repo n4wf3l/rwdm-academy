@@ -101,6 +101,10 @@ const OldMemberList: React.FC = () => {
       );
       const data = await response.json();
       if (response.ok) {
+        toast({
+          title: "Compte réactivé",
+          description: "Le compte a été réactivé avec succès.",
+        });
         window.location.reload();
       } else {
         console.error("Erreur lors de la réactivation du compte:", data);
@@ -221,7 +225,10 @@ const OldMemberList: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-gray-500"
+                  >
                     Aucun ancien membre trouvé
                   </TableCell>
                 </TableRow>

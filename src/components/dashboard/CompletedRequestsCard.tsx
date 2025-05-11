@@ -12,6 +12,7 @@ import {
 import { ChevronLeft, Eye, RotateCcw, File } from "lucide-react";
 import { Request, RequestStatus } from "@/components/RequestDetailsModal";
 import { translateRequestType, getStatusBadge } from "./RequestsTable";
+import { Link } from "react-router-dom";
 
 export interface Admin {
   id: string;
@@ -206,10 +207,12 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
         )}
 
         <div className="flex justify-center py-4">
-          <Button onClick={() => (window.location.href = "/documents")}>
-            <File className="h-4 w-4 mr-2" />
-            Voir les {totalCompletedCount} demandes terminées
-          </Button>
+          <Link to="/documents">
+            <Button>
+              <File className="h-4 w-4 mr-2" />
+              Voir les {totalCompletedCount} demandes terminées
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

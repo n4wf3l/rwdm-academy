@@ -50,8 +50,17 @@ const Index = () => {
   const handleFormChange = (formType: FormType) => {
     setCurrentForm(formType);
     localStorage.setItem("currentForm", formType);
-  };
 
+    // 👉 Scroll vers le formulaire uniquement sur mobile
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        const formElement = document.getElementById("form-start");
+        if (formElement) {
+          formElement.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 200); // petit délai pour laisser le DOM s'actualiser
+    }
+  };
   // Sauvegarde automatique des données de formulaire
   const handleFormDataChange = (key: string, value: any) => {
     setFormData((prev) => {
@@ -134,11 +143,13 @@ const Index = () => {
             </div>
 
             {/* ✅ On passe `formData` et `handleFormDataChange` pour gérer les données */}
-            <FormWrapper
-              formType={currentForm}
-              formData={formData}
-              onFormDataChange={handleFormDataChange}
-            />
+            <div id="form-start">
+              <FormWrapper
+                formType={currentForm}
+                formData={formData}
+                onFormDataChange={handleFormDataChange}
+              />
+            </div>
           </main>
 
           <Footer />

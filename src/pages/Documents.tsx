@@ -52,6 +52,10 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { Link } from "react-router-dom";
+import DocumentsTable from "@/components/documents/DocumentsTable";
+import SearchFilters from "@/components/documents/SearchFilters";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import StatisticsCard from "@/components/documents/StatisticsCard";
 
 // Types pour les documents
 type DocumentType =
@@ -409,407 +413,216 @@ const Documents = () => {
 
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
-      <motion.div
-        className="space-y-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        {/* En-tête avec animation */}
+      <Tabs defaultValue="completed" className="w-full">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row justify-between md:items-center gap-4"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-              Gestion des documents
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Retrouvez les documents des membres
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              className="bg-rwdm-blue"
-              onClick={() => window.open("/?tab=create-request", "_blank")}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Créer une demande
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Filtres avec animation */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card>
-            <CardHeader>
-              <motion.div whileHover={{ scale: 1.01 }}>
-                <CardTitle>Filtres de recherche</CardTitle>
-              </motion.div>
-            </CardHeader>
-            <CardContent>
-              <motion.div className="flex flex-col md:flex-row gap-4" layout>
-                <motion.div
-                  className="flex relative flex-1"
-                  whileHover={{ scale: 1.01 }}
-                >
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                  <Input
-                    type="search"
-                    placeholder="Rechercher par nom, prénom, email ou téléphone..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.02 }}>
-                  <Select
-                    value={adminFilter}
-                    onValueChange={(value) => setAdminFilter(value)}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Assigné à" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les admins</SelectItem>
-                      {uniqueAdmins.map((admin) => (
-                        <SelectItem key={admin} value={admin}>
-                          {admin}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.02 }}>
-                  <Select
-                    value={typeFilter}
-                    onValueChange={(value) =>
-                      setTypeFilter(value as DocumentType | "all")
-                    }
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Type de document" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les types</SelectItem>
-                      <SelectItem value="registration">Inscriptions</SelectItem>
-                      <SelectItem value="selection-tests">
-                        Tests techniques
-                      </SelectItem>
-                      <SelectItem value="responsibility-waiver">
-                        Décharges de responsabilité
-                      </SelectItem>
-                      <SelectItem value="accident-report">
-                        Déclarations d'accident
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </motion.div>
-              </motion.div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Tableau des documents avec animations */}
-        <motion.div
+          className="space-y-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
+          transition={{ duration: 0.5 }}
         >
-          <Card>
-            <CardHeader>
-              <motion.div whileHover={{ scale: 1.01 }}>
-                <CardTitle>Documents ({filteredDocuments.length})</CardTitle>
-              </motion.div>
-            </CardHeader>
-            <CardContent>
-              <AnimatePresence>
-                {filteredDocuments.length === 0 ? (
-                  <motion.div
-                    className="text-center py-8 text-gray-500"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <p>
-                      Aucun document ne correspond à vos critères de recherche.
-                    </p>
+          {/* En-tête */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col md:flex-row justify-between md:items-center gap-4"
+          >
+            <div>
+              <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+                Gestion des documents
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Retrouvez les documents des membres
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                className="bg-rwdm-blue"
+                onClick={() => window.open("/?tab=create-request", "_blank")}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Créer une demande
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Onglets entre le sous-titre et les filtres */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <TabsList className="w-full max-w-md grid grid-cols-2">
+              <TabsTrigger value="completed">Demandes terminées</TabsTrigger>
+              <TabsTrigger value="stats">Statistiques</TabsTrigger>
+            </TabsList>
+          </motion.div>
+
+          <TabsContent value="completed">
+            {/* Filtres */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <SearchFilters
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                adminFilter={adminFilter}
+                setAdminFilter={setAdminFilter}
+                typeFilter={typeFilter}
+                setTypeFilter={setTypeFilter}
+                uniqueAdmins={uniqueAdmins}
+              />
+            </motion.div>
+
+            {/* Tableau */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card>
+                <CardHeader>
+                  <motion.div whileHover={{ scale: 1.01 }}>
+                    <CardTitle>
+                      Documents ({filteredDocuments.length})
+                    </CardTitle>
                   </motion.div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        {[
-                          "ID",
-                          "Type",
-                          "Nom",
-                          "Email",
-                          "Téléphone",
-                          "Status",
-                          "Assigné à",
-                          "Date",
-                          "Actions",
-                        ].map((header, index) => (
-                          <motion.th
-                            key={header}
-                            className="px-4 py-2 text-left font-medium"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 * index }}
-                          >
-                            {header}
-                          </motion.th>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <AnimatePresence>
-                        {filteredDocuments.map((doc, index) => (
-                          <motion.tr
-                            key={doc.id}
-                            className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                            onClick={() => handleViewDetails(doc)}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            exit={{ opacity: 0 }}
-                            layout
-                          >
-                            <motion.td className="font-medium">
-                              {formatRequestId(doc.id)}
-                            </motion.td>
-                            <motion.td>
-                              {translateDocumentType(doc.type)}
-                              {doc.type === "accident-report" &&
-                                doc.data?.documentLabel ===
-                                  "Déclaration d'accident" &&
-                                " (1/2)"}
-                              {doc.type === "accident-report" &&
-                                doc.data?.documentLabel ===
-                                  "Certificat de guérison" &&
-                                " (2/2)"}
-                            </motion.td>
-                            <motion.td>
-                              {doc.name} {doc.surname}
-                            </motion.td>
-                            <motion.td>{doc.email}</motion.td>
-                            <motion.td>{doc.phone}</motion.td>
-                            <motion.td>
-                              <motion.span
-                                className="bg-green-500 text-white py-1 px-2 rounded"
-                                whileHover={{ scale: 1.05 }}
-                              >
-                                {doc.status}
-                              </motion.span>
-                            </motion.td>
-                            <motion.td>{doc.assignedAdmin}</motion.td>
-                            <motion.td>
-                              {doc.createdAt
-                                ? doc.createdAt.toLocaleDateString()
-                                : "N/A"}
-                            </motion.td>
-                            <motion.td>
-                            <motion.td
-  className="flex justify-center items-center"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  exit={{ opacity: 0 }}
->
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      title="Actions"
-                                      className="data-[state=open]:bg-gray-200 data-[state=open]:text-gray-800"
-                                    >
-                                      <Settings className="h-5 w-5" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent
-                                    side="right" // Ouvre le menu vers la droite
-                                    align="start" // Aligne le menu en haut à droite
-                                    className="w-56 bg-gray-100 shadow-md rounded-md transition-all duration-200 ease-in-out py-2"
-                                  >
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleViewDetails(doc);
-                                      }}
-                                      title="Voir détails"
-                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-                                    >
-                                      <Eye className="h-5 w-5 text-gray-600" />
-                                      <span className="text-sm text-gray-800">
-                                        Voir détails
-                                      </span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const req: ModalRequest = {
-                                          id: doc.id,
-                                          type: doc.type,
-                                          name: `${doc.name} ${doc.surname}`,
-                                          email: doc.email,
-                                          date: doc.createdAt || new Date(),
-                                          status: mapStatus(doc.status),
-                                          assignedTo: doc.assignedAdmin,
-                                          details: doc.data,
-                                        };
-                                        setEditRequest(req);
-                                        setIsEditOpen(true);
-                                      }}
-                                      title="Modifier"
-                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-                                    >
-                                      <Pencil className="h-5 w-5 text-gray-600" />
-                                      <span className="text-sm text-gray-800">
-                                        Modifier
-                                      </span>
-                                    </DropdownMenuItem>
+                </CardHeader>
+                <CardContent>
+                  <AnimatePresence>
+                    {filteredDocuments.length === 0 ? (
+                      <motion.div
+                        className="text-center py-8 text-gray-500"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <p>Aucun document ne correspond à vos critères.</p>
+                      </motion.div>
+                    ) : (
+                      <DocumentsTable
+                        documents={filteredDocuments}
+                        formatRequestId={formatRequestId}
+                        translateDocumentType={translateDocumentType}
+                        onViewDetails={handleViewDetails}
+                        onEditRequest={(req) => {
+                          setEditRequest(req);
+                          setIsEditOpen(true);
+                        }}
+                        onRevertRequest={(id) => setConfirmRevertId(id)}
+                        onGeneratePDF={(req) => setConfirmPDFRequest(req)}
+                      />
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
 
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setConfirmRevertId(doc.id);
-                                      }}
-                                      title="Mettre en cours"
-                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-                                    >
-                                      <RotateCcw className="h-5 w-5 text-gray-600" />
-                                      <span className="text-sm text-gray-800">
-                                        Mettre en cours
-                                      </span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setConfirmPDFRequest({
-                                          id: doc.id,
-                                          type: doc.type,
-                                          name: `${doc.name} ${doc.surname}`,
-                                          email: doc.email,
-                                          date: doc.createdAt
-                                            ? doc.createdAt
-                                            : new Date(),
-                                          status: mapStatus(doc.status),
-                                          assignedTo: doc.assignedAdmin,
-                                          details: doc.data,
-                                        });
-                                      }}
-                                      title="Générer PDF"
-                                      className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-                                    >
-                                      <FileText className="h-5 w-5 text-gray-600" />
-                                      <span className="text-sm text-gray-800">
-                                        Générer PDF
-                                      </span>
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </motion.td>
-                            </motion.td>
-                          </motion.tr>
-                        ))}
-                      </AnimatePresence>
-                    </TableBody>
-                  </Table>
-                )}
-              </AnimatePresence>
-            </CardContent>
-          </Card>
+          <TabsContent value="stats">
+            <motion.div
+              className="p-0 md:p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <StatisticsCard
+                requests={documents.map((doc) => ({
+                  id: doc.id,
+                  type: doc.type,
+                  name: `${doc.name} ${doc.surname}`,
+                  email: doc.email,
+                  date: (doc.createdAt || new Date()).toISOString(), // <- ici
+                  status: "completed",
+                  assignedTo: doc.assignedAdmin,
+                }))}
+              />
+            </motion.div>
+          </TabsContent>
         </motion.div>
-      </motion.div>
 
-      {/* Modales avec animations */}
-      <AnimatePresence>
-        {selectedRequest && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <RequestDetailsModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              request={selectedRequest}
-              ref={modalRef}
-            />
-          </motion.div>
-        )}
-        {confirmPDFRequest && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <ConfirmationDialog
-              open={!!confirmPDFRequest}
-              onClose={() => setConfirmPDFRequest(null)}
-              onConfirm={() => {
-                if (confirmPDFRequest) {
-                  setSelectedRequest(confirmPDFRequest);
-                  setIsModalOpen(true);
-                  waitForRefThenGeneratePDF();
-                  setConfirmPDFRequest(null);
-                }
+        {/* Modales avec animations */}
+        <AnimatePresence>
+          {selectedRequest && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <RequestDetailsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                request={selectedRequest}
+                ref={modalRef}
+              />
+            </motion.div>
+          )}
+          {confirmPDFRequest && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <ConfirmationDialog
+                open={!!confirmPDFRequest}
+                onClose={() => setConfirmPDFRequest(null)}
+                onConfirm={() => {
+                  if (confirmPDFRequest) {
+                    setSelectedRequest(confirmPDFRequest);
+                    setIsModalOpen(true);
+                    waitForRefThenGeneratePDF();
+                    setConfirmPDFRequest(null);
+                  }
+                }}
+                title="Générer le PDF"
+                message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
+              />
+            </motion.div>
+          )}
+          {confirmRevertId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <ConfirmationDialog
+                open={!!confirmRevertId}
+                onClose={() => setConfirmRevertId(null)}
+                onConfirm={() => {
+                  if (confirmRevertId) {
+                    handleRevertStatus(confirmRevertId);
+                    setConfirmRevertId(null);
+                  }
+                }}
+                title="Remettre en cours"
+                message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
+              />
+            </motion.div>
+          )}
+          {editRequest && (
+            <EditRequestModal
+              isOpen={isEditOpen}
+              onClose={() => setIsEditOpen(false)}
+              request={editRequest}
+              onSaved={(updated) => {
+                setDocuments((docs) =>
+                  docs.map((d) =>
+                    d.id === updated.id ? { ...d, details: updated.details } : d
+                  )
+                );
+                setFilteredDocuments((docs) =>
+                  docs.map((d) =>
+                    d.id === updated.id ? { ...d, details: updated.details } : d
+                  )
+                );
               }}
-              title="Générer le PDF"
-              message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
             />
-          </motion.div>
-        )}
-        {confirmRevertId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <ConfirmationDialog
-              open={!!confirmRevertId}
-              onClose={() => setConfirmRevertId(null)}
-              onConfirm={() => {
-                if (confirmRevertId) {
-                  handleRevertStatus(confirmRevertId);
-                  setConfirmRevertId(null);
-                }
-              }}
-              title="Remettre en cours"
-              message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
-            />
-          </motion.div>
-        )}
-
-        {editRequest && (
-          <EditRequestModal
-            isOpen={isEditOpen}
-            onClose={() => setIsEditOpen(false)}
-            request={editRequest}
-            onSaved={(updated) => {
-              // Met à jour le state pour refléter les changements
-              setDocuments((docs) =>
-                docs.map((d) =>
-                  d.id === updated.id ? { ...d, details: updated.details } : d
-                )
-              );
-              setFilteredDocuments((docs) =>
-                docs.map((d) =>
-                  d.id === updated.id ? { ...d, details: updated.details } : d
-                )
-              );
-            }}
-          />
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </Tabs>
     </AdminLayout>
   );
 };

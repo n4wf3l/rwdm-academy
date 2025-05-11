@@ -123,7 +123,17 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               type="text"
               placeholder="Prénom"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              maxLength={20}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Autorise uniquement lettres, accents et espaces, max 20 lettres
+                if (
+                  value.length <= 20 &&
+                  /^[A-Za-zÀ-ÖØ-öø-ÿ\s]*$/.test(value)
+                ) {
+                  setFirstName(value);
+                }
+              }}
               required
               className="w-full"
             />
@@ -135,7 +145,17 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               type="text"
               placeholder="Nom"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              maxLength={20}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Autorise uniquement lettres, accents et espaces, max 20 lettres
+                if (
+                  value.length <= 20 &&
+                  /^[A-Za-zÀ-ÖØ-öø-ÿ\s]*$/.test(value)
+                ) {
+                  setLastName(value);
+                }
+              }}
               required
               className="w-full"
             />
@@ -147,7 +167,9 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               type="email"
               placeholder="Email"
               value={email}
+              maxLength={30}
               onChange={(e) => setEmail(e.target.value)}
+              pattern="[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+"
               required
               className="w-full"
             />
@@ -159,7 +181,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               type="text"
               placeholder="Fonction"
               value={func}
-              onChange={(e) => setFunc(e.target.value)}
+              maxLength={30}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 30) {
+                  setFunc(value);
+                }
+              }}
               className="w-full"
             />
           </div>

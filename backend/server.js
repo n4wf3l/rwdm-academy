@@ -29,9 +29,10 @@ app.use("/uploads", express.static(uploadDir));
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Maximum 10 tentatives
+  max: process.env.NODE_ENV === "production" ? 10 : 1000, // Beaucoup plus en dev
   message: { message: "Trop de tentatives, veuillez réessayer plus tard." },
 });
+
 app.use("/api/login", loginLimiter);
 
 const nodemailer = require("nodemailer");
@@ -294,7 +295,25 @@ app.delete(
     }
   }
 );
-
+app.patch("/api/change-password", authMiddleware, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword) {
+      return res.status(400).json({ message: "Nouveau mot de passe requis." });
+    }
+    const userId = req.user.id;
+    // Hacher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await dbPool.execute("UPDATE users SET password = ? WHERE id = ?", [
+      hashedPassword,
+      userId,
+    ]);
+    res.json({ message: "Mot de passe mis à jour" });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du mot de passe :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 app.patch(
   "/api/admins/restore/:id",
   authMiddleware,
@@ -452,7 +471,11 @@ app.get("/api/me", authMiddleware, async (req, res) => {
   const userId = req.user.id;
   try {
     const [rows] = await dbPool.execute(
-      "SELECT firstName, lastName, role, profilePicture FROM users WHERE id = ?",
+      `SELECT 
+          id, firstName, lastName, email, password, role, \`function\`, profilePicture, createdAt, reset_token, reset_expires, deleted, deletedAt,
+          (SELECT COUNT(*) FROM requests WHERE assigned_to = users.id) AS assignmentsCount
+       FROM users 
+       WHERE id = ?`,
       [userId]
     );
     console.log("Résultat DB:", rows);
