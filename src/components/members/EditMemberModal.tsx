@@ -192,8 +192,18 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center">
-            <Image className="mr-2" />
+          <div className="flex items-center gap-4">
+            <img
+              src={profilePicture || "/avatar.jpg"}
+              alt="Avatar"
+              className="w-12 h-12 rounded-full object-cover border shadow"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (target.src !== window.location.origin + "/avatar.jpg") {
+                  target.src = "/avatar.jpg";
+                }
+              }}
+            />
             <input
               type="file"
               accept="image/*"

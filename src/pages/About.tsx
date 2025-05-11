@@ -497,9 +497,18 @@ const About = () => {
                   <Card className="group h-full glass-panel border-0 shadow-lg overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
                     <CardContent className="p-6 text-center">
                       <img
-                        src={member.profilePicture}
+                        src={member.profilePicture || "/avatar.jpg"}
                         alt={`${member.firstName} ${member.lastName}`}
-                        className="w-32 h-32 object-cover rounded-full mx-auto"
+                        className="w-32 h-32 object-cover rounded-full mx-auto border shadow"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          if (
+                            target.src !==
+                            window.location.origin + "/avatar.jpg"
+                          ) {
+                            target.src = "/avatar.jpg";
+                          }
+                        }}
                       />
                       <h3 className="text-xl font-bold mb-1 text-rwdm-blue dark:text-white group-hover:text-rwdm-red transition-colors duration-300">
                         {member.firstName} {member.lastName}

@@ -82,12 +82,17 @@ const MemberList: React.FC<MemberListProps> = ({
                   <TableRow key={index} className="hover:bg-gray-50">
                     <TableCell>
                       <img
-                        src={member.profilePicture}
+                        src={member.profilePicture || "/avatar.jpg"}
                         alt="Avatar"
                         className="w-8 h-8 rounded-full object-cover"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src =
-                            "https://via.placeholder.com/150";
+                          const target = e.currentTarget as HTMLImageElement;
+                          if (
+                            target.src !==
+                            window.location.origin + "/avatar.jpg"
+                          ) {
+                            target.src = "/avatar.jpg";
+                          }
                         }}
                       />
                     </TableCell>

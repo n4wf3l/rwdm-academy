@@ -353,21 +353,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           {/* Bloc en bas du sidebar */}
           <div className="p-4 border-t">
             <div className="flex flex-col items-center mb-4">
-              <img
-                src={
-                  user.profilePicture
-                    ? user.profilePicture
-                    : "https://via.placeholder.com/150"
-                }
+              <motion.img
+                key={user.profilePicture || "default-avatar"}
+                src={user.profilePicture || "/avatar.jpg"}
                 alt="Avatar"
-                className="h-12 w-12 rounded-full object-cover"
+                className="h-12 w-12 rounded-full object-cover shadow-md"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement;
-                  if (target.src !== "https://via.placeholder.com/150") {
-                    target.src = "https://via.placeholder.com/150";
+                  if (target.src !== window.location.origin + "/avatar.jpg") {
+                    target.src = "/avatar.jpg";
                   }
                 }}
               />
+
               <span className="mt-2 text-gray-800 dark:text-white font-medium">
                 {user.firstName} {user.lastName}
               </span>
