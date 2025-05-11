@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AnimatePresence, motion } from "framer-motion";
@@ -154,6 +155,65 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rwdm-lightblue/10 to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:via-rwdm-blue/10 dark:to-rwdm-blue/40">
+      <Helmet>
+        <title>
+          {lang === "fr"
+            ? "À propos de la RWDM Academy – Notre mission et nos valeurs"
+            : lang === "nl"
+            ? "Over de RWDM Academy – Onze missie en waarden"
+            : "About RWDM Academy – Our mission and values"}
+        </title>
+        <meta
+          name="description"
+          content={
+            lang === "fr"
+              ? "Découvrez l'histoire, la mission et les valeurs de la RWDM Academy, ainsi que les membres de notre équipe et nos académies partenaires."
+              : lang === "nl"
+              ? "Ontdek het verhaal, de missie en waarden van de RWDM Academy, samen met ons team en partneracademies."
+              : "Learn about the history, mission, and values of RWDM Academy, along with our team and partner academies."
+          }
+        />
+        <meta
+          name="keywords"
+          content={
+            lang === "fr"
+              ? "RWDM, football, académie, mission, histoire, équipe, Bruxelles"
+              : lang === "nl"
+              ? "RWDM, voetbal, academie, missie, geschiedenis, team, Brussel"
+              : "RWDM, academy, football, mission, history, team, Brussels"
+          }
+        />
+        <meta name="author" content="RWDM Academy" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rwdmacademy.be/about" />
+        <meta
+          property="og:title"
+          content={
+            lang === "fr"
+              ? "À propos de la RWDM Academy"
+              : lang === "nl"
+              ? "Over de RWDM Academy"
+              : "About RWDM Academy"
+          }
+        />
+        <meta
+          property="og:description"
+          content={
+            lang === "fr"
+              ? "Notre histoire, nos valeurs et notre équipe."
+              : lang === "nl"
+              ? "Onze geschiedenis, waarden en team."
+              : "Our history, values and team."
+          }
+        />
+        <meta
+          property="og:image"
+          content="https://rwdmacademy.be/images/og-image.jpg"
+        />
+        <link rel="canonical" href="https://rwdmacademy.be/about" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
+
       <Navbar />
       <main className="container mx-auto px-4 pt-28 pb-20">
         {/* Titre et description */}

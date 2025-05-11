@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Trans } from "react-i18next";
 
 const LegalInfo: React.FC = () => {
   const [general, setGeneral] = useState<any>(null);
@@ -82,7 +83,11 @@ const LegalInfo: React.FC = () => {
         <h3 className="text-xl font-semibold text-rwdm-blue dark:text-white">
           {t("legal_section2_title")}
         </h3>
-        <p>{t("legal_section2_text")}</p>
+        <p
+          dangerouslySetInnerHTML={{
+            __html: t("legal_section2_text"),
+          }}
+        />
         <h4 className="text-lg font-semibold text-rwdm-blue dark:text-white">
           {t("legal_section2_subtitle")}
         </h4>

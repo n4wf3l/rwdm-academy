@@ -723,7 +723,7 @@ export const translations = {
     // Section 2
     legal_section2_title: "2. Responsable de publication",
     legal_section2_text:
-      "Le responsable de publication est Nawfel Ajari, ingénieur logiciel, stagiaire chez RWDM Academy.",
+      "Le responsable de la publication est Nawfel Ajari, ingénieur logiciel chez <a href='https://www.nainnovations.be' target='_blank' rel='noopener noreferrer' style='text-decoration: underline; color: #6b7280;' onmouseover='this.style.color=\"#4b5563\"' onmouseout='this.style.color=\"#6b7280\"'>NA Innovations</a>.",
     legal_section2_subtitle: "Développement technique",
     legal_section2_dev_text: "Le site a été développé par Nawfel Ajari.",
 
@@ -1445,7 +1445,8 @@ export const translations = {
     // Sectie 2
     legal_section2_title: "2. Publicatieverantwoordelijke",
     legal_section2_text:
-      "De publicatieverantwoordelijke is Nawfel Ajari, software‑ingenieur, stagiair bij RWDM Academy.",
+      "De verantwoordelijke uitgever is Nawfel Ajari, software engineer bij <a href='https://www.nainnovations.be' target='_blank' rel='noopener noreferrer' style='text-decoration: underline; color: #6b7280;' onmouseover='this.style.color=\"#4b5563\"' onmouseout='this.style.color=\"#6b7280\"'>NA Innovations</a>.",
+
     legal_section2_subtitle: "Technische ontwikkeling",
     legal_section2_dev_text: "De site is ontwikkeld door Nawfel Ajari.",
 
@@ -2143,7 +2144,8 @@ export const translations = {
     // Section 2
     legal_section2_title: "2. Publication responsible",
     legal_section2_text:
-      "The publication responsible is Nawfel Ajari, software engineer, intern at RWDM Academy.",
+      "The publication responsible is Nawfel Ajari, software engineer at <a href='https://www.nainnovations.be' target='_blank' rel='noopener noreferrer' style='text-decoration: underline; color: #6b7280;' onmouseover='this.style.color=\"#4b5563\"' onmouseout='this.style.color=\"#6b7280\"'>NA Innovations</a>.",
+
     legal_section2_subtitle: "Technical development",
     legal_section2_dev_text: "The site was developed by Nawfel Ajari.",
 

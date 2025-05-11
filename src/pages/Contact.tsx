@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { motion } from "framer-motion";
@@ -9,7 +10,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import axios from "axios";
 import { translations } from "@/lib/i18n";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -123,6 +130,65 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
+      <Helmet>
+        <title>
+          {lang === "fr"
+            ? "Contactez la RWDM Academy – Coordonnées et formulaire"
+            : lang === "nl"
+            ? "Contacteer RWDM Academy – Contactgegevens en formulier"
+            : "Contact RWDM Academy – Contact form and details"}
+        </title>
+
+        <meta
+          name="description"
+          content={
+            lang === "fr"
+              ? "Contactez-nous pour toute question sur l'académie RWDM, les inscriptions, ou les événements."
+              : lang === "nl"
+              ? "Neem contact op met RWDM Academy voor vragen over inschrijvingen of evenementen."
+              : "Get in touch with RWDM Academy for any inquiries about registration or events."
+          }
+        />
+        <meta
+          name="keywords"
+          content={
+            lang === "fr"
+              ? "RWDM, contact, académie, formulaire, football, inscription"
+              : lang === "nl"
+              ? "RWDM, contact, academie, formulier, voetbal, inschrijving"
+              : "RWDM, contact, academy, form, football, registration"
+          }
+        />
+        <meta name="author" content="RWDM Academy" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rwdmacademy.be/contact" />
+        <meta
+          property="og:title"
+          content={
+            lang === "fr"
+              ? "Contactez la RWDM Academy"
+              : lang === "nl"
+              ? "Contacteer de RWDM Academy"
+              : "Contact RWDM Academy"
+          }
+        />
+        <meta
+          property="og:description"
+          content={
+            lang === "fr"
+              ? "Formulaire de contact et coordonnées officielles de l'académie RWDM."
+              : lang === "nl"
+              ? "Contactformulier en officiële gegevens van RWDM Academy."
+              : "Official contact form and details of RWDM Academy."
+          }
+        />
+        <meta
+          property="og:image"
+          content="https://rwdmacademy.be/images/og-image.jpg"
+        />
+        <link rel="canonical" href="https://rwdmacademy.be/contact" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 pt-28 pb-20">
         <motion.div
@@ -278,41 +344,43 @@ const Contact = () => {
                     </div>
                   </div>
                   <div>
-                  <Select
-  value={subject}
-  onValueChange={(value) => setSubject(value)}
->
-  <SelectTrigger id="subject" className="form-input-base">
-    <SelectValue placeholder={t("contact_select_subject")} />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="registration">
-      {t("contact_subject_registration")}
-    </SelectItem>
-    <SelectItem value="selection_tests">
-      {t("contact_subject_selection")}
-    </SelectItem>
-    <SelectItem value="liability_waiver">
-      {t("contact_subject_waiver")}
-    </SelectItem>
-    <SelectItem value="accident_report">
-      {t("contact_subject_accident")}
-    </SelectItem>
-    <SelectItem value="recruitment">
-      {t("contact_subject_recruitment")}
-    </SelectItem>
-    <SelectItem value="incident">
-      {t("contact_subject_incident")}
-    </SelectItem>
-    <SelectItem value="technical">
-      {t("contact_subject_technical")}
-    </SelectItem>
-    <SelectItem value="other">
-      {t("contact_subject_other")}
-    </SelectItem>
-  </SelectContent>
-</Select>
-</div>
+                    <Select
+                      value={subject}
+                      onValueChange={(value) => setSubject(value)}
+                    >
+                      <SelectTrigger id="subject" className="form-input-base">
+                        <SelectValue
+                          placeholder={t("contact_select_subject")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="registration">
+                          {t("contact_subject_registration")}
+                        </SelectItem>
+                        <SelectItem value="selection_tests">
+                          {t("contact_subject_selection")}
+                        </SelectItem>
+                        <SelectItem value="liability_waiver">
+                          {t("contact_subject_waiver")}
+                        </SelectItem>
+                        <SelectItem value="accident_report">
+                          {t("contact_subject_accident")}
+                        </SelectItem>
+                        <SelectItem value="recruitment">
+                          {t("contact_subject_recruitment")}
+                        </SelectItem>
+                        <SelectItem value="incident">
+                          {t("contact_subject_incident")}
+                        </SelectItem>
+                        <SelectItem value="technical">
+                          {t("contact_subject_technical")}
+                        </SelectItem>
+                        <SelectItem value="other">
+                          {t("contact_subject_other")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
                     <label
                       htmlFor="message"
@@ -442,18 +510,15 @@ const Contact = () => {
                 {t("how_to_find_us")}
               </h2>
               <div className="rounded-lg overflow-hidden h-96 bg-gray-200">
-              <iframe
-  src="https://www.google.com/maps?q=50.855638154278545,4.3111228865063325&z=17&output=embed"
-  width="100%"
-  height="100%"
-  style={{ border: 0 }}
-  allowFullScreen
-  loading="lazy"
-  referrerPolicy="no-referrer-when-downgrade"
-/>
-
-
-
+                <iframe
+                  src="https://www.google.com/maps?q=50.855638154278545,4.3111228865063325&z=17&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Helmet } from "react-helmet";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import FormSelector, { FormType } from "../components/FormSelector";
@@ -79,6 +80,34 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
+      <Helmet>
+        <title>RWDM Academy – Rejoignez l'élite de la formation belge</title>
+        <meta
+          name="description"
+          content="Inscrivez-vous à l'académie RWDM et participez aux tests de sélection, tournois et événements pour jeunes talents."
+        />
+        <meta
+          name="keywords"
+          content="RWDM, académie, inscription, football, jeunes talents, tests, Bruxelles"
+        />
+        <meta name="author" content="RWDM Academy" />
+        <meta
+          property="og:title"
+          content="RWDM Academy – Formulaire d'inscription"
+        />
+        <meta
+          property="og:description"
+          content="Participez aux tests de sélection de l'académie RWDM dès aujourd'hui."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://rwdmacademy.be" />
+        <meta
+          property="og:image"
+          content="https://rwdmacademy.be/images/og-image.jpg"
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://rwdmacademy.be/" />
+      </Helmet>
       {showSplash ? (
         <SplashComponent onLanguageSelect={handleLanguageSelect} />
       ) : (

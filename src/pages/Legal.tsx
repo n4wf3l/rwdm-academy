@@ -4,12 +4,13 @@ import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, Shield, FileText, BookOpen, Cookie } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Confidentiality from "@/components/legal/confidentiality";
-import Cgu from "@/components/legal/cgu";
+import Confidentiality from "@/components/legal/Confidentiality";
+import Cgu from "@/components/legal/CGU";
 import LegalInfo from "@/components/legal/Legal";
-import CookiesPolicy from "@/components/legal/Cookie";
+import CookiesPolicy from "@/components/legal/cookie";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -34,6 +35,70 @@ const Legal: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
+      <Helmet>
+        <title>
+          {activeTab === "privacy"
+            ? "Politique de confidentialité – RWDM Academy"
+            : activeTab === "terms"
+            ? "Conditions d'utilisation – RWDM Academy"
+            : activeTab === "legal"
+            ? "Mentions légales – RWDM Academy"
+            : "Politique de cookies – RWDM Academy"}
+        </title>
+
+        <meta
+          name="description"
+          content={
+            activeTab === "privacy"
+              ? "Consultez notre politique de confidentialité concernant la protection des données personnelles."
+              : activeTab === "terms"
+              ? "Lisez les conditions générales d'utilisation de RWDM Academy."
+              : activeTab === "legal"
+              ? "Toutes les informations légales concernant RWDM Academy."
+              : "Découvrez notre politique d'utilisation des cookies."
+          }
+        />
+        <meta name="author" content="RWDM Academy" />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:title"
+          content={
+            activeTab === "privacy"
+              ? "Politique de confidentialité – RWDM Academy"
+              : activeTab === "terms"
+              ? "Conditions d'utilisation – RWDM Academy"
+              : activeTab === "legal"
+              ? "Mentions légales – RWDM Academy"
+              : "Politique de cookies – RWDM Academy"
+          }
+        />
+        <meta
+          property="og:description"
+          content={
+            activeTab === "privacy"
+              ? "Consultez notre politique de confidentialité concernant la protection des données personnelles."
+              : activeTab === "terms"
+              ? "Lisez les conditions générales d'utilisation de RWDM Academy."
+              : activeTab === "legal"
+              ? "Toutes les informations légales concernant RWDM Academy."
+              : "Découvrez notre politique d'utilisation des cookies."
+          }
+        />
+        <meta
+          property="og:url"
+          content={`https://rwdmacademy.be/legal?tab=${activeTab}`}
+        />
+        <meta
+          property="og:image"
+          content="https://rwdmacademy.be/images/og-image.jpg"
+        />
+        <link
+          rel="canonical"
+          href={`https://rwdmacademy.be/legal?tab=${activeTab}`}
+        />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
+
       <Navbar />
 
       <main className="container mx-auto px-4 py-12 pt-32 flex-grow">
