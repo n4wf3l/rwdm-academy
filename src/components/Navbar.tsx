@@ -29,6 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isMobileMenuModalOpen, setIsMobileMenuModalOpen] = useState(false);
   const langLabels = {
     fr: "Français",
     nl: "Nederlands",
@@ -101,6 +102,14 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         );
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (isMobileMenuModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [isMobileMenuModalOpen]);
 
   useEffect(() => {
     const fetchLogo = async () => {
@@ -295,59 +304,77 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
           {/* Mobile menu button */}
           <button
             className="block md:hidden text-rwdm-blue dark:text-white"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
+            onClick={() => setIsMobileMenuModalOpen(true)}
+            aria-label="Ouvrir menu mobile"
           >
-            {menuOpen ? <X size={28} /> : <Menu size={28} />}
+            <Menu size={28} />
           </button>
         </div>
 
         {/* Mobile menu */}
-        {/* Mobile menu */}
         <AnimatePresence>
-          {menuOpen && (
+          {isMobileMenuModalOpen && (
             <motion.div
-              key="mobile-menu"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden bg-white dark:bg-rwdm-darkblue shadow-lg overflow-hidden"
+              key="mobile-links-modal"
+              onClick={() => setIsMobileMenuModalOpen(false)}
+              className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-                <MobileNavLink
-                  to="/"
-                  active={isActivePath("/")}
-                  onClick={toggleMenu}
-                >
-                  <div className="flex items-center gap-2">
-                    <Home size={18} />
-                    <span>{t("home")}</span>
-                  </div>
-                </MobileNavLink>
+              {/* ❌ Croix toujours tout en haut à droite de l'écran */}
+              <button
+                onClick={() => setIsMobileMenuModalOpen(false)}
+                className="absolute top-5 right-5 text-white hover:text-rwdm-red transition z-[10000]"
+                aria-label="Fermer"
+              >
+                <X size={30} />
+              </button>
 
-                <MobileNavLink
-                  to="/about"
-                  active={isActivePath("/about")}
-                  onClick={toggleMenu}
-                >
-                  <div className="flex items-center gap-2">
-                    <Info size={18} />
-                    <span>{t("about")}</span>
-                  </div>
-                </MobileNavLink>
+              <motion.div
+                onClick={(e) => e.stopPropagation()}
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 40, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center justify-center space-y-10 text-white text-[22px] font-light tracking-wider w-full px-8"
+              >
+                {[
+                  { to: "/", label: t("home"), icon: <Home size={22} /> },
+                  { to: "/about", label: t("about"), icon: <Info size={22} /> },
+                  {
+                    to: "/contact",
+                    label: t("contact"),
+                    icon: <Mail size={22} />,
+                  },
+                ].map(({ to, label, icon }) => {
+                  const isActive = location.pathname === to;
+                  return (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setIsMobileMenuModalOpen(false)}
+                      className="relative flex items-center justify-center gap-3"
+                    >
+                      {icon}
+                      <span>{label}</span>
 
-                <MobileNavLink
-                  to="/contact"
-                  active={isActivePath("/contact")}
-                  onClick={toggleMenu}
-                >
-                  <div className="flex items-center gap-2">
-                    <Mail size={18} />
-                    <span>{t("contact")}</span>
-                  </div>
-                </MobileNavLink>
-              </div>
+                      {isActive && (
+                        <motion.div
+                          className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
+                          style={{
+                            background:
+                              "linear-gradient(to right, white 0%, white 50%, red 50%, red 100%)",
+                          }}
+                          initial={{ width: 0 }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: 0.5, delay: 0.2 }}
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -383,43 +410,56 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
         {isLangModalOpen && (
           <motion.div
             key="language-modal"
+            onClick={() => setIsLangModalOpen(false)}
+            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsLangModalOpen(false)} // clique n'importe où ferme le modal
-            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center"
           >
-            <motion.div
-              onClick={(e) => e.stopPropagation()} // empêche que le clic dans le contenu ferme
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-rwdm-darkblue p-6 rounded-xl shadow-xl w-full max-w-sm mx-auto"
+            {/* ❌ Croix en haut à droite de l’écran */}
+            <button
+              onClick={() => setIsLangModalOpen(false)}
+              className="absolute top-5 right-5 text-white hover:text-rwdm-red transition z-[10000]"
+              aria-label="Fermer"
             >
-              <h2 className="text-xl font-bold text-center mb-4 text-rwdm-blue dark:text-white">
-                {t("choose_language")}
-              </h2>
-              <div className="space-y-3">
-                {["fr", "nl", "en"].map((lang) => (
+              <X size={28} />
+            </button>
+
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center justify-center gap-6 w-full max-w-sm px-6"
+            >
+              {(["fr", "nl", "en"] as const).map((lang) => {
+                const isActive = currentLang === lang;
+                return (
                   <button
                     key={lang}
                     onClick={() => {
-                      changeLanguage(lang as "fr" | "nl" | "en");
+                      changeLanguage(lang);
                       setIsLangModalOpen(false);
                     }}
-                    className="w-full py-3 rounded-md bg-rwdm-blue text-white text-lg font-semibold shadow hover:bg-rwdm-blue/90 transition"
+                    className="relative text-white text-xl font-light tracking-wide hover:text-rwdm-red transition"
                   >
                     {langLabels[lang]}
+                    {isActive && (
+                      <motion.div
+                        className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
+                        style={{
+                          background:
+                            "linear-gradient(to right, white 0%, white 50%, red 50%, red 100%)",
+                        }}
+                        initial={{ width: 0 }}
+                        animate={{ width: "80%" }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                      />
+                    )}
                   </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setIsLangModalOpen(false)}
-                className="mt-5 w-full text-sm text-gray-500 dark:text-gray-300 hover:underline text-center"
-              >
-                {t("cancel")}
-              </button>
+                );
+              })}
             </motion.div>
           </motion.div>
         )}
