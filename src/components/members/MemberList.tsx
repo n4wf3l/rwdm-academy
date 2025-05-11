@@ -13,6 +13,7 @@ import {
 import { ChevronLeft, ChevronRight, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
+import ViewProfile from "@/components/members/ViewProfile";
 
 interface Member {
   firstName: string;
@@ -46,6 +47,9 @@ const MemberList: React.FC<MemberListProps> = ({
     currentPage * itemsPerPage
   );
 
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
   const goToPreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -55,143 +59,159 @@ const MemberList: React.FC<MemberListProps> = ({
   };
 
   return (
-    <Card>
-      <CardHeader className="border-b">
-        <CardTitle>Membres inscrits ({members.length})</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Avatar</TableHead>
-                <TableHead>Nom complet</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Fonction</TableHead>
-                <TableHead>Rôle</TableHead>
-                <TableHead>Créé le</TableHead>
-                {currentUserRole === "owner" ||
-                  (currentUserRole === "superadmin" && (
-                    <TableHead>Actions</TableHead>
-                  ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedMembers.length > 0 ? (
-                paginatedMembers.map((member, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell>
-                      <img
-                        src={member.profilePicture || "/avatar.jpg"}
-                        alt="Avatar"
-                        className="w-8 h-8 rounded-full object-cover"
-                        onError={(e) => {
-                          const target = e.currentTarget as HTMLImageElement;
-                          if (
-                            target.src !==
-                            window.location.origin + "/avatar.jpg"
-                          ) {
-                            target.src = "/avatar.jpg";
-                          }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {member.firstName} {member.lastName}
-                    </TableCell>
-                    <TableCell>{member.email}</TableCell>
-                    <TableCell>{member.function || "—"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          member.role === "owner"
-                            ? "default"
-                            : member.role === "superadmin"
-                            ? "secondary"
-                            : member.role === "admin"
-                            ? "outline"
-                            : "secondary"
-                        }
-                      >
-                        {typeof member.role === "string"
-                          ? member.role.charAt(0).toUpperCase() +
-                            member.role.slice(1)
-                          : "—"}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell>
-                      {member.createdAt &&
-                      !isNaN(new Date(member.createdAt).getTime())
-                        ? format(
-                            new Date(member.createdAt),
-                            "dd MMMM yyyy à HH:mm",
-                            {
-                              locale: fr,
-                            }
-                          )
-                        : "—"}
-                    </TableCell>
-                    {(currentUserRole === "owner" ||
-                      (currentUserRole === "superadmin" &&
-                        member.role !== "owner")) && (
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => onEdit(member)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => onDelete(member)}
-                          >
-                            <Trash className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))
-              ) : (
+    <>
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>Membres inscrits ({members.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-4">
-                    Aucun membre trouvé
-                  </TableCell>
+                  <TableHead>Avatar</TableHead>
+                  <TableHead>Nom complet</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Fonction</TableHead>
+                  <TableHead>Rôle</TableHead>
+                  <TableHead>Créé le</TableHead>
+                  {(currentUserRole === "owner" ||
+                    currentUserRole === "superadmin") && (
+                    <TableHead>Actions</TableHead>
+                  )}
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t px-4 py-3 mt-4">
-            <div className="text-sm text-gray-600">
-              Page {currentPage} sur {totalPages}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={goToPreviousPage}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+              </TableHeader>
+              <TableBody>
+                {paginatedMembers.length > 0 ? (
+                  paginatedMembers.map((member, index) => (
+                    <TableRow
+                      key={index}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setShowProfileModal(true);
+                      }}
+                    >
+                      <TableCell>
+                        <img
+                          src={member.profilePicture || "/avatar.jpg"}
+                          alt="Avatar"
+                          className="w-8 h-8 rounded-full object-cover"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            if (
+                              target.src !==
+                              window.location.origin + "/avatar.jpg"
+                            ) {
+                              target.src = "/avatar.jpg";
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {member.firstName} {member.lastName}
+                      </TableCell>
+                      <TableCell>{member.email}</TableCell>
+                      <TableCell>{member.function || "—"}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            member.role === "owner"
+                              ? "default"
+                              : member.role === "superadmin"
+                              ? "secondary"
+                              : member.role === "admin"
+                              ? "outline"
+                              : "secondary"
+                          }
+                        >
+                          {typeof member.role === "string"
+                            ? member.role.charAt(0).toUpperCase() +
+                              member.role.slice(1)
+                            : "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {member.createdAt &&
+                        !isNaN(new Date(member.createdAt).getTime())
+                          ? format(
+                              new Date(member.createdAt),
+                              "dd MMMM yyyy à HH:mm",
+                              {
+                                locale: fr,
+                              }
+                            )
+                          : "—"}
+                      </TableCell>
+                      {(currentUserRole === "owner" ||
+                        (currentUserRole === "superadmin" &&
+                          member.role !== "owner")) && (
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => onEdit(member)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => onDelete(member)}
+                            >
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-4">
+                      Aucun membre trouvé
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t px-4 py-3 mt-4">
+              <div className="text-sm text-gray-600">
+                Page {currentPage} sur {totalPages}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {selectedMember && (
+        <ViewProfile
+          open={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={selectedMember}
+        />
+      )}
+    </>
   );
 };
 

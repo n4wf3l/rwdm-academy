@@ -39,7 +39,8 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const currentUserId = localStorage.getItem("adminId");
+  const isSelf = String(user.id) === currentUserId;
   const handlePasswordUpdate = async () => {
     if (newPassword !== confirmPassword) {
       toast({
@@ -98,9 +99,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-6">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold mb-2">
-            Mon compte
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold mb-2">Compte</DialogTitle>
           <DialogDescription>
             <motion.div
               className="flex items-center gap-4"
@@ -137,67 +136,69 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
         </DialogHeader>
 
         {/* Zone changer mot de passe avec animation */}
-        <AnimatePresence mode="wait">
-          {!isChangingPassword ? (
-            <motion.div
-              key="show-button"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
-            >
-              <Button
-                variant="outline"
-                onClick={() => setIsChangingPassword(true)}
-                className="w-full"
+        {isSelf && (
+          <AnimatePresence mode="wait">
+            {!isChangingPassword ? (
+              <motion.div
+                key="show-button"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
               >
-                Changer le mot de passe
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="change-password"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
-            >
-              <p className="mb-3 text-sm text-gray-600">
-                Entrez votre nouveau mot de passe et confirmez-le
-              </p>
-              <Input
-                type="password"
-                placeholder="Nouveau mot de passe"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="mb-3"
-              />
-              <Input
-                type="password"
-                placeholder="Confirmer le mot de passe"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mb-3"
-              />
-              <div className="flex gap-3">
-                <Button onClick={handlePasswordUpdate} className="flex-1">
-                  Mettre à jour
-                </Button>
                 <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setIsChangingPassword(false);
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                  className="flex-1"
+                  variant="outline"
+                  onClick={() => setIsChangingPassword(true)}
+                  className="w-full"
                 >
-                  Annuler
+                  Changer le mot de passe
                 </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="change-password"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
+              >
+                <p className="mb-3 text-sm text-gray-600">
+                  Entrez votre nouveau mot de passe et confirmez-le
+                </p>
+                <Input
+                  type="password"
+                  placeholder="Nouveau mot de passe"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mb-3"
+                />
+                <Input
+                  type="password"
+                  placeholder="Confirmer le mot de passe"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mb-3"
+                />
+                <div className="flex gap-3">
+                  <Button onClick={handlePasswordUpdate} className="flex-1">
+                    Mettre à jour
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setIsChangingPassword(false);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }}
+                    className="flex-1"
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Zone assignations avec animation */}
         <motion.div
