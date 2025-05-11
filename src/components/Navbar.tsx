@@ -49,13 +49,17 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setShowNavbar(false); // Scroll vers le bas → cache le navbar
+      // Appliquer uniquement en mobile
+      if (window.innerWidth < 768) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          setShowNavbar(false);
+        } else {
+          setShowNavbar(true);
+        }
+        setLastScrollY(currentScrollY);
       } else {
-        setShowNavbar(true); // Scroll vers le haut → montre le navbar
+        setShowNavbar(true); // Toujours visible en desktop
       }
-
-      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
