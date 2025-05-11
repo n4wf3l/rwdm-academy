@@ -156,62 +156,78 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rwdm-lightblue/10 to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:via-rwdm-blue/10 dark:to-rwdm-blue/40">
       <Helmet>
+        {/* SEO général */}
         <title>
           {lang === "fr"
-            ? "À propos de la RWDM Academy – Notre mission et nos valeurs"
+            ? "RWDM Academy – Notre mission, histoire et valeurs"
             : lang === "nl"
-            ? "Over de RWDM Academy – Onze missie en waarden"
-            : "About RWDM Academy – Our mission and values"}
+            ? "RWDM Academy – Onze missie, geschiedenis en waarden"
+            : "RWDM Academy – Our Mission, History & Values"}
         </title>
         <meta
           name="description"
           content={
             lang === "fr"
-              ? "Découvrez l'histoire, la mission et les valeurs de la RWDM Academy, ainsi que les membres de notre équipe et nos académies partenaires."
+              ? "Apprenez-en plus sur l'identité, les valeurs, les académies et l'équipe derrière la RWDM Academy."
               : lang === "nl"
-              ? "Ontdek het verhaal, de missie en waarden van de RWDM Academy, samen met ons team en partneracademies."
-              : "Learn about the history, mission, and values of RWDM Academy, along with our team and partner academies."
+              ? "Ontdek het verhaal, de waarden, de academies en het team achter RWDM Academy."
+              : "Learn more about the identity, values, academies and team behind RWDM Academy."
           }
         />
         <meta
           name="keywords"
           content={
             lang === "fr"
-              ? "RWDM, football, académie, mission, histoire, équipe, Bruxelles"
+              ? "RWDM, football, académie, mission, histoire, valeurs, équipe, Bruxelles, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
               : lang === "nl"
-              ? "RWDM, voetbal, academie, missie, geschiedenis, team, Brussel"
-              : "RWDM, academy, football, mission, history, team, Brussels"
+              ? "RWDM, voetbal, academie, missie, geschiedenis, waarden, team, Brussel, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
+              : "RWDM, football, academy, mission, history, values, team, Brussels, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
           }
         />
         <meta name="author" content="RWDM Academy" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://rwdmacademy.be/about" />
+
+        {/* Open Graph (Facebook / Instagram / LinkedIn) */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rwdmacademy.be/about" />
         <meta
           property="og:title"
           content={
             lang === "fr"
-              ? "À propos de la RWDM Academy"
+              ? "RWDM Academy – Qui sommes-nous ?"
               : lang === "nl"
-              ? "Over de RWDM Academy"
-              : "About RWDM Academy"
+              ? "RWDM Academy – Wie zijn we?"
+              : "RWDM Academy – Who we are"
           }
         />
         <meta
           property="og:description"
           content={
             lang === "fr"
-              ? "Notre histoire, nos valeurs et notre équipe."
+              ? "Découvrez nos valeurs, notre équipe et nos académies."
               : lang === "nl"
-              ? "Onze geschiedenis, waarden en team."
-              : "Our history, values and team."
+              ? "Leer meer over onze waarden, ons team en onze academies."
+              : "Discover our values, our team, and our academies."
           }
         />
         <meta
           property="og:image"
           content="https://rwdmacademy.be/images/og-image.jpg"
         />
-        <link rel="canonical" href="https://rwdmacademy.be/about" />
-        <meta name="robots" content="index, follow" />
+        <meta property="og:site_name" content="RWDM Academy" />
+        <meta
+          property="og:locale"
+          content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"}
+        />
+        <meta
+          property="article:publisher"
+          content="https://www.facebook.com/RWDMAcademy/"
+        />
+        <meta
+          property="article:author"
+          content="https://www.instagram.com/rwdm_academy/"
+        />
       </Helmet>
 
       <Navbar />

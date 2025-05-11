@@ -274,6 +274,9 @@ const ResponsibilityWaiverForm: React.FC = () => {
           )}
         >
           <CardContent className="pt-6">
+            <h2 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-6">
+              {t("liability_waiver")}
+            </h2>
             <FormSection
               title={t("waiver_player_info_title")}
               subtitle={t("waiver_player_info_subtitle")}

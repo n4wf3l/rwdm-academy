@@ -349,6 +349,9 @@ const RegistrationForm = () => {
       >
         <Card className="glass-panel">
           <CardContent className="pt-6">
+            <h2 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-6">
+              {t("academy_registration")}
+            </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {/* Sélection de la saison */}
               <FormSection

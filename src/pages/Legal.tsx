@@ -58,8 +58,24 @@ const Legal: React.FC = () => {
               : "Découvrez notre politique d'utilisation des cookies."
           }
         />
+
+        <meta
+          name="keywords"
+          content="RWDM, RGPD, cookies, mentions légales, CGU, confidentialité, politique de données, protection, académies"
+        />
         <meta name="author" content="RWDM Academy" />
+        <meta name="robots" content="index, follow" />
+        <link
+          rel="canonical"
+          href={`https://rwdmacademy.be/legal?tab=${activeTab}`}
+        />
+
+        {/* Open Graph (Facebook, Instagram, LinkedIn) */}
         <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content={`https://rwdmacademy.be/legal?tab=${activeTab}`}
+        />
         <meta
           property="og:title"
           content={
@@ -85,18 +101,19 @@ const Legal: React.FC = () => {
           }
         />
         <meta
-          property="og:url"
-          content={`https://rwdmacademy.be/legal?tab=${activeTab}`}
-        />
-        <meta
           property="og:image"
           content="https://rwdmacademy.be/images/og-image.jpg"
         />
-        <link
-          rel="canonical"
-          href={`https://rwdmacademy.be/legal?tab=${activeTab}`}
+        <meta property="og:site_name" content="RWDM Academy" />
+        <meta property="og:locale" content="fr_BE" />
+        <meta
+          property="article:publisher"
+          content="https://www.facebook.com/RWDMAcademy/"
         />
-        <meta name="robots" content="index, follow" />
+        <meta
+          property="article:author"
+          content="https://www.instagram.com/rwdm_academy/"
+        />
       </Helmet>
 
       <Navbar />

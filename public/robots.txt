@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /admin
+Disallow: /planning
+Disallow: /documents
+Disallow: /members
+Disallow: /settings
+Disallow: /graphics
+Allow: /
+
+Sitemap: https://rwdmacademy.be/sitemap.xml

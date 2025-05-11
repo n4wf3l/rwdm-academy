@@ -17,7 +17,7 @@ export const translations = {
     academy_registration: "Demande d'inscription à l'académie",
     academy_registration_desc:
       "Formulaire d'inscription pour rejoindre l'académie RWDM",
-    selection_tests: "Tests de sélection",
+    selection_tests: "Demande de test de sélection",
     selection_tests_desc: "Inscription aux tests de sélection pour l'académie",
     accident_report: "Déclaration d'accident",
     accident_report_desc: "Formulaire pour déclarer un accident survenu",
@@ -800,7 +800,7 @@ export const translations = {
     academy_registration: "Inschrijvingsaanvraag voor de academie",
     academy_registration_desc:
       "Inschrijvingsformulier om lid te worden van de RWDM Academy",
-    selection_tests: "Selectietesten",
+    selection_tests: "Selectietestaanvraag",
     selection_tests_desc: "Inschrijving voor de selectietesten van de academie",
     accident_report: "Ongevallenverklaring",
     accident_report_desc: "Formulier om een ongeval te melden",

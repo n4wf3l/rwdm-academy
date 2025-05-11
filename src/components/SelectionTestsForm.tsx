@@ -386,6 +386,9 @@ const SelectionTestsForm: React.FC = () => {
         {/* Informations sur les tests */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
+            <h2 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-6">
+              {t("selection_tests")}
+            </h2>
             <FormSection
               title={t("selection_tests_section_title")}
               subtitle={t("selection_tests_section_subtitle")}

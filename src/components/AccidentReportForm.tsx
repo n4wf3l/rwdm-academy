@@ -488,6 +488,9 @@ const AccidentReportForm: React.FC = () => {
     <>
       <Card className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up pb-6">
         <CardContent className="pt-6">
+          <h2 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-6">
+            {t("accident_report")}
+          </h2>
           <FormSection
             title={t("accident_info_alert_title")}
             subtitle={

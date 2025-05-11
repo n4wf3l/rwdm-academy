@@ -131,6 +131,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
       <Helmet>
+        {/* SEO général */}
         <title>
           {lang === "fr"
             ? "Contactez la RWDM Academy – Coordonnées et formulaire"
@@ -138,7 +139,6 @@ const Contact = () => {
             ? "Contacteer RWDM Academy – Contactgegevens en formulier"
             : "Contact RWDM Academy – Contact form and details"}
         </title>
-
         <meta
           name="description"
           content={
@@ -153,13 +153,17 @@ const Contact = () => {
           name="keywords"
           content={
             lang === "fr"
-              ? "RWDM, contact, académie, formulaire, football, inscription"
+              ? "RWDM, contact, académie, formulaire, football, inscription, test, Bruxelles"
               : lang === "nl"
-              ? "RWDM, contact, academie, formulier, voetbal, inschrijving"
-              : "RWDM, contact, academy, form, football, registration"
+              ? "RWDM, contact, academie, formulier, voetbal, inschrijving, test, Brussel"
+              : "RWDM, contact, academy, form, football, registration, test, Brussels"
           }
         />
         <meta name="author" content="RWDM Academy" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://rwdmacademy.be/contact" />
+
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://rwdmacademy.be/contact" />
         <meta
@@ -186,9 +190,21 @@ const Contact = () => {
           property="og:image"
           content="https://rwdmacademy.be/images/og-image.jpg"
         />
-        <link rel="canonical" href="https://rwdmacademy.be/contact" />
-        <meta name="robots" content="index, follow" />
+        <meta property="og:site_name" content="RWDM Academy" />
+        <meta
+          property="og:locale"
+          content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"}
+        />
+        <meta
+          property="article:publisher"
+          content="https://www.facebook.com/RWDMAcademy/"
+        />
+        <meta
+          property="article:author"
+          content="https://www.instagram.com/rwdm_academy/"
+        />
       </Helmet>
+
       <Navbar />
       <main className="container mx-auto px-4 pt-28 pb-20">
         <motion.div
