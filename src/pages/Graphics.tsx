@@ -38,6 +38,8 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ApiKeyModal from "@/components/ApiKeyModal";
 import InvoiceListModal from "@/components/graphics/InvoiceListModal";
+import PyramidStructure from "@/components/graphics/PyramidStructure";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const statusColors: Record<string, string> = {
   not_sent: "bg-gray-100 text-gray-800",
@@ -130,7 +132,7 @@ const Graphics: React.FC = () => {
   const API_MEMBERS_DUES_URL = `${baseURL}/api/members-dues`;
   const API_TEAMS_ALL_URL = `${baseURL}/api/teams/all`;
   const [newRequestsCount, setNewRequestsCount] = useState(0);
-
+  const [activeTab, setActiveTab] = useState<"stats" | "categories">("stats");
   // teamOptions calculé à partir des factures
   const teamOptions = useMemo(() => {
     return [
@@ -355,16 +357,32 @@ const Graphics: React.FC = () => {
           messages={["Chargement des données...", "Veuillez patienter..."]}
         />
       )}
+
       <div className="space-y-6">
         {/* En-tête */}
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-              Gestion financière
+              Statistiques
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Gérez les statistiques
+              Gérez la gestion financière, et profitez d'une vue hierarchique
             </p>
+
+            {/* Onglets Statistiques / Catégories */}
+            <Tabs
+              defaultValue="stats"
+              value={activeTab}
+              onValueChange={(value) =>
+                setActiveTab(value as "stats" | "categories")
+              }
+              className="mt-4"
+            >
+              <TabsList className="grid grid-cols-2 w-[300px]">
+                <TabsTrigger value="stats">Statistiques</TabsTrigger>
+                <TabsTrigger value="categories">Catégories</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           <div>
             <Button variant="outline" onClick={() => setShowApiModal(true)}>
@@ -373,350 +391,334 @@ const Graphics: React.FC = () => {
           </div>
         </div>
 
-        {/* Filtres */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filtres de recherche</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex relative flex-1">
-                <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <select
-                  className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <option value="all">Toutes les catégories</option>
+        {activeTab === "stats" ? (
+          <>
+            {/* Statistiques clés */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Total Facturé</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <Euro className="h-6 w-6 text-green-500" />
+                    <p className="text-2xl font-semibold text-gray-900 ml-3">
+                      {filteredInvoices
+                        .reduce(
+                          (acc, inv) =>
+                            acc + parseFloat(inv.totalAmount || "0"),
+                          0
+                        )
+                        .toLocaleString()}{" "}
+                      €
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Total Encaissé</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <Wallet className="h-6 w-6 text-blue-500" />
+                    <p className="text-2xl font-semibold text-gray-900 ml-3">
+                      {filteredInvoices
+                        .reduce(
+                          (acc, inv) => acc + parseFloat(inv.paidAmount || "0"),
+                          0
+                        )
+                        .toLocaleString()}{" "}
+                      €
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Impayés</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <AlertCircle className="h-6 w-6 text-red-500" />
+                    <p className="text-2xl font-semibold text-gray-900 ml-3">
+                      {filteredInvoices
+                        .reduce(
+                          (acc, inv) =>
+                            acc +
+                            (parseFloat(inv.totalAmount || "0") -
+                              parseFloat(inv.paidAmount || "0")),
+                          0
+                        )
+                        .toLocaleString()}{" "}
+                      €
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Retards</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                    <p className="text-2xl font-semibold text-gray-900 ml-3">
+                      {
+                        filteredInvoices.filter(
+                          (inv) => inv.status === "too_late"
+                        ).length
+                      }
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                  {Object.entries(
-                    groupBy(Object.keys(invoicesByCategory), (name) =>
-                      name.charAt(0).toUpperCase()
-                    )
-                  ).map(([letter, categories]) => (
-                    <optgroup key={letter} label={letter}>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
+            {/* Filtres */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Filtres de recherche</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex relative flex-1">
+                    <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <select
+                      className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                      <option value="all">Toutes les catégories</option>
+                      {Object.entries(
+                        groupBy(Object.keys(invoicesByCategory), (name) =>
+                          name.charAt(0).toUpperCase()
+                        )
+                      ).map(([letter, categories]) => (
+                        <optgroup key={letter} label={letter}>
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex relative flex-1">
+                    <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Recherche par nom de joueur"
+                      value={filterPlayer}
+                      onChange={(e) => setFilterPlayer(e.target.value)}
+                      className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
+                    />
+                  </div>
+                  <div className="flex relative flex-1">
+                    <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                    <select
+                      className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      value={selectedCommune}
+                      onChange={(e) => setSelectedCommune(e.target.value)}
+                    >
+                      <option value="all">Toutes les communes</option>
+                      {[
+                        "Bruxelles",
+                        "Anderlecht",
+                        "Schaerbeek",
+                        "Molenbeek",
+                        "Uccle",
+                      ].map((commune) => (
+                        <option key={commune} value={commune}>
+                          {commune}
                         </option>
                       ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-              <div className="flex relative flex-1">
-                <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Recherche par nom de joueur"
-                  value={filterPlayer}
-                  onChange={(e) => setFilterPlayer(e.target.value)}
-                  className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
-                />
-              </div>
-              <div className="flex relative flex-1">
-                <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <select
-                  className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  value={selectedCommune}
-                  onChange={(e) => setSelectedCommune(e.target.value)}
-                >
-                  <option value="all">Toutes les communes</option>
-                  {[
-                    "Bruxelles",
-                    "Anderlecht",
-                    "Schaerbeek",
-                    "Molenbeek",
-                    "Uccle",
-                  ].map((commune) => (
-                    <option key={commune} value={commune}>
-                      {commune}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                    </select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Facturé</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Euro className="h-6 w-6 text-green-500" />
-                <p className="text-2xl font-semibold text-gray-900 ml-3">
-                  {filteredInvoices
-                    .reduce(
-                      (acc, inv) => acc + parseFloat(inv.totalAmount || "0"),
-                      0
-                    )
-                    .toLocaleString()}{" "}
-                  €
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Encaissé</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Wallet className="h-6 w-6 text-blue-500" />
-                <p className="text-2xl font-semibold text-gray-900 ml-3">
-                  {filteredInvoices
-                    .reduce(
-                      (acc, inv) => acc + parseFloat(inv.paidAmount || "0"),
-                      0
-                    )
-                    .toLocaleString()}{" "}
-                  €
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Impayés</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <AlertCircle className="h-6 w-6 text-red-500" />
-                <p className="text-2xl font-semibold text-gray-900 ml-3">
-                  {filteredInvoices
-                    .reduce(
-                      (acc, inv) =>
-                        acc +
-                        (parseFloat(inv.totalAmount || "0") -
-                          parseFloat(inv.paidAmount || "0")),
-                      0
-                    )
-                    .toLocaleString()}{" "}
-                  €
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Retards</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                <p className="text-2xl font-semibold text-gray-900 ml-3">
-                  {
-                    filteredInvoices.filter((inv) => inv.status === "too_late")
-                      .length
-                  }
-                </p>
-                <p className="mt-1 text-sm text-gray-500"> </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Card: Factures par Catégorie */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Factures par Catégorie</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {Object.keys(invoicesByCategory).length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {Object.entries(invoicesByCategory).map(([category, invs]) => {
-                  const filteredGroup =
-                    selectedCommune === "all"
-                      ? invs
-                      : invs.filter(
-                          (inv) =>
-                            (
-                              inv.memberBasicDto?.commune || ""
-                            ).toLowerCase() === selectedCommune.toLowerCase()
+            {/* Factures par Catégorie */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Factures par Catégorie</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {Object.keys(invoicesByCategory).length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {Object.entries(invoicesByCategory).map(
+                      ([category, invs]) => {
+                        // filtre par commune
+                        const filteredGroup =
+                          selectedCommune === "all"
+                            ? invs
+                            : invs.filter((inv) =>
+                                inv.memberBasicDto?.commune
+                                  .toLowerCase()
+                                  .includes(selectedCommune.toLowerCase())
+                              );
+                        // calculs
+                        const total = filteredGroup.reduce(
+                          (sum, inv) =>
+                            sum + parseFloat(inv.totalAmount || "0"),
+                          0
                         );
+                        const paid = filteredGroup.reduce(
+                          (sum, inv) => sum + parseFloat(inv.paidAmount || "0"),
+                          0
+                        );
+                        const unpaid = total - paid;
+                        const unpaidRatio = total === 0 ? 0 : unpaid / total;
+                        const red = Math.round(255 * unpaidRatio);
+                        const green = Math.round(180 * (1 - unpaidRatio));
+                        const tooLateCount = filteredGroup.filter(
+                          (inv) => inv.status === "too_late"
+                        ).length;
+                        const tooLatePct = filteredGroup.length
+                          ? Math.round(
+                              (tooLateCount / filteredGroup.length) * 100
+                            )
+                          : 0;
 
-                  const total = filteredGroup.reduce(
-                    (sum, inv) => sum + parseFloat(inv.totalAmount || "0"),
-                    0
-                  );
-                  const paid = filteredGroup.reduce(
-                    (sum, inv) => sum + parseFloat(inv.paidAmount || "0"),
-                    0
-                  );
-                  const unpaid = total - paid;
-                  const unpaidRatio = total === 0 ? 0 : unpaid / total;
+                        return (
+                          <div
+                            key={category}
+                            className="bg-white p-4 rounded-lg shadow hover:shadow-md transition cursor-pointer border"
+                            onClick={() => {
+                              setSelectedCategoryName(category);
+                              setSelectedCategoryInvoices(filteredGroup);
+                              setModalOpen(true);
+                            }}
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <h4 className="text-md font-semibold">
+                                {category}
+                              </h4>
+                              <div
+                                className="w-5 h-5 rounded-full"
+                                style={{
+                                  backgroundColor: `rgb(${red}, ${green},80)`,
+                                }}
+                                title={`${unpaid.toFixed(2)} € impayés`}
+                              />
+                            </div>
+                            <p className="text-4xl font-bold text-center text-gray-900">
+                              {filteredGroup.length}
+                            </p>
+                            {filteredGroup.length > 0 && (
+                              <p className="text-sm text-center text-gray-500 mt-2">
+                                {tooLateCount} retards ({tooLatePct}%)
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                ) : (
+                  <p>Aucune facture trouvée.</p>
+                )}
+              </CardContent>
+            </Card>
 
-                  const red = Math.round(255 * unpaidRatio);
-                  const green = Math.round(180 * (1 - unpaidRatio));
-                  const tooLateCount = filteredGroup.filter(
-                    (inv) => inv.status === "too_late"
-                  ).length;
-                  const tooLatePercentage =
-                    filteredGroup.length === 0
-                      ? 0
-                      : Math.round((tooLateCount / filteredGroup.length) * 100);
+            {/* Graphiques */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <CollapsibleCard title="Répartition par Catégorie">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={categoryStats}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="category" />
+                    <YAxis />
+                    <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
+                    <Legend />
+                    <Bar dataKey="paid" name="Payé" fill="#10B981" />
+                    <Bar dataKey="unpaid" name="Impayé" fill="#EF4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CollapsibleCard>
 
-                  return (
-                    <div
-                      key={category}
-                      className="bg-white p-4 rounded-lg shadow hover:shadow-md transition cursor-pointer border"
-                      onClick={() => {
-                        setSelectedCategoryName(category);
-                        setSelectedCategoryInvoices(filteredGroup);
-                        setModalOpen(true);
-                      }}
+              <CollapsibleCard title="Distribution par Commune">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={communeStats}
+                      dataKey="count"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label={({ name, percent }) =>
+                        `${name} (${(percent * 100).toFixed(0)}%)`
+                      }
                     >
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-md font-semibold">
-                          {(() => {
-                            const words = category.split(" ");
-                            const acronym = words
-                              .slice(0, 4)
-                              .map((word) => word[0]?.toUpperCase() ?? "")
-                              .join("");
-                            const suffix = words.slice(4).join(" ");
-                            return suffix
-                              ? `${acronym} ${suffix}`
-                              : category.length > 25
-                              ? acronym
-                              : category;
-                          })()}
-                        </h4>
-                        <div
-                          className="w-5 h-5 rounded-full"
-                          style={{
-                            backgroundColor: `rgb(${red}, ${green}, 80)`,
-                          }}
-                          title={`${unpaid.toFixed(2)} € impayés`}
-                        />
-                      </div>
+                      {communeStats.map((entry, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v) => v.toLocaleString()} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CollapsibleCard>
 
-                      {/* Grand chiffre centré */}
-                      <p className="text-4xl font-bold text-center text-gray-900">
-                        {filteredGroup.length}
-                      </p>
-
-                      {/* Ligne avec retards */}
-                      {filteredGroup.length > 0 && (
-                        <p className="text-sm text-center text-gray-500 mt-2">
-                          {tooLateCount} facture{tooLateCount > 1 ? "s" : ""} en
-                          retard ({tooLatePercentage}%)
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p>Aucune facture trouvée.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Graphiques */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <CollapsibleCard title="Répartition par Catégorie">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryStats}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => `${value.toLocaleString()} €`}
-                />
-                <Legend />
-                <Bar dataKey="paid" name="Payé" fill="#10B981" />
-                <Bar dataKey="unpaid" name="Impayé" fill="#EF4444" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CollapsibleCard>
-
-          <CollapsibleCard title="Distribution par Commune">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={communeStats}
-                  dataKey="count"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  label={({ name, percent }) =>
-                    `${name} (${(percent * 100).toFixed(0)}%)`
-                  }
-                >
-                  {communeStats.map((entry: any, index: number) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+              <CollapsibleCard title="Évolution des Paiements">
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={monthlyTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
+                    <Legend />
+                    <Area
+                      type="monotone"
+                      dataKey="paid"
+                      name="Payé"
+                      fill="#10B981"
+                      stroke="#059669"
                     />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: any) => value.toLocaleString()} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CollapsibleCard>
+                    <Area
+                      type="monotone"
+                      dataKey="unpaid"
+                      name="Impayé"
+                      fill="#EF4444"
+                      stroke="#DC2626"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CollapsibleCard>
 
-          <CollapsibleCard title="Évolution des Paiements">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => `${value.toLocaleString()} €`}
-                />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="paid"
-                  name="Payé"
-                  fill="#10B981"
-                  stroke="#059669"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="unpaid"
-                  name="Impayé"
-                  fill="#EF4444"
-                  stroke="#DC2626"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CollapsibleCard>
+              <CollapsibleCard title="Impayés par Commune">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={communeStats}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
+                    <Legend />
+                    <Bar
+                      dataKey="unpaidAmount"
+                      name="Montant Impayé"
+                      fill="#EF4444"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CollapsibleCard>
+            </div>
 
-          <CollapsibleCard title="Impayés par Commune">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={communeStats}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => `${value.toLocaleString()} €`}
-                />
-                <Legend />
-                <Bar
-                  dataKey="unpaidAmount"
-                  name="Montant Impayé"
-                  fill="#EF4444"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CollapsibleCard>
-        </div>
-
-        {/* Section Table Factures */}
-        <InvoicesTable invoices={invoices} loading={loading} />
-
-        {/* Section Teams */}
-        <TeamsTable teams={teams} loading={loading} />
+            {/* Tables */}
+            <InvoicesTable invoices={invoices} loading={loading} />
+            <TeamsTable teams={teams} loading={loading} />
+          </>
+        ) : (
+          <div className="pt-6">
+            <PyramidStructure />
+          </div>
+        )}
       </div>
+
+      {/* Modals */}
       <ApiKeyModal
         open={showApiModal}
         onClose={() => setShowApiModal(false)}

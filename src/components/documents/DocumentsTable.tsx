@@ -1,34 +1,34 @@
 import React from "react";
 import {
   Table,
-  TableBody,
   TableHeader,
+  TableBody,
   TableRow,
   TableCell,
-  TableHead,
 } from "@/components/ui/table";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
+  Root as DropdownMenuRoot,
+  Trigger as DropdownMenuTrigger,
+  Content as DropdownMenuContent,
+  Item as DropdownMenuItem,
+  Portal as DropdownMenuPortal,
 } from "@radix-ui/react-dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Eye, Pencil, RotateCcw, FileText, Settings } from "lucide-react";
-import { Request } from "@/components/RequestDetailsModal";
+import { Request as ModalRequest } from "@/components/RequestDetailsModal";
 
 type Props = {
-  documents: any[];
+  documents: ModalRequest[];
   formatRequestId: (id: string | number) => string;
   translateDocumentType: (type: string) => string;
-  onViewDetails: (doc: any) => void;
-  onEditRequest: (doc: Request) => void;
+  onViewDetails: (doc: ModalRequest) => void;
+  onEditRequest: (doc: ModalRequest) => void;
   onRevertRequest: (id: string) => void;
-  onGeneratePDF: (doc: Request) => void;
+  onGeneratePDF: (doc: ModalRequest) => void;
 };
 
-const DocumentsTable = ({
+const DocumentsTable: React.FC<Props> = ({
   documents,
   formatRequestId,
   translateDocumentType,
@@ -36,7 +36,7 @@ const DocumentsTable = ({
   onEditRequest,
   onRevertRequest,
   onGeneratePDF,
-}: Props) => {
+}) => {
   return (
     <Table>
       <TableHeader>
@@ -46,108 +46,173 @@ const DocumentsTable = ({
             "Type",
             "Nom",
             "Email",
-            "Téléphone",
             "Status",
             "Assigné à",
             "Date",
             "Actions",
-          ].map((header, index) => (
+          ].map((header, i) => (
             <motion.th
               key={header}
               className="px-4 py-2 text-left font-medium"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
+              transition={{ delay: i * 0.05 }}
             >
               {header}
             </motion.th>
           ))}
         </TableRow>
       </TableHeader>
+
       <TableBody>
         <AnimatePresence>
-          {documents.map((doc, index) => (
+          {documents.map((doc, idx) => (
             <motion.tr
               key={doc.id}
-              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-              onClick={() => onViewDetails(doc)}
+              className="hover:bg-gray-50 dark:hover:bg-gray-800"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: idx * 0.03 }}
               exit={{ opacity: 0 }}
               layout
             >
-              <TableCell>{formatRequestId(doc.id)}</TableCell>
-              <TableCell>
+              {/* 1. ID */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
+                {formatRequestId(doc.id)}
+              </TableCell>
+
+              {/* 2. Type */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
                 {translateDocumentType(doc.type)}
                 {doc.type === "accident-report" &&
-                  doc.data?.documentLabel === "Déclaration d'accident" &&
+                  doc.details.documentLabel === "Déclaration d'accident" &&
                   " (1/2)"}
                 {doc.type === "accident-report" &&
-                  doc.data?.documentLabel === "Certificat de guérison" &&
+                  doc.details.documentLabel === "Certificat de guérison" &&
                   " (2/2)"}
               </TableCell>
-              <TableCell>
-                {doc.name} {doc.surname}
+
+              {/* 3. Nom */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
+                {doc.name}
               </TableCell>
-              <TableCell>{doc.email}</TableCell>
-              <TableCell>{doc.phone}</TableCell>
-              <TableCell>
-                <span className="bg-green-500 text-white py-1 px-2 rounded">
-                  {doc.status}
+
+              {/* 4. Email */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
+                {doc.email}
+              </TableCell>
+
+              {/* 6. Status */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
+                <span className="inline-flex items-center justify-center rounded-full bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5">
+                  Terminé
                 </span>
               </TableCell>
-              <TableCell>{doc.assignedAdmin}</TableCell>
-              <TableCell>
-                {doc.createdAt
-                  ? new Date(doc.createdAt).toLocaleDateString()
-                  : "N/A"}
+
+              {/* 7. Assigné à */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
+                {doc.assignedTo}
               </TableCell>
+
+              {/* 8. Date */}
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => onViewDetails(doc)}
+              >
+                {doc.date ? new Date(doc.date).toLocaleDateString() : "N/A"}
+              </TableCell>
+
+              {/* 9. Actions */}
               <TableCell>
-                <DropdownMenu>
+                <DropdownMenuRoot>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" title="Actions">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title="Actions"
+                      className="data-[state=open]:bg-gray-200 data-[state=open]:text-gray-800"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Settings className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-gray-100">
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewDetails(doc);
-                      }}
+
+                  <DropdownMenuPortal>
+                    <DropdownMenuContent
+                      side="right"
+                      align="start"
+                      className="w-56 bg-gray-100 shadow-md rounded-md transition-all duration-200 ease-in-out py-2 cursor-pointer"
                     >
-                      <Eye className="h-5 w-5 text-gray-600 mr-2" /> Voir
-                      détails
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditRequest(doc);
-                      }}
-                    >
-                      <Pencil className="h-5 w-5 text-gray-600 mr-2" /> Modifier
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRevertRequest(doc.id);
-                      }}
-                    >
-                      <RotateCcw className="h-5 w-5 text-gray-600 mr-2" />{" "}
-                      Mettre en cours
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onGeneratePDF(doc);
-                      }}
-                    >
-                      <FileText className="h-5 w-5 text-gray-600 mr-2" />{" "}
-                      Générer PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewDetails(doc);
+                        }}
+                        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                      >
+                        <Eye className="h-5 w-5 text-gray-600" />
+                        <span className="text-sm text-gray-800">
+                          Voir détails
+                        </span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditRequest(doc);
+                        }}
+                        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                      >
+                        <Pencil className="h-5 w-5 text-gray-600" />
+                        <span className="text-sm text-gray-800">Modifier</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRevertRequest(doc.id);
+                        }}
+                        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                      >
+                        <RotateCcw className="h-5 w-5 text-gray-600" />
+                        <span className="text-sm text-gray-800">
+                          Mettre en cours
+                        </span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onGeneratePDF(doc);
+                        }}
+                        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                      >
+                        <FileText className="h-5 w-5 text-gray-600" />
+                        <span className="text-sm text-gray-800">
+                          Générer PDF
+                        </span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuRoot>
               </TableCell>
             </motion.tr>
           ))}

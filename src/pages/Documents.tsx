@@ -411,6 +411,17 @@ const Documents = () => {
     setIsModalOpen(true);
   };
 
+  const modalRequests: ModalRequest[] = filteredDocuments.map((doc) => ({
+    id: doc.id,
+    type: doc.type,
+    name: `${doc.name} ${doc.surname}`,
+    email: doc.email,
+    date: doc.createdAt || new Date(),
+    status: mapStatus(doc.status),
+    assignedTo: doc.assignedAdmin,
+    details: doc.data,
+  }));
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <Tabs defaultValue="completed" className="w-full">
@@ -504,16 +515,21 @@ const Documents = () => {
                       </motion.div>
                     ) : (
                       <DocumentsTable
-                        documents={filteredDocuments}
+                        documents={modalRequests}
                         formatRequestId={formatRequestId}
                         translateDocumentType={translateDocumentType}
-                        onViewDetails={handleViewDetails}
+                        onViewDetails={(req) => {
+                          setSelectedRequest(req);
+                          setIsModalOpen(true);
+                        }}
                         onEditRequest={(req) => {
                           setEditRequest(req);
                           setIsEditOpen(true);
                         }}
                         onRevertRequest={(id) => setConfirmRevertId(id)}
-                        onGeneratePDF={(req) => setConfirmPDFRequest(req)}
+                        onGeneratePDF={(req) => {
+                          setConfirmPDFRequest(req);
+                        }}
                       />
                     )}
                   </AnimatePresence>
@@ -546,80 +562,93 @@ const Documents = () => {
 
         {/* Modales avec animations */}
         <AnimatePresence>
-          {selectedRequest && (
+          {isModalOpen && selectedRequest && (
             <motion.div
+              key="details-modal"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <RequestDetailsModal
-                isOpen={isModalOpen}
+                isOpen={true}
                 onClose={() => setIsModalOpen(false)}
                 request={selectedRequest}
                 ref={modalRef}
               />
             </motion.div>
           )}
+
           {confirmPDFRequest && (
             <motion.div
+              key="confirm-pdf-modal"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <ConfirmationDialog
-                open={!!confirmPDFRequest}
+                open={true}
                 onClose={() => setConfirmPDFRequest(null)}
                 onConfirm={() => {
-                  if (confirmPDFRequest) {
-                    setSelectedRequest(confirmPDFRequest);
-                    setIsModalOpen(true);
-                    waitForRefThenGeneratePDF();
-                    setConfirmPDFRequest(null);
-                  }
+                  setSelectedRequest(confirmPDFRequest);
+                  setIsModalOpen(true);
+                  waitForRefThenGeneratePDF();
+                  setConfirmPDFRequest(null);
                 }}
                 title="Générer le PDF"
                 message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
               />
             </motion.div>
           )}
+
           {confirmRevertId && (
             <motion.div
+              key="confirm-revert-modal"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <ConfirmationDialog
-                open={!!confirmRevertId}
+                open={true}
                 onClose={() => setConfirmRevertId(null)}
                 onConfirm={() => {
-                  if (confirmRevertId) {
-                    handleRevertStatus(confirmRevertId);
-                    setConfirmRevertId(null);
-                  }
+                  handleRevertStatus(confirmRevertId);
+                  setConfirmRevertId(null);
                 }}
                 title="Remettre en cours"
                 message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
               />
             </motion.div>
           )}
+
           {editRequest && (
-            <EditRequestModal
-              isOpen={isEditOpen}
-              onClose={() => setIsEditOpen(false)}
-              request={editRequest}
-              onSaved={(updated) => {
-                setDocuments((docs) =>
-                  docs.map((d) =>
-                    d.id === updated.id ? { ...d, details: updated.details } : d
-                  )
-                );
-                setFilteredDocuments((docs) =>
-                  docs.map((d) =>
-                    d.id === updated.id ? { ...d, details: updated.details } : d
-                  )
-                );
-              }}
-            />
+            <motion.div
+              key="edit-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <EditRequestModal
+                isOpen={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                request={editRequest}
+                onSaved={(updated) => {
+                  setDocuments((docs) =>
+                    docs.map((d) =>
+                      d.id === updated.id
+                        ? { ...d, details: updated.details }
+                        : d
+                    )
+                  );
+                  setFilteredDocuments((docs) =>
+                    docs.map((d) =>
+                      d.id === updated.id
+                        ? { ...d, details: updated.details }
+                        : d
+                    )
+                  );
+                }}
+              />
+            </motion.div>
           )}
         </AnimatePresence>
       </Tabs>

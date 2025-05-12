@@ -121,6 +121,92 @@ app.get("/api/teams/all", async (req, res) => {
   }
 });
 
+app.get("/api/teams/player-counts", async (req, res) => {
+  try {
+    const teamsRes = await axios.get(`${BASE_API_URL}/teams/all`, {
+      headers: {
+        "Accept-Language": "fr-FR",
+        "x-api-club": CLUB_KEY,
+        "x-api-key": API_KEY,
+        Authorization: API_SECRET,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const teams = teamsRes.data.items || teamsRes.data;
+
+    // Pour chaque équipe, on récupère les membres
+    const results = await Promise.all(
+      teams.map(async (team) => {
+        try {
+          const membersRes = await axios.get(
+            `${BASE_API_URL}/teams/${team.id}/members`,
+            {
+              headers: {
+                "x-api-club": CLUB_KEY,
+                "x-api-key": API_KEY,
+                Authorization: API_SECRET,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const members = membersRes.data.content || membersRes.data || [];
+          const playerCount = members.filter((m) => m.player === true).length;
+
+          return {
+            teamId: team.id,
+            teamName: team.name,
+            playerCount,
+          };
+        } catch (err) {
+          console.warn(`❌ Erreur pour l’équipe ID ${team.id}:`, err.message);
+          return {
+            teamId: team.id,
+            teamName: team.name,
+            playerCount: 0,
+          };
+        }
+      })
+    );
+
+    res.json(results);
+  } catch (error) {
+    console.error("Erreur récupération des équipes/membres :", error);
+    res.status(500).json({
+      message: "Erreur serveur lors du comptage des joueurs par équipe",
+    });
+  }
+});
+
+// juste avant app.listen(...)
+app.get("/api/teams/:id/members", async (req, res) => {
+  const teamId = req.params.id;
+  try {
+    const membersRes = await axios.get(
+      `${BASE_API_URL}/teams/${teamId}/members`,
+      {
+        headers: {
+          "x-api-club": CLUB_KEY,
+          "x-api-key": API_KEY,
+          Authorization: API_SECRET,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    // la data peut être dans .content ou pas
+    const members = Array.isArray(membersRes.data.content)
+      ? membersRes.data.content
+      : Array.isArray(membersRes.data)
+      ? membersRes.data
+      : [];
+    res.json(members);
+  } catch (err) {
+    console.error(`Erreur membres équipe ${teamId}:`, err);
+    res.status(500).json({ message: "Impossible de récupérer les membres" });
+  }
+});
+
 // Lancer le serveur proxy
 app.listen(PORT, () => {
   console.log(
