@@ -1,6 +1,11 @@
+// components/graphics/PyramidStructure.tsx
 import React, { useEffect, useState, useMemo } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { motion } from "framer-motion";
 import axios from "axios";
+import ModalPlayers from "./ModalPlayers";
+import CategoryCounts from "./CategoryCounts";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Loader } from "lucide-react";
 
 interface TeamRaw {
   teamId: number;
@@ -32,7 +37,7 @@ const PyramidStructure: React.FC = () => {
   const [playersByCat, setPlayersByCat] = useState<Record<string, string[]>>(
     {}
   );
-  const [modalTitle, setModalTitle] = useState<string>("");
+  const [modalTitle, setModalTitle] = useState("");
 
   useEffect(() => {
     axios
@@ -40,143 +45,179 @@ const PyramidStructure: React.FC = () => {
       .then((res) =>
         setTeams(res.data.filter((t) => typeof t.teamName === "string"))
       )
-      .catch((err) => console.error("Erreur chargement équipes", err))
+      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const { rwTeams, befaTeams, topTeam, pyramidLevels, otherTeams } =
-    useMemo(() => {
-      const rw: TeamInfo[] = [];
-      const befa: TeamInfo[] = [];
-      const other: TeamInfo[] = [];
-      let top: TeamInfo | null = null;
+  const { rwTeams, befaTeams, topTeam, pyramidLevels } = useMemo(() => {
+    const rw: TeamInfo[] = [];
+    const befa: TeamInfo[] = [];
+    let top: TeamInfo | null = null;
 
-      const levels: Level[] = [
-        {
-          name: "Senior Youth",
-          ageGroups: [],
-          teams: 0,
-          players: 0,
-          match: (n) => /U1[89]|U2[01]/i.test(n),
-        },
-        {
-          name: "Middle Youth",
-          ageGroups: [],
-          teams: 0,
-          players: 0,
-          match: (n) => /U1[3-7]/i.test(n),
-        },
-        {
-          name: "Junior Youth",
-          ageGroups: [],
-          teams: 0,
-          players: 0,
-          match: (n) => /U(1[0-2]|9)/i.test(n),
-        },
-        {
-          name: "Foundation",
-          ageGroups: [],
-          teams: 0,
-          players: 0,
-          match: (n) => /U[5-8]/i.test(n),
-        },
-      ];
+    const levels: Level[] = [
+      {
+        name: "Senior Youth",
+        ageGroups: [],
+        teams: 0,
+        players: 0,
+        match: (n) => /\b(U1[89]|U2[01])\b/i.test(n),
+      },
+      {
+        name: "Middle Youth",
+        ageGroups: [],
+        teams: 0,
+        players: 0,
+        match: (n) => /\bU1[3-7]\b/i.test(n),
+      },
+      {
+        name: "Junior Youth",
+        ageGroups: [],
+        teams: 0,
+        players: 0,
+        match: (n) => /\b(U(1[0-2]|9))\b/i.test(n),
+      },
+      {
+        name: "Foundation",
+        ageGroups: [],
+        teams: 0,
+        players: 0,
+        match: (n) => /\bU[5-8]\b/i.test(n),
+      },
+    ];
 
-      teams.forEach((t) => {
-        const name = t.teamName,
-          cnt = t.playerCount,
-          low = name.toLowerCase();
-        if (low.includes("befa") || low.includes("eagles")) {
-          befa.push({
-            id: t.teamId,
-            name: name.replace(/Eagles Brussels Football Academy/i, "BEFA"),
-            players: cnt,
-          });
-        } else if (low.includes("rf")) {
-          rw.push({ id: t.teamId, name, players: cnt });
-        } else if (name.includes("RWDM") && !/U\d+/i.test(name)) {
-          top = { id: t.teamId, name, players: cnt };
-        } else {
-          const lvl = levels.find((l) => l.match(name));
-          if (lvl) {
-            lvl.teams++;
-            lvl.players += cnt;
-            lvl.ageGroups.push({ id: t.teamId, name, players: cnt });
-          } else {
-            other.push({ id: t.teamId, name, players: cnt });
-          }
+    teams.forEach((t) => {
+      const name = t.teamName,
+        cnt = t.playerCount,
+        low = name.toLowerCase();
+      if (/(befa|eagles)/i.test(low)) {
+        befa.push({
+          id: t.teamId,
+          name: name.replace(/Eagles Brussels Football Academy/i, "BEFA"),
+          players: cnt,
+        });
+      } else if (/rf/i.test(low)) {
+        rw.push({ id: t.teamId, name, players: cnt });
+      } else if (/RWDM/i.test(name) && /\bA[- ]?team\b/i.test(name)) {
+        top = { id: t.teamId, name, players: cnt };
+      } else {
+        const lvl = levels.find((l) => l.match(name));
+        if (lvl) {
+          lvl.teams++;
+          lvl.players += cnt;
+          lvl.ageGroups.push({ id: t.teamId, name, players: cnt });
         }
-      });
+      }
+    });
 
-      return {
-        rwTeams: rw,
-        befaTeams: befa,
-        topTeam: top,
-        pyramidLevels: levels,
-        otherTeams: other,
-      };
-    }, [teams]);
+    return {
+      rwTeams: rw,
+      befaTeams: befa,
+      topTeam: top,
+      pyramidLevels: levels,
+    };
+  }, [teams]);
 
   const handleLevelClick = async (title: string, items: TeamInfo[]) => {
     setModalTitle(title);
     setModalLoading(true);
     setModalOpen(true);
 
-    try {
-      const byCat: Record<string, string[]> = {};
-      for (const team of items) {
-        await new Promise((r) => setTimeout(r, 200));
-        const res = await axios.get<any>(
+    const byCat: Record<string, string[]> = {};
+    for (const team of items) {
+      await new Promise((r) => setTimeout(r, 300));
+      let res;
+      try {
+        res = await axios.get<any>(
           `http://localhost:5001/api/teams/${team.id}/members`
         );
-        const data = res.data;
-        const members: any[] = Array.isArray(data.content)
-          ? data.content
-          : Array.isArray(data)
-          ? data
-          : [];
-        const match = team.name.match(/U\d{1,2}/i);
-        if (!match) continue; // on ignore non-Uxx
-        const cat = match[0].toUpperCase();
-        byCat[cat] = byCat[cat] || [];
-        members.forEach((m) => {
-          const raw =
-            m.fullName || [m.firstName, m.lastName].filter(Boolean).join(" ");
-          if (!raw) return;
-          const nice = raw
-            .split(" ")
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-            .join(" ");
-          byCat[cat].push(nice);
-        });
+      } catch (err: any) {
+        if (err.response?.status === 429) {
+          await new Promise((r) => setTimeout(r, 1000));
+          try {
+            res = await axios.get<any>(
+              `http://localhost:5001/api/teams/${team.id}/members`
+            );
+          } catch {
+            console.warn(`Échec définitif pour ${team.name}`);
+            continue;
+          }
+        } else {
+          console.warn(`Erreur fetch membres ${team.name}`, err);
+          continue;
+        }
       }
-      setPlayersByCat(byCat);
-    } catch (err) {
-      console.error("Erreur fetch players:", err);
-      setPlayersByCat({ Erreur: ["Impossible de charger les joueurs"] });
-    } finally {
-      setModalLoading(false);
+      const data = res.data;
+      const members: any[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data.content)
+        ? data.content
+        : [];
+      let cat: string | null = null;
+      if (title === "A" || /\bA[- ]?team\b/i.test(team.name)) {
+        cat = "A";
+      } else {
+        const m = team.name.match(/\bU\d{1,2}\b/i);
+        if (m) cat = m[0].toUpperCase();
+      }
+      if (!cat) continue;
+      byCat[cat] = byCat[cat] || [];
+      members.forEach((m) => {
+        const raw =
+          m.fullName || [m.firstName, m.lastName].filter(Boolean).join(" ");
+        if (!raw) return;
+        const pretty = raw
+          .split(" ")
+          .map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ");
+        byCat[cat]!.push(pretty);
+      });
     }
+
+    setPlayersByCat(byCat);
+    setModalLoading(false);
   };
 
   return (
-    <div className="relative py-10">
-      <h2 className="text-3xl font-bold text-center mb-10 text-gray-800">
-        Hiérarchie des équipes
-      </h2>
+    <div className="relative">
+      {/* Header */}
 
-      <div className="flex items-start justify-center gap-8">
-        <div className="hidden md:flex flex-col items-center mt-40">
-          <SideBox
-            title="RWDM ForEver"
-            items={rwTeams}
-            onClick={() => handleLevelClick("RWDM ForEver", rwTeams)}
-          />
-        </div>
+      <CategoryCounts teams={teams} loading={loading} />
 
-        <div className="flex flex-col items-center mx-4 md:mx-8 max-w-4xl">
+      {/* Grille */}
+      <div className="flex justify-center items-start gap-8 border border-gray-200 rounded-lg p-6">
+        {/* RWDM - après chargement, entrant depuis la gauche */}
+        {!loading && (
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            whileHover={{ scale: 1.05 }}
+            className="hidden md:flex flex-col items-center mt-40"
+          >
+            <SideBox
+              title="RWDM ForEver"
+              items={rwTeams}
+              onClick={() => handleLevelClick("RWDM ForEver", rwTeams)}
+            />
+          </motion.div>
+        )}
+
+        {/* Pyramide - apparaît toujours (loading ou non) */}
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 20,
+            delay: 0.2,
+          }}
+          className="flex flex-col items-center mx-4 md:mx-8 max-w-4xl"
+        >
           {loading ? (
-            <p>Chargement...</p>
+            <div className="flex justify-center py-20">
+              <Loader className="animate-spin w-8 h-8 text-gray-500" />
+            </div>
           ) : (
             <>
               {topTeam && (
@@ -202,86 +243,53 @@ const PyramidStructure: React.FC = () => {
                   onClick={() => handleLevelClick(lvl.name, lvl.ageGroups)}
                 />
               ))}
-              {otherTeams.length > 0 && (
-                <PyramidLevel
-                  level={{
-                    name: "Autres",
-                    ageGroups: otherTeams,
-                    teams: otherTeams.length,
-                    players: otherTeams.reduce((a, t) => a + t.players, 0),
-                  }}
-                  onClick={() => handleLevelClick("Autres", otherTeams)}
-                />
-              )}
             </>
           )}
-        </div>
+        </motion.div>
 
-        <div className="hidden md:flex flex-col items-center mt-40">
-          <SideBox
-            title="BEFA"
-            items={befaTeams}
-            onClick={() => handleLevelClick("BEFA", befaTeams)}
-          />
-        </div>
+        {/* BEFA - après chargement, entrant depuis la droite */}
+        {!loading && (
+          <motion.div
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            whileHover={{ scale: 1.05 }}
+            className="hidden md:flex flex-col items-center mt-40"
+          >
+            <SideBox
+              title="BEFA"
+              items={befaTeams}
+              onClick={() => handleLevelClick("BEFA", befaTeams)}
+            />
+          </motion.div>
+        )}
       </div>
 
-      {modalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-6 z-50"
-          onClick={() => setModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-lg w-full max-w-4xl max-h-full overflow-y-auto p-6 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
-              onClick={() => setModalOpen(false)}
-            >
-              <X size={24} />
-            </button>
-            <h3 className="text-2xl font-bold mb-4">{modalTitle}</h3>
-
-            {modalLoading ? (
-              <p>Chargement des joueurs…</p>
-            ) : (
-              <div className="flex flex-wrap gap-6">
-                {Object.entries(playersByCat).map(([cat, names]) => (
-                  <div key={cat} className="flex-1 min-w-[200px]">
-                    <h2 className="text-xl font-semibold mb-2">{cat}</h2>
-                    <ul className="list-disc list-inside space-y-1">
-                      {names.map((n, i) => (
-                        <li key={i}>{n}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Modal */}
+      <ModalPlayers
+        open={modalOpen}
+        title={modalTitle}
+        loading={modalLoading}
+        playersByCat={playersByCat}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 };
 
 export default PyramidStructure;
 
-// -----------------------
-// Composants auxiliaires
-// -----------------------
+// — Composants auxiliaires —
 const SideBox: React.FC<{
   title: string;
-  items: { id: number; name: string; players: number }[];
+  items: TeamInfo[];
   onClick: () => void;
 }> = ({ title, items, onClick }) => {
-  const total = items.reduce((s, i) => s + i.players, 0);
+  const total = items.reduce((sum, t) => sum + t.players, 0);
   return (
     <div
-      className="bg-blue-600 text-white px-4 py-3 rounded-lg shadow-md w-48 cursor-pointer
-                 transform transition hover:scale-105 flex flex-col items-center"
       onClick={onClick}
+      className="bg-blue-900 text-white px-4 py-3 rounded-lg shadow-md w-48 cursor-pointer transform transition flex flex-col items-center"
     >
       <h4 className="font-bold mb-1">{title}</h4>
       <p className="text-xs text-blue-100 mb-2">
@@ -320,24 +328,29 @@ const PyramidLevel: React.FC<{
     "Middle Youth",
     "Junior Youth",
     "Foundation",
-    "Autres",
   ].indexOf(level.name);
 
   return (
-    <div className="flex flex-col items-center mb-5" onClick={onClick}>
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      onClick={onClick}
+      className="flex flex-col items-center mb-5 cursor-pointer"
+    >
       <div
-        className={`${widths[idx] || widths[0]} ${colors[idx] || colors[5]}
-                      rounded-lg p-4 text-white shadow-lg cursor-pointer
-                      hover:scale-[1.02] transition-transform`}
+        className={`
+          ${widths[idx] || widths[0]} ${colors[idx] || colors[5]}
+          relative p-4 text-white shadow-lg
+          clip-[polygon(50%_0%,100%_100%,0%_100%)] border-4 border-white
+        `}
       >
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center whitespace-nowrap">
           <h3 className="text-xl font-bold">{level.name}</h3>
           <div className="flex gap-2">
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
-              {level.teams} {level.teams > 1 ? "Teams" : "Team"}
+              {level.teams} {level.teams > 1 ? "Équipes" : "Équipe"}
             </span>
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
-              {level.players} Players
+              {level.players} Joueurs
             </span>
           </div>
         </div>
@@ -352,7 +365,6 @@ const PyramidLevel: React.FC<{
           ))}
         </div>
       </div>
-      <ChevronDown size={28} className="text-red-600 animate-bounce mt-2" />
-    </div>
+    </motion.div>
   );
 };

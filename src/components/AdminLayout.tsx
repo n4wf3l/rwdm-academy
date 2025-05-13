@@ -316,22 +316,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                 {t("admin_members")}
               </Button>
             </Link>
-            {user.role === "owner" && (
-              <Link to="/graphics">
-                <Button
-                  variant={isActive("/graphics") ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start",
-                    isActive("/graphics")
-                      ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
-                      : ""
-                  )}
-                >
-                  <BarChart className="mr-2 h-5 w-5" />
-                  {t("admin_graphics")}
-                </Button>
-              </Link>
-            )}
+
             {["owner", "superadmin"].includes(user.role) && (
               <Link to="/settings">
                 <Button
@@ -345,6 +330,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                 >
                   <Settings className="mr-2 h-5 w-5" />
                   {t("admin_settings")}
+                </Button>
+              </Link>
+            )}
+            {user.role === "owner" && (
+              <Link to="/graphics">
+                <Button
+                  variant={isActive("/graphics") ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    isActive("/graphics")
+                      ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                      : ""
+                  )}
+                >
+                  <BarChart className="mr-2 h-5 w-5" />
+                  {t("admin_graphics")}
                 </Button>
               </Link>
             )}

@@ -400,7 +400,7 @@ const Members: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.2 }}
               >
                 <OldMemberList />
               </motion.div>

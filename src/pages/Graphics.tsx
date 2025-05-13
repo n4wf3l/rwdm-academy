@@ -1,7 +1,29 @@
 import AdminLayout from "@/components/AdminLayout";
 import React, { useEffect, useState, useMemo } from "react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import InvoicesTable from "@/components/graphics/InvoicesTable";
+import InvoiceListModal from "@/components/graphics/InvoiceListModal";
+import PyramidStructure from "@/components/graphics/PyramidStructure";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  Euro,
+  Wallet,
+  AlertCircle,
+  AlertTriangle,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Loader,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -10,64 +32,19 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
   AreaChart,
   Area,
 } from "recharts";
-import {
-  Euro,
-  Wallet,
-  AlertCircle,
-  AlertTriangle,
-  Filter,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  CheckCircle2,
-  CreditCard,
-  Send,
-} from "lucide-react";
-import FullScreenLoader from "@/components/FullScreenLoader";
-import InvoicesTable from "@/components/graphics/InvoicesTable";
-import TeamsTable from "@/components/graphics/TeamsTable";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import ApiKeyModal from "@/components/ApiKeyModal";
-import InvoiceListModal from "@/components/graphics/InvoiceListModal";
-import PyramidStructure from "@/components/graphics/PyramidStructure";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const statusColors: Record<string, string> = {
-  not_sent: "bg-gray-100 text-gray-800",
-  open: "bg-yellow-100 text-yellow-800",
-  paid: "bg-green-100 text-green-800",
-  too_late: "bg-red-100 text-red-800",
-  credited: "bg-purple-100 text-purple-800",
-};
-
-const statusIcons: Record<string, any> = {
-  not_sent: Send,
-  open: Clock,
-  paid: CheckCircle2,
-  too_late: AlertTriangle,
-  credited: CreditCard,
-};
-
-function StatusBadge({ status }: { status: string }) {
-  const Icon = statusIcons[status];
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status]}`}
-    >
-      <Icon className="w-4 h-4 mr-1" />
-      {status.replace("_", " ").charAt(0).toUpperCase() +
-        status.slice(1).replace("_", " ")}
-    </span>
-  );
+// Normalise "Eagles ... Academy" → "BEFA …"
+function normalizeBEFA(raw: string): string {
+  const m = raw.match(/^(.*?Eagles.*?Academy)\s*(.*)$/i);
+  if (!m) return raw;
+  const suffix = m[2].trim();
+  return suffix ? `BEFA ${suffix}` : "BEFA";
 }
 
 function CollapsibleCard({
@@ -77,663 +54,485 @@ function CollapsibleCard({
   title: string;
   children: React.ReactNode;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
       <div
-        className="p-4 border-b border-gray-200 flex justify-between items-center cursor-pointer"
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="p-4 border-b flex justify-between items-center cursor-pointer"
+        onClick={() => setCollapsed(!collapsed)}
       >
-        <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-        {isCollapsed ? (
-          <ChevronDown className="h-5 w-5 text-gray-400" />
-        ) : (
-          <ChevronUp className="h-5 w-5 text-gray-400" />
-        )}
+        <h3 className="text-lg font-medium">{title}</h3>
+        {collapsed ? <ChevronDown /> : <ChevronUp />}
       </div>
-      <div
-        className={`transition-all duration-300 ease-in-out ${
-          isCollapsed ? "h-0 overflow-hidden" : "p-4"
-        }`}
-      >
+      <div className={collapsed ? "h-0 overflow-hidden" : "p-4"}>
         {children}
       </div>
     </div>
   );
 }
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe"];
-
-const API_MEMBERS_DUES_URL = "http://localhost:5001/api/members-dues";
-const API_TEAMS_ALL_URL = "http://localhost:5001/api/teams/all";
-
 const Graphics: React.FC = () => {
   const [invoices, setInvoices] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  // États pour les filtres
-  const [filterStatus, setFilterStatus] = useState("all");
   const [filterPlayer, setFilterPlayer] = useState("");
-  const [filterTeam, setFilterTeam] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedCommune, setSelectedCommune] = useState("all");
-  const [showApiModal, setShowApiModal] = useState(false);
-  const [apiKey, setApiKey] = useState<string>(
-    () => localStorage.getItem("apiKey") || ""
-  );
-  const baseURL = localStorage.getItem("apikey") || "http://localhost:5001";
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCategoryName, setSelectedCategoryName] = useState("");
-  const [selectedCategoryInvoices, setSelectedCategoryInvoices] = useState<
-    any[]
-  >([]);
-  const API_MEMBERS_DUES_URL = `${baseURL}/api/members-dues`;
-  const API_TEAMS_ALL_URL = `${baseURL}/api/teams/all`;
-  const [newRequestsCount, setNewRequestsCount] = useState(0);
+  const [selCatName, setSelCatName] = useState("");
+  const [selCatInvs, setSelCatInvs] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"stats" | "categories">("stats");
-  // teamOptions calculé à partir des factures
-  const teamOptions = useMemo(() => {
-    return [
-      "Toutes",
-      ...Array.from(
-        new Set(
-          invoices.map((invoice) => invoice.revenueItemName).filter(Boolean)
-        )
-      ),
-    ];
-  }, [invoices]);
+  const [newReqCount, setNewReqCount] = useState(0);
+
+  const BASE = localStorage.getItem("apikey") || "http://localhost:5001";
+  const API = `${BASE}/api/members-dues`;
 
   useEffect(() => {
-    const fetchNewRequestsCount = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/requests", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const data = await response.json();
-        const count = data.filter((r: any) => r.status === "Nouveau").length;
-        setNewRequestsCount(count);
-      } catch (error) {
-        console.error("Erreur récupération demandes 'Nouveau':", error);
-      }
-    };
+    fetch(API)
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erreur ${r.status}`);
+        return r.json();
+      })
+      .then((data) =>
+        setInvoices(Array.isArray(data) ? data : data.content || [])
+      )
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [API]);
 
-    fetchNewRequestsCount();
-  }, []);
+  // Enrichissement & normalisation
+  const enriched = useMemo(
+    () =>
+      invoices.map((inv) => ({
+        ...inv,
+        normCat: normalizeBEFA(inv.revenueItemName || ""),
+      })),
+    [invoices]
+  );
 
-  // Récupération des données
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      try {
-        const response = await fetch(API_MEMBERS_DUES_URL);
-        if (!response.ok)
-          throw new Error(`Erreur API (invoices): ${response.status}`);
-        const result = await response.json();
-        if (result) {
-          if (Array.isArray(result)) setInvoices(result);
-          else if (result.content && Array.isArray(result.content))
-            setInvoices(result.content);
-          else setErrorMessage("Aucune donnée sur les factures reçue");
-        } else {
-          setErrorMessage("Aucune donnée sur les factures reçue");
-        }
-      } catch (error: any) {
-        setErrorMessage(`Erreur API (invoices): ${error.message}`);
-      }
-    };
+  // Options du sélecteur
+  const allCats = useMemo(
+    () => ["all", ...Array.from(new Set(enriched.map((i) => i.normCat)))],
+    [enriched]
+  );
 
-    const fetchTeams = async () => {
-      try {
-        const response = await fetch(API_TEAMS_ALL_URL, {
-          headers: { "Accept-Language": "fr-FR" },
-        });
-        if (!response.ok)
-          throw new Error(`Erreur API (teams): ${response.status}`);
-        const result = await response.json();
-        if (result) {
-          if (Array.isArray(result)) setTeams(result);
-          else if (result.content && Array.isArray(result.content))
-            setTeams(result.content);
-          else setErrorMessage("Aucune donnée sur les équipes reçue");
-        } else {
-          setErrorMessage("Aucune donnée sur les équipes reçue");
-        }
-      } catch (error: any) {
-        setErrorMessage(`Erreur API (teams): ${error.message}`);
-      }
-    };
-
-    Promise.all([fetchInvoices(), fetchTeams()]).finally(() =>
-      setLoading(false)
-    );
-  }, []);
-
-  // Filtrer les factures selon les critères
-  const filteredInvoices = useMemo(() => {
-    return invoices.filter((invoice) => {
-      const total = parseFloat(invoice.totalAmount || "0");
-      const paid = parseFloat(invoice.paidAmount || "0");
-
-      let statusMatch = true;
-      if (filterStatus === "paid") statusMatch = total === paid;
-      else if (filterStatus === "unpaid") statusMatch = total > paid;
-
-      let playerMatch = true;
-      if (filterPlayer.trim() !== "") {
-        const fullName = invoice.memberBasicDto?.fullName || "";
-        playerMatch = fullName
+  // Filtre
+  const filtered = useMemo(
+    () =>
+      enriched.filter((inv) => {
+        const okName = (inv.memberBasicDto?.fullName || "")
           .toLowerCase()
           .includes(filterPlayer.toLowerCase());
-      }
+        const okCat =
+          selectedCategory === "all" || inv.normCat === selectedCategory;
+        return okName && okCat;
+      }),
+    [enriched, filterPlayer, selectedCategory]
+  );
 
-      let teamMatch = true;
-      if (filterTeam !== "all") {
-        teamMatch =
-          (invoice.revenueItemName || "").toLowerCase() ===
-          filterTeam.toLowerCase();
-      }
-
-      let categoryMatch = true;
-      if (selectedCategory !== "all") {
-        categoryMatch =
-          (invoice.revenueItemName || "").toLowerCase() ===
-          selectedCategory.toLowerCase();
-      }
-
-      let communeMatch = true;
-      if (selectedCommune !== "all") {
-        communeMatch = (invoice.memberBasicDto?.commune || "")
-          .toLowerCase()
-          .includes(selectedCommune.toLowerCase());
-      }
-
-      return (
-        statusMatch && playerMatch && teamMatch && categoryMatch && communeMatch
-      );
+  // Groupement pour vignettes
+  const groups = useMemo(() => {
+    const g: Record<string, any[]> = {};
+    filtered.forEach((inv) => {
+      g[inv.normCat] = g[inv.normCat] || [];
+      g[inv.normCat].push(inv);
     });
-  }, [
-    invoices,
-    filterStatus,
-    filterPlayer,
-    filterTeam,
-    selectedCategory,
-    selectedCommune,
-  ]);
+    return g;
+  }, [filtered]);
 
-  function groupBy<T>(
-    arr: T[],
-    keyFn: (item: T) => string
-  ): Record<string, T[]> {
-    return arr.reduce((acc, item) => {
-      const key = keyFn(item);
-      acc[key] = acc[key] || [];
-      acc[key].push(item);
-      return acc;
-    }, {} as Record<string, T[]>);
-  }
-
-  const uniqueMembers = new Set(
-    filteredInvoices.map((inv) => inv.memberBasicDto?.id)
-  ).size;
-
-  // Groupement par catégorie basé sur revenueItemName
-  const invoicesByCategory = useMemo(() => {
-    const groups: Record<string, any[]> = {};
-    filteredInvoices.forEach((invoice) => {
-      const category = invoice.revenueItemName || "—";
-      if (!groups[category]) groups[category] = [];
-      groups[category].push(invoice);
-    });
-    return groups;
-  }, [filteredInvoices]);
-
-  // Statut global d'un groupe : toutes payées = "green", sinon "red"
-  const getGroupStatus = (group: any[]) => {
-    return group.every(
-      (inv) =>
-        parseFloat(inv.totalAmount || "0") <= parseFloat(inv.paidAmount || "0")
-    )
-      ? "green"
-      : "red";
-  };
-
-  // Données pour les graphiques
+  // Stats graphiques
   const categoryStats = useMemo(() => {
-    const stats: Record<string, any> = {};
+    const stats: Record<
+      string,
+      { category: string; paid: number; unpaid: number }
+    > = {};
     invoices.forEach((inv) => {
-      const cat = inv.revenueItemName || "—";
-      if (!stats[cat]) {
-        stats[cat] = { category: cat, total: 0, paid: 0, unpaid: 0, count: 0 };
-      }
-      stats[cat].total += parseFloat(inv.totalAmount || "0");
-      stats[cat].paid += parseFloat(inv.paidAmount || "0");
-      stats[cat].unpaid +=
-        parseFloat(inv.totalAmount || "0") - parseFloat(inv.paidAmount || "0");
-      stats[cat].count++;
-    });
-    return Object.values(stats).sort((a, b) =>
-      a.category.localeCompare(b.category)
-    );
-  }, [invoices]);
-
-  const communeStats = useMemo(() => {
-    const stats: Record<string, any> = {};
-    invoices.forEach((inv) => {
-      const commune = inv.memberBasicDto?.commune || "—";
-      if (!stats[commune])
-        stats[commune] = { name: commune, count: 0, unpaidAmount: 0 };
-      stats[commune].count++;
-      if (
-        parseFloat(inv.totalAmount || "0") > parseFloat(inv.paidAmount || "0")
-      ) {
-        stats[commune].unpaidAmount +=
-          parseFloat(inv.totalAmount || "0") -
-          parseFloat(inv.paidAmount || "0");
-      }
+      const cat = normalizeBEFA(inv.revenueItemName || "");
+      if (!stats[cat]) stats[cat] = { category: cat, paid: 0, unpaid: 0 };
+      const t = parseFloat(inv.totalAmount || "0");
+      const p = parseFloat(inv.paidAmount || "0");
+      stats[cat].paid += p;
+      stats[cat].unpaid += t - p;
     });
     return Object.values(stats);
   }, [invoices]);
 
   const monthlyTrend = useMemo(() => {
-    const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
-    return months.map((month) => ({
-      month,
-      paid: Math.floor(Math.random() * 50000) + 30000,
-      unpaid: Math.floor(Math.random() * 20000) + 5000,
+    const m = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
+    return m.map((mo) => ({
+      month: mo,
+      paid: Math.random() * 50000,
+      unpaid: Math.random() * 20000,
     }));
   }, [invoices]);
 
-  // État pour l'expansion des cards de catégorie
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  // Toggle API active/inactive
+  const [apiActive, setApiActive] = useState<boolean>(() =>
+    Boolean(localStorage.getItem("apiKey"))
+  );
+  useEffect(() => {
+    apiActive
+      ? localStorage.setItem("apiKey", "dummy-key")
+      : localStorage.removeItem("apiKey");
+  }, [apiActive]);
 
   return (
-    <AdminLayout newRequestsCount={newRequestsCount}>
-      {loading && (
-        <FullScreenLoader
-          isLoading={loading}
-          messages={["Chargement des données...", "Veuillez patienter..."]}
-        />
-      )}
-
-      <div className="space-y-6">
-        {/* En-tête */}
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-              Statistiques
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Gérez la gestion financière, et profitez d'une vue hierarchique
-            </p>
-
-            {/* Onglets Statistiques / Catégories */}
+    <AdminLayout newRequestsCount={newReqCount}>
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* En-tête & onglets */}
+        <motion.div
+          className="flex justify-between items-center"
+          initial={{ y: -20 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            initial={{ x: -20 }}
+            animate={{ x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h1 className="text-3xl font-bold">Statistiques</h1>
+            <p className="text-gray-600">Gestion financière & pyramide</p>
             <Tabs
-              defaultValue="stats"
               value={activeTab}
-              onValueChange={(value) =>
-                setActiveTab(value as "stats" | "categories")
-              }
+              onValueChange={(v) => setActiveTab(v as any)}
               className="mt-4"
             >
               <TabsList className="grid grid-cols-2 w-[300px]">
-                <TabsTrigger value="stats">Statistiques</TabsTrigger>
-                <TabsTrigger value="categories">Catégories</TabsTrigger>
+                <TabsTrigger value="stats">Gestion financière</TabsTrigger>
+                <TabsTrigger value="categories">Hiérarchie</TabsTrigger>
               </TabsList>
             </Tabs>
-          </div>
-          <div>
-            <Button variant="outline" onClick={() => setShowApiModal(true)}>
-              Clé API
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }}>
+            <Button variant="outline" onClick={() => setApiActive(!apiActive)}>
+              API {apiActive ? "actif" : "inactif"}
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Toujours visible */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Hiérarchie des équipes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">
+                Données fournies par l’API <strong>Pro Soccer Data</strong> en
+                temps réel. Certains noms peuvent apparaître en double.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {activeTab === "stats" ? (
-          <>
-            {/* Statistiques clés */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Total Facturé</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <Euro className="h-6 w-6 text-green-500" />
-                    <p className="text-2xl font-semibold text-gray-900 ml-3">
-                      {filteredInvoices
-                        .reduce(
-                          (acc, inv) =>
-                            acc + parseFloat(inv.totalAmount || "0"),
-                          0
-                        )
-                        .toLocaleString()}{" "}
-                      €
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Total Encaissé</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <Wallet className="h-6 w-6 text-blue-500" />
-                    <p className="text-2xl font-semibold text-gray-900 ml-3">
-                      {filteredInvoices
-                        .reduce(
-                          (acc, inv) => acc + parseFloat(inv.paidAmount || "0"),
-                          0
-                        )
-                        .toLocaleString()}{" "}
-                      €
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Impayés</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <AlertCircle className="h-6 w-6 text-red-500" />
-                    <p className="text-2xl font-semibold text-gray-900 ml-3">
-                      {filteredInvoices
-                        .reduce(
-                          (acc, inv) =>
-                            acc +
-                            (parseFloat(inv.totalAmount || "0") -
-                              parseFloat(inv.paidAmount || "0")),
-                          0
-                        )
-                        .toLocaleString()}{" "}
-                      €
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Retards</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                    <p className="text-2xl font-semibold text-gray-900 ml-3">
+          loading ? (
+            // Spinner au chargement des factures
+            <div className="flex justify-center py-20">
+              <Loader className="animate-spin w-8 h-8 text-gray-500" />
+            </div>
+          ) : (
+            <>
+              {/* Filtreur */}
+              <motion.div
+                className="mb-4"
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Filtres de recherche</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <motion.div className="flex gap-4" layout>
+                      <motion.div
+                        className="relative flex-1"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <Search className="absolute left-3 top-3 text-gray-400" />
+                        <Input
+                          placeholder="Rechercher un joueur…"
+                          className="pl-10"
+                          value={filterPlayer}
+                          onChange={(e) => setFilterPlayer(e.target.value)}
+                        />
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.01 }}>
+                        <Select
+                          value={selectedCategory}
+                          onValueChange={(v) => setSelectedCategory(v)}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Toutes catégories" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allCats.map((cat) => (
+                              <SelectItem key={cat} value={cat}>
+                                {cat === "all" ? "Toutes catégories" : cat}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+                    </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* 4 KPI cards */}
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.1 },
+                  },
+                }}
+              >
+                {[
+                  {
+                    title: "Total Facturé",
+                    icon: Euro,
+                    color: "text-green-500",
+                    value: filtered
+                      .reduce((s, i) => s + parseFloat(i.totalAmount || "0"), 0)
+                      .toLocaleString(),
+                  },
+                  {
+                    title: "Total Encaissé",
+                    icon: Wallet,
+                    color: "text-blue-500",
+                    value: filtered
+                      .reduce((s, i) => s + parseFloat(i.paidAmount || "0"), 0)
+                      .toLocaleString(),
+                  },
+                  {
+                    title: "Impayés",
+                    icon: AlertCircle,
+                    color: "text-red-500",
+                    value: filtered
+                      .reduce(
+                        (s, i) =>
+                          s +
+                          (parseFloat(i.totalAmount || "0") -
+                            parseFloat(i.paidAmount || "0")),
+                        0
+                      )
+                      .toLocaleString(),
+                  },
+                  {
+                    title: "Retards",
+                    icon: AlertTriangle,
+                    color: "text-yellow-500",
+                    value: filtered.filter((i) => i.status === "too_late")
+                      .length,
+                  },
+                ].map(({ title, icon: Icon, color, value }) => (
+                  <motion.div
+                    key={title}
+                    className="transform transition-transform duration-200 hover:scale-105"
+                    whileHover={{ y: -4 }}
+                  >
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex items-center">
+                        <Icon className={`h-6 w-6 ${color}`} />
+                        <span className="ml-3 text-2xl font-semibold">
+                          {value} {title !== "Retards" ? "€" : ""}
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Factures par catégorie */}
+              <motion.div
+                className="mb-8"
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Factures par catégorie</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    {[
                       {
-                        filteredInvoices.filter(
-                          (inv) => inv.status === "too_late"
-                        ).length
-                      }
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Filtres */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Filtres de recherche</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex relative flex-1">
-                    <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <select
-                      className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                      <option value="all">Toutes les catégories</option>
-                      {Object.entries(
-                        groupBy(Object.keys(invoicesByCategory), (name) =>
-                          name.charAt(0).toUpperCase()
-                        )
-                      ).map(([letter, categories]) => (
-                        <optgroup key={letter} label={letter}>
-                          {categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex relative flex-1">
-                    <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="Recherche par nom de joueur"
-                      value={filterPlayer}
-                      onChange={(e) => setFilterPlayer(e.target.value)}
-                      className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
-                    />
-                  </div>
-                  <div className="flex relative flex-1">
-                    <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                    <select
-                      className="pl-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      value={selectedCommune}
-                      onChange={(e) => setSelectedCommune(e.target.value)}
-                    >
-                      <option value="all">Toutes les communes</option>
-                      {[
-                        "Bruxelles",
-                        "Anderlecht",
-                        "Schaerbeek",
-                        "Molenbeek",
-                        "Uccle",
-                      ].map((commune) => (
-                        <option key={commune} value={commune}>
-                          {commune}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Factures par Catégorie */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Factures par Catégorie</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {Object.keys(invoicesByCategory).length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {Object.entries(invoicesByCategory).map(
-                      ([category, invs]) => {
-                        // filtre par commune
-                        const filteredGroup =
-                          selectedCommune === "all"
-                            ? invs
-                            : invs.filter((inv) =>
-                                inv.memberBasicDto?.commune
-                                  .toLowerCase()
-                                  .includes(selectedCommune.toLowerCase())
-                              );
-                        // calculs
-                        const total = filteredGroup.reduce(
-                          (sum, inv) =>
-                            sum + parseFloat(inv.totalAmount || "0"),
-                          0
-                        );
-                        const paid = filteredGroup.reduce(
-                          (sum, inv) => sum + parseFloat(inv.paidAmount || "0"),
-                          0
-                        );
-                        const unpaid = total - paid;
-                        const unpaidRatio = total === 0 ? 0 : unpaid / total;
-                        const red = Math.round(255 * unpaidRatio);
-                        const green = Math.round(180 * (1 - unpaidRatio));
-                        const tooLateCount = filteredGroup.filter(
-                          (inv) => inv.status === "too_late"
-                        ).length;
-                        const tooLatePct = filteredGroup.length
-                          ? Math.round(
-                              (tooLateCount / filteredGroup.length) * 100
-                            )
-                          : 0;
-
-                        return (
-                          <div
-                            key={category}
-                            className="bg-white p-4 rounded-lg shadow hover:shadow-md transition cursor-pointer border"
-                            onClick={() => {
-                              setSelectedCategoryName(category);
-                              setSelectedCategoryInvoices(filteredGroup);
-                              setModalOpen(true);
-                            }}
-                          >
-                            <div className="flex justify-between items-center mb-2">
-                              <h4 className="text-md font-semibold">
-                                {category}
-                              </h4>
-                              <div
-                                className="w-5 h-5 rounded-full"
-                                style={{
-                                  backgroundColor: `rgb(${red}, ${green},80)`,
+                        title: "ELITE",
+                        sub: "RWDM Academy",
+                        filter: (cat: string) => cat.startsWith("ELITE"),
+                        barColor: "#FF0000",
+                      },
+                      {
+                        title: "RF ForEver",
+                        sub: "RWDM ForEver",
+                        filter: (cat: string) =>
+                          cat.toLowerCase().startsWith("rf for ever") ||
+                          cat.toLowerCase().startsWith("r f for ever"),
+                        barColor: "#FCA5A5",
+                      },
+                      {
+                        title: "BEFA",
+                        sub: "Brussels Eagles Football Academy",
+                        filter: (cat: string) => cat.startsWith("BEFA"),
+                        barColor: "#1E3A8A",
+                      },
+                    ].map(({ title, sub, filter, barColor }) => {
+                      const entries = Object.entries(groups)
+                        .filter(([cat]) => filter(cat))
+                        .sort(([a], [b]) => {
+                          const numA = parseInt(
+                            (a.match(/U(\d+)/) || [])[1] || "0",
+                            10
+                          );
+                          const numB = parseInt(
+                            (b.match(/U(\d+)/) || [])[1] || "0",
+                            10
+                          );
+                          return numA - numB;
+                        });
+                      if (!entries.length) return null;
+                      return (
+                        <motion.div
+                          key={title}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          <h3 className="text-lg font-semibold text-gray-600 mb-4">
+                            {title}{" "}
+                            <span className="text-sm text-gray-500">
+                              ({sub})
+                            </span>
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {entries.map(([cat, invs]) => (
+                              <motion.div
+                                key={cat}
+                                className="p-4 bg-white rounded shadow border border-gray-200 cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-md"
+                                onClick={() => {
+                                  setSelCatName(cat);
+                                  setSelCatInvs(invs);
+                                  setModalOpen(true);
                                 }}
-                                title={`${unpaid.toFixed(2)} € impayés`}
-                              />
-                            </div>
-                            <p className="text-4xl font-bold text-center text-gray-900">
-                              {filteredGroup.length}
-                            </p>
-                            {filteredGroup.length > 0 && (
-                              <p className="text-sm text-center text-gray-500 mt-2">
-                                {tooLateCount} retards ({tooLatePct}%)
-                              </p>
-                            )}
+                              >
+                                <h4 className="mb-1 font-semibold">{cat}</h4>
+                                <div className="text-3xl font-bold text-center">
+                                  {invs.length}
+                                </div>
+                                <div
+                                  className="h-2 rounded-full mt-2"
+                                  style={{
+                                    backgroundColor: barColor,
+                                  }}
+                                />
+                              </motion.div>
+                            ))}
                           </div>
-                        );
-                      }
-                    )}
-                  </div>
-                ) : (
-                  <p>Aucune facture trouvée.</p>
-                )}
-              </CardContent>
-            </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-            {/* Graphiques */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              <CollapsibleCard title="Répartition par Catégorie">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={categoryStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="category" />
-                    <YAxis />
-                    <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
-                    <Legend />
-                    <Bar dataKey="paid" name="Payé" fill="#10B981" />
-                    <Bar dataKey="unpaid" name="Impayé" fill="#EF4444" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CollapsibleCard>
+              {/* Graphiques + tableau */}
+              <motion.div
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CollapsibleCard title="Répartition par Catégorie">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={categoryStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="category" />
+                      <YAxis />
+                      <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
+                      <Legend />
+                      <Bar dataKey="paid" name="Payé" fill="#10B981" />
+                      <Bar dataKey="unpaid" name="Impayé" fill="#EF4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CollapsibleCard>
 
-              <CollapsibleCard title="Distribution par Commune">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={communeStats}
-                      dataKey="count"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      label={({ name, percent }) =>
-                        `${name} (${(percent * 100).toFixed(0)}%)`
-                      }
-                    >
-                      {communeStats.map((entry, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v) => v.toLocaleString()} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CollapsibleCard>
+                <CollapsibleCard title="Évolution des Paiements">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={monthlyTrend}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
+                      <Legend />
+                      <Area
+                        type="monotone"
+                        dataKey="paid"
+                        name="Payé"
+                        fill="#10B981"
+                        stroke="#059669"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="unpaid"
+                        name="Impayé"
+                        fill="#EF4444"
+                        stroke="#DC2626"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CollapsibleCard>
+              </motion.div>
 
-              <CollapsibleCard title="Évolution des Paiements">
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={monthlyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="paid"
-                      name="Payé"
-                      fill="#10B981"
-                      stroke="#059669"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="unpaid"
-                      name="Impayé"
-                      fill="#EF4444"
-                      stroke="#DC2626"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CollapsibleCard>
-
-              <CollapsibleCard title="Impayés par Commune">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={communeStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
-                    <Legend />
-                    <Bar
-                      dataKey="unpaidAmount"
-                      name="Montant Impayé"
-                      fill="#EF4444"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CollapsibleCard>
-            </div>
-
-            {/* Tables */}
-            <InvoicesTable invoices={invoices} loading={loading} />
-            <TeamsTable teams={teams} loading={loading} />
-          </>
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <InvoicesTable invoices={invoices} loading={loading} />
+              </motion.div>
+            </>
+          )
         ) : (
-          <div className="pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <PyramidStructure />
-          </div>
+          </motion.div>
         )}
-      </div>
 
-      {/* Modals */}
-      <ApiKeyModal
-        open={showApiModal}
-        onClose={() => setShowApiModal(false)}
-        currentKey={apiKey}
-        onSave={(key) => {
-          localStorage.setItem("apiKey", key);
-          setApiKey(key);
-        }}
-      />
-      <InvoiceListModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        category={selectedCategoryName}
-        invoices={selectedCategoryInvoices}
-      />
+        {/* Modals */}
+        <ApiKeyModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          currentKey={localStorage.getItem("apiKey") || ""}
+          onSave={(k) => localStorage.setItem("apiKey", k)}
+        />
+        <InvoiceListModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          category={selCatName}
+          invoices={selCatInvs}
+        />
+      </motion.div>
     </AdminLayout>
   );
 };
