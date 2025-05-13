@@ -35,6 +35,9 @@ const loginLimiter = rateLimit({
 
 app.use("/api/login", loginLimiter);
 
+const settingsRouter = require("./routes/settings");
+app.use("/api/settings", settingsRouter);
+
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({

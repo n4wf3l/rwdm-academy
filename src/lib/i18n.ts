@@ -781,6 +781,12 @@ export const translations = {
       "Conservons les données plus longtemps sans expiration automatique",
     cookie_section2_li3:
       "Évitons les contraintes de taille et de parsing des cookies",
+    maintenance_title: "Formulaires en maintenance",
+    maintenance_message:
+      "Nos formulaires sont actuellement en maintenance pour améliorer votre expérience. " +
+      "Pour les demandes d'inscription, de tests de sélection, de déclaration d'accident ou de " +
+      "décharge de responsabilité, veuillez nous les fournir à la direction dans nos horaires d'ouverture.",
+    thanks_patience: "Nous revenons très vite. Merci de votre patience !",
   },
 
   nl: {
@@ -1503,6 +1509,12 @@ export const translations = {
     cookie_section2_li2:
       "Bewaren gegevens langer zonder automatische vervaldatum",
     cookie_section2_li3: "Vermijden grootte‑/parsing‑beperkingen van cookies",
+    maintenance_title: "Formulieren in onderhoud",
+    maintenance_message:
+      "Onze formulieren zijn momenteel in onderhoud om uw ervaring te verbeteren. " +
+      "Voor inschrijvingen, selectieproeven, ongevallenmeldingen of vrijwaringsformulieren " +
+      "kunt u deze afgeven bij de directie binnen onze openingstijden.",
+    thanks_patience: "We zijn snel weer terug. Dank voor uw geduld!",
   },
   en: {
     welcome:
@@ -2198,5 +2210,12 @@ export const translations = {
     cookie_section2_li1: "Reduce HTTP requests (no cookie headers)",
     cookie_section2_li2: "Keep data longer without automatic expiration",
     cookie_section2_li3: "Avoid size‑ and parsing‑limitations of cookies",
+    maintenance_title: "Forms under maintenance",
+    maintenance_message:
+      "Our forms are currently under maintenance to improve your experience. " +
+      "For registration, selection tests, accident reports, or liability waivers, " +
+      "please submit them to the office during our opening hours.",
+
+    thanks_patience: "We’ll be back soon. Thank you for your patience!",
   },
 };
