@@ -173,14 +173,17 @@ const ResponsibilityWaiverForm: React.FC = () => {
       const { requestId } = await response.json();
 
       // 5️⃣ Envoi de l’email de confirmation
-      const emailResponse = await fetch("/api/form-mail/send-waiver-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          formData: requestData.formData,
-          requestId,
-        }),
-      });
+      const emailResponse = await fetch(
+        "http://localhost:5000/api/form-mail/send-waiver-email",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            formData: requestData.formData,
+            requestId,
+          }),
+        }
+      );
       if (!emailResponse.ok) {
         console.warn("Email send failed:", await emailResponse.text());
       }
