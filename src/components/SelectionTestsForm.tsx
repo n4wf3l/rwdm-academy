@@ -735,7 +735,7 @@ const SelectionTestsForm: React.FC = () => {
         <div className="flex justify-center">
           <Button
             type="submit"
-            disabled={!signature || isCooldown}
+            disabled={!signature || isCooldown || !hasAcceptedPolicy}
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >
             {isCooldown
