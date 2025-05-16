@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface Admin {
   id: string;
@@ -81,6 +82,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
   const [recipientEmail, setRecipientEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const { t, lang } = useTranslation();
   useEffect(() => {
     const fetchEmail = async () => {
       try {
@@ -116,19 +118,18 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
     <Card>
       <CardHeader className="border-b p-4 grid grid-cols-2">
         <div className="flex flex-col">
-          <CardTitle>Déclarations d'accident en attente</CardTitle>
-          <div className="mt-1 flex items-center">
+          <CardTitle>{t("pending_accidents_title")}</CardTitle>
+          <div className="mt-1 flex items-center mt-3">
             <Info className="mr-1 h-4 w-4 text-gray-500" />
             <p className="text-xs text-gray-500">
-              Les déclarations d'accidents sont mises en attente ici en attente
-              du certificat de guérison respectif.
+              {t("pending_accidents_info")}
             </p>
           </div>
         </div>
         <div className="flex items-center justify-end gap-2 text-sm">
           <span className="inline-block h-3 w-3 rounded-sm bg-green-100 ring-1 ring-green-300" />
           <span className="text-gray-600 text-sm">
-            Les déclarations en ordre
+            {t("valid_accidents_label")}
           </span>
           <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
             <DialogTrigger asChild>
@@ -138,13 +139,15 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Modifier l’email de l’Union Belge</DialogTitle>
+                <DialogTitle>
+                  {t("dialog_edit_federation_email_title")}
+                </DialogTitle>
               </DialogHeader>
               <Input
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="Nouveau destinataire"
+                placeholder={t("placeholder_new_recipient")}
               />
               <DialogFooter>
                 <Button
@@ -165,7 +168,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                     }
                   }}
                 >
-                  Enregistrer
+                  {t("button_save")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -177,14 +180,14 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Date d'accident</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Assigné à</TableHead>
-                <TableHead>Deadline</TableHead>
-                <TableHead>Actions</TableHead>
-                <TableHead>Destinataires</TableHead>
+                <TableHead>{t("table_header_id")}</TableHead>
+                <TableHead>{t("table_header_accident_date")}</TableHead>
+                <TableHead>{t("table_header_name")}</TableHead>
+                <TableHead>{t("table_header_status")}</TableHead>
+                <TableHead>{t("table_header_assigned_to")}</TableHead>
+                <TableHead>{t("table_header_deadline")}</TableHead>
+                <TableHead>{t("table_header_actions")}</TableHead>
+                <TableHead>{t("table_header_recipients")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -229,7 +232,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                         <TableCell>{declaration.name}</TableCell>
                         <TableCell>
                           <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
-                            En cours
+                            {t("badge_label_in_progress")}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -259,7 +262,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                                 "border-yellow-600",
                                 isDeclarationSent
                                   ? "text-gray-400 cursor-not-allowed"
-                                  : "text-yellow-600 hover:bg-yellow-100"
+                                  : "text-yellow-600 hover:bg-yellow-600"
                               )}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -287,7 +290,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                         <TableCell>{formatRequestId(healing.id)}</TableCell>
                         <TableCell></TableCell>
                         <TableCell className="italic text-gray-500">
-                          Certificat de guérison reçu
+                          {t("healing_certificate_received")}
                         </TableCell>
                         <TableCell />
                         <TableCell />
@@ -343,7 +346,10 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
 
         <div className="flex items-center justify-between border-t px-4 py-3">
           <div className="text-sm text-gray-600">
-            Page {page} sur {totalPages}
+            {t("pagination_prefix")}
+            {page}
+            {t("pagination_separator")}
+            {totalPages}
           </div>
           <div className="flex gap-2">
             <Button
@@ -376,9 +382,10 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             setSelectedIdToSend(null);
           }
         }}
-        title="Envoyer à l'Union belge"
-        message="Êtes-vous sûr de vouloir envoyer cette déclaration d'accident à l'Union belge de football ?"
+        title={t("confirm_send_declaration_title")}
+        message={t("confirm_send_declaration_message")}
       />
+
       <ConfirmationDialog
         open={!!selectedHealingIdToSend}
         onClose={() => setSelectedHealingIdToSend(null)}
@@ -388,8 +395,8 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
             setSelectedHealingIdToSend(null);
           }
         }}
-        title="Envoyer certificat de guérison"
-        message="Êtes-vous sûr de vouloir envoyer ce certificat de guérison à l'Union belge ?"
+        title={t("confirm_send_healing_title")}
+        message={t("confirm_send_healing_message")}
       />
     </Card>
   );

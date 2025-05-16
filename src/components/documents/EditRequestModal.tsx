@@ -13,75 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Request, RequestDetails } from "@/components/RequestDetailsModal";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-
-const LABELS_FR: Record<string, string> = {
-  clubName: "Club",
-  playerLastName: "Nom du joueur",
-  playerFirstName: "Prénom du joueur",
-  email: "E‑mail",
-  phone: "Téléphone",
-  accidentDate: "Date de l’accident",
-  description: "Description",
-  filePaths: "Documents justificatifs",
-  signature: "Signature",
-  category: "Catégorie",
-  codeDossier: "Code dossier",
-  documentLabel: "Type de document",
-  parentLastName: "Nom du parent",
-  parentFirstName: "Prénom du parent",
-  parentPhone: "Téléphone du parent",
-  parentEmail: "E‑mail du parent",
-
-  playerBirthDate: "Date de naissance du joueur",
-  currentClub: "Club actuel",
-  previousClub: "Club précédent",
-
-  signatureDate: "Date de signature",
-  approvalText: "Mention approuvée",
-
-  filePath: "Chemin du fichier",
-  season: "Saison d’inscription",
-  academy: "Académie",
-
-  // joueur
-  lastName: "Nom du joueur",
-  firstName: "Prénom du joueur",
-  birthDate: "Date de naissance",
-  birthPlace: "Lieu de naissance",
-  address: "Adresse",
-  postalCode: "Code postal",
-  city: "Ville",
-  position: "Position",
-  parentRelation: "Relation",
-
-  // parent 1
-  parent1Type: "Lien du parent 1",
-  parent1LastName: "Nom du parent 1",
-  parent1FirstName: "Prénom du parent 1",
-  parent1Phone: "Téléphone du parent 1",
-  parent1Email: "Email du parent 1",
-  parent1Address: "Adresse du parent 1",
-  parent1PostalCode: "CP du parent 1",
-  parent1Gsm: "GSM du parent 1",
-
-  // parent 2
-  parent2Type: "Lien du parent 2",
-  parent2LastName: "Nom du parent 2",
-  parent2FirstName: "Prénom du parent 2",
-  parent2Phone: "Téléphone du parent 2",
-  parent2Email: "Email du parent 2",
-  parent2Address: "Adresse du parent 2",
-  parent2PostalCode: "CP du parent 2",
-  parent2Gsm: "GSM du parent 2",
-
-  // accident
-
-  // consentement & signature
-  imageConsent: "Consentement à l’image",
-
-  createdAt: "Date de création",
-  // … complétez avec vos autres champs …
-};
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface EditRequestModalProps {
   isOpen: boolean;
@@ -97,6 +29,118 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
   onSaved,
 }) => {
   const { toast } = useToast();
+  const { t } = useTranslation();
+
+  // Map des labels traduits
+  const LABELS: Record<string, string> = {
+    clubName: t("clubName"),
+    playerLastName: t("playerLastName"),
+    playerFirstName: t("playerFirstName"),
+    email: t("email"),
+    phone: t("phone"),
+    accidentDate: t("accidentDate"),
+    description: t("description"),
+    filePaths: t("filePaths"),
+    signature: t("signature"),
+    category: t("category"),
+    codeDossier: t("codeDossier"),
+    documentLabel: t("documentLabel"),
+    parentLastName: t("parentLastName"),
+    parentFirstName: t("parentFirstName"),
+    parentPhone: t("parentPhone"),
+    parentEmail: t("parentEmail"),
+    playerBirthDate: t("playerBirthDate"),
+    currentClub: t("currentClub"),
+    previousClub: t("previousClub"),
+    signatureDate: t("signatureDate"),
+    approvalText: t("approvalText"),
+    filePath: t("filePath"),
+    season: t("season"),
+    academy: t("academy"),
+    lastName: t("lastName"),
+    firstName: t("firstName"),
+    birthDate: t("birthDate"),
+    birthPlace: t("birthPlace"),
+    address: t("address"),
+    postalCode: t("postalCode"),
+    city: t("city"),
+    position: t("position"),
+    parentRelation: t("parentRelation"),
+    parent1Type: t("parent1Type"),
+    parent1LastName: t("parent1LastName"),
+    parent1FirstName: t("parent1FirstName"),
+    parent1Phone: t("parent1Phone"),
+    parent1Email: t("parent1Email"),
+    parent1Address: t("parent1Address"),
+    parent1PostalCode: t("parent1PostalCode"),
+    parent1Gsm: t("parent1Gsm"),
+    parent2Type: t("parent2Type"),
+    parent2LastName: t("parent2LastName"),
+    parent2FirstName: t("parent2FirstName"),
+    parent2Phone: t("parent2Phone"),
+    parent2Email: t("parent2Email"),
+    parent2Address: t("parent2Address"),
+    parent2PostalCode: t("parent2PostalCode"),
+    parent2Gsm: t("parent2Gsm"),
+    imageConsent: t("imageConsent"),
+    createdAt: t("createdAt"),
+  };
+
+  // Map explicite des placeholders
+  const PLACEHOLDERS: Record<string, string> = {
+    clubName: t("enterClubName"),
+    playerLastName: t("enterPlayerLastName"),
+    playerFirstName: t("enterPlayerFirstName"),
+    email: t("enterEmail"),
+    phone: t("enterPhone"),
+    accidentDate: t("enterAccidentDate"),
+    description: t("enterDescription"),
+    filePaths: t("enterFilePaths"),
+    signature: t("enterSignature"),
+    category: t("enterCategory"),
+    codeDossier: t("enterCodeDossier"),
+    documentLabel: t("enterDocumentLabel"),
+    parentLastName: t("enterParentLastName"),
+    parentFirstName: t("enterParentFirstName"),
+    parentPhone: t("enterParentPhone"),
+    parentEmail: t("enterParentEmail"),
+    playerBirthDate: t("enterPlayerBirthDate"),
+    currentClub: t("enterCurrentClub"),
+    previousClub: t("enterPreviousClub"),
+    signatureDate: t("enterSignatureDate"),
+    approvalText: t("enterApprovalText"),
+    filePath: t("enterFilePath"),
+    season: t("enterSeason"),
+    academy: t("enterAcademy"),
+    lastName: t("enterLastName"),
+    firstName: t("enterFirstName"),
+    birthDate: t("enterBirthDate"),
+    birthPlace: t("enterBirthPlace"),
+    address: t("enterAddress"),
+    postalCode: t("enterPostalCode"),
+    city: t("enterCity"),
+    position: t("enterPosition"),
+    parentRelation: t("enterParentRelation"),
+    parent1Type: t("enterParent1Type"),
+    parent1LastName: t("enterParent1LastName"),
+    parent1FirstName: t("enterParent1FirstName"),
+    parent1Phone: t("enterParent1Phone"),
+    parent1Email: t("enterParent1Email"),
+    parent1Address: t("enterParent1Address"),
+    parent1PostalCode: t("enterParent1PostalCode"),
+    parent1Gsm: t("enterParent1Gsm"),
+    parent2Type: t("enterParent2Type"),
+    parent2LastName: t("enterParent2LastName"),
+    parent2FirstName: t("enterParent2FirstName"),
+    parent2Phone: t("enterParent2Phone"),
+    parent2Email: t("enterParent2Email"),
+    parent2Address: t("enterParent2Address"),
+    parent2PostalCode: t("enterParent2PostalCode"),
+    parent2Gsm: t("enterParent2Gsm"),
+    imageConsent: t("enterImageConsent"),
+    createdAt: t("enterCreatedAt"),
+  };
+
   const excludedKeys = [
     "signature",
     "filePaths",
@@ -104,36 +148,30 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
     "testStartDate",
     "testEndDate",
   ];
-  // 1) toujours un objet, jamais `undefined`
+
   const [details, setDetails] = useState<RequestDetails>({});
 
-  // 2) dès que la request arrive, on hydrate details
   useEffect(() => {
     if (request) {
-      // si request.details n’existe pas, on regarde request.data
       setDetails(request.details ?? {});
     }
   }, [request]);
 
-  // 3) guard pour ne rien rendre tant qu'on n'a pas de request
   if (!request) return null;
 
-  const handleChange = (key: string, value: any) => {
+  const handleChange = (key: string, value: any) =>
     setDetails((d) => ({ ...d, [key]: value }));
-  };
 
   const handleSave = async () => {
+    if (!details || Object.keys(details).length === 0) {
+      toast({
+        title: t("toast.error"),
+        description: t("toast.emptyDetails"),
+        variant: "destructive",
+      });
+      return;
+    }
     try {
-      // Validation des données avant envoi
-      if (!details || Object.keys(details).length === 0) {
-        toast({
-          title: "Erreur",
-          description: "Les détails ne peuvent pas être vides.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const res = await fetch(
         `http://localhost:5000/api/requests/${request.id}`,
         {
@@ -145,23 +183,18 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
           body: JSON.stringify({ details }),
         }
       );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Échec mise à jour");
-      }
-
-      const updatedRequest = await res.json();
-
-      // Mise à jour locale et notification
-      onSaved({ ...request, details: updatedRequest.details });
-      toast({ title: "Modifié", description: "Données mises à jour." });
+      if (!res.ok) throw new Error((await res.json()).message);
+      const updated = await res.json();
+      onSaved({ ...request, details: updated.details });
+      toast({
+        title: t("toast.updated"),
+        description: t("toast.updatedDesc"),
+      });
       onClose();
     } catch (err: any) {
-      console.error(err);
       toast({
-        title: "Erreur",
-        description: err.message || "Impossible de sauvegarder.",
+        title: t("toast.error"),
+        description: err.message || t("toast.saveFailed"),
         variant: "destructive",
       });
     }
@@ -171,51 +204,51 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Modifier la demande #{request.id}</DialogTitle>
+          <DialogTitle>
+            {t("dialog.editRequest.title")} {request.id}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
           {Object.entries(details)
-            .filter(([key]) => !excludedKeys.includes(key)) // Exclure les champs
-            .map(([key, value]) => (
-              <div key={key} className="space-y-1">
-                <Label>
-                  {LABELS_FR[key] ?? key.replace(/([A-Z])/g, " $1")}
-                </Label>
-                <Input
-                  value={
-                    key === "createdAt" && value
-                      ? format(new Date(value), "dd MMMM yyyy", { locale: fr }) // Formater la date
-                      : key.toLowerCase().includes("date") && value
-                      ? format(new Date(value), "dd MMMM yyyy", { locale: fr }) // Formater les autres dates
-                      : value ?? ""
-                  }
-                  placeholder={`Entrez ${LABELS_FR[key] ?? key}`}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  disabled={
-                    key === "createdAt" ||
-                    key === "codeDossier" ||
-                    key === "documentLabel" ||
-                    key === "approvalText" // Désactiver "Mention approuvée"
-                  }
-                  className={`${
-                    key === "createdAt" ||
-                    key === "codeDossier" ||
-                    key === "documentLabel" ||
-                    key === "approvalText"
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed" // Styles pour les champs désactivés
-                      : ""
-                  } ${value ? "" : "border-red-500"}`} // Exemple de validation visuelle
-                />
-              </div>
-            ))}
+            .filter(([key]) => !excludedKeys.includes(key))
+            .map(([key, value]) => {
+              const isReadOnly = [
+                "createdAt",
+                "codeDossier",
+                "documentLabel",
+                "approvalText",
+              ].includes(key);
+              const formatted =
+                key.toLowerCase().includes("date") && value
+                  ? format(new Date(value), "dd MMMM yyyy", { locale: fr })
+                  : value ?? "";
+
+              return (
+                <div key={key} className="space-y-1">
+                  <Label htmlFor={key}>{LABELS[key] ?? key}</Label>
+                  <Input
+                    id={key}
+                    value={formatted}
+                    placeholder={PLACEHOLDERS[key] ?? ""}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    disabled={isReadOnly}
+                    className={
+                      (isReadOnly
+                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        : "") + (value == null ? " border-red-500" : "")
+                    }
+                  />
+                </div>
+              );
+            })}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Annuler
+            {t("cancel")}
           </Button>
-          <Button onClick={handleSave}>Enregistrer</Button>
+          <Button onClick={handleSave}>{t("save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

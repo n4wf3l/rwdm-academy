@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Appointment, getAppointmentBadge } from "./planningUtils";
 import AppointmentDetailsDialog from "./AppointmentDetailsDialog";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface DayViewProps {
   selectedDate: Date | undefined;
@@ -48,7 +49,7 @@ const DayView: React.FC<DayViewProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
-
+  const { t } = useTranslation();
   const handleCardClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setIsDialogOpen(true);
@@ -70,7 +71,7 @@ const DayView: React.FC<DayViewProps> = ({
         <motion.div className="md:col-span-1" variants={itemVariants}>
           <Card>
             <CardHeader>
-              <CardTitle>Calendrier</CardTitle>
+              <CardTitle>{t("calendar_title")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Calendar
@@ -87,15 +88,17 @@ const DayView: React.FC<DayViewProps> = ({
                 }}
               />
               <div className="mt-6">
-                <h3 className="font-semibold mb-2">Légende</h3>
+                <h3 className="font-semibold mb-2">{t("legend_title")}</h3>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded-full bg-rwdm-blue/20" />
-                    <span className="text-sm">Journée avec rendez-vous</span>
+                    <span className="text-sm">
+                      {t("legend_with_appointments")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 rounded-full bg-rwdm-blue" />
-                    <span className="text-sm">Jour sélectionné</span>
+                    <span className="text-sm">{t("legend_selected_day")}</span>
                   </div>
                 </div>
               </div>
@@ -108,10 +111,10 @@ const DayView: React.FC<DayViewProps> = ({
           <Card>
             <CardHeader>
               <CardTitle>
-                Rendez-vous du{" "}
+                {t("appointments_on")}{" "}
                 {selectedDate
                   ? format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })
-                  : "jour sélectionné"}
+                  : t("day_selected")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -123,7 +126,7 @@ const DayView: React.FC<DayViewProps> = ({
                   className="text-center py-12 text-gray-500"
                 >
                   <CalendarIcon className="mx-auto h-12 w-12 opacity-30 mb-2" />
-                  <p>Aucun rendez-vous pour cette date.</p>
+                  <p>{t("no_appointments")}</p>
                   <Button
                     variant="outline"
                     className="mt-4"
@@ -133,7 +136,7 @@ const DayView: React.FC<DayViewProps> = ({
                     }}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Ajouter un rendez-vous à cette date
+                    {t("add_appointment_on_date")}
                   </Button>
                 </motion.div>
               ) : (
@@ -148,75 +151,74 @@ const DayView: React.FC<DayViewProps> = ({
                     >
                       <Card className="shadow-sm transition-transform">
                         <CardContent className="p-4">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="font-semibold text-lg">
-                                  {appointment.personName
-                                    .split(" ")
-                                    .map(
-                                      (word) =>
-                                        word.charAt(0).toUpperCase() +
-                                        word.slice(1).toLowerCase()
-                                    )
-                                    .join(" ")}
-                                </div>
-                                <div className="flex items-center gap-2 text-gray-600">
-                                  <Clock className="h-4 w-4" />
-                                  <span>{appointment.time}</span>
-                                </div>
-                                {appointment.email && (
-                                  <div className="flex items-center gap-2 text-gray-600 mt-1">
-                                    <Mail className="h-4 w-4" />
-                                    <span>{appointment.email}</span>
-                                  </div>
-                                )}
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-semibold text-lg">
+                                {appointment.personName
+                                  .split(" ")
+                                  .map(
+                                    (word) =>
+                                      word.charAt(0).toUpperCase() +
+                                      word.slice(1).toLowerCase()
+                                  )
+                                  .join(" ")}
                               </div>
-                              <div>
-                                <span
-                                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${getAppointmentBadge(
-                                    appointment.type
-                                  )}`}
-                                >
-                                  {appointment.type === "registration" &&
-                                    "Inscription"}
-                                  {appointment.type === "selection-tests" &&
-                                    "Tests"}
-                                  {appointment.type === "accident-report" &&
-                                    "Accident"}
-                                  {appointment.type ===
-                                    "responsibility-waiver" && "Décharge"}
-                                  {appointment.type === "other" && "Autre"}
-                                </span>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Clock className="h-4 w-4" />
+                                <span>{appointment.time}</span>
                               </div>
-                            </div>
-
-                            {/* Affichage de l'administrateur */}
-                            <div className="mt-2 text-sm">
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <User className="h-4 w-4" />
-                                <span>
-                                  <strong>Administrateur :</strong>{" "}
-                                  {appointment.adminFirstName &&
-                                  appointment.adminLastName
-                                    ? `${appointment.adminFirstName} ${appointment.adminLastName}`
-                                    : "Aucun administrateur assigné"}
-                                </span>
-                              </div>
-
-                              {/* Affichage des notes */}
-                              {appointment.notes ? (
-                                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                  <p className="text-gray-700 dark:text-gray-300">
-                                    <strong>Notes :</strong> {appointment.notes}
-                                  </p>
+                              {appointment.email && (
+                                <div className="flex items-center gap-2 text-gray-600 mt-1">
+                                  <Mail className="h-4 w-4" />
+                                  <span>{appointment.email}</span>
                                 </div>
-                              ) : (
-                                <p className="mt-2 text-gray-600">
-                                  Aucune note
-                                </p>
                               )}
                             </div>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${getAppointmentBadge(
+                                appointment.type
+                              )}`}
+                            >
+                              {
+                                {
+                                  registration: t("registration_label"),
+                                  "selection-tests": t("selection_tests_label"),
+                                  "accident-report": t("accident_report_label"),
+                                  "responsibility-waiver": t(
+                                    "responsibility_waiver_label"
+                                  ),
+                                  other: t("other_label"),
+                                }[appointment.type]
+                              }
+                            </span>
+                          </div>
+
+                          {/* Administrateur */}
+                          <div className="mt-2 text-sm">
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <User className="h-4 w-4" />
+                              <span>
+                                <strong>{t("admin_label")}</strong>{" "}
+                                {appointment.adminFirstName &&
+                                appointment.adminLastName
+                                  ? `${appointment.adminFirstName} ${appointment.adminLastName}`
+                                  : t("no_admin_assigned")}
+                              </span>
+                            </div>
+
+                            {/* Notes */}
+                            {appointment.notes ? (
+                              <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                                <p className="text-gray-700 dark:text-gray-300">
+                                  <strong>{t("notes_label")}</strong>{" "}
+                                  {appointment.notes}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="mt-2 text-gray-600">
+                                {t("no_notes")}
+                              </p>
+                            )}
                           </div>
                         </CardContent>
                       </Card>

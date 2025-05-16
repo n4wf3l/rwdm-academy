@@ -38,6 +38,7 @@ import {
 } from "recharts";
 import { motion } from "framer-motion";
 import ApiKeyModal from "@/components/ApiKeyModal";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Normalise "Eagles ... Academy" → "BEFA …"
 function normalizeBEFA(raw: string): string {
@@ -54,12 +55,14 @@ function CollapsibleCard({
   title: string;
   children: React.ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  // DÉSACTIVER PAR DÉFAUT (collapsed = true)
+  const [collapsed, setCollapsed] = useState(true);
+
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
       <div
         className="p-4 border-b flex justify-between items-center cursor-pointer"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => setCollapsed((c) => !c)}
       >
         <h3 className="text-lg font-medium">{title}</h3>
         {collapsed ? <ChevronDown /> : <ChevronUp />}
@@ -81,7 +84,7 @@ const Graphics: React.FC = () => {
   const [selCatInvs, setSelCatInvs] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"stats" | "categories">("stats");
   const [newReqCount, setNewReqCount] = useState(0);
-
+  const { t } = useTranslation();
   const BASE = localStorage.getItem("apikey") || "http://localhost:5001";
   const API = `${BASE}/api/members-dues`;
 
@@ -165,14 +168,37 @@ const Graphics: React.FC = () => {
   }, [invoices]);
 
   // Toggle API active/inactive
-  const [apiActive, setApiActive] = useState<boolean>(() =>
-    Boolean(localStorage.getItem("apiKey"))
-  );
+  const [apiActive, setApiActive] = useState<boolean>(true); // par défaut true
+
   useEffect(() => {
-    apiActive
-      ? localStorage.setItem("apiKey", "dummy-key")
-      : localStorage.removeItem("apiKey");
-  }, [apiActive]);
+    fetch(API)
+      .then((r) => {
+        if (!r.ok) throw new Error(`Erreur ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        setApiActive(true); // ✅ API fonctionne
+        setInvoices(Array.isArray(data) ? data : data.content || []);
+      })
+      .catch((err) => {
+        setApiActive(false); // ❌ API ne fonctionne pas
+        console.error("Erreur API:", err);
+      })
+      .finally(() => setLoading(false));
+  }, [API]);
+
+  const sortedCategories = useMemo(() => {
+    const groups: Record<string, string[]> = {};
+    for (const cat of allCats) {
+      const prefix = cat.split(" ")[0]; // "ELITE", "U19", etc.
+      groups[prefix] = groups[prefix] || [];
+      groups[prefix].push(cat);
+    }
+    // 2. Trier les préfixes et à l’intérieur de chaque groupe
+    return Object.keys(groups)
+      .sort()
+      .flatMap((prefix) => groups[prefix].sort());
+  }, [allCats]);
 
   return (
     <AdminLayout newRequestsCount={newReqCount}>
@@ -194,23 +220,35 @@ const Graphics: React.FC = () => {
             animate={{ x: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <h1 className="text-3xl font-bold">Statistiques</h1>
-            <p className="text-gray-600">Gestion financière & pyramide</p>
+            <h1 className="text-3xl font-bold">{t("statistics_title")}</h1>
+            <p className="text-gray-600">{t("statistics_description")}</p>
             <Tabs
               value={activeTab}
               onValueChange={(v) => setActiveTab(v as any)}
               className="mt-4"
             >
               <TabsList className="grid grid-cols-2 w-[300px]">
-                <TabsTrigger value="stats">Gestion financière</TabsTrigger>
-                <TabsTrigger value="categories">Hiérarchie</TabsTrigger>
+                <TabsTrigger value="stats">
+                  {t("financialManagement")}
+                </TabsTrigger>
+                <TabsTrigger value="categories">{t("hierarchy")}</TabsTrigger>
               </TabsList>
             </Tabs>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Button variant="outline" onClick={() => setApiActive(!apiActive)}>
-              API {apiActive ? "actif" : "inactif"}
-            </Button>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                apiActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {apiActive ? t("apiActive") : t("apiUnavailable")}
+            </span>
           </motion.div>
         </motion.div>
 
@@ -222,12 +260,12 @@ const Graphics: React.FC = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Hiérarchie des équipes</CardTitle>
+              <CardTitle>{t("hierarchyTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-500">
-                Données fournies par l’API <strong>Pro Soccer Data</strong> en
-                temps réel. Certains noms peuvent apparaître en double.
+                {t("hierarchyDesc1")} <strong>Pro Soccer Data</strong>{" "}
+                {t("hierarchyDesc2")}
               </p>
             </CardContent>
           </Card>
@@ -250,7 +288,7 @@ const Graphics: React.FC = () => {
               >
                 <Card>
                   <CardHeader>
-                    <CardTitle>Filtres de recherche</CardTitle>
+                    <CardTitle>{t("filters.title")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <motion.div className="flex gap-4" layout>
@@ -260,7 +298,7 @@ const Graphics: React.FC = () => {
                       >
                         <Search className="absolute left-3 top-3 text-gray-400" />
                         <Input
-                          placeholder="Rechercher un joueur…"
+                          placeholder={t("filters.searchPlayer")}
                           className="pl-10"
                           value={filterPlayer}
                           onChange={(e) => setFilterPlayer(e.target.value)}
@@ -272,14 +310,24 @@ const Graphics: React.FC = () => {
                           onValueChange={(v) => setSelectedCategory(v)}
                         >
                           <SelectTrigger className="w-48">
-                            <SelectValue placeholder="Toutes catégories" />
+                            <SelectValue
+                              placeholder={t("filters.allCategories")}
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            {allCats.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
-                                {cat === "all" ? "Toutes catégories" : cat}
-                              </SelectItem>
-                            ))}
+                            {/* L’option « Toutes catégories » */}
+                            <SelectItem value="all">
+                              {t("filters.allCategories")}
+                            </SelectItem>
+
+                            {/* Toutes les autres, déjà triées par préfixe et en bloc */}
+                            {sortedCategories
+                              .filter((cat) => cat !== "all")
+                              .map((cat) => (
+                                <SelectItem key={cat} value={cat}>
+                                  {cat}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </motion.div>
@@ -303,7 +351,7 @@ const Graphics: React.FC = () => {
               >
                 {[
                   {
-                    title: "Total Facturé",
+                    title: t("stats.totalInvoiced"),
                     icon: Euro,
                     color: "text-green-500",
                     value: filtered
@@ -311,7 +359,7 @@ const Graphics: React.FC = () => {
                       .toLocaleString(),
                   },
                   {
-                    title: "Total Encaissé",
+                    title: t("stats.totalPaid"),
                     icon: Wallet,
                     color: "text-blue-500",
                     value: filtered
@@ -319,7 +367,7 @@ const Graphics: React.FC = () => {
                       .toLocaleString(),
                   },
                   {
-                    title: "Impayés",
+                    title: t("stats.unpaid"),
                     icon: AlertCircle,
                     color: "text-red-500",
                     value: filtered
@@ -333,7 +381,7 @@ const Graphics: React.FC = () => {
                       .toLocaleString(),
                   },
                   {
-                    title: "Retards",
+                    title: t("stats.overdue"),
                     icon: AlertTriangle,
                     color: "text-yellow-500",
                     value: filtered.filter((i) => i.status === "too_late")
@@ -369,7 +417,7 @@ const Graphics: React.FC = () => {
               >
                 <Card>
                   <CardHeader>
-                    <CardTitle>Factures par catégorie</CardTitle>
+                    <CardTitle>{t("invoices.byCategoryTitle")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-8">
                     {[
@@ -459,7 +507,7 @@ const Graphics: React.FC = () => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <CollapsibleCard title="Répartition par Catégorie">
+                <CollapsibleCard title={t("byCategory")}>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={categoryStats}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -467,13 +515,13 @@ const Graphics: React.FC = () => {
                       <YAxis />
                       <Tooltip formatter={(v) => `${v.toLocaleString()} €`} />
                       <Legend />
-                      <Bar dataKey="paid" name="Payé" fill="#10B981" />
-                      <Bar dataKey="unpaid" name="Impayé" fill="#EF4444" />
+                      <Bar dataKey="paid" name={t("paid")} fill="#10B981" />
+                      <Bar dataKey="unpaid" name={t("unpaid")} fill="#EF4444" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CollapsibleCard>
 
-                <CollapsibleCard title="Évolution des Paiements">
+                <CollapsibleCard title={t("paymentsTrend")}>
                   <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={monthlyTrend}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -484,14 +532,14 @@ const Graphics: React.FC = () => {
                       <Area
                         type="monotone"
                         dataKey="paid"
-                        name="Payé"
+                        name={t("paid")}
                         fill="#10B981"
                         stroke="#059669"
                       />
                       <Area
                         type="monotone"
                         dataKey="unpaid"
-                        name="Impayé"
+                        name={t("unpaid")}
                         fill="#EF4444"
                         stroke="#DC2626"
                       />

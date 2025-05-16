@@ -5,6 +5,7 @@ import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const AboutSettings = ({
   playersCount,
@@ -62,7 +63,7 @@ const AboutSettings = ({
   setAcademyPhotos3,
 }) => {
   const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
-
+  const { t } = useTranslation();
   const handleImageUpload = (
     file: File,
     setImage: (data: string) => void,
@@ -147,6 +148,26 @@ const AboutSettings = ({
   };
 
   const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
+  const VALUE_TITLE_KEYS = {
+    1: "value1Title",
+    2: "value2Title",
+    3: "value3Title",
+  } as const;
+  const VALUE_DESC_KEYS = {
+    1: "value1Description",
+    2: "value2Description",
+    3: "value3Description",
+  } as const;
+  const VALUE_TITLE_PLACEHOLDERS = {
+    1: "value1TitlePlaceholder",
+    2: "value2TitlePlaceholder",
+    3: "value3TitlePlaceholder",
+  } as const;
+  const VALUE_DESC_PLACEHOLDERS = {
+    1: "value1DescriptionPlaceholder",
+    2: "value2DescriptionPlaceholder",
+    3: "value3DescriptionPlaceholder",
+  } as const;
   return (
     <motion.div
       className="space-y-6"
@@ -159,13 +180,13 @@ const AboutSettings = ({
         <Card>
           <CardHeader>
             <motion.div variants={itemVariants}>
-              <CardTitle>Statistiques du club</CardTitle>
+              <CardTitle>{t("clubStats.title")}</CardTitle>
             </motion.div>
             <motion.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
-              Ces chiffres reflètent l'impact et l'historique du club.
+              {t("clubStats.description")}
             </motion.p>
           </CardHeader>
 
@@ -224,34 +245,39 @@ const AboutSettings = ({
         <Card>
           <CardHeader>
             <motion.div variants={itemVariants}>
-              <CardTitle>À propos du club</CardTitle>
+              <CardTitle>{t("clubAbout.title")}</CardTitle>
             </motion.div>
             <motion.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
-              Remplissez les informations clés qui présentent l'histoire, la
-              mission et l'approche du club.
+              {t("clubAbout.description")}
             </motion.p>
           </CardHeader>
 
           <CardContent>
             <motion.div variants={itemVariants}>
-              <Tabs defaultValue="histoire" className="w-full">
+              <Tabs defaultValue="history" className="w-full">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
                   <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="histoire">Histoire</TabsTrigger>
-                    <TabsTrigger value="mission">Mission</TabsTrigger>
-                    <TabsTrigger value="approche">Approche</TabsTrigger>
+                    <TabsTrigger value="history">
+                      {t("tabsHistory")}
+                    </TabsTrigger>
+                    <TabsTrigger value="mission">
+                      {t("tabsMission")}
+                    </TabsTrigger>
+                    <TabsTrigger value="approach">
+                      {t("tabsApproach")}
+                    </TabsTrigger>
                   </TabsList>
                 </motion.div>
 
                 {[
                   {
-                    value: "histoire",
+                    value: "history",
                     description: historyDescription,
                     setDescription: setHistoryDescription,
                     photo: historyPhoto,
@@ -265,7 +291,7 @@ const AboutSettings = ({
                     setPhoto: setMissionPhoto,
                   },
                   {
-                    value: "approche",
+                    value: "approach",
                     description: approachDescription,
                     setDescription: setApproachDescription,
                     photo: approachPhoto,
@@ -289,7 +315,7 @@ const AboutSettings = ({
                         whileHover={{ scale: 1.01 }}
                       >
                         <label className="block font-semibold mb-1">
-                          Description {tab.value} ({language})
+                          {t("labelDescription")} {tab.value} ({language})
                         </label>
                         <textarea
                           rows={5}
@@ -310,10 +336,16 @@ const AboutSettings = ({
                         whileHover={{ scale: 1.01 }}
                       >
                         <label className="block font-semibold mb-1">
-                          Photo {tab.value} (fichier)
+                          {t(
+                            tab.value === "history"
+                              ? "photoHistoryFile"
+                              : tab.value === "mission"
+                              ? "photoMissionFile"
+                              : "photoApproachFile"
+                          )}
                         </label>
                         <p className="text-xs text-gray-500 mb-2">
-                          Taille maximale : 2 Mo
+                          {t("maxSize")}
                         </p>
                         <Input
                           type="file"
@@ -321,12 +353,10 @@ const AboutSettings = ({
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-
                             if (!checkImageSize(file, MAX_IMAGE_SIZE)) {
                               e.target.value = "";
                               return;
                             }
-
                             const filePath = await uploadImageFile(file);
                             if (filePath) {
                               tab.setPhoto(filePath);
@@ -383,14 +413,13 @@ const AboutSettings = ({
         <Card>
           <CardHeader>
             <motion.div variants={itemVariants}>
-              <CardTitle>Nos académies</CardTitle>
+              <CardTitle>{t("academies.title")}</CardTitle>
             </motion.div>
             <motion.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
-              Renseignez le nom, la description et une image pour chaque
-              académie.
+              {t("academies.description")}
             </motion.p>
           </CardHeader>
 
@@ -402,9 +431,9 @@ const AboutSettings = ({
                   animate={{ opacity: 1, y: 0 }}
                 >
                   <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="1">Académie 1</TabsTrigger>
-                    <TabsTrigger value="2">Académie 2</TabsTrigger>
-                    <TabsTrigger value="3">Académie 3</TabsTrigger>
+                    <TabsTrigger value="1">{t("academies.tab1")}</TabsTrigger>
+                    <TabsTrigger value="2">{t("academies.tab2")}</TabsTrigger>
+                    <TabsTrigger value="3">{t("academies.tab3")}</TabsTrigger>
                   </TabsList>
                 </motion.div>
 
@@ -465,7 +494,7 @@ const AboutSettings = ({
                         >
                           <div>
                             <label className="block font-semibold mb-1">
-                              Nom Académie {num} ({language})
+                              {t("academiesName1")}
                             </label>
                             <Input
                               value={name[language]}
@@ -477,7 +506,7 @@ const AboutSettings = ({
                           </div>
                           <div>
                             <label className="block font-semibold mb-1">
-                              Description Académie {num} ({language})
+                              {t("academiesDesc1")}
                             </label>
                             <textarea
                               rows={5}
@@ -499,10 +528,10 @@ const AboutSettings = ({
                           whileHover={{ scale: 1.01 }}
                         >
                           <label className="block font-semibold mb-1">
-                            Photo Académie {num} (fichier)
+                            {t("academies.photoLabel")}
                           </label>
                           <p className="text-xs text-gray-500 mb-2">
-                            Taille maximale : 2 Mo
+                            {t("maxSize")}
                           </p>
                           <Input
                             type="file"
@@ -519,9 +548,7 @@ const AboutSettings = ({
                               const filePath = await uploadImageFile(file);
                               if (filePath) {
                                 setPhoto(filePath);
-                                toast.success(
-                                  `Image pour l'académie ${num} chargée !`
-                                );
+                                toast.success(t("academiesUploadSuccess1"));
                               }
                             }}
                           />
@@ -533,7 +560,7 @@ const AboutSettings = ({
                               >
                                 <img
                                   src={photo}
-                                  alt={`Photo Académie ${num}`}
+                                  alt={t("academies.photoLabel")}
                                   className="h-20 object-contain rounded cursor-pointer"
                                   onClick={() => setEnlargedPhoto(photo)}
                                 />
@@ -549,7 +576,7 @@ const AboutSettings = ({
                                 >
                                   <motion.img
                                     src={photo}
-                                    alt="Agrandissement"
+                                    alt={t("academies.photoLabel")}
                                     className="max-w-[90vw] max-h-[90vh] rounded shadow-lg"
                                     initial={{ scale: 0.9 }}
                                     animate={{ scale: 1 }}
@@ -575,89 +602,89 @@ const AboutSettings = ({
         <Card>
           <CardHeader>
             <motion.div variants={itemVariants}>
-              <CardTitle>Nos valeurs</CardTitle>
+              <CardTitle>{t("valuesTitle")}</CardTitle>
             </motion.div>
             <motion.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
-              Le club s'engage à transmettre des valeurs fortes telles que le
-              respect, le fairplay ou encore l'esprit d'équipe.
+              {t("valuesDescription")}
             </motion.p>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <motion.div variants={containerVariants} className="space-y-4">
-              {[
-                {
-                  num: 1,
-                  title: valueTitle1,
-                  setTitle: setValueTitle1,
-                  desc: valueDesc1,
-                  setDesc: setValueDesc1,
-                },
-                {
-                  num: 2,
-                  title: valueTitle2,
-                  setTitle: setValueTitle2,
-                  desc: valueDesc2,
-                  setDesc: setValueDesc2,
-                },
-                {
-                  num: 3,
-                  title: valueTitle3,
-                  setTitle: setValueTitle3,
-                  desc: valueDesc3,
-                  setDesc: setValueDesc3,
-                },
-              ].map((value, index) => (
-                <motion.div
-                  key={value.num}
-                  className="border rounded-lg px-5 py-4 bg-white dark:bg-gray-900 shadow-sm"
-                  variants={itemVariants}
-                  whileHover={{
-                    scale: 1.01,
-                    boxShadow:
-                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                  }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <div className="mb-3">
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                      Titre de la valeur {value.num} ({language})
-                    </label>
-                    <Input
-                      value={value.title[language]}
-                      onChange={(e) =>
-                        value.setTitle({
-                          ...value.title,
-                          [language]: e.target.value,
-                        })
-                      }
-                      className="mt-1 border rounded-md p-2 w-full"
-                      placeholder={`Ex. Respect, Fair-play...`}
-                    />
-                  </div>
+              {[1, 2, 3].map((num) => {
+                const titleKey = VALUE_TITLE_KEYS[num];
+                const descKey = VALUE_DESC_KEYS[num];
+                const titlePlaceholderKey = VALUE_TITLE_PLACEHOLDERS[num];
+                const descPlaceholderKey = VALUE_DESC_PLACEHOLDERS[num];
 
-                  <div>
-                    <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                      Description de la valeur {value.num} ({language})
-                    </label>
-                    <textarea
-                      rows={4}
-                      className="mt-1 border rounded-md p-2 w-full text-sm"
-                      value={value.desc[language]}
-                      onChange={(e) =>
-                        value.setDesc({
-                          ...value.desc,
-                          [language]: e.target.value,
-                        })
+                const valueObj =
+                  num === 1
+                    ? { data: valueTitle1, setter: setValueTitle1 }
+                    : num === 2
+                    ? { data: valueTitle2, setter: setValueTitle2 }
+                    : { data: valueTitle3, setter: setValueTitle3 };
+
+                const descObj =
+                  num === 1
+                    ? { data: valueDesc1, setter: setValueDesc1 }
+                    : num === 2
+                    ? { data: valueDesc2, setter: setValueDesc2 }
+                    : { data: valueDesc3, setter: setValueDesc3 };
+
+                return (
+                  <motion.div
+                    key={num}
+                    className="border rounded-lg px-5 py-4 bg-white dark:bg-gray-900 shadow-sm"
+                    variants={itemVariants}
+                    whileHover={
+                      {
+                        /* … */
                       }
-                      placeholder="Décrivez ce que cette valeur signifie pour le club"
-                    />
-                  </div>
-                </motion.div>
-              ))}
+                    }
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    {/* Titre */}
+                    <div className="mb-3">
+                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {t(titleKey)} ({language})
+                      </label>
+                      <Input
+                        value={valueObj.data[language]}
+                        onChange={(e) =>
+                          valueObj.setter({
+                            ...valueObj.data,
+                            [language]: e.target.value,
+                          })
+                        }
+                        className="mt-1 border rounded-md p-2 w-full"
+                        placeholder={t(titlePlaceholderKey)}
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {t(descKey)} ({language})
+                      </label>
+                      <textarea
+                        rows={4}
+                        className="mt-1 border rounded-md p-2 w-full text-sm"
+                        value={descObj.data[language]}
+                        onChange={(e) =>
+                          descObj.setter({
+                            ...descObj.data,
+                            [language]: e.target.value,
+                          })
+                        }
+                        placeholder={t(descPlaceholderKey)}
+                      />
+                    </div>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </CardContent>
         </Card>

@@ -1,7 +1,7 @@
-// components/CategoryCounts.tsx
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface TeamRaw {
   teamId: number;
@@ -20,7 +20,8 @@ interface CategoryCountsProps {
 }
 
 const CategoryCounts: React.FC<CategoryCountsProps> = ({ teams, loading }) => {
-  // Filtrer et calculer les stats
+  const { t } = useTranslation();
+
   const befaTeams = teams.filter((t) => /(befa|eagles)/i.test(t.teamName));
   const rfTeams = teams.filter((t) => /\brf\b/i.test(t.teamName));
   const rwdmTeams = teams.filter((t) => /RWDM/i.test(t.teamName));
@@ -43,7 +44,7 @@ const CategoryCounts: React.FC<CategoryCountsProps> = ({ teams, loading }) => {
   return (
     <Card className="mb-8 mt-8">
       <CardHeader>
-        <CardTitle>Statistiques par catégorie</CardTitle>
+        <CardTitle>{t("categoryCounts.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -52,23 +53,29 @@ const CategoryCounts: React.FC<CategoryCountsProps> = ({ teams, loading }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {(["RF", "RWDM", "BEFA"] as const).map((cat) => (
-              <div
-                key={cat}
-                className="bg-white p-6 rounded-lg shadow hover:shadow-md transition cursor-pointer border"
-              >
-                <h4 className="text-center text-lg font-semibold mb-2">
-                  {cat}
-                </h4>
-                <p className="text-5xl font-bold text-center text-gray-900">
-                  {stats[cat].players}
-                </p>
-                <p className="text-sm text-center text-gray-500 mt-2">
-                  {stats[cat].teams}{" "}
-                  {stats[cat].teams > 1 ? "équipes" : "équipe"}
-                </p>
-              </div>
-            ))}
+            {(["RF", "RWDM", "BEFA"] as const).map((cat) => {
+              const count = stats[cat].teams;
+              const teamsLabel =
+                count > 1
+                  ? t("categoryCounts.teamsPlural")
+                  : t("categoryCounts.teamsSingular");
+              return (
+                <div
+                  key={cat}
+                  className="bg-white p-6 rounded-lg shadow hover:shadow-md transition cursor-pointer border"
+                >
+                  <h4 className="text-center text-lg font-semibold mb-2">
+                    {cat}
+                  </h4>
+                  <p className="text-5xl font-bold text-center text-gray-900">
+                    {stats[cat].players}
+                  </p>
+                  <p className="text-sm text-center text-gray-500 mt-2">
+                    {count} {teamsLabel}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         )}
       </CardContent>

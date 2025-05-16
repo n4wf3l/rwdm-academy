@@ -71,10 +71,10 @@ const SelectionTestsForm: React.FC = () => {
       t("category_U11"),
       t("category_U12"),
       t("category_U13"),
-      t("category_U14"),
+      t("category_U14_full"),
       t("category_U15_full"),
       t("category_U16"),
-      t("category_U17_full"),
+      t("category_U17"),
       t("category_U18"),
       t("category_U19_full"),
       t("category_U21"),
@@ -193,19 +193,16 @@ const SelectionTestsForm: React.FC = () => {
   };
 
   useEffect(() => {
-    // est-ce qu'on est dans U15, U17 ou U19 ?
-    const isElite = ["U15", "U17", "U19"].some((prefix) =>
+    const isPetit = ["U5", "U6", "U7", "U8", "U9"].some((prefix) =>
       noyau.startsWith(prefix)
     );
 
-    if (isElite) {
-      // Laisse le choix entre les deux académies
-      setAcademy((prev) => (ACADEMIES.includes(prev) ? prev : ""));
+    if (isPetit) {
+      setPosition(t("selection_position_default"));
     } else {
-      // Sinon, par défaut RWDM
-      setAcademy("RWDM Academy");
+      setPosition(""); // autoriser la sélection manuelle
     }
-  }, [noyau]);
+  }, [noyau, t]);
 
   useEffect(() => {
     if (!isCooldown) return;
@@ -436,7 +433,7 @@ const SelectionTestsForm: React.FC = () => {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {(["U15", "U17", "U19"].some((p) => noyau.startsWith(p))
+                      {(["U15", "U14", "U19"].some((p) => noyau.startsWith(p))
                         ? ACADEMIES
                         : ["RWDM Academy"]
                       ).map((option) => (

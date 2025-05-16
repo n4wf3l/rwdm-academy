@@ -16,6 +16,7 @@ import RestoreMemberModal from "@/components/members/RestoreMemberModal";
 import { Badge } from "../ui/badge";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface OldMember {
   id: number;
@@ -32,7 +33,7 @@ const OldMemberList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(oldMembers.length / itemsPerPage);
-
+  const { t } = useTranslation();
   // États pour la modal de restauration
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const [selectedRestoreMember, setSelectedRestoreMember] =
@@ -145,20 +146,22 @@ const OldMemberList: React.FC = () => {
   return (
     <Card>
       <CardHeader className="border-b">
-        <CardTitle>Anciens membres ({oldMembers.length})</CardTitle>
+        <CardTitle>
+          {t("old_members")} ({oldMembers.length})
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nom complet</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Rôle</TableHead>
-                <TableHead>Assignations</TableHead>
-                <TableHead>Date de suppression</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>{t("table_header_id")}</TableHead>
+                <TableHead>{t("table_header_full_name")}</TableHead>
+                <TableHead>{t("table_header_email")}</TableHead>
+                <TableHead>{t("table_header_role")}</TableHead>
+                <TableHead>{t("table_header_assignments")}</TableHead>
+                <TableHead>{t("table_header_deleted_at")}</TableHead>
+                <TableHead>{t("table_header_actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -207,7 +210,7 @@ const OldMemberList: React.FC = () => {
                             setRestoreModalOpen(true);
                           }}
                         >
-                          Réactiver
+                          {t("button.restore_member")}
                         </Button>
                         <Button
                           variant="destructive"
@@ -229,7 +232,7 @@ const OldMemberList: React.FC = () => {
                     colSpan={7}
                     className="text-center py-8 text-gray-500"
                   >
-                    Aucun ancien membre trouvé
+                    {t("noOldMembers")}
                   </TableCell>
                 </TableRow>
               )}
@@ -239,7 +242,8 @@ const OldMemberList: React.FC = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t px-4 py-3 mt-4">
             <div className="text-sm text-gray-600">
-              Page {currentPage} sur {totalPages}
+              {t("pagination.page")} {currentPage} {t("pagination.of")}{" "}
+              {totalPages}
             </div>
             <div className="flex gap-2">
               <Button
@@ -281,8 +285,8 @@ const OldMemberList: React.FC = () => {
             permanentlyDeleteMember(selectedDeleteMember.id);
             setDeleteModalOpen(false);
           }}
-          title="Supprimer définitivement"
-          message="Êtes-vous sûr de vouloir supprimer ce membre définitivement ? Cette action est irréversible. Elle laissera les assignations sans responsable."
+          title={t("deleteMemberTitle")}
+          message={t("deleteMemberMessage")}
         />
       )}
     </Card>

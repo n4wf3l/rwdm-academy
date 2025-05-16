@@ -7,14 +7,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ConfirmationDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (sendEmail: boolean) => void; // ← on transmet l’état de la case
+  onConfirm: (sendEmail: boolean) => void;
   title?: string;
   message: ReactNode;
-  showEmailCheckbox?: boolean; // ← afficher ou non la case
+  showEmailCheckbox?: boolean;
   confirmDisabled?: boolean;
 }
 
@@ -22,14 +23,14 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   open,
   onClose,
   onConfirm,
-  title = "Confirmer l'action",
+  title,
   message,
   showEmailCheckbox = false,
   confirmDisabled = false,
 }) => {
+  const { t } = useTranslation();
   const [sendEmail, setSendEmail] = useState(false);
 
-  // Quand on rouvre le dialogue, on réinitialise la checkbox
   useEffect(() => {
     if (open) setSendEmail(false);
   }, [open]);
@@ -38,13 +39,11 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{title ?? t("confirm_action_title")}</DialogTitle>
         </DialogHeader>
 
-        {/* --- Message principal --- */}
         <p className="text-sm text-gray-600">{message}</p>
 
-        {/* --- La case à cocher « Envoyer un email » --- */}
         {showEmailCheckbox && (
           <div className="my-4">
             <label className="flex items-center gap-2 text-sm">
@@ -53,22 +52,21 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 checked={sendEmail}
                 onChange={() => setSendEmail(!sendEmail)}
               />
-              Envoyer un email de confirmation
+              {t("send_email_checkbox_label")}
             </label>
           </div>
         )}
 
-        {/* --- Boutons --- */}
         <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Annuler
+            {t("cancel")}
           </Button>
           <Button
             className="bg-rwdm-blue text-white"
             onClick={() => onConfirm(sendEmail)}
-            disabled={confirmDisabled} // ← on désactive ici
+            disabled={confirmDisabled}
           >
-            Confirmer
+            {t("confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

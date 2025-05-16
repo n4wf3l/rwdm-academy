@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type DocumentType =
   | "registration"
@@ -37,6 +38,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   setTypeFilter,
   uniqueAdmins,
 }) => {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -46,7 +48,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       <Card className="mb-2">
         <CardHeader>
           <motion.div whileHover={{ scale: 1.01 }}>
-            <CardTitle>Filtres de recherche</CardTitle>
+            <CardTitle>{t("searchFilters")}</CardTitle>
           </motion.div>
         </CardHeader>
         <CardContent>
@@ -58,7 +60,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
-                placeholder="Rechercher par nom, prénom, email ou téléphone..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -74,7 +76,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   <SelectValue placeholder="Assigné à" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les admins</SelectItem>
+                  <SelectItem value="all">{t("allAdmins")}</SelectItem>
                   {uniqueAdmins.map((admin) => (
                     <SelectItem key={admin} value={admin}>
                       {admin}
@@ -93,16 +95,18 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   <SelectValue placeholder="Type de document" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
-                  <SelectItem value="registration">Inscriptions</SelectItem>
+                  <SelectItem value="all">{t("allTypes")}</SelectItem>
+                  <SelectItem value="registration">
+                    {t("registration")}
+                  </SelectItem>
                   <SelectItem value="selection-tests">
-                    Tests techniques
+                    {t("selectionTests")}
                   </SelectItem>
                   <SelectItem value="responsibility-waiver">
-                    Décharges de responsabilité
+                    {t("responsibilityWaiver")}
                   </SelectItem>
                   <SelectItem value="accident-report">
-                    Déclarations d'accident
+                    {t("accidentReport")}
                   </SelectItem>
                 </SelectContent>
               </Select>

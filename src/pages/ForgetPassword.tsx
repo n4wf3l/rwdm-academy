@@ -12,6 +12,7 @@ import {
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ const ForgetPassword = () => {
   const [errorShake, setErrorShake] = useState(false);
   const [errorHighlight, setErrorHighlight] = useState(false);
   const { toast } = useToast();
-
+  const { t } = useTranslation();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -40,9 +41,8 @@ const ForgetPassword = () => {
       }
 
       toast({
-        title: "Email envoyé",
-        description:
-          "Un lien de réinitialisation a été envoyé à votre adresse email.",
+        title: t("auth.resetEmailSentTitle"),
+        description: t("auth.resetEmailSentDescription"),
       });
 
       setEmail("");
@@ -56,8 +56,8 @@ const ForgetPassword = () => {
       }, 3000);
 
       toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'envoyer l'email.",
+        title: t("common.error"),
+        description: error.message || t("auth.resetEmailError"),
         variant: "destructive",
       });
     } finally {
@@ -78,10 +78,10 @@ const ForgetPassword = () => {
           <Card className="glass-panel">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold text-center text-rwdm-blue dark:text-white">
-                Mot de passe oublié
+                {t("auth.forgotPassword")}
               </CardTitle>
               <CardDescription className="text-center">
-                Saisissez votre email pour recevoir un lien de réinitialisation
+                {t("auth.resetPasswordDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -92,11 +92,11 @@ const ForgetPassword = () => {
                 transition={{ duration: 0.3 }}
               >
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("passwordReset.emailLabel")}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="votre.email@rwdm.be"
+                    placeholder={t("passwordReset.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -110,7 +110,9 @@ const ForgetPassword = () => {
                   className="w-full bg-rwdm-blue hover:bg-rwdm-blue/90"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Envoi en cours..." : "Envoyer"}
+                  {isLoading
+                    ? t("passwordReset.sending")
+                    : t("passwordReset.send")}
                 </Button>
               </motion.form>
             </CardContent>

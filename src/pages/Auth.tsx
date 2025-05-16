@@ -15,6 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -26,18 +27,30 @@ const Auth = () => {
   const { toast } = useToast();
   const { t, lang } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      // Envoyer une requête POST à votre backend pour l'authentification
+      if (!captchaToken) {
+        toast({
+          title: t("toast.captchaRequiredTitle"),
+          description: t("toast.captchaRequiredDescription"),
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
       const response = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, captcha: captchaToken }),
       });
 
       const data = await response.json();
@@ -50,8 +63,8 @@ const Auth = () => {
       localStorage.setItem("token", data.token);
 
       toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur le panneau d'administration",
+        title: t("toast.loginSuccessTitle"),
+        description: t("toast.loginSuccessDescription"),
       });
 
       // Rediriger vers le dashboard
@@ -151,7 +164,13 @@ const Auth = () => {
                     </button>
                   </div>
                 </div>
-
+                <div className="flex justify-center">
+                  <ReCAPTCHA
+                    sitekey="6LcYAzwrAAAAACa2lHRiUWnw-hIV5cVrz4EWzhGx"
+                    onChange={handleCaptchaChange}
+                    ref={recaptchaRef}
+                  />
+                </div>
                 <Button
                   type="submit"
                   className="w-full bg-rwdm-blue hover:bg-rwdm-blue/90"

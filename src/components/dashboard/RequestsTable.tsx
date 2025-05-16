@@ -30,7 +30,14 @@ import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "../ui/ConfirmationDialog";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Types localement
 export type RequestStatus =
@@ -130,7 +137,7 @@ export function getStatusBadge(status: RequestStatus) {
       return <Badge className={`${baseClass} bg-red-500`}>Rejeté</Badge>;
     default:
       return <Badge className={baseClass}>Inconnu</Badge>;
-  }  
+  }
 }
 
 const formatRequestId = (id: string | number): string => {
@@ -166,7 +173,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     request: Request;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const { t, lang } = useTranslation();
   const handleUpdateStatus = (requestId: string, newStatus: RequestStatus) => {
     // Rien ici pour "rejected", car la suppression est gérée dans Dashboard
 
@@ -203,8 +210,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   const selectedAdmin = admins.find((a) => a.id === assignedValue);
   if (selectedAdmin && Number(selectedAdmin.deleted) === 1) {
     toast({
-      title: "Erreur d'assignation",
-      description: "Vous ne pouvez pas assigner un utilisateur inactif.",
+      title: t("toast_assign_inactive_title"),
+      description: t("toast_assign_inactive_description"),
       variant: "destructive",
     });
     return;
@@ -323,20 +330,16 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     <>
       <motion.div initial="hidden" animate="visible" variants={tableVariants}>
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead>Assigné à</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-center border-l">
-                Rendez-vous
-              </TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+          <TableHead>{t("table_id")}</TableHead>
+          <TableHead>{t("table_type")}</TableHead>
+          <TableHead>{t("table_name")}</TableHead>
+          <TableHead>{t("table_status")}</TableHead>
+          <TableHead>{t("table_assigned_to")}</TableHead>
+          <TableHead>{t("table_date")}</TableHead>
+          <TableHead className="text-center border-l">
+            {t("table_appointment")}
+          </TableHead>
+          <TableHead className="text-center">{t("table_actions")}</TableHead>
 
           <TableBody>
             {isLoading ? (
@@ -396,7 +399,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                   colSpan={8}
                   className="text-center py-8 text-gray-500"
                 >
-                  Aucune demande ne correspond à vos filtres.
+                  {t("table_no_results")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -432,9 +435,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     )}
                     onClick={() => onViewDetails(request)}
                   >
-        <TableCell className="font-medium whitespace-nowrap">
-  {formatRequestId(request.id)}
-</TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">
+                      {formatRequestId(request.id)}
+                    </TableCell>
 
                     <TableCell>
                       {translateRequestType(request.type)}
@@ -477,9 +480,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                             );
                             if (selectedAdmin?.deleted === 1) {
                               toast({
-                                title: "Erreur d'assignation",
-                                description:
-                                  "Vous ne pouvez pas assigner un utilisateur inactif.",
+                                title: t("toast_assign_inactive_title"),
+                                description: t(
+                                  "toast_assign_inactive_description"
+                                ),
                                 variant: "destructive",
                               });
                               return;
@@ -488,19 +492,21 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                           }}
                         >
                           <SelectTrigger
-                             className="w-[180px] text-left"
+                            className="w-[180px] text-left"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <SelectValue placeholder="Assigner à" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">Non assigné</SelectItem>
+                            <SelectItem value="none">
+                              {t("select_unassigned")}
+                            </SelectItem>
                             {admins.map((admin) => (
                               <SelectItem key={admin.id} value={admin.id}>
                                 {admin.name}{" "}
                                 {admin.deleted === 1 && (
-                                  <span className="text-red-600">
-                                    (inactif)
+                                  <span className="hover:text-white">
+                                    {t("label_inactive")}
                                   </span>
                                 )}
                               </SelectItem>
@@ -528,66 +534,76 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
                     <TableCell>{formatElapsedTime(request.date)}</TableCell>
 
-                    <TableCell className="text-center border-l">
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button
-        variant="outline"
-        size="sm"
-        title="Actions"
-        className="data-[state=open]:bg-gray-200 data-[state=open]:text-gray-800"
-      >
-        <Settings className="h-5 w-5" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent
-      side="right"
-      align="start"
-      className="w-56 bg-gray-100 shadow-md rounded-md transition-all duration-200 ease-in-out py-2"
-    >
-      {/* Option 1: Voir la demande */}
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          onViewDetails(request);
-        }}
-        title="Voir la demande"
-        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-      >
-        <Eye className="h-5 w-5 text-gray-600" />
-        <span className="text-sm text-gray-800">Voir la demande</span>
-      </DropdownMenuItem>
+                    <TableCell className="text-center border-l-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title={t("button_actions_title")}
+                            className="data-[state=open]:bg-gray-200 data-[state=open]:text-gray-800"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Settings className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
 
-      {/* Option 2: Mettre en cours */}
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          handleUpdateStatus(request.id, "in-progress");
-        }}
-        title="Mettre en cours"
-        className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-      >
-        <Clock className="h-5 w-5 text-gray-600" />
-        <span className="text-sm text-gray-800">Mettre en cours</span>
-      </DropdownMenuItem>
+                        <DropdownMenuPortal>
+                          <DropdownMenuContent
+                            side="right"
+                            align="start"
+                            className="w-56 bg-gray-100 shadow-md rounded-md transition-all duration-200 ease-in-out py-2 cursor-pointer border-none"
+                          >
+                            {/* Voir la demande */}
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewDetails(request);
+                              }}
+                              title={t("dropdown_view_request")}
+                              className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                            >
+                              <Eye className="h-5 w-5 text-gray-600" />
+                              <span className="text-sm text-gray-800">
+                                {t("dropdown_view_request")}
+                              </span>
+                            </DropdownMenuItem>
 
-      {/* Option 3: Rendez-vous */}
-      {request.type === "registration" && (
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenAppointmentDialog(request);
-          }}
-          title="Rendez-vous"
-          className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-        >
-          <Calendar className="h-5 w-5 text-gray-600" />
-          <span className="text-sm text-gray-800">Rendez-vous</span>
-        </DropdownMenuItem>
-      )}
-    </DropdownMenuContent>
-  </DropdownMenu>
-</TableCell>
+                            {/* Mettre en cours */}
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpdateStatus(request.id, "in-progress");
+                              }}
+                              title={t("dropdown_set_in_progress")}
+                              className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                            >
+                              <Clock className="h-5 w-5 text-gray-600" />
+                              <span className="text-sm text-gray-800">
+                                {t("dropdown_set_in_progress")}
+                              </span>
+                            </DropdownMenuItem>
+
+                            {/* Rendez-vous (si inscription) */}
+                            {request.type === "registration" && (
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenAppointmentDialog(request);
+                                }}
+                                title={t("dropdown_appointment")}
+                                className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                              >
+                                <Calendar className="h-5 w-5 text-gray-600" />
+                                <span className="text-sm text-gray-800">
+                                  {t("dropdown_appointment")}
+                                </span>
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenu>
+                    </TableCell>
 
                     <TableCell className="text-center border-l">
                       {request.status === "rejected" ? (
@@ -597,12 +613,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               {formatRejectedTime(request.rejectedAt, now)}
                             </div>
                           </div>
-                    
                         </div>
                       ) : (
                         <div className="flex gap-2 justify-center">
-                          
-                        
                           <Button
                             variant="outline"
                             size="sm"
@@ -611,9 +624,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               e.stopPropagation();
                               if (assignedValue === "none") {
                                 toast({
-                                  title: "Assignation requise",
-                                  description:
-                                    "Un administrateur doit être assigné avant d'accepter.",
+                                  title: t("toast_assign_required_title"),
+                                  description: t(
+                                    "toast_accept_assign_required_desc"
+                                  ),
                                   variant: "destructive",
                                 });
                                 return;
@@ -634,9 +648,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               e.stopPropagation();
                               if (assignedValue === "none") {
                                 toast({
-                                  title: "Assignation requise",
-                                  description:
-                                    "Veuillez assigner un administrateur avant de rejeter.",
+                                  title: t("toast_assign_required_title"),
+                                  description: t(
+                                    "toast_reject_assign_required_desc"
+                                  ),
                                   variant: "destructive",
                                 });
                                 return;
@@ -660,7 +675,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
         {totalPages > 1 && (
           <div className="flex justify-between items-center border-t px-4 py-3">
             <span className="text-sm text-gray-600">
-              Page {currentPage} sur {totalPages}
+              {t("pagination_page_prefix")}
+              {currentPage}
+              {t("pagination_page_separator")}
+              {totalPages}
             </span>
             <div className="flex gap-2">
               <Button

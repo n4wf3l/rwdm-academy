@@ -33,6 +33,7 @@ import {
   Appointment,
 } from "./planningUtils";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AddAppointmentDialogProps {
   isOpen: boolean;
@@ -79,6 +80,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 }) => {
   const [admins, setAdmins] = useState<{ id: string; name: string }[]>([]);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -221,12 +223,14 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Planifier un nouveau rendez-vous</DialogTitle>
+          <DialogTitle> {t("schedule_new_appointment")}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="appointmentDate">Date du rendez-vous</Label>
+              <Label htmlFor="appointmentDate">
+                {t("appointment_date_label")}
+              </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -236,7 +240,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                     {newAppointmentDate ? (
                       format(newAppointmentDate, "dd/MM/yyyy")
                     ) : (
-                      <span>Sélectionnez une date</span>
+                      <span>{t("select_date_placeholder")}</span>
                     )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
@@ -256,13 +260,15 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="appointmentTime">Heure du rendez-vous</Label>
+              <Label htmlFor="appointmentTime">
+                {t("appointment_type_label")}
+              </Label>
               <Select
                 value={newAppointmentTime}
                 onValueChange={setNewAppointmentTime}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez une heure" />
+                  <SelectValue placeholder={t("select_time_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableTimeSlots.map((time) => (
@@ -276,7 +282,9 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="appointmentType">Type de rendez-vous</Label>
+            <Label htmlFor="appointmentType">
+              {t("appointment_type_label")}
+            </Label>
             <Select
               value={newAppointmentType}
               onValueChange={(value) =>
@@ -284,53 +292,55 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un type" />
+                <SelectValue placeholder={t("select_type_placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="registration">
-                  Inscription à l'académie
+                  {t("type_registration")}
                 </SelectItem>
-                <SelectItem value="selection-tests">
-                  Tests de sélection
+                <SelectItem value="selection_tests">
+                  {t("type_selection_tests")}
                 </SelectItem>
-                <SelectItem value="accident-report">
-                  Déclaration d'accident
+                <SelectItem value="accident_report">
+                  {t("type_accident_report")}
                 </SelectItem>
-                <SelectItem value="responsibility-waiver">
-                  Décharge de responsabilité
+                <SelectItem value="responsibility_waiver">
+                  {t("type_responsibility_waiver")}
                 </SelectItem>
-                <SelectItem value="other">Autre</SelectItem>
+                <SelectItem value="other">{t("type_other")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="appointmentPerson">Nom de la personne</Label>
+            <Label htmlFor="appointmentPerson">{t("person_name_label")}</Label>
             <Input
               id="appointmentPerson"
               value={newAppointmentPerson}
               onChange={(e) => setNewAppointmentPerson(e.target.value)}
-              placeholder="Entrez le nom complet"
+              placeholder={t("person_name_placeholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="appointmentEmail">Email de contact</Label>
+            <Label htmlFor="appointmentEmail">{t("contact_email_label")}</Label>
             <Input
               id="appointmentEmail"
               type="email"
               value={newAppointmentEmail}
               onChange={(e) => setNewAppointmentEmail(e.target.value)}
-              placeholder="exemple@email.com"
+              placeholder={t("contact_email_placeholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="appointmentAdmin">Administrateur assigné</Label>
+            <Label htmlFor="appointmentAdmin">
+              {t("assigned_admin_label")}
+            </Label>
             <Select
               value={newAppointmentAdmin}
               onValueChange={setNewAppointmentAdmin}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un administrateur" />
+                <SelectValue placeholder={t("select_admin_placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 {admins.length > 0 ? (
@@ -341,19 +351,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                   ))
                 ) : (
                   <SelectItem value="" disabled>
-                    Aucun administrateur trouvé
+                    {t("no_admins_found")}
                   </SelectItem>
                 )}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="appointmentNotes">Notes (optionnel)</Label>
+            <Label htmlFor="appointmentNotes">{t("notes_label")}</Label>
             <Input
               id="appointmentNotes"
               value={newAppointmentNotes}
               onChange={(e) => setNewAppointmentNotes(e.target.value)}
-              placeholder="Ajoutez des notes supplémentaires"
+              placeholder={t("notes_placeholder")}
             />
           </div>
 
@@ -366,16 +376,16 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               className="h-4 w-4"
             />
             <Label htmlFor="send-email-checkbox" className="text-sm">
-              Envoyer un email automatiquement à la personne
+              {t("send_email_checkbox_label")}
             </Label>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Annuler
+            {t("cancel_button")}
           </Button>
           <Button className="bg-rwdm-blue" onClick={saveAppointmentToDB}>
-            Planifier le rendez-vous
+            {t("schedule_appointment_button")}
           </Button>
         </DialogFooter>
       </DialogContent>

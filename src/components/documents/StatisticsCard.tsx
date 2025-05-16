@@ -12,6 +12,7 @@ import {
   Chart as ChartJS,
 } from "chart.js";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 ChartJS.register(
   CategoryScale,
@@ -36,6 +37,7 @@ interface Props {
 }
 
 const AdminMonthlyChart: React.FC<Props> = ({ requests }) => {
+  const { t } = useTranslation();
   const months = [
     "Jan",
     "Fév",
@@ -90,7 +92,7 @@ const AdminMonthlyChart: React.FC<Props> = ({ requests }) => {
       },
       title: {
         display: true,
-        text: "Demandes terminées par mois et par admin",
+        text: t("chart.completedByMonth.title"),
       },
     },
   };
@@ -103,7 +105,7 @@ const AdminMonthlyChart: React.FC<Props> = ({ requests }) => {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Par admin et par mois</CardTitle>
+          <CardTitle>{t("chart.byAdminAndMonth.subtitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-4">

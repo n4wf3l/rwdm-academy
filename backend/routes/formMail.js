@@ -3,6 +3,7 @@ const router = express.Router();
 const nodemailer = require("nodemailer");
 const { format } = require("date-fns");
 const { fr } = require("date-fns/locale");
+const fetch = require("node-fetch");
 
 function getLabelFromType(type) {
   switch (type) {
@@ -291,12 +292,41 @@ router.post("/send-waiver-email", async (req, res) => {
 });
 
 router.post("/send-contact-message", async (req, res) => {
-  const { name, email, subject, message } = req.body;
+  const { name, email, subject, message, captcha } = req.body;
 
-  if (!name || !email || !subject || !message) {
-    return res.status(400).json({ error: "Tous les champs sont requis." });
+  // 🛑 Vérification des champs obligatoires
+  if (!name || !email || !subject || !message || !captcha) {
+    return res
+      .status(400)
+      .json({ error: "Tous les champs sont requis, y compris le captcha." });
   }
 
+  // ✅ Vérification du captcha via Google
+  try {
+    const verifyCaptcha = await fetch(
+      "https://www.google.com/recaptcha/api/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `secret=6LcYAzwrAAAAADMKKeyv-KYy0_tg8-CFSUTrtKw1&response=${captcha}`,
+      }
+    );
+
+    const captchaResult = await verifyCaptcha.json();
+
+    if (!captchaResult.success) {
+      return res
+        .status(403)
+        .json({ error: "Échec de la vérification du captcha." });
+    }
+  } catch (err) {
+    console.error("❌ Erreur lors de la vérification du captcha :", err);
+    return res
+      .status(500)
+      .json({ error: "Erreur lors de la vérification du captcha." });
+  }
+
+  // ✅ Envoi de l'email
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp-auth.mailprotect.be",
@@ -309,17 +339,17 @@ router.post("/send-contact-message", async (req, res) => {
     });
 
     const html = `
-        <h2>📬 Nouveau message reçu depuis le formulaire de contact</h2>
-        <p><strong>Nom :</strong> ${name}</p>
-        <p><strong>Email :</strong> ${email}</p>
-        <p><strong>Sujet :</strong> ${subject}</p>
-        <p><strong>Message :</strong><br/>${message.replace(/\n/g, "<br/>")}</p>
-      `;
+      <h2>📬 Nouveau message reçu depuis le formulaire de contact</h2>
+      <p><strong>Nom :</strong> ${name}</p>
+      <p><strong>Email :</strong> ${email}</p>
+      <p><strong>Sujet :</strong> ${subject}</p>
+      <p><strong>Message :</strong><br/>${message.replace(/\n/g, "<br/>")}</p>
+    `;
 
     await transporter.sendMail({
-      from: '"RWDM Academy – Contact" <info@nainnovations.be>', // ✅ SPF OK
+      from: '"RWDM Academy – Contact" <info@nainnovations.be>',
       to: "info@nainnovations.be",
-      replyTo: email, // ✅ pour répondre au visiteur
+      replyTo: email,
       subject: `📬 Nouveau message via formulaire de contact : ${subject}`,
       html,
     });
@@ -408,60 +438,68 @@ router.post("/send-appointment-confirmation", async (req, res) => {
     });
 
     // On formate un petit résumé
-    const { date, time, type, personName, adminName } = appointment;
+    const { date, time, type, personName, adminName, notes } = appointment;
 
     const html = `
-    <p>Bonjour ${personName ?? "Madame, Monsieur"},</p>
+     <p>Bonjour ${personName ?? "Madame, Monsieur"},</p>
   
-    <p>
-      Nous avons le plaisir de vous confirmer la planification de votre rendez-vous avec l'équipe RWDM Academy.
-    </p>
+  <p>
+    Nous avons le plaisir de vous confirmer la planification de votre rendez-vous avec l'équipe RWDM Academy.
+  </p>
   
-    <p><strong>Détails du rendez-vous :</strong></p>
+  <p><strong>Détails du rendez-vous :</strong></p>
   
-    <table style="margin: 16px 0; border-collapse: collapse; font-size: 15px;">
-      <tr>
-        <td style="padding: 4px 8px;"><strong>Date :</strong></td>
-        <td style="padding: 4px 8px;">${format(new Date(date), "dd MMMM yyyy", {
-          locale: fr,
-        })}</td>
-      </tr>
-      <tr>
-        <td style="padding: 4px 8px;"><strong>Heure :</strong></td>
-        <td style="padding: 4px 8px;">${time}</td>
-      </tr>
-      <tr>
-        <td style="padding: 4px 8px;"><strong>Type de rendez-vous :</strong></td>
-        <td style="padding: 4px 8px;">${getLabelFromType(type)}</td>
-      </tr>
-      ${
-        adminName
-          ? `<tr>
-              <td style="padding: 4px 8px;"><strong>Administrateur référent :</strong></td>
-              <td style="padding: 4px 8px;">${adminName}</td>
-            </tr>`
-          : ""
-      }
-      <tr>
-        <td style="padding: 4px 8px;"><strong>Lieu :</strong></td>
-        <td style="padding: 4px 8px;">
-          Avenue Charles Malis 61<br/>
-          1080 Molenbeek-Saint-Jean<br/>
-          <em>Direction de l'académie du club</em>
-        </td>
-      </tr>
-    </table>
+  <table style="margin: 16px 0; border-collapse: collapse; font-size: 15px;">
+    <tr>
+      <td style="padding: 4px 8px;"><strong>Date :</strong></td>
+      <td style="padding: 4px 8px;">${format(new Date(date), "dd MMMM yyyy", {
+        locale: fr,
+      })}</td>
+    </tr>
+    <tr>
+      <td style="padding: 4px 8px;"><strong>Heure :</strong></td>
+      <td style="padding: 4px 8px;">${time}</td>
+    </tr>
+    <tr>
+      <td style="padding: 4px 8px;"><strong>Type de rendez-vous :</strong></td>
+      <td style="padding: 4px 8px;">${getLabelFromType(type)}</td>
+    </tr>
+    ${
+      adminName
+        ? `<tr>
+             <td style="padding: 4px 8px;"><strong>Administrateur référent :</strong></td>
+             <td style="padding: 4px 8px;">${adminName}</td>
+           </tr>`
+        : ""
+    }
+    <tr>
+      <td style="padding: 4px 8px;"><strong>Lieu :</strong></td>
+      <td style="padding: 4px 8px;">
+        Avenue Charles Malis 61<br/>
+        1080 Molenbeek-Saint-Jean<br/>
+        <em>Direction de l'académie du club</em>
+      </td>
+    </tr>
+    ${
+      notes
+        ? `<tr>
+             <td style="padding: 4px 8px;"><strong>Notes :</strong></td>
+             <td style="padding: 4px 8px;">${notes}</td>
+           </tr>`
+        : ""
+    }
+  </table>
   
-    <p>
-      Nous vous remercions de vous présenter à l'heure convenue. En cas d'indisponibilité, merci de nous contacter dès que possible afin de convenir d'un autre créneau.
-    </p>
+  <p>
+    Nous vous remercions de vous présenter à l'heure convenue. En cas d'indisponibilité, merci de nous contacter dès que possible afin de convenir d'un autre créneau.
+  </p>
   
-    <p>Bien cordialement,</p>
+  <p>Bien cordialement,</p>
   
-    <p>
-      <strong>RWDM Academy</strong><br/>
-      Cellule administrative
-    </p>
+  <p>
+    <strong>RWDM Academy</strong><br/>
+    Cellule administrative
+  </p>
   `;
 
     await transporter.sendMail({

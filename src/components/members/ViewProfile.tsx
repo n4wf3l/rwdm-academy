@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// components/ViewProfile.tsx
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
+import { translations } from "@/lib/i18n";
 
 interface ViewProfileProps {
   open: boolean;
@@ -36,20 +39,22 @@ interface ViewProfileProps {
 
 const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
   const { toast } = useToast();
+  const { t, lang } = useTranslation();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const currentUserId = localStorage.getItem("adminId");
   const isSelf = String(user.id) === currentUserId;
+
   const handlePasswordUpdate = async () => {
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas.",
+        title: t("error"),
+        description: t("passwords_do_not_match"),
+        variant: "destructive",
       });
       return;
     }
-
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
@@ -67,27 +72,29 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
 
       if (response.ok) {
         toast({
-          title: "Succès",
-          description: "Mot de passe mis à jour avec succès.",
+          title: t("success"),
+          description: t("password_update_success"),
         });
         setNewPassword("");
         setConfirmPassword("");
         setIsChangingPassword(false);
       } else {
         toast({
-          title: "Erreur",
-          description: data.message || "Erreur lors de la mise à jour.",
+          title: t("error"),
+          description: data.message || t("password_update_error"),
+          variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error("Erreur serveur:", error);
+    } catch {
       toast({
-        title: "Erreur",
-        description: "Erreur serveur lors de la mise à jour du mot de passe.",
+        title: t("error"),
+        description: t("server_error_password_update"),
+        variant: "destructive",
       });
     }
   };
-
+  const roleKey =
+    `role_${user.role.toLowerCase()}` as keyof typeof translations.fr;
   const badgeVariant =
     user.role.toLowerCase() === "owner"
       ? "default"
@@ -99,7 +106,9 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-6">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold mb-2">Compte</DialogTitle>
+          <DialogTitle className="text-2xl font-bold mb-2">
+            {t("account")}
+          </DialogTitle>
           <DialogDescription>
             <motion.div
               className="flex items-center gap-4"
@@ -107,11 +116,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
               animate={{ y: 0, opacity: 1 }}
             >
               <img
-                src={
-                  user.profilePicture
-                    ? user.profilePicture
-                    : "https://via.placeholder.com/150"
-                }
+                src={user.profilePicture || "https://via.placeholder.com/150"}
                 alt="Avatar"
                 className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
               />
@@ -121,13 +126,13 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
                     {user.firstName} {user.lastName}
                   </span>
                   <Badge variant={badgeVariant} className="text-xs rounded">
-                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    <span>{t(roleKey)}</span>
                   </Badge>
                 </div>
                 <div className="text-gray-600">{user.email}</div>
                 {user.function && (
                   <div className="text-gray-500 text-sm">
-                    Fonction : {user.function}
+                    {t("function_label")}: {user.function}
                   </div>
                 )}
               </div>
@@ -135,7 +140,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Zone changer mot de passe avec animation */}
+        {/* Changer mot de passe */}
         {isSelf && (
           <AnimatePresence mode="wait">
             {!isChangingPassword ? (
@@ -151,7 +156,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
                   onClick={() => setIsChangingPassword(true)}
                   className="w-full"
                 >
-                  Changer le mot de passe
+                  {t("change_password")}
                 </Button>
               </motion.div>
             ) : (
@@ -163,25 +168,25 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
                 className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
               >
                 <p className="mb-3 text-sm text-gray-600">
-                  Entrez votre nouveau mot de passe et confirmez-le
+                  {t("enter_new_password")}
                 </p>
                 <Input
                   type="password"
-                  placeholder="Nouveau mot de passe"
+                  placeholder={t("new_password")}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="mb-3"
                 />
                 <Input
                   type="password"
-                  placeholder="Confirmer le mot de passe"
+                  placeholder={t("confirm_password")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="mb-3"
                 />
                 <div className="flex gap-3">
                   <Button onClick={handlePasswordUpdate} className="flex-1">
-                    Mettre à jour
+                    {t("update")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -192,7 +197,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
                     }}
                     className="flex-1"
                   >
-                    Annuler
+                    {t("cancel")}
                   </Button>
                 </div>
               </motion.div>
@@ -200,7 +205,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
           </AnimatePresence>
         )}
 
-        {/* Zone assignations avec animation */}
+        {/* Assignations */}
         <motion.div
           className="my-6"
           initial={{ opacity: 0 }}
@@ -209,15 +214,17 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
         >
           <div className="flex flex-col items-center">
             <div className="bg-blue-900 text-white text-4xl font-bold rounded-full h-24 w-24 flex items-center justify-center shadow-xl">
-              {user.assignmentsCount != null ? user.assignmentsCount : 0}
+              {user.assignmentsCount ?? 0}
             </div>
-            <p className="mt-2 text-gray-700 font-medium">Assignations</p>
+            <p className="mt-2 text-gray-700 font-medium">{t("assignments")}</p>
           </div>
-          <div className="mt-4 space-y-1 text-center text-gray-500 text-sm">
-            {user.createdAt && (
+          {user.createdAt && (
+            <div className="mt-4 space-y-1 text-center text-gray-500 text-sm">
               <div>
-                <span className="font-semibold text-gray-600">Créé le :</span>{" "}
-                {new Intl.DateTimeFormat("fr-FR", {
+                <span className="font-semibold text-gray-600">
+                  {t("created_on")}:
+                </span>{" "}
+                {new Intl.DateTimeFormat(lang, {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
@@ -225,13 +232,13 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
                   minute: "2-digit",
                 }).format(new Date(user.createdAt))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </motion.div>
 
         <DialogFooter className="mt-6">
           <Button onClick={onClose} className="w-full">
-            Fermer
+            {t("close")}
           </Button>
         </DialogFooter>
       </DialogContent>

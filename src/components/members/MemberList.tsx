@@ -14,6 +14,7 @@ import { ChevronLeft, ChevronRight, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
 import ViewProfile from "@/components/members/ViewProfile";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Member {
   firstName: string;
@@ -41,7 +42,7 @@ const MemberList: React.FC<MemberListProps> = ({
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(members.length / itemsPerPage);
-
+  const { t } = useTranslation();
   const paginatedMembers = members.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -62,22 +63,24 @@ const MemberList: React.FC<MemberListProps> = ({
     <>
       <Card>
         <CardHeader className="border-b">
-          <CardTitle>Membres inscrits ({members.length})</CardTitle>
+          <CardTitle>
+            {t("members_registered")} ({members.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Avatar</TableHead>
-                  <TableHead>Nom complet</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Fonction</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Créé le</TableHead>
+                  <TableHead>{t("table_header_avatar")}</TableHead>
+                  <TableHead>{t("table_header_full_name")}</TableHead>
+                  <TableHead>{t("table_header_email")}</TableHead>
+                  <TableHead>{t("table_header_function")}</TableHead>
+                  <TableHead>{t("table_header_role")}</TableHead>
+                  <TableHead>{t("table_header_created_at")}</TableHead>
                   {(currentUserRole === "owner" ||
                     currentUserRole === "superadmin") && (
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{t("table_header_actions")}</TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -170,7 +173,7 @@ const MemberList: React.FC<MemberListProps> = ({
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-4">
-                      Aucun membre trouvé
+                      {t("no_member_found")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -180,9 +183,7 @@ const MemberList: React.FC<MemberListProps> = ({
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t px-4 py-3 mt-4">
-              <div className="text-sm text-gray-600">
-                Page {currentPage} sur {totalPages}
-              </div>
+              <div className="text-sm text-gray-600">{t("page_info")}</div>
               <div className="flex gap-2">
                 <button
                   onClick={goToPreviousPage}
@@ -190,6 +191,7 @@ const MemberList: React.FC<MemberListProps> = ({
                   className="px-3 py-1 border rounded disabled:opacity-50"
                 >
                   <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">{t("previous")}</span>
                 </button>
                 <button
                   onClick={goToNextPage}
@@ -197,6 +199,7 @@ const MemberList: React.FC<MemberListProps> = ({
                   className="px-3 py-1 border rounded disabled:opacity-50"
                 >
                   <ChevronRight className="h-4 w-4" />
+                  <span className="sr-only">{t("next")}</span>
                 </button>
               </div>
             </div>

@@ -17,12 +17,13 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Settings: React.FC = () => {
   // --- Mode Maintenance ---
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [togglingMaintenance, setTogglingMaintenance] = useState(false);
-
+  const { t } = useTranslation();
   // --- Feedback nombre de nouvelles demandes ---
   const [newRequestsCount, setNewRequestsCount] = useState(0);
 
@@ -296,8 +297,8 @@ const Settings: React.FC = () => {
           }}
         >
           <div>
-            <h1 className="text-3xl font-bold">Paramètres du site</h1>
-            <p className="text-gray-600">Gestion globale & maintenance</p>
+            <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
+            <p className="text-gray-600">{t("settings.description")}</p>
           </div>
           <div className="flex gap-4">
             {/* Sélecteur de version */}
@@ -309,9 +310,9 @@ const Settings: React.FC = () => {
                 <SelectValue placeholder="Version" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="FR">Français</SelectItem>
-                <SelectItem value="NL">Néerlandais</SelectItem>
-                <SelectItem value="EN">Anglais</SelectItem>
+                <SelectItem value="FR">{t("language.fr")}</SelectItem>
+                <SelectItem value="NL">{t("language.nl")}</SelectItem>
+                <SelectItem value="EN">{t("language.en")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -322,10 +323,10 @@ const Settings: React.FC = () => {
               disabled={togglingMaintenance}
             >
               {togglingMaintenance
-                ? "…"
+                ? t("maintenance.toggling")
                 : maintenanceMode
-                ? "Désactiver maintenance"
-                : "Activer maintenance"}
+                ? t("maintenance.disable")
+                : t("maintenance.enable")}
             </Button>
           </div>
         </motion.div>
@@ -337,15 +338,13 @@ const Settings: React.FC = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Attention</CardTitle>
+              <CardTitle>{t("maintenance.warning.title")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-500">
-                Lorsqu’un mot est modifié dans une langue, n’oubliez pas de le
-                mettre à jour dans toutes les autres langues afin de garantir la{" "}
-                <strong>cohérence</strong>. Lorsque le mode maintenance est
-                activé, tous les visiteurs sont redirigés vers une vue de
-                maintenance au lieu des formulaires.
+                {t("maintenance.warning.content")}{" "}
+                <strong>{t("maintenance.warning.highlight")}</strong>
+                {t("maintenance.warning.content2")}
               </p>
             </CardContent>
           </Card>
@@ -358,9 +357,9 @@ const Settings: React.FC = () => {
         >
           <Tabs defaultValue="general">
             <TabsList className="grid grid-cols-3 border-b mb-4">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="about">À propos</TabsTrigger>
-              <TabsTrigger value="contact">Contact</TabsTrigger>
+              <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
+              <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
+              <TabsTrigger value="contact">{t("tabs.contact")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">
@@ -467,7 +466,7 @@ const Settings: React.FC = () => {
           transition={{ delay: 0.4 }}
         >
           <Button onClick={() => setIsConfirmationOpen(true)}>
-            Sauvegarder les modifications
+            {t("button.saveChanges")}
           </Button>
         </motion.div>
 
@@ -482,10 +481,10 @@ const Settings: React.FC = () => {
             setIsConfirmationOpen(false);
             handleSaveSettings();
           }}
-          title="Confirmer la sauvegarde"
+          title={t("settings.confirmSaveTitle")}
           message={
             <>
-              <p>Êtes-vous sûr de vouloir enregistrer ces paramètres ?</p>
+              <p>{t("confirmation.saveSettings")}</p>
               <label className="mt-4 flex items-center text-sm text-gray-500">
                 <input
                   type="checkbox"
@@ -493,7 +492,7 @@ const Settings: React.FC = () => {
                   onChange={(e) => setAgreed(e.target.checked)}
                   className="mr-2 h-4 w-4 border-gray-300 rounded"
                 />
-                J’ai mis à jour toutes les traductions.
+                {t("confirmation.updatedTranslations")}
               </label>
             </>
           }
@@ -503,12 +502,14 @@ const Settings: React.FC = () => {
           open={isMaintenanceConfirmOpen}
           onClose={() => setIsMaintenanceConfirmOpen(false)}
           title={
-            maintenanceMode ? "Confirmer désactivation" : "Confirmer activation"
+            maintenanceMode
+              ? t("maintenance.confirmDisable")
+              : t("maintenance.confirmEnable")
           }
           message={
             maintenanceMode
-              ? "Es-tu sûr de vouloir quitter le mode maintenance ?"
-              : "Es-tu sûr de vouloir activer le mode maintenance ?"
+              ? t("maintenance.confirmDisableMessage")
+              : t("maintenance.confirmEnableMessage")
           }
           onConfirm={() => {
             handleToggleMaintenance();

@@ -85,10 +85,11 @@ import WeekView from "@/components/planning/WeekView";
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 import AppointmentDetailsDialog from "@/components/planning/AppointmentDetailsDialog";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Planning = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
@@ -195,9 +196,7 @@ const Planning = () => {
   );
 
   const filteredAppointments = useMemo(() => {
-    if (adminFilter === "all") {
-      return appointments;
-    }
+    if (adminFilter === "all") return appointments;
     return appointments.filter(
       (appointment) =>
         `${appointment.adminFirstName} ${appointment.adminLastName}` ===
@@ -205,6 +204,21 @@ const Planning = () => {
     );
   }, [appointments, adminFilter]);
 
+  // 2️⃣ Gérez le toast DANS le handler, pas en useEffect
+  const handleAdminFilterChange = (value: string) => {
+    setAdminFilter(value);
+
+    if (value !== "all") {
+      toast({
+        title: t("filter_applied_title"),
+        description: `${t("filter_applied_desc")} ${value}`,
+      });
+    } else {
+      toast({
+        title: t("filter_cleared_title"),
+      });
+    }
+  };
   // Créneaux disponibles pour la date sélectionnée du nouveau rendez-vous
   const availableTimeSlots = useMemo(() => {
     if (!newAppointmentDate) return [];
@@ -438,7 +452,7 @@ const Planning = () => {
               animate={{ x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              Planning
+              {t("planning_title")}
             </motion.h1>
             <motion.p
               className="text-gray-600 dark:text-gray-300"
@@ -446,7 +460,7 @@ const Planning = () => {
               animate={{ x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              Consultez et gérez les rendez-vous au secrétariat
+              {t("planning_description")}
             </motion.p>
           </div>
 
@@ -461,7 +475,7 @@ const Planning = () => {
               onClick={() => setIsScheduleModalOpen(true)}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter un rendez-vous
+              {t("add_appointment")}
             </Button>
           </motion.div>
         </motion.div>
@@ -478,19 +492,18 @@ const Planning = () => {
           >
             <div className="flex items-center justify-between mt-4">
               <TabsList className="grid max-w-xs grid-cols-2">
-                <TabsTrigger value="day">Vue journalière</TabsTrigger>
-                <TabsTrigger value="week">Vue hebdomadaire</TabsTrigger>
+                <TabsTrigger value="day">{t("view_day")}</TabsTrigger>
+                <TabsTrigger value="week">{t("view_week")}</TabsTrigger>
               </TabsList>
-
               <Select
                 value={adminFilter}
-                onValueChange={(value) => setAdminFilter(value)}
+                onValueChange={handleAdminFilterChange}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Filtrer par admin" />
+                  <SelectValue placeholder={t("all_admins")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les admins</SelectItem>
+                  <SelectItem value="all">{t("all_admins")}</SelectItem>
                   {uniqueAdmins.map((admin) => (
                     <SelectItem key={admin.id} value={admin.fullName}>
                       {admin.fullName}

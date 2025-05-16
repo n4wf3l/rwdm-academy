@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface RestoreMemberModalProps {
   isOpen: boolean;
@@ -15,23 +16,24 @@ const RestoreMemberModal: React.FC<RestoreMemberModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="space-y-4">
-        <h2 className="text-xl font-bold">Réactiver le compte</h2>
+        <h2 className="text-xl font-bold">{t("reactivateModalTitle")}</h2>
         <p>
-          Êtes-vous sûr de vouloir réactiver le compte de{" "}
+          {t("reactivateModalConfirmStart")}{" "}
           <span className="font-medium">
             {member.firstName} {member.lastName}
           </span>
-          ?
+          {t("reactivateModalConfirmEnd")}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Annuler
+            {t("buttonCancel")}
           </Button>
           <Button variant="default" onClick={onConfirm}>
-            Confirmer
+            {t("buttonConfirm")}
           </Button>
         </div>
       </div>

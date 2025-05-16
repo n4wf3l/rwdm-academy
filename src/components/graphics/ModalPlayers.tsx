@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { X, Users, Loader } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ModalPlayersProps {
   open: boolean;
@@ -20,7 +21,7 @@ const ModalPlayers: React.FC<ModalPlayersProps> = ({
   onClose,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const { t } = useTranslation();
   // Bloquer le scroll en arrière-plan
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -113,7 +114,7 @@ const ModalPlayers: React.FC<ModalPlayersProps> = ({
                           </ul>
                         ) : (
                           <p className="text-gray-400 italic">
-                            Aucun joueur trouvé dans cette catégorie.
+                            {t("players.noneInCategory")}
                           </p>
                         )}
                       </div>

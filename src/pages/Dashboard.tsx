@@ -27,6 +27,8 @@ import {
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
+import { translations } from "@/lib/i18n";
 
 // Définition locale du type Admin
 export interface Admin {
@@ -43,6 +45,7 @@ export interface Admin {
 
 const Dashboard = () => {
   const [requests, setRequests] = useState<Request[]>([]);
+  const { t, lang } = useTranslation();
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">(
@@ -96,7 +99,6 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await response.json();
-      console.log("Données des rendez-vous :", data); // Ajoutez ce log
       const formattedAppointments = data.map((appointment: any) => ({
         ...appointment,
         date: new Date(appointment.date),
@@ -130,8 +132,8 @@ const Dashboard = () => {
         if (response.ok) {
           setRequests((prev) => prev.filter((r) => r.id !== requestId));
           toast({
-            title: "Demande supprimée",
-            description: "La demande a été supprimée définitivement.",
+            title: t("toast_request_deleted_title"),
+            description: t("toast_request_deleted_description"),
           });
         }
       } catch (error) {
@@ -172,7 +174,6 @@ const Dashboard = () => {
         throw new Error("Erreur lors de la récupération des demandes");
       }
       const rows = await response.json();
-      console.log("✅ Rows récupérées :", rows);
 
       // On transforme chaque ligne en un objet "Request"
       const formattedRequests: Request[] = rows.map((req: any) => {
@@ -254,8 +255,10 @@ const Dashboard = () => {
                 if (res.ok) {
                   setRequests((prev) => prev.filter((r) => r.id !== req.id));
                   toast({
-                    title: "Demande supprimée automatiquement",
-                    description: `La demande ${req.id} a été supprimée après 24h.`,
+                    title: t("toast_request_auto_deleted_title"),
+                    description: t(
+                      "toast_request_auto_deleted_description"
+                    ).replace("{{id}}", req.id),
                   });
                 }
               } catch (err) {
@@ -273,8 +276,10 @@ const Dashboard = () => {
               if (res.ok) {
                 setRequests((prev) => prev.filter((r) => r.id !== req.id));
                 toast({
-                  title: "Demande supprimée automatiquement",
-                  description: `La demande ${req.id} a été supprimée après 24h.`,
+                  title: t("toast_request_auto_deleted_title"),
+                  description: t(
+                    "toast_request_auto_deleted_description"
+                  ).replace("{{id}}", req.id),
                 });
               }
             });
@@ -336,7 +341,7 @@ const Dashboard = () => {
           throw new Error("Impossible de récupérer l'utilisateur");
 
         const userData = await response.json();
-        console.log("👤 Utilisateur connecté :", userData);
+
         setUser(userData); // ici, il doit inclure un champ 'role'
       } catch (error) {
         console.error("Erreur utilisateur :", error);
@@ -445,7 +450,6 @@ const Dashboard = () => {
   );
 
   const handleRequestDeleted = (id: string) => {
-    console.log("🗑️ Suppression dans Dashboard pour ID :", id);
     setRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
@@ -492,8 +496,8 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Erreur d'assignation :", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'assigner la demande.",
+        title: t("toast_assign_error_title"),
+        description: t("toast_assign_error_description"),
         variant: "destructive",
       });
     }
@@ -534,14 +538,17 @@ const Dashboard = () => {
       }
 
       toast({
-        title: "Statut mis à jour",
-        description: `Le statut a été changé en "${dbStatus}".`,
+        title: t("toast_status_updated_title"),
+        description: t("toast_status_updated_description").replace(
+          "{{status}}",
+          dbStatus
+        ),
       });
     } catch (error) {
       console.error("Erreur lors du changement de statut :", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de changer le statut.",
+        title: t("toast_status_error_title"),
+        description: t("toast_status_error_description"),
         variant: "destructive",
       });
     }
@@ -582,14 +589,14 @@ const Dashboard = () => {
         `http://localhost:5000/api/email-recipients/send-request/${requestId}`
       );
       toast({
-        title: "Déclaration envoyée",
-        description: "La déclaration d'accident a été transmise.",
+        title: t("toast_accident_sent_title"),
+        description: t("toast_accident_sent_description"),
       });
       // ❌ NE PAS changer le statut ici !
     } catch (error) {
       toast({
-        title: "Erreur",
-        description: "Erreur lors de l'envoi de la déclaration.",
+        title: t("toast_accident_error_title"),
+        description: t("toast_accident_error_description"),
         variant: "destructive",
       });
     }
@@ -617,15 +624,14 @@ const Dashboard = () => {
       }
 
       toast({
-        title: "Certificat envoyé",
-        description:
-          "Les deux documents ont été transmis et marqués comme terminés.",
+        title: t("toast_certificate_sent_title"),
+        description: t("toast_certificate_sent_description"),
       });
     } catch (error) {
       console.error("Erreur certificat :", error);
       toast({
-        title: "Erreur",
-        description: "Erreur lors de l'envoi du certificat.",
+        title: t("toast_certificate_error_title"),
+        description: t("toast_certificate_error_description"),
         variant: "destructive",
       });
     }
@@ -659,7 +665,6 @@ const Dashboard = () => {
   };
 
   const openAppointmentDialog = (request: Request) => {
-    console.log("Ouverture du modal pour la demande", request.id, request.type);
     // Ici, vous pouvez éventuellement vérifier que request.type === "registration"
     setSelectedRequest(request);
     setIsAppointmentDialogOpen(true);
@@ -680,17 +685,17 @@ const Dashboard = () => {
         >
           <div>
             <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-              Tableau de bord
+              {t("dashboard_title")}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Gérez les demandes et suivez leur progression
+              {t("dashboard_description")}
             </p>
           </div>
           <div className="flex gap-2">
             <Link to="/planning">
               <Button className="bg-rwdm-blue">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                Voir le planning
+                {t("dashboard_view_planning")}
               </Button>
             </Link>
           </div>
@@ -703,8 +708,8 @@ const Dashboard = () => {
         >
           <Tabs defaultValue="requests" className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="requests">Demandes</TabsTrigger>
-              <TabsTrigger value="stats">Statistiques</TabsTrigger>
+              <TabsTrigger value="requests"> {t("requests")}</TabsTrigger>
+              <TabsTrigger value="stats"> {t("stats")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="requests" className="space-y-4">
@@ -723,21 +728,20 @@ const Dashboard = () => {
               <Card>
                 <CardHeader className="p-4 grid grid-cols-2">
                   <div className="flex flex-col">
-                    <CardTitle className="m-0 p-0">
-                      Liste des demandes ({filteredRequests.length})
+                    <CardTitle>
+                      {t("card_requests_title")} ({filteredRequests.length})
                     </CardTitle>
-                    <div className="mt-1 flex items-center">
+                    <div className="mt-1 flex items-center mt-3">
                       <Info className="mr-1 h-4 w-4 text-gray-500" />
                       <p className="text-xs text-gray-500">
-                        Les demandes rejetées sont supprimées définitivement de
-                        la base de données après 24 heures.
+                        {t("card_requests_info")}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2 text-sm">
                     <span className="inline-block h-3 w-3 rounded-sm bg-blue-50 ring-1 ring-blue-300 dark:bg-red-900 dark:ring-red-800" />
                     <span className="text-gray-600 dark:text-gray-300">
-                      Mes assignations
+                      {t("card_requests_assigned_label")}
                     </span>
                   </div>
                 </CardHeader>
@@ -826,10 +830,11 @@ const Dashboard = () => {
         appointments={appointments} // Assurez-vous que ce tableau est correctement peuplé
         availableTimeSlots={availableTimeSlots} // Passer les créneaux horaires disponibles
         addAppointmentToState={(appointment) => {
-          console.log("🔄 Ajout dans Dashboard :", appointment);
           toast({
-            title: "Rendez-vous planifié",
-            description: `Un rendez-vous a été ajouté pour ${appointment.personName}.`,
+            title: t("toast_appointment_title"),
+            description: `${t("toast_appointment_desc_prefix")} ${
+              appointment.personName
+            }${t("toast_appointment_desc_suffix")}`,
           });
           setIsAddAppointmentDialogOpen(false);
         }}

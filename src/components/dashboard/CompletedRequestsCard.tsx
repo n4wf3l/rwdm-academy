@@ -13,6 +13,7 @@ import { ChevronLeft, Eye, RotateCcw, File } from "lucide-react";
 import { Request, RequestStatus } from "@/components/RequestDetailsModal";
 import { translateRequestType, getStatusBadge } from "./RequestsTable";
 import { Link } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface Admin {
   id: string;
@@ -77,31 +78,35 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
   onViewDetails,
   onUpdateStatus,
 }) => {
+  const { t, lang } = useTranslation();
   return (
     <Card>
       <CardHeader className="border-b">
         <CardTitle>
-          Demandes récentes terminées ({completedRequests.length} affichées sur{" "}
-          {totalCompletedCount})
+          {t("completed_requests_title_prefix")}
+          {completedRequests.length}
+          {t("completed_requests_title_separator")}
+          {totalCompletedCount}
+          {t("completed_requests_title_suffix")}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           {completedRequests.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              Aucune demande terminée pour le moment.
+              {t("no_completed_requests")}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Assigné à</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("table_header_id")}</TableHead>
+                  <TableHead>{t("table_header_type")}</TableHead>
+                  <TableHead>{t("table_header_name")}</TableHead>
+                  <TableHead>{t("table_header_status")}</TableHead>
+                  <TableHead>{t("table_header_assigned_to")}</TableHead>
+                  <TableHead>{t("table_header_date")}</TableHead>
+                  <TableHead>{t("table_header_actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -191,7 +196,10 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
         {completedRequests.length > 5 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <div className="text-sm text-gray-600">
-              Page {page} sur {totalPages}
+              {t("pagination_page_prefix")}
+              {page}
+              {t("pagination_page_separator")}
+              {totalPages}
             </div>
             <div className="flex gap-2">
               <Button
@@ -210,7 +218,9 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
           <Link to="/documents">
             <Button>
               <File className="h-4 w-4 mr-2" />
-              Voir les {totalCompletedCount} demandes terminées
+              {t("button_view_completed_prefix")}
+              {totalCompletedCount}
+              {t("button_view_completed_suffix")}
             </Button>
           </Link>
         </div>

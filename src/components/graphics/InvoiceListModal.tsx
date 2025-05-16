@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface InvoiceListModalProps {
   open: boolean;
@@ -55,7 +56,7 @@ const InvoiceListModal: React.FC<InvoiceListModalProps> = ({
   invoices,
 }) => {
   const [search, setSearch] = useState("");
-
+  const { t } = useTranslation();
   // 🔍 Filtrage dynamique par nom
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
@@ -74,11 +75,15 @@ const InvoiceListModal: React.FC<InvoiceListModalProps> = ({
       <DialogContent className="max-w-5xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">
-            Factures pour la Catégorie : {category}
+            {t("dialog.invoicesForCategory")} : {category}
           </DialogTitle>
           <p className="text-sm text-gray-500 mt-1">
-            Cette liste contient <strong>{filteredInvoices.length}</strong>{" "}
-            joueur{filteredInvoices.length > 1 && "s"}.
+            {t("dialog.listContains")}{" "}
+            <strong>{filteredInvoices.length}</strong>{" "}
+            {filteredInvoices.length > 1
+              ? t("dialog.playersPlural")
+              : t("dialog.playerSingular")}
+            .
           </p>
         </DialogHeader>
 
@@ -86,7 +91,7 @@ const InvoiceListModal: React.FC<InvoiceListModalProps> = ({
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un joueur"
+          placeholder={t("search.playerPlaceholder")}
           className="mb-4"
         />
 
@@ -106,8 +111,8 @@ const InvoiceListModal: React.FC<InvoiceListModalProps> = ({
                 >
                   <p className="font-medium text-gray-800">{fullName}</p>
                   <p className="text-sm text-gray-600">
-                    Total : {total.toLocaleString()} €<br />
-                    Payé : {paid.toLocaleString()} €
+                    {t("summary.total")}: {total.toLocaleString()} €<br />
+                    {t("summary.paid")}: {paid.toLocaleString()} €
                   </p>
                   <p className={`flex items-center text-sm mt-1 ${color}`}>
                     {icon}
@@ -118,12 +123,12 @@ const InvoiceListModal: React.FC<InvoiceListModalProps> = ({
             })}
           </div>
         ) : (
-          <p className="text-gray-500 mt-4">Aucune facture disponible.</p>
+          <p className="text-gray-500 mt-4">{t("invoices.none")}</p>
         )}
 
         <DialogFooter className="mt-6">
           <Button variant="outline" onClick={onClose}>
-            Fermer
+            {t("button.close")}
           </Button>
         </DialogFooter>
       </DialogContent>

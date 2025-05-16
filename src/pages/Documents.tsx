@@ -55,7 +55,9 @@ import { Link } from "react-router-dom";
 import DocumentsTable from "@/components/documents/DocumentsTable";
 import SearchFilters from "@/components/documents/SearchFilters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import StatisticsCard from "@/components/documents/StatisticsCard";
+import AdminMonthlyChart from "@/components/documents/StatisticsCard";
+
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Types pour les documents
 type DocumentType =
@@ -81,6 +83,7 @@ interface Document {
 
 const Documents = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const { t } = useTranslation();
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<DocumentType | "all">("all");
@@ -440,10 +443,10 @@ const Documents = () => {
           >
             <div>
               <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-                Gestion des documents
+                {t("page_docs_title")}
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                Retrouvez les documents des membres
+                {t("page_docs_desc")}
               </p>
             </div>
 
@@ -453,7 +456,7 @@ const Documents = () => {
                 onClick={() => window.open("/?tab=create-request", "_blank")}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Créer une demande
+                {t("button_create_request")}
               </Button>
             </div>
           </motion.div>
@@ -465,8 +468,10 @@ const Documents = () => {
             transition={{ delay: 0.2 }}
           >
             <TabsList className="w-full max-w-md grid grid-cols-2">
-              <TabsTrigger value="completed">Demandes terminées</TabsTrigger>
-              <TabsTrigger value="stats">Statistiques</TabsTrigger>
+              <TabsTrigger value="completed">
+                {t("completedRequests")}
+              </TabsTrigger>
+              <TabsTrigger value="statistics">{t("statistics")}</TabsTrigger>
             </TabsList>
           </motion.div>
 
@@ -498,7 +503,7 @@ const Documents = () => {
                 <CardHeader>
                   <motion.div whileHover={{ scale: 1.01 }}>
                     <CardTitle>
-                      Documents ({filteredDocuments.length})
+                      {t("documents")} ({filteredDocuments.length})
                     </CardTitle>
                   </motion.div>
                 </CardHeader>
@@ -511,7 +516,7 @@ const Documents = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <p>Aucun document ne correspond à vos critères.</p>
+                        <p>{t("noDocumentsMatch")}</p>
                       </motion.div>
                     ) : (
                       <DocumentsTable
@@ -538,20 +543,20 @@ const Documents = () => {
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="stats">
+          <TabsContent value="statistics">
             <motion.div
               className="p-0 md:p-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4 }}
             >
-              <StatisticsCard
+              <AdminMonthlyChart
                 requests={documents.map((doc) => ({
                   id: doc.id,
                   type: doc.type,
                   name: `${doc.name} ${doc.surname}`,
                   email: doc.email,
-                  date: (doc.createdAt || new Date()).toISOString(), // <- ici
+                  date: (doc.createdAt || new Date()).toISOString(),
                   status: "completed",
                   assignedTo: doc.assignedAdmin,
                 }))}
@@ -594,8 +599,8 @@ const Documents = () => {
                   waitForRefThenGeneratePDF();
                   setConfirmPDFRequest(null);
                 }}
-                title="Générer le PDF"
-                message="Souhaitez-vous vraiment générer le PDF de cette demande ?"
+                title={t("generatePdfTitle")}
+                message={t("generatePdfMessage")}
               />
             </motion.div>
           )}
@@ -614,8 +619,8 @@ const Documents = () => {
                   handleRevertStatus(confirmRevertId);
                   setConfirmRevertId(null);
                 }}
-                title="Remettre en cours"
-                message="Voulez-vous vraiment remettre cette demande au statut 'En cours' ?"
+                title={t("revertToInProgressTitle")}
+                message={t("revertToInProgressMessage")}
               />
             </motion.div>
           )}

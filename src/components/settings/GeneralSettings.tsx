@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Lang = "FR" | "NL" | "EN";
 
@@ -115,6 +116,7 @@ const GeneralSettings: React.FC<Props> = ({
   setInstagramUrl,
 }) => {
   const [fileName, setFileName] = useState("");
+  const { t } = useTranslation();
   /* -------------------- RENDER -------------------- */
   return (
     <motion.div
@@ -131,9 +133,9 @@ const GeneralSettings: React.FC<Props> = ({
       >
         <Card>
           <CardHeader>
-            <CardTitle>Identité du site</CardTitle>
+            <CardTitle>{t("siteIdentity.title")}</CardTitle>
             <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Choisissez les couleurs officielles de votre club.
+              {t("siteIdentity.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -146,7 +148,7 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1"
               >
                 <p className="text-sm text-gray-700 mb-1 font-medium">
-                  Couleur 1 du site
+                  {t("siteIdentity.color1Label")}
                 </p>
                 <Input
                   type="color"
@@ -154,7 +156,7 @@ const GeneralSettings: React.FC<Props> = ({
                   onChange={(e) => setSiteColor1(e.target.value)}
                   disabled
                   className="h-10 p-1 rounded-md border transition-all duration-200 bg-gray-200 cursor-not-allowed"
-                  title="Non disponible pour l’instant"
+                  title={t("siteIdentity.unavailable")}
                 />
               </motion.div>
               <motion.div
@@ -164,7 +166,7 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1"
               >
                 <p className="text-sm text-gray-700 mb-1 font-medium">
-                  Couleur 2 du site
+                  {t("siteIdentity.color2Label")}
                 </p>
                 <Input
                   type="color"
@@ -172,7 +174,7 @@ const GeneralSettings: React.FC<Props> = ({
                   onChange={(e) => setSiteColor2(e.target.value)}
                   disabled
                   className="h-10 p-1 rounded-md border transition-all duration-200 bg-gray-200 cursor-not-allowed"
-                  title="Non disponible pour l’instant"
+                  title={t("siteIdentity.unavailable")}
                 />
               </motion.div>
             </div>
@@ -186,7 +188,7 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1"
               >
                 <p className="text-sm text-gray-700 mb-1 font-medium">
-                  Logo (fichier)
+                  {t("siteIdentity.logoLabel")}
                 </p>
                 <div className="relative">
                   <Input
@@ -204,7 +206,7 @@ const GeneralSettings: React.FC<Props> = ({
                       const filePath = await uploadImageFile(file);
                       if (filePath) {
                         setLogo(filePath);
-                        toast.success("Logo uploadé avec succès !");
+                        toast.success(t("toasts.logoUploaded"));
                       }
                     }}
                   />
@@ -237,7 +239,7 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1 relative"
               >
                 <p className="text-sm text-gray-700 mb-1 font-medium">
-                  Nom du club ({language})
+                  {t("clubDetails.clubName")} ({language})
                 </p>
                 <Input
                   value={clubName[language]}
@@ -269,9 +271,9 @@ const GeneralSettings: React.FC<Props> = ({
       >
         <Card>
           <CardHeader>
-            <CardTitle>Coordonnées du club</CardTitle>
+            <CardTitle>{t("clubDetails.contactTitle")}</CardTitle>
             <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Remplissez les informations d’adresse et de localisation.
+              {t("clubDetails.contactDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -281,7 +283,7 @@ const GeneralSettings: React.FC<Props> = ({
               transition={{ delay: 0.1 }}
             >
               <label className="block font-semibold mb-1">
-                Adresse du club ({language})
+                {t("clubDetails.address")} ({language})
               </label>
               <Input
                 value={clubAddress[language]}
@@ -299,7 +301,9 @@ const GeneralSettings: React.FC<Props> = ({
                 transition={{ delay: 0.2 }}
                 className="w-1/4"
               >
-                <label className="block font-semibold mb-1">Code postal</label>
+                <label className="block font-semibold mb-1">
+                  {t("clubDetails.postalCode")}
+                </label>
                 <Input
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
@@ -313,7 +317,7 @@ const GeneralSettings: React.FC<Props> = ({
                 className="flex-1"
               >
                 <label className="block font-semibold mb-1">
-                  Commune ({language})
+                  {t("clubDetails.commune")} ({language})
                 </label>
                 <Input
                   value={commune[language]}
@@ -331,7 +335,7 @@ const GeneralSettings: React.FC<Props> = ({
               transition={{ delay: 0.4 }}
             >
               <label className="block font-semibold mb-1">
-                Pays ({language})
+                {t("clubDetails.country")} ({language})
               </label>
               <Input
                 value={country[language]}
@@ -353,9 +357,9 @@ const GeneralSettings: React.FC<Props> = ({
       >
         <Card>
           <CardHeader>
-            <CardTitle>Contact & réseaux sociaux</CardTitle>
+            <CardTitle>{t("contactSocial.title")}</CardTitle>
             <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Ces informations sont affichées publiquement sur le site.
+              {t("contactSocial.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -364,7 +368,9 @@ const GeneralSettings: React.FC<Props> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <label className="block font-semibold mb-1">Email</label>
+              <label className="block font-semibold mb-1">
+                {t("contactForm.email")}
+              </label>
               <Input
                 type="email"
                 value={email}
@@ -377,7 +383,9 @@ const GeneralSettings: React.FC<Props> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <label className="block font-semibold mb-1">URL Facebook</label>
+              <label className="block font-semibold mb-1">
+                {t("contactForm.facebookUrl")}
+              </label>
               <Input
                 value={facebookUrl}
                 onChange={(e) => setFacebookUrl(e.target.value)}
@@ -389,7 +397,9 @@ const GeneralSettings: React.FC<Props> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <label className="block font-semibold mb-1">URL Instagram</label>
+              <label className="block font-semibold mb-1">
+                {t("contactForm.instagramUrl")}
+              </label>
               <Input
                 value={instagramUrl}
                 onChange={(e) => setInstagramUrl(e.target.value)}

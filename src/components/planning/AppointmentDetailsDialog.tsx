@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Modal from "@/components/ui/modal";
 import {
-  Card,
   CardHeader,
   CardContent,
   CardFooter,
@@ -27,6 +26,7 @@ import {
   Appointment,
   translateAppointmentType,
 } from "@/components/planning/planningUtils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AppointmentDetailsDialogProps {
   isOpen: boolean;
@@ -44,87 +44,105 @@ const AppointmentDetailsDialog: React.FC<AppointmentDetailsDialogProps> = ({
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [sendCancelEmail, setSendCancelEmail] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   if (!appointment) return null;
 
   return (
     <>
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Détails du rendez-vous</CardTitle>
-          </CardHeader>
+        {/* Header */}
+        <CardHeader>
+          <CardTitle>{t("appointment_details_title")}</CardTitle>
+        </CardHeader>
 
-          <CardContent className="space-y-2 text-sm">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Client :</span>
-              </div>
-              <span className="capitalize">{appointment.personName}</span>
-
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Email :</span>
-              </div>
-              <span className="lowercase">{appointment.email}</span>
-
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Date :</span>
-              </div>
-              <span>
-                {format(new Date(appointment.date), "dd/MM/yyyy", {
-                  locale: fr,
-                })}
+        {/* Content */}
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_client")}
               </span>
-
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Heure :</span>
-              </div>
-              <span className="font-semibold">{appointment.time}</span>
-
-              <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Type :</span>
-              </div>
-              <span>{translateAppointmentType(appointment.type)}</span>
-
-              <div className="flex items-center gap-2">
-                <UserCheck className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Administrateur :</span>
-              </div>
-              <span className="capitalize">
-                {appointment.adminFirstName} {appointment.adminLastName}
-              </span>
-
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Notes :</span>
-              </div>
-              <span>{appointment.notes || "Aucune note"}</span>
             </div>
-          </CardContent>
+            <span className="capitalize">{appointment.personName}</span>
 
-          <CardFooter className="flex justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700">
-            <Button
-              variant="destructive"
-              onClick={() => setCancelDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Annuler
-            </Button>
-            <Button
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2"
-            >
-              <X className="h-4 w-4" />
-              Fermer
-            </Button>
-          </CardFooter>
-        </Card>
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_email")}
+              </span>
+            </div>
+            <span className="lowercase">{appointment.email}</span>
+
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_date")}
+              </span>
+            </div>
+            <span>
+              {format(new Date(appointment.date), "dd/MM/yyyy", { locale: fr })}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_time")}
+              </span>
+            </div>
+            <span className="font-semibold">{appointment.time}</span>
+
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_type")}
+              </span>
+            </div>
+            <span>{translateAppointmentType(appointment.type)}</span>
+
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_admin")}
+              </span>
+            </div>
+            <span className="capitalize">
+              {appointment.adminFirstName} {appointment.adminLastName}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">
+                {t("appointment_detail_notes")}
+              </span>
+            </div>
+            <span>
+              {appointment.notes?.trim()
+                ? appointment.notes
+                : t("appointment_no_notes")}
+            </span>
+          </div>
+        </CardContent>
+
+        {/* Footer */}
+        <CardFooter className="flex justify-end space-x-2 bg-gray-50 dark:bg-gray-700">
+          <Button
+            variant="destructive"
+            onClick={() => setCancelDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            {t("cancel_button")}
+          </Button>
+          <Button
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-2"
+          >
+            <X className="h-4 w-4" />
+            {t("close_button")}
+          </Button>
+        </CardFooter>
       </Modal>
 
       <CancelAppointmentDialog

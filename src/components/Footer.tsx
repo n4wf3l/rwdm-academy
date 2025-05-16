@@ -114,6 +114,8 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               A legend never <span style={{ color: "red" }}>dies</span>
             </motion.p>
 
+            <Separator className="my-6" />
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">

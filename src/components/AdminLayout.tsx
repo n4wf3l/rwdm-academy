@@ -145,27 +145,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         </div>
       </div>
 
-      {/* Header mobile */}
-      <header className="fixed top-0 left-0 right-0 z-50 py-4 px-6 md:px-12 glass-panel md:hidden">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="h-10 w-10 rounded-full bg-rwdm-red flex items-center justify-center text-white font-bold text-xl">
-              R
-            </div>
-            <span className="text-rwdm-blue dark:text-white font-semibold text-xl">
-              Admin RWDM
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-        </div>
-      </header>
-
       {/* Sidebar */}
       <div
         className={cn(
@@ -220,6 +199,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                     onClick={() => {
                       localStorage.setItem("language", "fr");
                       window.dispatchEvent(new Event("language-changed"));
+                      toast({
+                        title: t("language_changed_title"),
+                        description: t("language_changed_desc"),
+                      });
                     }}
                   >
                     Français
@@ -228,6 +211,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                     onClick={() => {
                       localStorage.setItem("language", "nl");
                       window.dispatchEvent(new Event("language-changed"));
+                      toast({
+                        title: t("language_changed_title"),
+                        description: t("language_changed_desc"),
+                      });
                     }}
                   >
                     Nederlands
@@ -236,6 +223,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                     onClick={() => {
                       localStorage.setItem("language", "en");
                       window.dispatchEvent(new Event("language-changed"));
+                      toast({
+                        title: t("language_changed_title"),
+                        description: t("language_changed_desc"),
+                      });
                     }}
                   >
                     English
@@ -397,7 +388,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               className="flex w-full justify-start items-center text-gray-600 dark:text-gray-300 hover:bg-rwdm-blue/90 hover:text-white mb-4"
             >
               <UserIcon className="mr-2 h-5 w-5" />
-              Mon compte
+              {t("account_button")}
             </Button>
             <Button
               variant="ghost"
@@ -431,8 +422,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           setLogoutModalOpen(false);
           confirmLogout();
         }}
-        title="Déconnexion"
-        message="Êtes-vous sûr de vouloir vous déconnecter ?"
+        title={t("logout_title")}
+        message={t("logout_message")}
       />
     </div>
   );

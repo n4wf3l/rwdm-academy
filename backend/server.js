@@ -15,6 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const router = express.Router();
 const crypto = require("crypto");
+const fetch = require("node-fetch");
 
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
@@ -857,6 +858,48 @@ router.post("/appointments", async (req, res) => {
 
 module.exports = router;
 
+router.post("/login", async (req, res) => {
+  const { email, password, captcha } = req.body;
+
+  if (!captcha) {
+    return res.status(400).json({ message: "Captcha manquant." });
+  }
+
+  // Valider le token reCAPTCHA avec Google
+  const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
+  const secretKey = "6LcYAzwrAAAAADMKKeyv-KYy0_tg8-CFSUTrtKw1";
+
+  try {
+    const response = await fetch(verifyUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `secret=${secretKey}&response=${captcha}`,
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      return res
+        .status(403)
+        .json({ message: "Échec de vérification du captcha." });
+    }
+
+    // TODO: Authentifie ton utilisateur ici avec email/password
+    if (email === "admin@example.com" && password === "motdepasse") {
+      return res.json({ token: "FAKE_JWT_TOKEN" });
+    } else {
+      return res.status(401).json({ message: "Identifiants invalides." });
+    }
+  } catch (error) {
+    console.error("Erreur de vérification CAPTCHA :", error);
+    return res.status(500).json({ message: "Erreur serveur captcha." });
+  }
+});
+
+module.exports = router;
+
 app.post("/api/forget-password", async (req, res) => {
   const { email } = req.body;
 
@@ -890,7 +933,7 @@ app.post("/api/forget-password", async (req, res) => {
     console.log("✅ Token stocké dans la BDD"); // ✅ Vérifier si le token est bien stocké
 
     // Construire le lien de réinitialisation
-    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetLink = `http://localhost:5174/reset-password/${resetToken}`;
     console.log("📨 Lien de réinitialisation:", resetLink); // ✅ Vérifier si le lien est bien généré
 
     // Envoyer l'email

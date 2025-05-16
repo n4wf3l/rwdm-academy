@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const daysOfWeek = [
   "Lundi",
@@ -29,6 +30,7 @@ const ContactSettings = ({
   companyNumber,
   setCompanyNumber,
 }) => {
+  const { t } = useTranslation();
   const handleTimeChange = (day, type, value) => {
     const updated = {
       ...openingHours,
@@ -60,22 +62,20 @@ const ContactSettings = ({
       >
         <Card>
           <CardHeader className="relative">
-            <CardTitle>Heures d'ouverture</CardTitle>
+            <CardTitle>{t("openingHoursTitle")}</CardTitle>
             <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Si l'heure d'ouverture et de fermeture sont toutes deux à{" "}
-              <strong>00:00</strong>, le jour est considéré comme{" "}
-              <strong>fermé</strong>.
+              {t("openingHoursDescription")}
             </CardDescription>
 
             {/* Légende en haut à droite */}
             <div className="absolute top-0 right-0 mt-4 mr-4 flex items-center gap-4 text-sm text-gray-700">
               <div className="flex items-center gap-1">
                 <div className="w-4 h-4 rounded bg-gray-100 border border-gray-300" />
-                Ouvert
+                {t("statusOpen")}
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-4 h-4 rounded bg-red-200 border border-red-400" />
-                Fermé
+                {t("statusClosed")}
               </div>
             </div>
           </CardHeader>
@@ -125,10 +125,9 @@ const ContactSettings = ({
       >
         <Card>
           <CardHeader>
-            <CardTitle>Informations de l'entreprise</CardTitle>
+            <CardTitle>{t("companyInfo.title")}</CardTitle>
             <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Ces informations seront affichées publiquement sur la page{" "}
-              <strong>Contact</strong> du site.
+              {t("companyInfo.description")}
             </CardDescription>
           </CardHeader>
 
@@ -138,7 +137,9 @@ const ContactSettings = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <label className="block font-semibold mb-1">Nom de compte</label>
+              <label className="block font-semibold mb-1">
+                {t("companyInfo.accountName")}
+              </label>
               <Input
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
@@ -150,7 +151,9 @@ const ContactSettings = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <label className="block font-semibold mb-1">Numéro de TVA</label>
+              <label className="block font-semibold mb-1">
+                {t("companyInfo.vatNumber")}
+              </label>
               <Input
                 value={vatNumber}
                 onChange={(e) => setVatNumber(e.target.value)}
@@ -163,7 +166,7 @@ const ContactSettings = ({
               transition={{ delay: 0.4 }}
             >
               <label className="block font-semibold mb-1">
-                Numéro d'entreprise
+                {t("companyInfo.companyNumber")}
               </label>
               <Input
                 value={companyNumber}

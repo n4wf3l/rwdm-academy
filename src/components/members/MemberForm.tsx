@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface MemberFormProps {
   onMemberCreated: (member: any) => void;
@@ -43,7 +44,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
   const [func, setFunc] = useState(""); // maintenant fonction principale
   const [role, setRole] = useState("admin");
   const { toast } = useToast();
-
+  const { t } = useTranslation();
   const resetForm = () => {
     setFirstName("");
     setLastName("");
@@ -132,7 +133,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
       <FullScreenLoader isLoading={isLoading} />
       <Card>
         <CardHeader>
-          <CardTitle>Créer un membre</CardTitle>
+          <CardTitle>{t("createMember")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -143,7 +144,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   <User className="mr-2" />
                   <Input
                     type="text"
-                    placeholder="Prénom"
+                    placeholder={t("lastNamePlaceholder")}
                     value={firstName}
                     maxLength={30}
                     onChange={(e) => {
@@ -163,7 +164,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   <User2 className="mr-2" />
                   <Input
                     type="text"
-                    placeholder="Nom"
+                    placeholder={t("firstNamePlaceholder")}
                     value={lastName}
                     maxLength={30}
                     onChange={(e) => {
@@ -183,7 +184,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   <Mail className="mr-2" />
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder={t("emailPlaceholder")}
                     value={email}
                     maxLength={30}
                     onChange={(e) => setEmail(e.target.value)}
@@ -196,7 +197,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   <Lock className="mr-2" />
                   <Input
                     type="password"
-                    placeholder="Mot de passe"
+                    placeholder={t("passwordPlaceholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -219,7 +220,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   <Briefcase className="mr-2" />
                   <Input
                     type="text"
-                    placeholder="Fonction"
+                    placeholder={t("functionPlaceholder")}
                     value={func}
                     maxLength={50}
                     onChange={(e) => {
@@ -231,7 +232,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                   />
                 </div>
                 <div className="flex items-center">
-                  <span className="mr-2 font-semibold">Rôle :</span>
+                  <span className="mr-2 font-semibold">{t("roleLabel")}</span>
                   <Select
                     value={role}
                     onValueChange={(newRole) => setRole(newRole)}
@@ -240,7 +241,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
                       <SelectValue placeholder="Sélectionner un rôle" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="admin">{t("role_admin")}</SelectItem>
                       <SelectItem value="superadmin">Superadmin</SelectItem>
                       {currentUserRole === "owner" && (
                         <SelectItem value="owner">Owner</SelectItem>
@@ -253,7 +254,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
             <div className="flex justify-center">
               <Button type="submit" className="bg-rwdm-blue">
-                Créer le membre
+                {t("button.create_member")}
               </Button>
             </div>
           </form>

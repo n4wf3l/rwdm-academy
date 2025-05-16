@@ -13,6 +13,7 @@ import RoleLegendCard from "@/components/members/RoleLegendCard";
 import { motion } from "framer-motion";
 import OldMemberList from "@/components/members/OldMemberList";
 import { Plus } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Member {
   id: number;
@@ -27,6 +28,7 @@ interface Member {
 
 const Members: React.FC = () => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [members, setMembers] = useState<Member[]>([]);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -298,7 +300,7 @@ const Members: React.FC = () => {
               animate={{ x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              Membres
+              {t("members_title")}
             </motion.h1>
             <motion.p
               className="text-gray-600 dark:text-gray-300"
@@ -306,23 +308,26 @@ const Members: React.FC = () => {
               animate={{ x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              Gérez les membres de l'académie
+              {t("members_subtitle")}
             </motion.p>
           </div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            {/* Bouton bleu foncé pour ouvrir le formulaire de création */}
-            <Button
-              className="bg-rwdm-blue"
-              onClick={() => setActiveTab("create")}
+
+          {(user.role === "owner" || user.role === "superadmin") && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
             >
-              <Plus className="h-5 w-5" />
-              Créer un membre
-            </Button>
-          </motion.div>
+              {/* Bouton bleu foncé pour ouvrir le formulaire de création */}
+              <Button
+                className="bg-rwdm-blue"
+                onClick={() => setActiveTab("create")}
+              >
+                <Plus className="h-5 w-5" />
+                {t("create_member")}
+              </Button>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Section des onglets */}
@@ -351,9 +356,9 @@ const Members: React.FC = () => {
                     : "grid-cols-1"
                 } w-full max-w-md`}
               >
-                <TabsTrigger value="list">Tous les membres</TabsTrigger>
+                <TabsTrigger value="list">{t("all_members")}</TabsTrigger>
                 {(user.role === "owner" || user.role === "superadmin") && (
-                  <TabsTrigger value="old">Anciens membres</TabsTrigger>
+                  <TabsTrigger value="old">{t("old_members")}</TabsTrigger>
                 )}
               </TabsList>
             </motion.div>

@@ -11,6 +11,7 @@ import {
 import { Search, Filter } from "lucide-react";
 import { RequestStatus, RequestType } from "@/components/RequestDetailsModal";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SearchFiltersProps {
   searchQuery: string;
@@ -49,6 +50,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   assignedAdminOptions,
   onAssignedAdminFilterChange,
 }) => {
+  const { t, lang } = useTranslation();
   return (
     <motion.div
       initial="hidden"
@@ -59,7 +61,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       <Card>
         <motion.div variants={itemVariants}>
           <CardHeader>
-            <CardTitle>Filtres de recherche</CardTitle>
+            <CardTitle>{t("search_filters_title")}</CardTitle>
           </CardHeader>
         </motion.div>
 
@@ -73,7 +75,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
                   type="search"
-                  placeholder="Rechercher par nom, email ou ID..."
+                  placeholder={t("search_input_placeholder")}
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
@@ -93,8 +95,12 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                     <SelectValue placeholder="Assigné à" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les admins</SelectItem>
-                    <SelectItem value="none">Non assigné</SelectItem>
+                    <SelectItem value="all">
+                      {t("select_all_admins")}
+                    </SelectItem>
+                    <SelectItem value="none">
+                      {t("select_unassigned")}
+                    </SelectItem>
                     {assignedAdminOptions.map((admin) => (
                       <SelectItem key={admin.id} value={admin.id}>
                         {admin.name}
@@ -111,15 +117,25 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 >
                   <SelectTrigger className="w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Statut" />
+                    <SelectValue placeholder={t("select_status_placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="new">Nouveau</SelectItem>
-                    <SelectItem value="assigned">Assigné</SelectItem>
-                    <SelectItem value="in-progress">En cours</SelectItem>
-                    <SelectItem value="completed">Terminé</SelectItem>
-                    <SelectItem value="rejected">Rejeté</SelectItem>
+                    <SelectItem value="all">
+                      {t("select_all_statuses")}
+                    </SelectItem>
+                    <SelectItem value="new">{t("status_new")}</SelectItem>
+                    <SelectItem value="assigned">
+                      {t("status_assigned")}
+                    </SelectItem>
+                    <SelectItem value="in-progress">
+                      {t("status_in_progress")}
+                    </SelectItem>
+                    <SelectItem value="completed">
+                      {t("status_completed")}
+                    </SelectItem>
+                    <SelectItem value="rejected">
+                      {t("status_rejected")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -131,17 +147,22 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                 >
                   <SelectTrigger className="w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Type" />
+                    <SelectValue placeholder={t("select_type_placeholder")} />
                   </SelectTrigger>
+
                   <SelectContent>
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="registration">Inscription</SelectItem>
-                    <SelectItem value="selection-tests">
-                      Tests de sélection
+                    <SelectItem value="all">{t("select_all_types")}</SelectItem>
+                    <SelectItem value="registration">
+                      {t("form_type_registration")}
                     </SelectItem>
-                    <SelectItem value="accident-report">Accident</SelectItem>
+                    <SelectItem value="selection-tests">
+                      {t("form_type_selection_tests")}
+                    </SelectItem>
+                    <SelectItem value="accident-report">
+                      {t("form_type_accident_report")}
+                    </SelectItem>
                     <SelectItem value="responsibility-waiver">
-                      Décharge
+                      {t("form_type_responsibility_waiver")}
                     </SelectItem>
                   </SelectContent>
                 </Select>

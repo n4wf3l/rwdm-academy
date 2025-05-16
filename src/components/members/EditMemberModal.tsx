@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface EditMemberModalProps {
   member: any;
@@ -43,7 +44,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const [profilePicture, setProfilePicture] = useState(
     member?.profilePicture || ""
   );
-
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState(member?.role || "admin");
   const [password, setPassword] = useState("");
@@ -115,13 +116,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="w-full max-w-xl mx-auto">
         <form onSubmit={handleSave} className="space-y-4">
-          <h2 className="text-lg font-bold">Modifier le membre</h2>
+          <h2 className="text-lg font-bold">{t("member.edit_title")}</h2>
 
           <div className="flex items-center">
             <User className="mr-2" />
             <Input
               type="text"
-              placeholder="Prénom"
+              placeholder={t("lastNamePlaceholder")}
               value={firstName}
               maxLength={20}
               onChange={(e) => {
@@ -143,7 +144,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             <User className="mr-2" />
             <Input
               type="text"
-              placeholder="Nom"
+              placeholder={t("firstNamePlaceholder")}
               value={lastName}
               maxLength={20}
               onChange={(e) => {
@@ -165,9 +166,9 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             <Mail className="mr-2" />
             <Input
               type="email"
-              placeholder="Email"
+              placeholder={t("emailPlaceholder")}
               value={email}
-              maxLength={30}
+              maxLength={50}
               onChange={(e) => setEmail(e.target.value)}
               pattern="[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+"
               required
@@ -179,7 +180,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
             <Briefcase className="mr-2" />
             <Input
               type="text"
-              placeholder="Fonction"
+              placeholder={t("functionPlaceholder")}
               value={func}
               maxLength={30}
               onChange={(e) => {
@@ -213,7 +214,9 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           </div>
 
           <div className="flex items-center">
-            <span className="mr-2 font-semibold whitespace-nowrap">Rôle :</span>
+            <span className="mr-2 font-semibold whitespace-nowrap">
+              {t("roleLabel")}
+            </span>
             <Select
               value={role}
               onValueChange={(newRole) => {
@@ -241,7 +244,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
           <div className="flex items-center space-x-2">
             <span className="whitespace-nowrap font-semibold">
-              Mot de passe :
+              {t("passwordPlaceholder")}
             </span>
             <div className="relative w-full">
               <Input
@@ -262,7 +265,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           </div>
 
           <Button type="submit" className="bg-rwdm-blue">
-            Sauvegarder
+            {t("button.save")}
           </Button>
         </form>
       </div>

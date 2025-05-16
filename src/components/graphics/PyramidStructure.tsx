@@ -6,6 +6,7 @@ import ModalPlayers from "./ModalPlayers";
 import CategoryCounts from "./CategoryCounts";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Loader } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface TeamRaw {
   teamId: number;
@@ -30,7 +31,7 @@ interface Level {
 const PyramidStructure: React.FC = () => {
   const [teams, setTeams] = useState<TeamRaw[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const { t } = useTranslation();
   // Modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);

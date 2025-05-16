@@ -9,6 +9,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface InvoicesTableProps {
   invoices: any[];
@@ -18,7 +19,7 @@ interface InvoicesTableProps {
 const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices, loading }) => {
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState<number>(1);
-
+  const { t } = useTranslation();
   // 1) On trie par date décroissante
   const sortedInvoices = useMemo(() => {
     return [...invoices].sort((a, b) => {
@@ -47,19 +48,19 @@ const InvoicesTable: React.FC<InvoicesTableProps> = ({ invoices, loading }) => {
   return (
     <Card className="mb-6">
       <CardHeader className="border-b">
-        <CardTitle>Liste des Factures</CardTitle>
+        <CardTitle>{t("invoiceList")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date de Facture</TableHead>
-                <TableHead>Numéro</TableHead>
-                <TableHead>Nom Complet</TableHead>
-                <TableHead>Montant Total</TableHead>
-                <TableHead>Montant Payé</TableHead>
-                <TableHead>Équipe</TableHead>
+                <TableHead>{t("invoiceList.date")}</TableHead>
+                <TableHead>{t("invoiceList.number")}</TableHead>
+                <TableHead>{t("invoiceList.fullName")}</TableHead>
+                <TableHead>{t("invoiceList.totalAmount")}</TableHead>
+                <TableHead>{t("invoiceList.paidAmount")}</TableHead>
+                <TableHead>{t("invoiceList.team")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

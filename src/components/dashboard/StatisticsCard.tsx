@@ -12,6 +12,7 @@ import {
   Chart as ChartJS,
 } from "chart.js";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Inscription des modules Chart.js
 ChartJS.register(
@@ -54,6 +55,7 @@ interface StatisticsCardProps {
 
 // Carte statique avec les compteurs (ancienne version)
 const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
+  const { t, lang } = useTranslation();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -72,7 +74,7 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Statistiques des demandes</CardTitle>
+          <CardTitle>{t("card_requests_stats_title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <motion.div
@@ -80,14 +82,14 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
             variants={containerVariants}
           >
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="transform transition-transform duration-200 ease-in-out hover:scale-105">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-rwdm-blue">
                       {requests.filter((r) => r.status === "new").length}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Nouvelles demandes
+                      {t("label_new_requests")}
                     </div>
                   </div>
                 </CardContent>
@@ -95,7 +97,7 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="transform transition-transform duration-200 ease-in-out hover:scale-105">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-rwdm-blue">
@@ -108,7 +110,7 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
                       }
                     </div>
                     <div className="text-sm text-gray-600">
-                      Demandes en cours
+                      {t("label_requests_in_progress")}
                     </div>
                   </div>
                 </CardContent>
@@ -116,14 +118,14 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="transform transition-transform duration-200 ease-in-out hover:scale-105">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-rwdm-blue">
                       {requests.filter((r) => r.status === "completed").length}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Demandes complétées
+                      {t("label_completed_requests")}
                     </div>
                   </div>
                 </CardContent>
@@ -131,7 +133,7 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <Card>
+              <Card className="transform transition-transform duration-200 ease-in-out hover:scale-105">
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-rwdm-blue">
@@ -144,7 +146,7 @@ const GridStatsCard: React.FC<StatisticsCardProps> = ({ requests }) => {
                       }
                     </div>
                     <div className="text-sm text-gray-600">
-                      Accidents en attente
+                      {t("label_pending_accidents")}
                     </div>
                   </div>
                 </CardContent>
@@ -234,6 +236,7 @@ const LineChartCard: React.FC<StatisticsCardProps> = ({ requests }) => {
     ],
   };
 
+  const { t, lang } = useTranslation();
   const options = {
     responsive: true,
     plugins: {
@@ -242,7 +245,7 @@ const LineChartCard: React.FC<StatisticsCardProps> = ({ requests }) => {
       },
       title: {
         display: true,
-        text: "Demandes par type sur l'année",
+        text: t("chart_title_requests_by_type"),
       },
     },
   };
@@ -250,7 +253,7 @@ const LineChartCard: React.FC<StatisticsCardProps> = ({ requests }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Évolution des demandes sur l'année</CardTitle>
+        <CardTitle>{t("card_requests_evolution_title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="p-4">

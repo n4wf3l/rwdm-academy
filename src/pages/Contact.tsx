@@ -17,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef } from "react";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -30,6 +32,8 @@ const Contact = () => {
   const [postalCode, setPostalCode] = useState("");
   const [emailClub, setEmailClub] = useState("");
   const [country, setCountry] = useState<{ [key: string]: string }>({});
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const getLocalizedValue = (
     field: { [key: string]: string } | undefined,
     lang: string
@@ -56,6 +60,7 @@ const Contact = () => {
       )} ${postalCode} ${getLocalizedValue(commune, currentLang)} Belgique`
     );
   }, [clubAddress, commune, postalCode, currentLang]);
+
   const daysOfWeek = [
     "Lundi",
     "Mardi",
@@ -65,6 +70,10 @@ const Contact = () => {
     "Samedi",
     "Dimanche",
   ] as const;
+
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
 
   type Day = (typeof daysOfWeek)[number]; // "Lundi" | "Mardi" | ...
   const translateDay = (
@@ -271,8 +280,17 @@ const Contact = () => {
 
                     if (!name || !email || !subject || !message) {
                       toast({
-                        title: "Champs manquants",
-                        description: "Merci de compléter tous les champs.",
+                        title: t("toast.missingFieldsTitle"),
+                        description: t("toast.missingFieldsDescription"),
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    if (!captchaToken) {
+                      toast({
+                        title: t("toast.captchaRequiredTitle"),
+                        description: t("toast.captchaRequiredDescription"),
                         variant: "destructive",
                       });
                       return;
@@ -290,6 +308,7 @@ const Contact = () => {
                             email,
                             subject,
                             message,
+                            captcha: captchaToken,
                           }),
                         }
                       );
@@ -299,25 +318,25 @@ const Contact = () => {
                         throw new Error(data.error || "Erreur inconnue");
 
                       toast({
-                        title: "Message envoyé",
-                        description:
-                          "Merci, votre message a bien été transmis à l'administration.",
+                        title: t("toast.messageSentTitle"),
+                        description: t("toast.messageSentDescription"),
                       });
 
                       setName("");
                       setEmail("");
                       setSubject("");
                       setMessage("");
+                      setCaptchaToken(null);
+                      recaptchaRef.current?.reset();
                       localStorage.setItem(
                         "lastContactTime",
                         Date.now().toString()
-                      ); // ⏱️ on enregistre l’heure
+                      );
                     } catch (error) {
                       console.error(error);
                       toast({
-                        title: "Erreur",
-                        description:
-                          "Impossible d'envoyer le message pour l'instant.",
+                        title: t("toast.sendErrorTitle"),
+                        description: t("toast.sendErrorDescription"),
                         variant: "destructive",
                       });
                     } finally {
@@ -359,6 +378,7 @@ const Contact = () => {
                       />
                     </div>
                   </div>
+
                   <div>
                     <Select
                       value={subject}
@@ -397,6 +417,7 @@ const Contact = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
                     <label
                       htmlFor="message"
@@ -413,13 +434,24 @@ const Contact = () => {
                       onChange={(e) => setMessage(e.target.value)}
                     ></textarea>
                   </div>
-                  <Button
-                    type="submit"
-                    disabled={isSending}
-                    className="w-full md:w-auto button-transition bg-rwdm-red hover:bg-rwdm-red/90"
-                  >
-                    {isSending ? "Envoi en cours..." : t("contact_submit")}
-                  </Button>
+
+                  <div className="flex justify-center">
+                    <ReCAPTCHA
+                      sitekey="6LcYAzwrAAAAACa2lHRiUWnw-hIV5cVrz4EWzhGx"
+                      onChange={handleCaptchaChange}
+                      ref={recaptchaRef}
+                    />
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      type="submit"
+                      disabled={isSending}
+                      className="w-full md:w-auto button-transition bg-rwdm-red hover:bg-rwdm-red/90"
+                    >
+                      {isSending ? "Envoi en cours..." : t("contact_submit")}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -468,22 +500,21 @@ const Contact = () => {
                         {t("contact_office_hours")}
                       </h3>
                       <div className="text-gray-600 dark:text-gray-300">
-                        {Object.entries(openingHours || {}).map(
-                          ([day, times]: any) => {
-                            const isClosed =
-                              times.open === "00:00" && times.close === "00:00";
-                            return (
-                              <div key={day}>
-                                {translateDay(day as Day, t)} :{" "}
-                                {isClosed
-                                  ? t("closed")
-                                  : `${times.open || "--:--"} - ${
-                                      times.close || "--:--"
-                                    }`}
-                              </div>
-                            );
-                          }
-                        )}
+                        {daysOfWeek.map((day) => {
+                          const times = openingHours?.[day];
+                          const isClosed =
+                            times?.open === "00:00" && times?.close === "00:00";
+                          return (
+                            <div key={day}>
+                              {translateDay(day, t)} :{" "}
+                              {isClosed
+                                ? t("closed")
+                                : `${times?.open || "--:--"} - ${
+                                    times?.close || "--:--"
+                                  }`}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

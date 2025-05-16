@@ -13,16 +13,19 @@ import {
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar"; // Navbar ajoutée ici
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Eye, EyeOff } from "lucide-react";
 
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorShake, setErrorShake] = useState(false);
   const [errorHighlight, setErrorHighlight] = useState(false);
-
+  const { t } = useTranslation();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -43,8 +46,8 @@ const ResetPassword = () => {
       }
 
       toast({
-        title: "Mot de passe changé",
-        description: "Tu peux maintenant te connecter.",
+        title: t("passwordReset.toastTitle"),
+        description: t("passwordReset.toastDescription"),
       });
 
       navigate("/auth");
@@ -59,8 +62,8 @@ const ResetPassword = () => {
       }, 3000); // Effet actif pendant 3 secondes
 
       toast({
-        title: "Erreur",
-        description: error.message || "Une erreur s'est produite.",
+        title: t("toast.errorTitle"),
+        description: error.message || t("toast.errorDescription"),
         variant: "destructive",
       });
     } finally {
@@ -81,10 +84,10 @@ const ResetPassword = () => {
           <Card className="glass-panel shadow-lg">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold text-rwdm-blue dark:text-white">
-                Réinitialisation du mot de passe
+                {t("passwordReset.headerTitle")}
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400">
-                Entrez votre nouveau mot de passe pour continuer.
+                {t("passwordReset.headerDescription")}
               </CardDescription>
             </CardHeader>
 
@@ -95,19 +98,33 @@ const ResetPassword = () => {
                 animate={errorShake ? { x: [-5, 5, -5, 5, 0] } : {}}
                 transition={{ duration: 0.3 }}
               >
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                <div className="space-y-2 relative">
+                  <Label htmlFor="newPassword">
+                    {t("passwordReset.newPasswordLabel")}
+                  </Label>
+
                   <Input
                     id="newPassword"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    className={`transition-all ${
+                    className={`transition-all pr-10 ${
                       errorHighlight ? "border-red-500 ring-2 ring-red-500" : ""
                     }`}
                   />
+
+                  <div
+                    className="absolute top-[38px] right-3 cursor-pointer text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </div>
                 </div>
 
                 <Button
@@ -116,15 +133,14 @@ const ResetPassword = () => {
                   disabled={isLoading}
                 >
                   {isLoading
-                    ? "Changement en cours..."
-                    : "Changer le mot de passe"}
+                    ? t("passwordReset.changing")
+                    : t("passwordReset.changePassword")}
                 </Button>
               </motion.form>
 
               <div className="mt-4 text-center text-sm">
                 <p className="text-gray-500 dark:text-gray-400">
-                  Une fois le mot de passe changé, tu pourras te connecter avec
-                  tes nouveaux identifiants.
+                  {t("passwordReset.postChangeInfo")}
                 </p>
               </div>
             </CardContent>
