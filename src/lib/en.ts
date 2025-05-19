@@ -1415,4 +1415,5 @@ export const translationsEN = {
   days: "days",
   "summary.balance": "Balance",
   "overdue.none": "No overdue payments.",
+  "button.print": "Print",
 };

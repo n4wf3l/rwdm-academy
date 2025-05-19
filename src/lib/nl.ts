@@ -1452,4 +1452,5 @@ export const translationsNL = {
   days: "dagen",
   "summary.balance": "Saldo",
   "overdue.none": "Geen achterstallige betalingen.",
+  "button.print": "Afdrukken",
 };

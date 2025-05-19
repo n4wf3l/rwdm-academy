@@ -1519,4 +1519,5 @@ export const translationsFR = {
   days: "jours",
   "summary.balance": "Solde",
   "overdue.none": "Aucun paiement en retard.",
+  "button.print": "Imprimer",
 };

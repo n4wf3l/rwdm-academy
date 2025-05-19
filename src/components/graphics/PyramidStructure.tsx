@@ -22,6 +22,7 @@ interface TeamInfo {
 
 interface Level {
   name: string;
+  displayName: string;
   ageGroups: TeamInfo[];
   teams: number;
   players: number;
@@ -58,31 +59,39 @@ const PyramidStructure: React.FC = () => {
     const levels: Level[] = [
       {
         name: "Senior Youth",
+        displayName: "Post formation",
         ageGroups: [],
         teams: 0,
         players: 0,
-        match: (n) => /\b(U1[89]|U2[01])\b/i.test(n),
+        // Uniquement U20 à U23
+        match: (n) => /\b(U2[0-3])\b/i.test(n),
       },
       {
         name: "Middle Youth",
+        displayName: "Jeu à 11",
         ageGroups: [],
         teams: 0,
         players: 0,
-        match: (n) => /\bU1[3-7]\b/i.test(n),
+        // U13 à U19 (incluant U18-U19 qui étaient dans Senior Youth)
+        match: (n) => /\b(U1[3-9])\b/i.test(n),
       },
       {
         name: "Junior Youth",
+        displayName: "Jeu à 8",
         ageGroups: [],
         teams: 0,
         players: 0,
-        match: (n) => /\b(U(1[0-2]|9))\b/i.test(n),
+        // Uniquement U10 à U12 (pas U9)
+        match: (n) => /\b(U1[0-2])\b/i.test(n),
       },
       {
         name: "Foundation",
+        displayName: "Préformation",
         ageGroups: [],
         teams: 0,
         players: 0,
-        match: (n) => /\bU[5-8]\b/i.test(n),
+        // U5 à U9 uniquement
+        match: (n) => /\bU[5-9]\b/i.test(n) && !/\bU1[0-9]\b/i.test(n),
       },
     ];
 
@@ -153,14 +162,23 @@ const PyramidStructure: React.FC = () => {
         : Array.isArray(data.content)
         ? data.content
         : [];
+
       let cat: string | null = null;
-      if (title === "A" || /\bA[- ]?team\b/i.test(team.name)) {
+
+      // Gestion spéciale pour BEFA
+      if (title === "BEFA") {
+        // Utiliser le nom de l'équipe comme catégorie ou "BEFA" par défaut
+        cat = team.name.replace(/Eagles Brussels Football Academy/i, "BEFA");
+      } else if (title === "A" || /\bA[- ]?team\b/i.test(team.name)) {
         cat = "A";
       } else {
         const m = team.name.match(/\bU\d{1,2}\b/i);
         if (m) cat = m[0].toUpperCase();
       }
-      if (!cat) continue;
+
+      // Dernier recours: utiliser le nom de l'équipe comme catégorie
+      if (!cat) cat = team.name;
+
       byCat[cat] = byCat[cat] || [];
       members.forEach((m) => {
         const raw =
@@ -168,7 +186,7 @@ const PyramidStructure: React.FC = () => {
         if (!raw) return;
         const pretty = raw
           .split(" ")
-          .map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+          .map((w) => w[0]?.toUpperCase() + w.slice(1).toLowerCase())
           .join(" ");
         byCat[cat]!.push(pretty);
       });
@@ -225,6 +243,7 @@ const PyramidStructure: React.FC = () => {
                 <PyramidLevel
                   level={{
                     name: "A",
+                    displayName: "A",
                     ageGroups: [topTeam],
                     teams: 1,
                     players: topTeam.players,
@@ -237,6 +256,7 @@ const PyramidStructure: React.FC = () => {
                   key={i}
                   level={{
                     name: lvl.name,
+                    displayName: lvl.displayName,
                     ageGroups: lvl.ageGroups,
                     teams: lvl.teams,
                     players: lvl.players,
@@ -308,6 +328,7 @@ const SideBox: React.FC<{
 const PyramidLevel: React.FC<{
   level: {
     name: string;
+    displayName?: string; // Champ optionnel pour l'affichage
     ageGroups: TeamInfo[];
     teams: number;
     players: number;
@@ -323,6 +344,7 @@ const PyramidLevel: React.FC<{
     "bg-red-300",
     "bg-red-200",
   ];
+  // Utiliser le nom original pour l'index
   const idx = [
     "A",
     "Senior Youth",
@@ -345,7 +367,9 @@ const PyramidLevel: React.FC<{
         `}
       >
         <div className="flex justify-between items-center whitespace-nowrap">
-          <h3 className="text-xl font-bold">{level.name}</h3>
+          <h3 className="text-xl font-bold">
+            {level.displayName || level.name}
+          </h3>
           <div className="flex gap-2">
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
               {level.teams} {level.teams > 1 ? "Équipes" : "Équipe"}
