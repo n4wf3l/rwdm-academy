@@ -44,7 +44,7 @@ export const translationsNL = {
     "Ontdek ons verhaal, onze missie en ons team dat zich inzet voor de ontwikkeling van jong talent.",
   players_trained: "Opgeleide profspelers",
   years_experience: "Jaren ervaring",
-  national_trophies: "Nationale trofeeën",
+  national_trophies: "Betrokken teams",
   young_talents: "Jonge talenten",
   tab_history: "Geschiedenis",
   tab_mission: "Missie",
@@ -391,8 +391,7 @@ export const translationsNL = {
   placeholder_healing_code: "Bijv.: XG72ZL",
   healing_code_valid:
     "Code geldig! Het dossier is gekoppeld aan het e-mailadres: {{email}}",
-  healing_code_invalid:
-    "Geen dossier gevonden voor deze code en e-mailadres: {{email}}",
+  healing_code_invalid: "Geen dossier gevonden voor deze code en e-mailadres.",
   healing_upload_prompt: "Upload hier uw genezingscertificaat:",
   signature_section_title: "Handtekening",
   signature_section_subtitle:
@@ -1430,4 +1429,5 @@ export const translationsNL = {
   "forms.maintenance.accident_desc":
     "Zet het ongevallenformulier in onderhoud.",
   "forms.maintenance.waiver_desc": "Zet het vrijwaringsformulier in onderhoud.",
+  brussels: "Brussel",
 };

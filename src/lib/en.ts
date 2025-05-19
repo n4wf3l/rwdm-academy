@@ -44,7 +44,7 @@ export const translationsEN = {
     "Discover our story, mission, and the team dedicated to developing young talents.",
   players_trained: "Professional players trained",
   years_experience: "Years of experience",
-  national_trophies: "National trophies",
+  national_trophies: "Teams involved",
   young_talents: "Young talents",
   tab_history: "History",
   tab_mission: "Mission",
@@ -388,7 +388,7 @@ export const translationsEN = {
   placeholder_healing_code: "e.g.: XG72ZL",
   healing_code_valid:
     "Valid code! The report is successfully linked to the email: {{email}}",
-  healing_code_invalid: "No report matches this code for the email: {{email}}",
+  healing_code_invalid: "No report matches this code for the email.",
   healing_upload_prompt: "Please attach your healing certificate below:",
   signature_section_title: "Signature",
   signature_section_subtitle:
@@ -1392,4 +1392,5 @@ export const translationsEN = {
     "Put the accident report form in maintenance.",
   "forms.maintenance.waiver_desc":
     "Put the liability waiver form in maintenance.",
+  brussels: "Brussels",
 };

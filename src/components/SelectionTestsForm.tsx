@@ -382,6 +382,12 @@ const SelectionTestsForm: React.FC<FormProps> = ({
     }
   }, [noyau, t]);
 
+  // Ajouter ces fonctions de validation après les imports
+  const lettersOnly = (value: string) => value.replace(/[^a-zA-ZÀ-ÿ\s-]/g, "");
+  const numbersOnly = (value: string) => value.replace(/[^0-9]/g, "");
+  const alphaNumeric = (value: string) =>
+    value.replace(/[^a-zA-ZÀ-ÿ0-9\s-]/g, "");
+
   return (
     <>
       <form
@@ -473,7 +479,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     id="lastName"
                     className="form-input-base"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(e) => setLastName(lettersOnly(e.target.value))}
+                    placeholder="Dupont"
                     required
                   />
                 </div>
@@ -486,7 +493,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     id="firstName"
                     className="form-input-base"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => setFirstName(lettersOnly(e.target.value))}
+                    placeholder="Jean"
                     required
                   />
                 </div>
@@ -509,7 +517,9 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     type="tel"
                     className="form-input-base"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(numbersOnly(e.target.value))}
+                    placeholder="0470123456"
+                    maxLength={10}
                   />
                 </div>
 
@@ -520,7 +530,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     type="email"
                     className="form-input-base"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                    placeholder="jean.dupont@email.com"
                   />
                 </div>
 
@@ -543,7 +554,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     id="currentClub"
                     className="form-input-base"
                     value={currentClub}
-                    onChange={(e) => setCurrentClub(e.target.value)}
+                    onChange={(e) =>
+                      setCurrentClub(alphaNumeric(e.target.value))
+                    }
+                    placeholder="RWDM"
                   />
                 </div>
 
@@ -566,7 +580,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     id="previousClub"
                     className="form-input-base"
                     value={previousClub}
-                    onChange={(e) => setPreviousClub(e.target.value)}
+                    onChange={(e) =>
+                      setPreviousClub(alphaNumeric(e.target.value))
+                    }
+                    placeholder={t("previousClub")}
                   />
                 </div>
 
@@ -623,7 +640,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     id="parentLastName"
                     className="form-input-base"
                     value={parentLastName}
-                    onChange={(e) => setParentLastName(e.target.value)}
+                    onChange={(e) =>
+                      setParentLastName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Dupont"
                     required
                   />
                 </div>
@@ -636,7 +656,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     id="parentFirstName"
                     className="form-input-base"
                     value={parentFirstName}
-                    onChange={(e) => setParentFirstName(e.target.value)}
+                    onChange={(e) =>
+                      setParentFirstName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Jean"
                     required
                   />
                 </div>
@@ -650,7 +673,11 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     type="tel"
                     className="form-input-base"
                     value={parentPhone}
-                    onChange={(e) => setParentPhone(e.target.value)}
+                    onChange={(e) =>
+                      setParentPhone(numbersOnly(e.target.value))
+                    }
+                    placeholder="0470123456"
+                    maxLength={10}
                     required
                   />
                 </div>
@@ -664,7 +691,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     type="email"
                     className="form-input-base"
                     value={parentEmail}
-                    onChange={(e) => setParentEmail(e.target.value)}
+                    onChange={(e) =>
+                      setParentEmail(e.target.value.toLowerCase())
+                    }
+                    placeholder="parent@email.com"
                     required
                   />
                 </div>

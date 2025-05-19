@@ -44,7 +44,7 @@ export const translationsFR = {
     "Découvrez notre histoire, notre mission et notre équipe dédiée au développement des jeunes talents.",
   players_trained: "Joueurs professionnels formés",
   years_experience: "Années d'expérience",
-  national_trophies: "Trophées nationaux",
+  national_trophies: "Équipes engagées",
   young_talents: "Jeunes talents",
   tab_history: "Histoire",
   tab_mission: "Mission",
@@ -441,8 +441,7 @@ export const translationsFR = {
   placeholder_healing_code: "Ex : XG72ZL",
   healing_code_valid:
     "Code valide ! Le dossier est bien lié à l’adresse : {{email}}",
-  healing_code_invalid:
-    "Aucun dossier ne correspond à ce code pour l’email : {{email}}",
+  healing_code_invalid: "Aucun dossier ne correspond à ce code pour l’email",
   healing_upload_prompt:
     "Veuillez joindre votre certificat de guérison ci-dessous :",
 
@@ -1496,4 +1495,5 @@ export const translationsFR = {
     "Mettre le formulaire de déclaration d'accident en maintenance.",
   "forms.maintenance.waiver_desc":
     "Mettre le formulaire de décharge de responsabilité en maintenance.",
+  brussels: "Bruxelles",
 };

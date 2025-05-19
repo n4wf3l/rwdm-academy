@@ -333,6 +333,12 @@ const RegistrationForm: React.FC<FormProps> = ({
     setBirthDate(date);
   };
 
+  // Ajoutez ces fonctions de validation en haut du composant
+  const numbersOnly = (value: string) => value.replace(/[^0-9]/g, "");
+  const lettersOnly = (value: string) => value.replace(/[^a-zA-ZÀ-ÿ\s-]/g, "");
+  const alphaNumeric = (value: string) =>
+    value.replace(/[^a-zA-ZÀ-ÿ0-9\s-]/g, "");
+
   return (
     <>
       <form
@@ -416,7 +422,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                     id="lastName"
                     className="form-input-base"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(e) => setLastName(lettersOnly(e.target.value))}
+                    placeholder="Dupont"
                     required
                   />
                 </div>
@@ -426,7 +433,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                     id="firstName"
                     className="form-input-base"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => setFirstName(lettersOnly(e.target.value))}
+                    placeholder="Jean"
                     required
                   />
                 </div>
@@ -444,7 +452,9 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Input
                     id="birthPlace"
                     className="form-input-base"
-                    onChange={(e) => setBirthPlace(e.target.value)}
+                    value={birthPlace}
+                    onChange={(e) => setBirthPlace(lettersOnly(e.target.value))}
+                    placeholder={t("brussels")}
                     required
                   />
                 </div>
@@ -453,7 +463,9 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Input
                     id="address"
                     className="form-input-base"
-                    onChange={(e) => setAddress(e.target.value)}
+                    value={address}
+                    onChange={(e) => setAddress(alphaNumeric(e.target.value))}
+                    placeholder="Rue Charles Malis 61"
                     required
                   />
                 </div>
@@ -462,7 +474,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Input
                     id="postalCode"
                     className="form-input-base"
-                    onChange={(e) => setPostalCode(e.target.value)}
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(numbersOnly(e.target.value))}
+                    placeholder="1080"
+                    maxLength={4}
                     required
                   />
                 </div>
@@ -471,7 +486,9 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Input
                     id="city"
                     className="form-input-base"
-                    onChange={(e) => setCity(e.target.value)}
+                    value={city}
+                    onChange={(e) => setCity(lettersOnly(e.target.value))}
+                    placeholder="Molenbeek-Saint-Jean"
                     required
                   />
                 </div>
@@ -496,7 +513,11 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Input
                     id="currentClub"
                     className="form-input-base"
-                    onChange={(e) => setCurrentClub(e.target.value)}
+                    value={currentClub}
+                    onChange={(e) =>
+                      setCurrentClub(alphaNumeric(e.target.value))
+                    }
+                    placeholder="RWDM"
                   />
                 </div>
                 <div className="space-y-2">
@@ -568,7 +589,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                           id="parent1LastName"
                           className="form-input-base"
                           value={parent1LastName}
-                          onChange={(e) => setParent1LastName(e.target.value)}
+                          onChange={(e) =>
+                            setParent1LastName(lettersOnly(e.target.value))
+                          }
+                          placeholder="Dupont"
                           required
                         />
                       </div>
@@ -580,7 +604,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                           id="parent1FirstName"
                           className="form-input-base"
                           value={parent1FirstName}
-                          onChange={(e) => setParent1FirstName(e.target.value)}
+                          onChange={(e) =>
+                            setParent1FirstName(lettersOnly(e.target.value))
+                          }
+                          placeholder="Jean"
                           required
                         />
                       </div>
@@ -593,7 +620,12 @@ const RegistrationForm: React.FC<FormProps> = ({
                         id="parent1Phone"
                         className="form-input-base"
                         type="tel"
-                        onChange={(e) => setParent1Phone(e.target.value)}
+                        value={parent1Phone}
+                        onChange={(e) =>
+                          setParent1Phone(numbersOnly(e.target.value))
+                        }
+                        placeholder="0123456789"
+                        maxLength={10}
                         required
                       />
                     </div>
@@ -606,7 +638,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                         className="form-input-base"
                         type="email"
                         value={parent1Email}
-                        onChange={(e) => setParent1Email(e.target.value)}
+                        onChange={(e) =>
+                          setParent1Email(e.target.value.toLowerCase())
+                        }
+                        placeholder="jean.dupont@email.com"
                         required
                       />
                     </div>
@@ -617,7 +652,11 @@ const RegistrationForm: React.FC<FormProps> = ({
                       <Input
                         id="parent1Address"
                         className="form-input-base"
-                        onChange={(e) => setParent1Address(e.target.value)}
+                        value={parent1Address}
+                        onChange={(e) =>
+                          setParent1Address(alphaNumeric(e.target.value))
+                        }
+                        placeholder="Rue Charles Malis 61"
                         required
                       />
                     </div>
@@ -628,7 +667,12 @@ const RegistrationForm: React.FC<FormProps> = ({
                       <Input
                         id="parent1PostalCode"
                         className="form-input-base"
-                        onChange={(e) => setParent1PostalCode(e.target.value)}
+                        value={parent1PostalCode}
+                        onChange={(e) =>
+                          setParent1PostalCode(numbersOnly(e.target.value))
+                        }
+                        placeholder="1080"
+                        maxLength={4}
                         required
                       />
                     </div>
@@ -641,7 +685,12 @@ const RegistrationForm: React.FC<FormProps> = ({
                         id="parent1Gsm"
                         className="form-input-base"
                         type="tel"
-                        onChange={(e) => setParent1Gsm(e.target.value)}
+                        value={parent1Gsm}
+                        onChange={(e) =>
+                          setParent1Gsm(numbersOnly(e.target.value))
+                        }
+                        placeholder="0470123456"
+                        maxLength={10}
                       />
                     </div>
                   </div>
@@ -708,7 +757,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                             id="parent2LastName"
                             className="form-input-base"
                             value={parent2LastName}
-                            onChange={(e) => setParent2LastName(e.target.value)}
+                            onChange={(e) =>
+                              setParent2LastName(lettersOnly(e.target.value))
+                            }
+                            placeholder="Dupont"
                           />
                         </div>
                         <div className="space-y-2">
@@ -720,8 +772,9 @@ const RegistrationForm: React.FC<FormProps> = ({
                             className="form-input-base"
                             value={parent2FirstName}
                             onChange={(e) =>
-                              setParent2FirstName(e.target.value)
+                              setParent2FirstName(lettersOnly(e.target.value))
                             }
+                            placeholder="Jean"
                           />
                         </div>
                       </div>
@@ -734,7 +787,12 @@ const RegistrationForm: React.FC<FormProps> = ({
                           id="parent2Phone"
                           className="form-input-base"
                           type="tel"
-                          onChange={(e) => setParent2Phone(e.target.value)}
+                          value={parent2Phone}
+                          onChange={(e) =>
+                            setParent2Phone(numbersOnly(e.target.value))
+                          }
+                          placeholder="0123456789"
+                          maxLength={10}
                         />
                       </div>
                       <div className="space-y-2">
@@ -747,7 +805,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                           className="form-input-base"
                           type="email"
                           value={parent2Email}
-                          onChange={(e) => setParent2Email(e.target.value)}
+                          onChange={(e) =>
+                            setParent2Email(e.target.value.toLowerCase())
+                          }
+                          placeholder="jean.dupont@email.com"
                         />
                       </div>
                       <div className="space-y-2">
@@ -758,7 +819,11 @@ const RegistrationForm: React.FC<FormProps> = ({
                         <Input
                           id="parent2Address"
                           className="form-input-base"
-                          onChange={(e) => setParent2Address(e.target.value)}
+                          value={parent2Address}
+                          onChange={(e) =>
+                            setParent2Address(alphaNumeric(e.target.value))
+                          }
+                          placeholder="Rue Charles Malis 61"
                         />
                       </div>
                       <div className="space-y-2">
@@ -769,7 +834,12 @@ const RegistrationForm: React.FC<FormProps> = ({
                         <Input
                           id="parent2PostalCode"
                           className="form-input-base"
-                          onChange={(e) => setParent2PostalCode(e.target.value)}
+                          value={parent2PostalCode}
+                          onChange={(e) =>
+                            setParent2PostalCode(numbersOnly(e.target.value))
+                          }
+                          placeholder="1080"
+                          maxLength={4}
                         />
                       </div>
                       <div className="space-y-2">
@@ -781,7 +851,12 @@ const RegistrationForm: React.FC<FormProps> = ({
                           id="parent2Gsm"
                           className="form-input-base"
                           type="tel"
-                          onChange={(e) => setParent2Gsm(e.target.value)}
+                          value={parent2Gsm}
+                          onChange={(e) =>
+                            setParent2Gsm(numbersOnly(e.target.value))
+                          }
+                          placeholder="0470123456"
+                          maxLength={10}
                         />
                       </div>
                     </div>

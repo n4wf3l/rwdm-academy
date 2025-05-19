@@ -523,9 +523,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>
-                      {["owner", "superadmin", "admin"].includes(
-                        currentUserRole.trim()
-                      ) ? (
+                      {["owner", "superadmin"].includes(currentUserRole) ? (
                         <Select
                           value={assignedValue}
                           onValueChange={(value) => {
@@ -575,11 +573,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                           </SelectContent>
                         </Select>
                       ) : (
-                        // Pour l'affichage, on recherche dans les admins actifs ;
-                        // si l'admin assigné (id) n'est pas trouvé, on utilise le nom historique enregistré (assignedAdminName)
-                        <span>
+                        // Pour les admins, affichage statique
+                        <span className="text-sm">
                           {!request.assignedTo || request.assignedTo === "none"
-                            ? "Non assigné"
+                            ? t("select_unassigned")
                             : admins?.find(
                                 (a) =>
                                   Number(a.id) === Number(request.assignedTo)
@@ -627,21 +624,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               <Eye className="h-5 w-5 text-gray-600" />
                               <span className="text-sm text-gray-800">
                                 {t("dropdown_view_request")}
-                              </span>
-                            </DropdownMenuItem>
-
-                            {/* Mettre en cours */}
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUpdateStatus(request.id, "in-progress");
-                              }}
-                              title={t("dropdown_set_in_progress")}
-                              className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
-                            >
-                              <Clock className="h-5 w-5 text-gray-600" />
-                              <span className="text-sm text-gray-800">
-                                {t("dropdown_set_in_progress")}
                               </span>
                             </DropdownMenuItem>
 

@@ -67,6 +67,40 @@ interface FormProps {
   onFormDataChange: (key: string, value: any) => void;
 }
 
+function alphaNumeric(input: string): string {
+  return input.replace(/[^a-zA-Z0-9\s]/g, "");
+}
+
+// Only allow letters (including spaces and accents)
+function lettersOnly(input: string): string {
+  return input.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+}
+
+// Only allow numbers
+function numbersOnly(input: string): string {
+  return input.replace(/[^0-9]/g, "");
+}
+
+// Liste des catégories possibles pour le Select
+const CATEGORIES = [
+  "U6",
+  "U7",
+  "U8",
+  "U9",
+  "U10",
+  "U11",
+  "U12",
+  "U13",
+  "U14",
+  "U15",
+  "U16",
+  "U17",
+  "U18",
+  "U19",
+  "U21",
+  "Seniors",
+];
+
 const AccidentReportForm: React.FC<FormProps> = ({
   formData,
   onFormDataChange,
@@ -503,347 +537,293 @@ const AccidentReportForm: React.FC<FormProps> = ({
         }}
         className="space-y-8 w-full max-w-4xl mx-auto animate-slide-up pt-6"
       >
+        {/* Card 1: Informations de base + Type */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
-            <FormSection
-              title={t("accident_section_title")}
-              subtitle={t("accident_section_subtitle")}
-            >
+            <FormSection title={t("player_info")}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Date de l'accident */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="accidentDate"
-                    className="flex items-center space-x-1"
-                  >
-                    <span>{t("label_accident_date")}</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t("tooltip_accident_date")}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </Label>
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "form-input-base justify-start text-left font-normal w-full",
-                          !accidentDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {accidentDate ? (
-                          format(accidentDate, "PPP", { locale: fr })
-                        ) : (
-                          <span>{t("select_date_placeholder")}</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-auto p-0 pointer-events-auto"
-                      align="start"
-                    >
-                      <Calendar
-                        mode="single"
-                        selected={accidentDate}
-                        onSelect={handleDateSelect}
-                        initialFocus
-                        locale={fr}
-                        className="p-3"
-                        disabled={(date) => date > new Date()}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Nom du club */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="clubName">{t("label_club_name")}</Label>
-                  <Input
-                    id="clubName"
-                    className="form-input-base"
-                    value={clubName}
-                    onChange={(e) => setClubName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Académie & Catégorie côte à côte */}
-                <div className="space-y-2 md:col-span-2 grid md:grid-cols-2 gap-5">
-                  {/* Académie */}
-                  <div className="space-y-2">
-                    <Label htmlFor="academy">{t("label_academy")}</Label>
-                    <Select value={academy} onValueChange={setAcademy} required>
-                      <SelectTrigger className="form-input-base">
-                        <SelectValue
-                          placeholder={t("placeholder_select_academy")}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="RWDM Academy">
-                          RWDM Academy
-                        </SelectItem>
-                        <SelectItem value="Brussels Eagles Football Academy">
-                          Brussels Eagles Football Academy
-                        </SelectItem>
-                        <SelectItem value="Red For Ever Academy">
-                          Red For Ever Academy
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* Catégorie */}
-                  <div className="space-y-2">
-                    <Label htmlFor="category">{t("label_category")}</Label>
-                    <Select onValueChange={setCategory} required>
-                      <SelectTrigger className="form-input-base">
-                        <SelectValue placeholder={t("placeholder_category")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 17 }, (_, i) => i + 5)
-                          .filter((age) => age !== 20)
-                          .map((age) => (
-                            <SelectItem key={`U${age}`} value={`U${age}`}>
-                              {`U${age}`}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Nom du joueur */}
                 <div className="space-y-2">
                   <Label htmlFor="playerLastName">
                     {t("label_player_last_name")}
                   </Label>
                   <Input
                     id="playerLastName"
-                    className="form-input-base"
                     value={playerLastName}
-                    onChange={(e) => setPlayerLastName(e.target.value)}
+                    onChange={(e) =>
+                      setPlayerLastName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Dupont"
                     required
                   />
                 </div>
 
-                {/* Prénom du joueur */}
                 <div className="space-y-2">
                   <Label htmlFor="playerFirstName">
                     {t("label_player_first_name")}
                   </Label>
                   <Input
                     id="playerFirstName"
-                    className="form-input-base"
                     value={playerFirstName}
-                    onChange={(e) => setPlayerFirstName(e.target.value)}
+                    onChange={(e) =>
+                      setPlayerFirstName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Jean"
                     required
                   />
                 </div>
-              </div>
 
-              {/* E-mail & Téléphone */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="email">{t("label_email")}</Label>
                   <Input
                     id="email"
                     type="email"
-                    className="form-input-base"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">{t("label_phone")}</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    className="form-input-base"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                    placeholder="jean.dupont@email.com"
                     required
                   />
                 </div>
               </div>
 
-              {/* Description de l'accident */}
-              <div className="space-y-2 mt-4">
-                <Label htmlFor="accidentDescription">
-                  {t("label_accident_description")}
-                </Label>
-                <Textarea
-                  id="accidentDescription"
-                  className="form-input-base min-h-32"
-                  placeholder={t("placeholder_accident_description")}
-                  required
-                  maxLength={700}
-                  value={accidentDescription}
-                  onChange={(e) => setAccidentDescription(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                  {t("accident_description_counter").replace(
-                    "{{count}}",
-                    accidentDescription.length.toString()
-                  )}
-                </p>
-              </div>
-            </FormSection>
-          </CardContent>
-        </Card>
+              {/* Type Selection et Documents */}
+              <div className="mt-6">
+                <Tabs
+                  defaultValue="accident-report"
+                  value={documentType}
+                  onValueChange={(value) =>
+                    setDocumentType(
+                      value as "accident-report" | "healing-certificate"
+                    )
+                  }
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="accident-report">
+                      {t("tabs_accident_report")}
+                    </TabsTrigger>
+                    <TabsTrigger value="healing-certificate">
+                      {t("tabs_healing_certificate")}
+                    </TabsTrigger>
+                  </TabsList>
 
-        <Card className="glass-panel">
-          <CardContent className="pt-6">
-            <FormSection
-              title={t("document_section_title")}
-              subtitle={t("document_section_subtitle")}
-            >
-              <Tabs
-                defaultValue="accident-report"
-                value={documentType}
-                onValueChange={(value) =>
-                  setDocumentType(
-                    value as "accident-report" | "healing-certificate"
-                  )
-                }
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="accident-report">
-                    {t("tabs_accident_report")}
-                  </TabsTrigger>
-                  <TabsTrigger value="healing-certificate">
-                    {t("tabs_healing_certificate")}
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Déclaration d'accident */}
-                <TabsContent value="accident-report">
-                  <div className="space-y-4">
-                    <div className="flex gap-3 items-end">
-                      <div className="w-full">
-                        <Label htmlFor="accidentCode">
-                          {t("label_accident_code")}
-                        </Label>
-                        <Input
-                          id="accidentCode"
-                          value={accidentCode}
-                          readOnly
-                          placeholder={t("placeholder_accident_code")}
-                          className="form-input-base bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-                          required
-                        />
-                      </div>
-                      <Button type="button" onClick={generateCode}>
-                        {t("button_generate_code")}
-                      </Button>
-                    </div>
-
-                    <div
-                      className="text-sm text-gray-500 dark:text-gray-400"
-                      dangerouslySetInnerHTML={{
-                        __html: t("accident_code_info_html"),
-                      }}
-                    />
-
-                    <UploadSection
-                      files={pdfFiles}
-                      setFiles={setPdfFiles}
-                      handleFileChange={handleFileChange}
-                      documentType={documentType}
-                    />
-                  </div>
-                </TabsContent>
-
-                {/* Certificat de guérison */}
-                <TabsContent value="healing-certificate">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="checkbox"
-                        id="confirmSent"
-                        checked={hasSentDeclaration}
-                        onChange={(e) =>
-                          setHasSentDeclaration(e.target.checked)
-                        }
-                        className="mt-1"
-                      />
-                      <label
-                        htmlFor="confirmSent"
-                        className="text-sm text-gray-700 dark:text-gray-300"
-                      >
-                        {t("checkbox_healing_sent")}
-                      </label>
-                    </div>
-
-                    {hasSentDeclaration && (
-                      <>
-                        <div>
-                          <Label htmlFor="healingCode">
-                            {t("label_healing_code")}
+                  <TabsContent value="accident-report">
+                    {/* Section code et upload pour déclaration d'accident */}
+                    <div className="space-y-4">
+                      <div className="flex gap-3 items-end">
+                        <div className="w-full">
+                          <Label htmlFor="accidentCode">
+                            {t("label_accident_code")}
                           </Label>
                           <Input
-                            id="healingCode"
-                            value={healingCode}
-                            onChange={(e) => {
-                              const val = e.target.value.toUpperCase();
-                              setHealingCode(val);
-                              checkCodeValidity(val, email);
-                            }}
-                            placeholder={t("placeholder_healing_code")}
-                            className={`form-input-base ${
-                              codeValid === false
-                                ? "border-red-500"
-                                : codeValid === true
-                                ? "border-green-500"
-                                : ""
-                            }`}
+                            id="accidentCode"
+                            value={accidentCode}
+                            readOnly
+                            placeholder={t("placeholder_accident_code")}
+                            className="form-input-base bg-gray-100"
                             required
                           />
                         </div>
+                        <Button type="button" onClick={generateCode}>
+                          {t("button_generate_code")}
+                        </Button>
+                      </div>
+                      <UploadSection
+                        files={pdfFiles}
+                        setFiles={setPdfFiles}
+                        handleFileChange={handleFileChange}
+                        documentType="accident-report"
+                      />
+                    </div>
+                  </TabsContent>
 
-                        {codeValid === true && (
-                          <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4" />
-                            {t("healing_code_valid").replace(
-                              "{{email}}",
-                              email
-                            )}
-                          </p>
-                        )}
-                        {codeValid === false && (
-                          <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                            <XCircle className="w-4 h-4" />
-                            {t("healing_code_invalid").replace(
-                              "{{email}}",
-                              email || t("not_provided")
-                            )}
-                          </p>
-                        )}
-
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {t("healing_upload_prompt")}
-                        </p>
-
-                        <UploadSection
-                          files={pdfFiles}
-                          setFiles={setPdfFiles}
-                          handleFileChange={handleFileChange}
-                          documentType="healing-certificate"
+                  <TabsContent value="healing-certificate">
+                    {/* Section certificat de guérison */}
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          id="confirmSent"
+                          checked={hasSentDeclaration}
+                          onChange={(e) =>
+                            setHasSentDeclaration(e.target.checked)
+                          }
+                          className="mt-1"
                         />
-                      </>
-                    )}
+                        <label
+                          htmlFor="confirmSent"
+                          className="text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {t("checkbox_healing_sent")}
+                        </label>
+                      </div>
+
+                      {hasSentDeclaration && (
+                        <>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="healingCode">
+                                {t("label_healing_code")}
+                              </Label>
+                              <Input
+                                id="healingCode"
+                                value={healingCode}
+                                onChange={(e) => {
+                                  const val = e.target.value.toUpperCase();
+                                  setHealingCode(val);
+                                  checkCodeValidity(val, email);
+                                }}
+                                placeholder="XG72ZL"
+                                maxLength={6}
+                                required
+                              />
+                            </div>
+                            {codeValid !== null && (
+                              <p
+                                className={`text-sm flex items-center gap-1 ${
+                                  codeValid ? "text-green-600" : "text-red-500"
+                                }`}
+                              >
+                                {codeValid ? (
+                                  <CheckCircle className="w-4 h-4" />
+                                ) : (
+                                  <XCircle className="w-4 h-4" />
+                                )}
+                                {codeValid
+                                  ? t("healing_code_valid").replace(
+                                      "{{email}}",
+                                      email
+                                    )
+                                  : t("healing_code_invalid")}
+                              </p>
+                            )}
+                            <UploadSection
+                              files={pdfFiles}
+                              setFiles={setPdfFiles}
+                              handleFileChange={handleFileChange}
+                              documentType="healing-certificate"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              {/* Champs conditionnels pour la déclaration d'accident */}
+              {documentType === "accident-report" && (
+                <div className="space-y-6 mt-6">
+                  {/* Date de l'accident */}
+                  <div className="space-y-2">
+                    <Label htmlFor="accidentDate">
+                      {t("label_accident_date")}
+                    </Label>
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "form-input-base justify-start text-left font-normal w-full",
+                            !accidentDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {accidentDate ? (
+                            format(accidentDate, "PPP", { locale: fr })
+                          ) : (
+                            <span>{t("select_date_placeholder")}</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0 pointer-events-auto"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={accidentDate}
+                          onSelect={handleDateSelect}
+                          initialFocus
+                          locale={fr}
+                          className="p-3"
+                          disabled={(date) => date > new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
-                </TabsContent>
-              </Tabs>
+
+                  {/* Académie & Catégorie */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="academy">{t("label_academy")}</Label>
+                      <Select
+                        value={academy}
+                        onValueChange={setAcademy}
+                        required
+                      >
+                        <SelectTrigger className="form-input-base">
+                          <SelectValue placeholder={t("academy")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="RWDM Academy">
+                            RWDM Academy
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="category">{t("label_category")}</Label>
+                      <Select onValueChange={setCategory} required>
+                        <SelectTrigger className="form-input-base">
+                          <SelectValue placeholder={t("category")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CATEGORIES.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Téléphone */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">{t("label_phone")}</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(numbersOnly(e.target.value))}
+                      placeholder="0470123456"
+                      maxLength={10}
+                      required
+                    />
+                  </div>
+
+                  {/* Description de l'accident */}
+                  <div className="space-y-2">
+                    <Label htmlFor="accidentDescription">
+                      {t("label_accident_description")}
+                    </Label>
+                    <Textarea
+                      id="accidentDescription"
+                      value={accidentDescription}
+                      onChange={(e) => setAccidentDescription(e.target.value)}
+                      placeholder={t("placeholder_accident_description")}
+                      className="min-h-[100px]"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
             </FormSection>
           </CardContent>
         </Card>
 
+        {/* Card 3: Signature Section - Comme avant */}
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <FormSection

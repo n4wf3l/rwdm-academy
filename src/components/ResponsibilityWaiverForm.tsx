@@ -278,6 +278,11 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
     { label: t("spellcheck_field_player_first_name"), value: playerFirstName },
   ];
 
+  const lettersOnly = (value: string) => value.replace(/[^a-zA-ZÀ-ÿ\s-]/g, "");
+  const numbersOnly = (value: string) => value.replace(/[^0-9]/g, "");
+  const alphaNumeric = (value: string) =>
+    value.replace(/[^a-zA-ZÀ-ÿ0-9\s-]/g, "");
+
   return (
     <>
       <form
@@ -311,7 +316,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     id="playerLastName"
                     className="form-input-base"
                     value={playerLastName}
-                    onChange={(e) => setPlayerLastName(e.target.value)}
+                    onChange={(e) =>
+                      setPlayerLastName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Dupont"
                     required
                   />
                 </div>
@@ -324,7 +332,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     id="playerFirstName"
                     className="form-input-base"
                     value={playerFirstName}
-                    onChange={(e) => setPlayerFirstName(e.target.value)}
+                    onChange={(e) =>
+                      setPlayerFirstName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Jean"
                     required
                   />
                 </div>
@@ -353,7 +364,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     id="currentClub"
                     className="form-input-base"
                     value={currentClub}
-                    onChange={(e) => setCurrentClub(e.target.value)}
+                    onChange={(e) =>
+                      setCurrentClub(alphaNumeric(e.target.value))
+                    }
+                    placeholder="RWDM"
                     required
                   />
                 </div>
@@ -377,7 +391,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     id="parentLastName"
                     className="form-input-base"
                     value={parentLastName}
-                    onChange={(e) => setParentLastName(e.target.value)}
+                    onChange={(e) =>
+                      setParentLastName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Dupont"
                     required
                   />
                 </div>
@@ -390,7 +407,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     id="parentFirstName"
                     className="form-input-base"
                     value={parentFirstName}
-                    onChange={(e) => setParentFirstName(e.target.value)}
+                    onChange={(e) =>
+                      setParentFirstName(lettersOnly(e.target.value))
+                    }
+                    placeholder="Jean"
                     required
                   />
                 </div>
@@ -402,7 +422,11 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     type="tel"
                     className="form-input-base"
                     value={parentPhone}
-                    onChange={(e) => setParentPhone(e.target.value)}
+                    onChange={(e) =>
+                      setParentPhone(numbersOnly(e.target.value))
+                    }
+                    placeholder="0470123456"
+                    maxLength={10}
                     required
                   />
                 </div>
@@ -414,7 +438,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     type="email"
                     className="form-input-base"
                     value={parentEmail}
-                    onChange={(e) => setParentEmail(e.target.value)}
+                    onChange={(e) =>
+                      setParentEmail(e.target.value.toLowerCase())
+                    }
+                    placeholder="jean.dupont@email.com"
                     required
                   />
                 </div>

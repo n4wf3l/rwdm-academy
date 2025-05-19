@@ -197,22 +197,22 @@ const AboutSettings = ({
             >
               {[
                 {
-                  label: "Joueurs formés",
+                  label: t("players_trained"),
                   value: playersCount,
                   setter: setPlayersCount,
                 },
                 {
-                  label: "Années d'expérience",
+                  label: t("years_experience"),
                   value: experienceYears,
                   setter: setExperienceYears,
                 },
                 {
-                  label: "Trophées nationaux",
+                  label: t("national_trophies"),
                   value: nationalTrophies,
                   setter: setNationalTrophies,
                 },
                 {
-                  label: "Jeunes talents détectés",
+                  label: t("young_talents"),
                   value: youngTalents,
                   setter: setYoungTalents,
                 },
