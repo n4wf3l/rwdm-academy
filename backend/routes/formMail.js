@@ -301,81 +301,114 @@ router.post("/send-waiver-email", async (req, res) => {
 });
 
 router.post("/send-contact-message", async (req, res) => {
-  const { name, email, subject, message, captcha } = req.body;
-
-  // 🛑 Vérification des champs obligatoires
-  if (!name || !email || !subject || !message || !captcha) {
-    return res
-      .status(400)
-      .json({ error: "Tous les champs sont requis, y compris le captcha." });
-  }
-
-  // ✅ Vérification du captcha via Google
   try {
-    const verifyCaptcha = await fetch(
-      "https://www.google.com/recaptcha/api/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `secret=6LcYAzwrAAAAADMKKeyv-KYy0_tg8-CFSUTrtKw1&response=${captcha}`,
-      }
-    );
+    const { name, email, subject, message, captcha } = req.body;
 
-    const captchaResult = await verifyCaptcha.json();
-
-    if (!captchaResult.success) {
-      return res
-        .status(403)
-        .json({ error: "Échec de la vérification du captcha." });
+    // Validation des données
+    if (!name || !email || !subject || !message) {
+      console.log("❌ Données du formulaire incomplètes");
+      return res.status(400).json({ error: "Tous les champs sont requis" });
     }
-  } catch (err) {
-    console.error("❌ Erreur lors de la vérification du captcha :", err);
-    return res
-      .status(500)
-      .json({ error: "Erreur lors de la vérification du captcha." });
-  }
 
-  // ✅ Envoi de l'email
-  try {
+    if (!captcha) {
+      console.log("❌ Captcha manquant");
+      return res.status(400).json({ error: "Captcha requis" });
+    }
+
+    // Vérification du captcha
+    console.log("🔍 Vérification du captcha...");
+    try {
+      const verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
+      const secretKey = "6LcYAzwrAAAAADMKKeyv-KYy0_tg8-CFSUTrtKw1";
+
+      const response = await fetch(verifyUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `secret=${secretKey}&response=${captcha}`,
+      });
+
+      const captchaData = await response.json();
+      if (!captchaData.success) {
+        console.log("❌ Échec de vérification du captcha:", captchaData);
+        return res.status(400).json({ error: "Vérification captcha échouée" });
+      }
+      console.log("✅ Captcha validé");
+    } catch (error) {
+      console.error("❌ Erreur lors de la vérification du captcha:", error);
+      return res.status(500).json({ error: "Erreur de vérification captcha" });
+    }
+
+    // AJOUTER CETTE PARTIE - Définir le transporter
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
       secure: false,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
-    // Ajoutez cette vérification de connexion
-    transporter.verify(function (error, success) {
-      if (error) {
-        console.error("❌ Erreur de configuration SMTP:", error);
-      } else {
-        console.log("✅ Serveur SMTP prêt à envoyer des emails");
-      }
-    });
+    // Test de connexion SMTP avant envoi
+    console.log("🔄 Test de connexion SMTP...");
+    try {
+      await transporter.verify();
+      console.log("✅ Connexion SMTP réussie");
+    } catch (error) {
+      console.error("❌ Échec de connexion SMTP:", error);
+      return res
+        .status(500)
+        .json({ error: "Erreur de connexion au serveur mail" });
+    }
 
-    const html = `
-      <h2>📬 Nouveau message reçu depuis le formulaire de contact</h2>
-      <p><strong>Nom :</strong> ${name}</p>
-      <p><strong>Email :</strong> ${email}</p>
-      <p><strong>Sujet :</strong> ${subject}</p>
-      <p><strong>Message :</strong><br/>${message.replace(/\n/g, "<br/>")}</p>
-    `;
+    // Envoi de l'email
+    console.log("📧 Envoi de l'email en cours...");
+    try {
+      // Remplacer par cette implémentation avec un mappage des sujets:
+      const getSubjectTranslation = (subjectCode) => {
+        const subjectMap = {
+          registration: "Inscription à l'académie",
+          selection_tests: "Tests de sélection",
+          liability_waiver: "Décharge de responsabilité",
+          accident_report: "Déclaration d'accident",
+          recruitment: "Recrutement",
+          incident: "Incident",
+          technical: "Problème technique",
+          other: "Autre question",
+        };
 
-    await transporter.sendMail({
-      from: '"RWDM Academy – Contact" <info@nainnovations.be>',
-      to: "info@nainnovations.be",
-      replyTo: email,
-      subject: `📬 Nouveau message via formulaire de contact : ${subject}`,
-      html,
-    });
+        return subjectMap[subjectCode] || subjectCode;
+      };
 
-    res.json({ message: "Message envoyé avec succès." });
-  } catch (err) {
-    console.error("❌ Erreur lors de l'envoi du message :", err);
-    res.status(500).json({ error: "Erreur lors de l'envoi du message." });
+      const subjectType = getSubjectTranslation(subject);
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER,
+        replyTo: email,
+        subject: `[Contact] ${subjectType} - ${name}`,
+        html: `
+          <h2>Nouveau message de contact</h2>
+          <p><strong>De:</strong> ${name} (${email})</p>
+          <p><strong>Sujet:</strong> ${subjectType}</p>
+          <p><strong>Message:</strong></p>
+          <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
+            ${message.replace(/\n/g, "<br>")}
+          </div>
+        `,
+      });
+      console.log("✅ Email envoyé avec succès");
+
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error("❌ Erreur d'envoi d'email:", error);
+      return res.status(500).json({ error: "Erreur d'envoi du message" });
+    }
+  } catch (error) {
+    console.error("❌ Erreur générale:", error);
+    res.status(500).json({ error: "Erreur lors de l'envoi du message" });
   }
 });
 
