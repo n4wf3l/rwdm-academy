@@ -53,23 +53,41 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
   );
 };
 
-const ResponsibilityWaiverForm: React.FC = () => {
+interface FormProps {
+  formData: Record<string, any>;
+  onFormDataChange: (key: string, value: any) => void;
+}
+
+const ResponsibilityWaiverForm: React.FC<FormProps> = ({
+  formData,
+  onFormDataChange,
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, lang } = useTranslation();
-  const [parentLastName, setParentLastName] = useState<string>("");
-  const [parentFirstName, setParentFirstName] = useState<string>("");
-  const [parentPhone, setParentPhone] = useState<string>("");
-  const [parentEmail, setParentEmail] = useState<string>("");
-  const [playerLastName, setPlayerLastName] = useState<string>("");
-  const [playerFirstName, setPlayerFirstName] = useState<string>("");
-  const [playerBirthDate, setPlayerBirthDate] = useState<Date | null>(null);
-  const [currentClub, setCurrentClub] = useState<string>("");
-  const [previousClub, setPreviousClub] = useState<string>("");
-  const [signatureDate, setSignatureDate] = useState<Date | undefined>(
-    new Date()
+  const [parentLastName, setParentLastName] = useState(
+    formData.parentLastName || ""
   );
-  const [signature, setSignature] = useState<string | null>(null);
+  const [parentFirstName, setParentFirstName] = useState(
+    formData.parentFirstName || ""
+  );
+  const [parentPhone, setParentPhone] = useState(formData.parentPhone || "");
+  const [parentEmail, setParentEmail] = useState(formData.parentEmail || "");
+  const [playerLastName, setPlayerLastName] = useState(
+    formData.playerLastName || ""
+  );
+  const [playerFirstName, setPlayerFirstName] = useState(
+    formData.playerFirstName || ""
+  );
+  const [playerBirthDate, setPlayerBirthDate] = useState<Date | null>(
+    formData.playerBirthDate ? new Date(formData.playerBirthDate) : null
+  );
+  const [currentClub, setCurrentClub] = useState(formData.currentClub || "");
+  const [previousClub, setPreviousClub] = useState(formData.previousClub || "");
+  const [signatureDate, setSignatureDate] = useState<Date | undefined>(
+    formData.signatureDate ? new Date(formData.signatureDate) : new Date()
+  );
+  const [signature, setSignature] = useState<string | null>(formData.signature);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);

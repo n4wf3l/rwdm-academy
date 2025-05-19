@@ -181,4 +181,53 @@ router.delete("/upload/image", (req, res) => {
   }
 });
 
+// Obtenir tous les états de maintenance
+router.get("/form-maintenance", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [rows] = await connection.execute("SELECT * FROM form_maintenance");
+    await connection.end();
+
+    // Convertir en objet pour le frontend
+    const states = rows.reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr.form_type]: curr.is_maintenance === 1,
+      }),
+      {}
+    );
+
+    res.json(states);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des états de maintenance:",
+      error
+    );
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// Mettre à jour l'état de maintenance d'un formulaire
+router.put("/form-maintenance/:formType", async (req, res) => {
+  const { formType } = req.params;
+  const { is_maintenance } = req.body;
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    await connection.execute(
+      "UPDATE form_maintenance SET is_maintenance = ? WHERE form_type = ?",
+      [is_maintenance ? 1 : 0, formType]
+    );
+    await connection.end();
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error(
+      "Erreur lors de la mise à jour de l'état de maintenance:",
+      error
+    );
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;

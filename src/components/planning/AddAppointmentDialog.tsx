@@ -110,6 +110,38 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     fetchAdmins();
   }, []);
 
+  const sendAppointmentEmail = async (appointmentData) => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/form-mail/send-appointment-confirmation", // Changed from send-appointment-email
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            appointment: {
+              ...appointmentData,
+              adminName: admins.find((a) => a.id === appointmentData.adminId)
+                ?.name,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Échec de l'envoi de l'email");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("❌ Erreur envoi email:", error);
+      throw error;
+    }
+  };
+
   const saveAppointmentToDB = async () => {
     try {
       /* ───────── 1) Vérifications de base ───────── */
@@ -178,26 +210,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
       /* ───────── 5) Envoi automatique d’e‑mail (optionnel) ───────── */
       if (sendEmailChecked) {
-        const mailRes = await fetch(
-          "http://localhost:5000/api/form-mail/send-appointment-confirmation",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              appointment: {
-                ...appointmentData,
-                adminName: admin?.name ?? "",
-              },
-            }),
-          }
-        );
+        const mailRes = await sendAppointmentEmail(appointmentData);
 
-        if (!mailRes.ok) throw new Error("Échec envoi email");
-
-        const mailData = await mailRes.json();
         toast({
           title: "Email envoyé",
-          description: mailData.message,
+          description: mailRes.message,
         });
       }
 

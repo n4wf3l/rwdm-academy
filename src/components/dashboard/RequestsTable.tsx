@@ -326,21 +326,82 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     currentPage * itemsPerPage
   );
 
+  const sendConfirmationEmail = async (
+    request: Request,
+    decision: "accepted" | "rejected"
+  ) => {
+    try {
+      // Mapping correct des types selon votre base de données
+      const typeMapping = {
+        registration: "registration_confirmed",
+        "selection-tests": "selection_confirmed",
+        "accident-report": "accident_confirmed",
+        healing: "healing_confirmed",
+        "responsibility-waiver": "waiver_confirmed",
+      };
+
+      const template = typeMapping[request.type];
+      console.log("📧 Type de template utilisé:", template);
+
+      const response = await fetch(
+        "http://localhost:5000/api/form-mail/send-decision-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            formData: request.details,
+            requestId: request.id,
+            decision,
+            requestType: request.type,
+            template,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("❌ Erreur serveur:", errorData);
+        throw new Error(errorData.message || "Échec de l'envoi");
+      }
+
+      const data = await response.json();
+      toast({
+        title: "Confirmation envoyée",
+        description: "L'email de confirmation a été envoyé avec succès.",
+      });
+    } catch (error) {
+      console.error("❌ Erreur envoi confirmation:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer l'email de confirmation.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <motion.div initial="hidden" animate="visible" variants={tableVariants}>
         <Table>
-          <TableHead>{t("table_id")}</TableHead>
-          <TableHead>{t("table_type")}</TableHead>
-          <TableHead>{t("table_name")}</TableHead>
-          <TableHead>{t("table_status")}</TableHead>
-          <TableHead>{t("table_assigned_to")}</TableHead>
-          <TableHead>{t("table_date")}</TableHead>
-          <TableHead className="text-center border-l">
-            {t("table_appointment")}
-          </TableHead>
-          <TableHead className="text-center">{t("table_actions")}</TableHead>
-
+          <thead>
+            <TableRow>
+              <TableHead>{t("table_id")}</TableHead>
+              <TableHead>{t("table_type")}</TableHead>
+              <TableHead>{t("table_name")}</TableHead>
+              <TableHead>{t("table_status")}</TableHead>
+              <TableHead>{t("table_assigned_to")}</TableHead>
+              <TableHead>{t("table_date")}</TableHead>
+              <TableHead className="text-center border-l">
+                {t("table_appointment")}
+              </TableHead>
+              <TableHead className="text-center">
+                {t("table_actions")}
+              </TableHead>
+            </TableRow>
+          </thead>
           <TableBody>
             {isLoading ? (
               // Skeleton loader pendant le chargement
@@ -723,35 +784,10 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
             );
 
             /* 2. Envoi d’email si la case est cochée */
-            /* 2. Envoi d’email si la case est cochée */
             if (sendEmail) {
               const decision = type === "accept" ? "accepted" : "rejected";
 
-              fetch("http://localhost:5000/api/form-mail/send-decision-email", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  formData: request.details, // le backend attend 'formData'
-                  requestId: request.id,
-                  decision, // 'accepted' | 'rejected'
-                  requestType: request.type,
-                }),
-              })
-                .then((res) => {
-                  if (!res.ok) throw new Error("Échec de l'envoi");
-                  return res.json();
-                })
-                .then((data) =>
-                  toast({ title: "Email envoyé", description: data.message })
-                )
-                .catch((err) => {
-                  console.error("❌ Erreur envoi mail :", err);
-                  toast({
-                    title: "Erreur",
-                    description: "Impossible d’envoyer l’email.",
-                    variant: "destructive",
-                  });
-                });
+              sendConfirmationEmail(request, decision);
             }
 
             /* 3. Fermeture du dialogue */

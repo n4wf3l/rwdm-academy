@@ -55,7 +55,15 @@ const FormSection: React.FC<FormSectionProps> = ({
   </div>
 );
 
-const SelectionTestsForm: React.FC = () => {
+interface FormProps {
+  formData: Record<string, any>;
+  onFormDataChange: (key: string, value: any) => void;
+}
+
+const SelectionTestsForm: React.FC<FormProps> = ({
+  formData,
+  onFormDataChange,
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, lang } = useTranslation();
@@ -103,8 +111,8 @@ const SelectionTestsForm: React.FC = () => {
     [t]
   );
   // États pour les informations sur les tests
-  const [noyau, setNoyau] = useState<string>("");
-  const [academy, setAcademy] = useState<string>("");
+  const [noyau, setNoyau] = useState(formData.noyau || "");
+  const [academy, setAcademy] = useState(formData.academy || "");
   const [testStartDate, setTestStartDate] = useState<Date | null>(null);
   const [testEndDate, setTestEndDate] = useState<Date | null>(null);
 
@@ -312,7 +320,7 @@ const SelectionTestsForm: React.FC = () => {
 
       // ✅ Envoi de l'email de confirmation
       await fetch(
-        "http://localhost:5000/api/form-mail/send-selection-test-email",
+        "http://localhost:5000/api/form-mail/send-selection-tests-email",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

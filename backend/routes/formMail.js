@@ -4,6 +4,8 @@ const nodemailer = require("nodemailer");
 const { format } = require("date-fns");
 const { fr } = require("date-fns/locale");
 const fetch = require("node-fetch");
+const authMiddleware = require("../middleware/auth");
+const db = require("../db"); // Changez cette ligne
 
 function getLabelFromType(type) {
   switch (type) {
@@ -35,47 +37,57 @@ router.post("/send-registration-email", async (req, res) => {
   }
 
   try {
+    // Ajouter la configuration du transporter ici
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
-    const html = `
-  <p>Bonjour ${formData.parent1FirstName ?? ""},</p>
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      ["registration"]
+    );
 
-  <p>Nous vous confirmons que nous avons bien reçu la demande d'inscription de votre enfant <strong>${
-    formData.firstName
-  } ${formData.lastName}</strong> à la ${formData.academy} pour la saison ${
-      formData.season
-    }.</p>
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
 
-  <p>Notre équipe administrative étudiera votre dossier dans les plus brefs délais. En cas d'acceptation, vous serez contacté pour fixer un rendez-vous au secrétariat ou pour une séance de test de sélection.</p>
+    const template = templates[0];
 
-  <p>📢 Restez attentif à vos emails — une réponse vous sera envoyée prochainement.</p>
-      <br/>
-        <p><strong>Numéro de référence de la demande :</strong> ${requestId}</p>
-              <br/>
-  <br/>
-  <p>Cordialement,</p>
-  <p><strong>RWDM Academy</strong><br/>Service des inscriptions</p>
-`;
+    // Remplacer les variables et préserver les sauts de ligne
+    let htmlContent = template.body
+      .replace(/{parentName}/g, formData.parent1FirstName || "")
+      .replace(/{playerName}/g, `${formData.firstName} ${formData.lastName}`)
+      .replace(/{academy}/g, formData.academy || "")
+      .replace(/{season}/g, formData.season || "")
+      .replace(/{requestId}/g, requestId)
+      // Convertir les retours à la ligne en balises <br/>
+      .replace(/\n/g, "<br/>");
 
-    await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parent1Email,
-      subject: `Demande d'inscription reçue – RWDM Academy (ref #${requestId})`,
-      html,
-    });
+      subject: template.subject.replace(/{requestId}/g, requestId),
+      html: htmlContent,
+    };
+
+    console.log("Options d'email:", mailOptions);
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email envoyé:", info.messageId);
 
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
-    console.error("❌ Erreur d'envoi :", err);
-    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
+    console.error("❌ Erreur détaillée:", err);
+    res.status(500).json({
+      error: "Erreur lors de l'envoi de l'email",
+      details: err.message,
+    });
   }
 });
 
@@ -93,13 +105,22 @@ router.post("/send-selection-test-email", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
+    });
+
+    // Ajoutez cette vérification de connexion
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.error("❌ Erreur de configuration SMTP:", error);
+      } else {
+        console.log("✅ Serveur SMTP prêt à envoyer des emails");
+      }
     });
 
     const html = `
@@ -158,79 +179,59 @@ router.post("/send-accident-report-email", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.EMAIL_HOST, // Changé de SMTP_HOST
+      port: process.env.EMAIL_PORT, // Changé de SMTP_PORT
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.EMAIL_USER, // Changé de SMTP_USER
+        pass: process.env.EMAIL_PASS, // Changé de SMTP_PASS
       },
     });
 
+    // Récupérer le template depuis la base de données
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      [
+        formData.documentLabel === "Certificat de guérison"
+          ? "healing"
+          : "accident",
+      ]
+    );
+
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
+
+    const template = templates[0];
     const isDeclaration = formData.documentLabel === "Déclaration d'accident";
 
-    const html = isDeclaration
-      ? `
-          <p>Bonjour,</p>
-  
-          <p>Nous vous confirmons que nous avons bien reçu la <strong>déclaration d'accident</strong> concernant le joueur 
-          <strong>${formData.playerFirstName} ${formData.playerLastName}</strong>.</p>
-  
-          <p>
-            <strong style="color:#c53030; font-size: 18px;">IMPORTANT :</strong><br/>
-            Conservez précieusement le code ci-dessous. Il vous sera demandé plus tard pour téléverser le <strong>certificat de guérison</strong>.
-          </p>
-  
-          <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border: 2px dashed #c53030; text-align: center;">
-            <p style="font-size: 22px; font-weight: bold; color: #c53030; letter-spacing: 2px;">
-              ${formData.codeDossier}
-            </p>
-          </div>
-  
-          <p>
-            Sans ce code, vous ne pourrez pas finaliser la procédure de remboursement auprès de l’Union belge.<br/>
-            Gardez-le en lieu sûr ou imprimez ce mail si besoin.
-          </p>
-  
-          <p><strong>Numéro de référence de la déclaration :</strong> ${requestId}</p>
-  
-          <br/>
-          <p>Cordialement,</p>
-          <p><strong>RWDM Academy</strong><br/>Cellule médicale</p>
-        `
-      : `
-          <p>Bonjour,</p>
-  
-          <p>Merci pour l’envoi du <strong>certificat de guérison</strong> concernant le joueur 
-          <strong>${formData.playerFirstName} ${formData.playerLastName}</strong>.</p>
-  
-          <p>
-            🩺 Votre document a bien été reçu par le club. Il sera prochainement vérifié par notre cellule médicale.</p>
+    // Remplacer les variables dans le template
+    let htmlContent = template.body
+      .replace(
+        /{playerName}/g,
+        `${formData.playerFirstName} ${formData.playerLastName}`
+      )
+      .replace(/{codeDossier}/g, formData.codeDossier || "")
+      .replace(/{requestId}/g, requestId)
+      .replace(/\n/g, "<br/>");
 
-             <p>
-            Vous recevrez une confirmation ou des instructions supplémentaires par email dès que le traitement aura été effectué.
-          </p>
-  
-          <br/>
-          <p>Cordialement,</p>
-          <p><strong>RWDM Academy</strong><br/>Cellule médicale</p>
-        `;
-
-    const subject = isDeclaration
-      ? `Déclaration d'accident reçue – RWDM Academy (ref #${requestId})`
-      : `Certificat de guérison reçu – RWDM Academy (ref #${requestId})`;
-
-    await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: formData.email,
-      subject,
-      html,
-    });
+      subject: template.subject.replace(/{requestId}/g, requestId),
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email envoyé:", info.messageId);
 
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
-    console.error("❌ Erreur d'envoi :", err);
-    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
+    console.error("❌ Erreur détaillée:", err);
+    res.status(500).json({
+      error: "Erreur lors de l'envoi de l'email",
+      details: err.message,
+    });
   }
 });
 
@@ -241,53 +242,61 @@ router.post("/send-waiver-email", async (req, res) => {
     !formData ||
     !formData.parentEmail ||
     !formData.parentFirstName ||
-    !formData.parentLastName ||
-    !formData.playerFirstName ||
-    !formData.playerLastName
+    !formData.parentLastName
   ) {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.EMAIL_HOST, // Changé de SMTP_HOST
+      port: process.env.EMAIL_PORT, // Changé de SMTP_PORT
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.EMAIL_USER, // Changé de SMTP_USER
+        pass: process.env.EMAIL_PASS, // Changé de SMTP_PASS
       },
     });
 
-    const html = `
-        <p>Bonjour ${formData.parentFirstName},</p>
-  
-        <p>Nous vous confirmons que la <strong>décharge de responsabilité</strong> pour le joueur
-        <strong>${formData.playerFirstName} ${formData.playerLastName}</strong> a bien été reçue.</p>
-  
-        <p>
-          📝 Elle sera analysée et validée prochainement par notre cellule administrative.<br/>
-          Vous serez tenu(e) informé(e) par email une fois la procédure finalisée.
-        </p>
-  
-        <p><strong>Numéro de référence :</strong> ${requestId}</p>
-  
-        <br/>
-        <p>Cordialement,</p>
-        <p><strong>RWDM Academy</strong><br/>Administration</p>
-      `;
+    // Récupérer le template depuis la base de données
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      ["waiver"]
+    );
 
-    await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
+
+    const template = templates[0];
+
+    // Remplacer les variables dans le template
+    let htmlContent = template.body
+      .replace(/{parentName}/g, formData.parentFirstName)
+      .replace(
+        /{playerName}/g,
+        `${formData.playerFirstName} ${formData.playerLastName}`
+      )
+      .replace(/{requestId}/g, requestId)
+      .replace(/\n/g, "<br/>");
+
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parentEmail,
-      subject: `Décharge de responsabilité reçue – RWDM Academy (ref #${requestId})`,
-      html,
-    });
+      subject: template.subject.replace(/{requestId}/g, requestId),
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email envoyé:", info.messageId);
 
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
-    console.error("❌ Erreur d'envoi :", err);
-    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
+    console.error("❌ Erreur détaillée:", err);
+    res.status(500).json({
+      error: "Erreur lors de l'envoi de l'email",
+      details: err.message,
+    });
   }
 });
 
@@ -329,13 +338,22 @@ router.post("/send-contact-message", async (req, res) => {
   // ✅ Envoi de l'email
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
+    });
+
+    // Ajoutez cette vérification de connexion
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.error("❌ Erreur de configuration SMTP:", error);
+      } else {
+        console.log("✅ Serveur SMTP prêt à envoyer des emails");
+      }
     });
 
     const html = `
@@ -362,157 +380,143 @@ router.post("/send-contact-message", async (req, res) => {
 });
 
 router.post("/send-decision-email", async (req, res) => {
-  const { formData, requestId, decision, requestType } = req.body;
+  const { formData, requestId, decision, template } = req.body;
 
-  if (!formData || !requestId || !decision || !requestType)
-    return res.status(400).json({ error: "Données manquantes." });
+  if (!formData || !requestId || !decision || !template) {
+    return res.status(400).json({ error: "Données manquantes" });
+  }
 
-  /* ── 1.  Petit helper pour traduire le type ─────────── */
-  const typeLabels = {
-    registration: "inscription à l'académie",
-    "selection-tests": "test de sélection",
-    "accident-report": "déclaration d'accident",
-    "responsibility-waiver": "décharge de responsabilité",
-  };
-  const typeLabel = typeLabels[requestType] ?? "votre demande";
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-  /* ── 2.  Transporter nodemailer identique ───────────── */
-  const transporter = nodemailer.createTransport({
-    host: "smtp-auth.mailprotect.be",
-    port: 587,
-    secure: false,
-    auth: { user: "info@nainnovations.be", pass: "mdp123" },
-  });
+    // Récupérer le template de confirmation
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      [template]
+    );
 
-  /* ── 3.  Objet & contenu dynamiques ─────────────────── */
-  const accepted = decision === "accepted";
-  const subject = accepted
-    ? `Votre demande est acceptée – RWDM Academy (ref #${requestId})`
-    : `Votre demande est refusée – RWDM Academy (ref #${requestId})`;
+    if (templates.length === 0) {
+      return res.status(404).json({
+        message: "Template d'email non trouvé",
+        template: template,
+      });
+    }
 
-  const html = accepted
-    ? `
-          <p>Bonjour ${
-            formData.parentFirstName ?? formData.firstName ?? "Madame, Monsieur"
-          },</p>
-          <p>✅ Bonne nouvelle ! Votre <strong>${typeLabel}</strong> (réf ${requestId}) a été <strong>acceptée</strong> par la direction de la RWDM Academy.</p>
-          <p>Nous reviendrons rapidement vers vous pour la suite.</p>
-          <p>Cordialement,<br/>RWDM Academy</p>
-        `
-    : `
-          <p>Bonjour ${
-            formData.parentFirstName ?? formData.firstName ?? "Madame, Monsieur"
-          },</p>
-          <p>Nous sommes au regret de vous informer que <strong>${typeLabel}</strong> (réf ${requestId}) a été <strong>refusée</strong> par la direction de la RWDM Academy.</p>
-          <p>Cordialement,<br/>RWDM Academy</p>
-        `;
+    const emailTemplate = templates[0];
 
-  /* ── 4.  Envoi ───────────────────────────────────────── */
-  await transporter.sendMail({
-    from: '"RWDM Academy" <info@nainnovations.be>',
-    to: formData.email || formData.parent1Email || formData.parentEmail,
-    subject,
-    html,
-  });
+    // Remplacer les variables dans le template
+    let htmlContent = emailTemplate.body
+      .replace(
+        /{parentName}/g,
+        formData.parentFirstName || formData.parent1FirstName || ""
+      )
+      .replace(
+        /{playerName}/g,
+        `${formData.firstName || formData.playerFirstName} ${
+          formData.lastName || formData.playerLastName
+        }`
+      )
+      .replace(/{category}/g, formData.category || formData.noyau || "")
+      .replace(/{codeDossier}/g, formData.codeDossier || "")
+      .replace(/{requestId}/g, requestId)
+      .replace(/{academy}/g, formData.academy || "RWDM Academy")
+      .replace(/{season}/g, formData.season || "2023-2024")
+      .replace(/\n/g, "<br/>");
 
-  res.json({ message: "Email de décision envoyé avec succès." });
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      to: formData.email || formData.parentEmail || formData.parent1Email,
+      subject: emailTemplate.subject.replace(/{requestId}/g, requestId),
+      html: htmlContent,
+    };
+
+    console.log("📧 Envoi d'email de décision:", {
+      template,
+      decision,
+      to: mailOptions.to,
+    });
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email envoyé:", info.messageId);
+
+    res.json({
+      message: "Email de confirmation envoyé avec succès",
+      messageId: info.messageId,
+    });
+  } catch (err) {
+    console.error("❌ Erreur détaillée:", err);
+    res.status(500).json({
+      error: "Erreur lors de l'envoi de l'email",
+      details: err.message,
+    });
+  }
 });
 
 router.post("/send-appointment-confirmation", async (req, res) => {
   const { appointment } = req.body;
 
-  // Sécurité minimale
   if (!appointment || !appointment.email) {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.EMAIL_HOST, // Changed from SMTP_HOST
+      port: process.env.EMAIL_PORT, // Changed from SMTP_PORT
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.EMAIL_USER, // Changed from SMTP_USER
+        pass: process.env.EMAIL_PASS, // Changed from SMTP_PASS
       },
     });
 
-    // On formate un petit résumé
-    const { date, time, type, personName, adminName, notes } = appointment;
+    // Get template from database
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      ["appointment_scheduled"]
+    );
 
-    const html = `
-     <p>Bonjour ${personName ?? "Madame, Monsieur"},</p>
-  
-  <p>
-    Nous avons le plaisir de vous confirmer la planification de votre rendez-vous avec l'équipe RWDM Academy.
-  </p>
-  
-  <p><strong>Détails du rendez-vous :</strong></p>
-  
-  <table style="margin: 16px 0; border-collapse: collapse; font-size: 15px;">
-    <tr>
-      <td style="padding: 4px 8px;"><strong>Date :</strong></td>
-      <td style="padding: 4px 8px;">${format(new Date(date), "dd MMMM yyyy", {
-        locale: fr,
-      })}</td>
-    </tr>
-    <tr>
-      <td style="padding: 4px 8px;"><strong>Heure :</strong></td>
-      <td style="padding: 4px 8px;">${time}</td>
-    </tr>
-    <tr>
-      <td style="padding: 4px 8px;"><strong>Type de rendez-vous :</strong></td>
-      <td style="padding: 4px 8px;">${getLabelFromType(type)}</td>
-    </tr>
-    ${
-      adminName
-        ? `<tr>
-             <td style="padding: 4px 8px;"><strong>Administrateur référent :</strong></td>
-             <td style="padding: 4px 8px;">${adminName}</td>
-           </tr>`
-        : ""
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
     }
-    <tr>
-      <td style="padding: 4px 8px;"><strong>Lieu :</strong></td>
-      <td style="padding: 4px 8px;">
-        Avenue Charles Malis 61<br/>
-        1080 Molenbeek-Saint-Jean<br/>
-        <em>Direction de l'académie du club</em>
-      </td>
-    </tr>
-    ${
-      notes
-        ? `<tr>
-             <td style="padding: 4px 8px;"><strong>Notes :</strong></td>
-             <td style="padding: 4px 8px;">${notes}</td>
-           </tr>`
-        : ""
-    }
-  </table>
-  
-  <p>
-    Nous vous remercions de vous présenter à l'heure convenue. En cas d'indisponibilité, merci de nous contacter dès que possible afin de convenir d'un autre créneau.
-  </p>
-  
-  <p>Bien cordialement,</p>
-  
-  <p>
-    <strong>RWDM Academy</strong><br/>
-    Cellule administrative
-  </p>
-  `;
 
-    await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+    const template = templates[0];
+
+    // Replace variables in template
+    let htmlContent = template.body
+      .replace(/{parentName}/g, appointment.personName || "")
+      .replace(
+        /{appointmentDate}/g,
+        format(new Date(appointment.date), "dd MMMM yyyy", { locale: fr })
+      )
+      .replace(/{appointmentTime}/g, appointment.time)
+      .replace(/{appointmentType}/g, getLabelFromType(appointment.type))
+      .replace(/{adminName}/g, appointment.adminName || "")
+      .replace(/{notes}/g, appointment.notes || "")
+      .replace(/\n/g, "<br/>");
+
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: appointment.email,
-      subject: "Confirmation de rendez‑vous – RWDM Academy",
-      html,
-    });
+      subject: template.subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email envoyé:", info.messageId);
 
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur envoi rendez‑vous :", err);
-    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
+    res.status(500).json({ error: "Erreur lors de l'envoi de l'email." });
   }
 });
 
@@ -530,42 +534,184 @@ router.post("/send-appointment-cancellation", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.EMAIL_HOST, // Changed from SMTP_HOST
+      port: process.env.EMAIL_PORT, // Changed from SMTP_PORT
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.EMAIL_USER, // Changed from SMTP_USER
+        pass: process.env.EMAIL_PASS, // Changed from SMTP_PASS
       },
     });
 
-    // ✅ formatage date + heure
-    const { format } = require("date-fns");
-    const { fr } = require("date-fns/locale");
-    const formattedDate = format(new Date(appointment.date), "dd/MM/yyyy", {
-      locale: fr,
-    });
-    const formattedTime = appointment.time;
+    // Get template from database
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      ["appointment_cancelled"]
+    );
 
-    const html = `
-        <p>Bonjour ${appointment.personName},</p>
-        <p>Nous vous informons que votre rendez-vous prévu le <strong>${formattedDate}</strong> à <strong>${formattedTime}</strong> a été <strong>annulé</strong>.</p>
-        <p>Pour toute question, n'hésitez pas à nous contacter.</p>
-        <br/>
-        <p>Cordialement,<br/>RWDM Academy</p>
-      `;
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
 
-    await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+    const template = templates[0];
+
+    // Replace variables in template
+    let htmlContent = template.body
+      .replace(/{parentName}/g, appointment.personName || "")
+      .replace(
+        /{appointmentDate}/g,
+        format(new Date(appointment.date), "dd MMMM yyyy", { locale: fr })
+      )
+      .replace(/{appointmentTime}/g, appointment.time)
+      .replace(/{appointmentType}/g, getLabelFromType(appointment.type))
+      .replace(/{adminName}/g, appointment.adminName || "")
+      .replace(/{notes}/g, appointment.notes || "")
+      .replace(/\n/g, "<br/>");
+
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: appointment.email,
-      subject: `Rendez-vous annulé – RWDM Academy`,
-      html,
+      subject: template.subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email d'annulation envoyé:", info.messageId);
+
+    res.json({ message: "Email d'annulation envoyé avec succès." });
+  } catch (err) {
+    console.error("❌ Erreur envoi email d'annulation:", err);
+    res.status(500).json({ error: "Erreur lors de l'envoi de l'email." });
+  }
+});
+
+// Get all email templates - Mettre ces routes AU DÉBUT
+router.get("/", async (req, res) => {
+  try {
+    const [templates] = await db.execute("SELECT * FROM emails");
+    console.log("Templates trouvés:", templates);
+    res.json(templates);
+  } catch (err) {
+    console.error("Erreur récupération templates:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// Update email template - Modifiez la route PATCH existante
+router.patch("/:type", async (req, res) => {
+  const { type } = req.params;
+  const { subject, body } = req.body;
+
+  try {
+    // Log pour débugger
+    console.log("📝 Mise à jour du template:", {
+      type,
+      subject,
+      body: body.substring(0, 100) + "...", // Log partiel du body pour ne pas surcharger
     });
 
-    res.json({ message: "Email d’annulation envoyé avec succès." });
+    // Vérifier d'abord si le template existe
+    const [existing] = await db.execute("SELECT * FROM emails WHERE type = ?", [
+      type,
+    ]);
+
+    if (existing.length === 0) {
+      // Si le template n'existe pas, on le crée
+      const [result] = await db.execute(
+        "INSERT INTO emails (type, subject, body) VALUES (?, ?, ?)",
+        [type, subject, body]
+      );
+      console.log("✅ Nouveau template créé");
+      return res.json({ message: "Template d'email créé avec succès" });
+    }
+
+    // Sinon, on met à jour le template existant
+    const [result] = await db.execute(
+      "UPDATE emails SET subject = ?, body = ?, updated_at = NOW() WHERE type = ?",
+      [subject, body, type]
+    );
+
+    if (result.affectedRows === 0) {
+      console.error("❌ Aucune ligne mise à jour pour le type:", type);
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
+
+    console.log("✅ Template mis à jour avec succès");
+    res.json({ message: "Template d'email mis à jour avec succès" });
+  } catch (error) {
+    console.error("❌ Erreur mise à jour template:", error);
+    res.status(500).json({
+      message: "Erreur serveur",
+      details: error.message,
+    });
+  }
+});
+
+// Remplacez la route send-selection-email par send-selection-tests-email
+
+router.post("/send-selection-tests-email", async (req, res) => {
+  const { formData, requestId } = req.body;
+
+  if (
+    !formData ||
+    !formData.parentEmail ||
+    !formData.firstName ||
+    !formData.lastName
+  ) {
+    return res.status(400).json({ error: "Données manquantes." });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const [templates] = await db.execute(
+      "SELECT * FROM emails WHERE type = ?",
+      ["selection"]
+    );
+
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
+
+    const template = templates[0];
+
+    // Remplacer les variables et préserver les sauts de ligne
+    let htmlContent = template.body
+      .replace(/{parentName}/g, formData.parentFirstName || "")
+      .replace(/{playerName}/g, `${formData.firstName} ${formData.lastName}`)
+      .replace(/{category}/g, formData.noyau || "")
+      .replace(/{position}/g, formData.position || "")
+      .replace(/{academy}/g, formData.academy || "")
+      .replace(/{requestId}/g, requestId)
+      .replace(/\n/g, "<br/>");
+
+    const mailOptions = {
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      to: formData.parentEmail,
+      subject: template.subject.replace(/{requestId}/g, requestId),
+      html: htmlContent,
+    };
+
+    console.log("Options d'email:", mailOptions);
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Email envoyé:", info.messageId);
+
+    res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
-    console.error("❌ Erreur envoi email rendez-vous :", err);
-    res.status(500).json({ error: "Erreur lors de l’envoi de l’email." });
+    console.error("❌ Erreur détaillée:", err);
+    res.status(500).json({
+      error: "Erreur lors de l'envoi de l'email",
+      details: err.message,
+    });
   }
 });
 

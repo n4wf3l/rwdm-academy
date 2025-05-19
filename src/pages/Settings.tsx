@@ -117,6 +117,14 @@ const Settings: React.FC = () => {
   const [accountName, setAccountName] = useState("");
   const [agreed, setAgreed] = useState(false);
 
+  // --- Form Maintenance States ---
+  const [formMaintenanceStates, setFormMaintenanceStates] = useState({
+    registration: false,
+    selectionTests: false,
+    accidentReport: false,
+    waiver: false,
+  });
+
   // --- Récupérer count "Nouveau" ---
   useEffect(() => {
     const fetchCount = async () => {
@@ -139,53 +147,66 @@ const Settings: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/settings");
-        const data = res.data;
-        setMaintenanceMode(Boolean(data.maintenanceMode));
-        setLanguage(data.language || "FR");
+        // Chargement des settings généraux
+        const settingsRes = await axios.get(
+          "http://localhost:5000/api/settings"
+        );
+        const settingsData = settingsRes.data;
+
+        // Chargement des états de maintenance
+        const maintenanceRes = await axios.get(
+          "http://localhost:5000/api/form-maintenance"
+        );
+        const maintenanceData = maintenanceRes.data;
+
+        // Mise à jour des états
+        setMaintenanceMode(Boolean(settingsData.maintenanceMode));
+        setLanguage(settingsData.language || "FR");
         // general
-        setSiteColor1(data.general.siteColor1);
-        setSiteColor2(data.general.siteColor2);
-        setLogo(data.general.logo);
-        setClubName(data.general.clubName);
-        setClubAddress(data.general.clubAddress);
-        setPostalCode(data.general.postalCode);
-        setCommune(data.general.commune);
-        setCountry(data.general.country);
-        setEmail(data.general.email);
-        setFacebookUrl(data.general.facebookUrl);
-        setInstagramUrl(data.general.instagramUrl);
+        setSiteColor1(settingsData.general.siteColor1);
+        setSiteColor2(settingsData.general.siteColor2);
+        setLogo(settingsData.general.logo);
+        setClubName(settingsData.general.clubName);
+        setClubAddress(settingsData.general.clubAddress);
+        setPostalCode(settingsData.general.postalCode);
+        setCommune(settingsData.general.commune);
+        setCountry(settingsData.general.country);
+        setEmail(settingsData.general.email);
+        setFacebookUrl(settingsData.general.facebookUrl);
+        setInstagramUrl(settingsData.general.instagramUrl);
         // about
-        setPlayersCount(String(data.about.playersCount));
-        setExperienceYears(String(data.about.experienceYears));
-        setNationalTrophies(String(data.about.nationalTrophies));
-        setYoungTalents(String(data.about.youngTalents));
-        setHistoryDescription(data.about.historyDescription);
-        setHistoryPhoto(data.about.historyPhoto);
-        setMissionDescription(data.about.missionDescription);
-        setMissionPhoto(data.about.missionPhoto);
-        setApproachDescription(data.about.approachDescription);
-        setApproachPhoto(data.about.approachPhoto);
-        setValueTitle1(data.about.valueTitle1);
-        setValueDesc1(data.about.valueDesc1);
-        setValueTitle2(data.about.valueTitle2);
-        setValueDesc2(data.about.valueDesc2);
-        setValueTitle3(data.about.valueTitle3);
-        setValueDesc3(data.about.valueDesc3);
-        setAcademyNames1(data.about.academyNames1);
-        setAcademyDescriptions1(data.about.academyDescriptions1);
-        setAcademyPhotos1(data.about.academyPhotos1);
-        setAcademyNames2(data.about.academyNames2);
-        setAcademyDescriptions2(data.about.academyDescriptions2);
-        setAcademyPhotos2(data.about.academyPhotos2);
-        setAcademyNames3(data.about.academyNames3);
-        setAcademyDescriptions3(data.about.academyDescriptions3);
-        setAcademyPhotos3(data.about.academyPhotos3);
+        setPlayersCount(String(settingsData.about.playersCount));
+        setExperienceYears(String(settingsData.about.experienceYears));
+        setNationalTrophies(String(settingsData.about.nationalTrophies));
+        setYoungTalents(String(settingsData.about.youngTalents));
+        setHistoryDescription(settingsData.about.historyDescription);
+        setHistoryPhoto(settingsData.about.historyPhoto);
+        setMissionDescription(settingsData.about.missionDescription);
+        setMissionPhoto(settingsData.about.missionPhoto);
+        setApproachDescription(settingsData.about.approachDescription);
+        setApproachPhoto(settingsData.about.approachPhoto);
+        setValueTitle1(settingsData.about.valueTitle1);
+        setValueDesc1(settingsData.about.valueDesc1);
+        setValueTitle2(settingsData.about.valueTitle2);
+        setValueDesc2(settingsData.about.valueDesc2);
+        setValueTitle3(settingsData.about.valueTitle3);
+        setValueDesc3(settingsData.about.valueDesc3);
+        setAcademyNames1(settingsData.about.academyNames1);
+        setAcademyDescriptions1(settingsData.about.academyDescriptions1);
+        setAcademyPhotos1(settingsData.about.academyPhotos1);
+        setAcademyNames2(settingsData.about.academyNames2);
+        setAcademyDescriptions2(settingsData.about.academyDescriptions2);
+        setAcademyPhotos2(settingsData.about.academyPhotos2);
+        setAcademyNames3(settingsData.about.academyNames3);
+        setAcademyDescriptions3(settingsData.about.academyDescriptions3);
+        setAcademyPhotos3(settingsData.about.academyPhotos3);
         // contact
-        setOpeningHours(data.contact.openingHours);
-        setVatNumber(data.contact.vatNumber);
-        setCompanyNumber(data.contact.companyNumber);
-        setAccountName(data.contact.accountName);
+        setOpeningHours(settingsData.contact.openingHours);
+        setVatNumber(settingsData.contact.vatNumber);
+        setCompanyNumber(settingsData.contact.companyNumber);
+        setAccountName(settingsData.contact.accountName);
+        // form maintenance states
+        setFormMaintenanceStates(maintenanceData);
       } catch (err) {
         console.error("Erreur chargement settings:", err);
       }
@@ -266,6 +287,7 @@ const Settings: React.FC = () => {
           companyNumber,
           accountName,
         },
+        formMaintenanceStates,
       };
       await axios.put("http://localhost:5000/api/settings", settingsPayload);
       toast.success("Les paramètres ont été enregistrés !");
@@ -297,8 +319,12 @@ const Settings: React.FC = () => {
           }}
         >
           <div>
-            <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
-            <p className="text-gray-600">{t("settings.description")}</p>
+            <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
+              {t("settings.title")}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              {t("settings.description")}
+            </p>
           </div>
           <div className="flex gap-4">
             {/* Sélecteur de version */}
@@ -387,6 +413,8 @@ const Settings: React.FC = () => {
                 setFacebookUrl={setFacebookUrl}
                 instagramUrl={instagramUrl}
                 setInstagramUrl={setInstagramUrl}
+                formMaintenanceStates={formMaintenanceStates}
+                setFormMaintenanceStates={setFormMaintenanceStates}
               />
             </TabsContent>
             <TabsContent value="about">
@@ -411,7 +439,7 @@ const Settings: React.FC = () => {
                 approachDescription={approachDescription}
                 setApproachDescription={setApproachDescription}
                 approachPhoto={approachPhoto}
-                setApproachPhoto={setApproachPhoto}
+                setApproachPhoto={setAcademyPhotos3}
                 valueTitle1={valueTitle1}
                 setValueTitle1={setValueTitle1}
                 valueDesc1={valueDesc1}

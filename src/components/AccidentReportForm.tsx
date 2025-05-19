@@ -62,12 +62,20 @@ const FormSection: React.FC<FormSectionProps> = ({
   );
 };
 
-const AccidentReportForm: React.FC = () => {
+interface FormProps {
+  formData: Record<string, any>;
+  onFormDataChange: (key: string, value: any) => void;
+}
+
+const AccidentReportForm: React.FC<FormProps> = ({
+  formData,
+  onFormDataChange,
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, lang } = useTranslation();
-  const [accidentDate, setAccidentDate] = useState<Date | undefined>();
-  const [accidentCode, setAccidentCode] = useState<string>("");
+  const [accidentDate, setAccidentDate] = useState(formData.accidentDate);
+  const [accidentCode, setAccidentCode] = useState(formData.accidentCode || "");
   const [codeDossier, setCodeDossier] = useState<string>("");
   const [healingCode, setHealingCode] = useState<string>("");
   const [signature, setSignature] = useState<string | null>(null);
@@ -179,39 +187,18 @@ const AccidentReportForm: React.FC = () => {
     if (!code || !emailToMatch) return;
 
     try {
-      const response = await fetch("http://localhost:5000/api/requests", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/check-accident-code?code=${code}&email=${emailToMatch}`
+      );
 
       if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const allRequests = await response.json();
-
-      if (!Array.isArray(allRequests)) {
-        console.error(
-          "La réponse de l'API n'est pas un tableau :",
-          allRequests
-        );
-        setCodeValid(false);
-        return;
-      }
-
-      const matching = allRequests.find((req) => {
-        if (req.type !== "accident-report") return false;
-        const parsed = JSON.parse(req.data);
-        return (
-          parsed.codeDossier?.toLowerCase() === code.toLowerCase() &&
-          parsed.email?.toLowerCase() === emailToMatch.toLowerCase()
-        );
-      });
-
-      setCodeValid(!!matching);
+      const data = await response.json();
+      setCodeValid(data.valid);
     } catch (err) {
-      console.error(t("check_code_general_error"), err);
+      console.error("❌ Erreur détaillée:", err);
       setCodeValid(false);
     }
   };

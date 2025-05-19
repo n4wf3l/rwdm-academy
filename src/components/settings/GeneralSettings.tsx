@@ -12,6 +12,7 @@ import {
 } from "../ui/card";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Switch } from "@/components/ui/switch";
 
 type Lang = "FR" | "NL" | "EN";
 
@@ -39,6 +40,20 @@ interface Props {
   setFacebookUrl: React.Dispatch<React.SetStateAction<string>>;
   instagramUrl: string;
   setInstagramUrl: React.Dispatch<React.SetStateAction<string>>;
+  formMaintenanceStates: {
+    registration: boolean;
+    selectionTests: boolean;
+    accidentReport: boolean;
+    waiver: boolean;
+  };
+  setFormMaintenanceStates: React.Dispatch<
+    React.SetStateAction<{
+      registration: boolean;
+      selectionTests: boolean;
+      accidentReport: boolean;
+      waiver: boolean;
+    }>
+  >;
 }
 
 /* ---------- helpers identiques à AboutSettings ---------- */
@@ -114,9 +129,54 @@ const GeneralSettings: React.FC<Props> = ({
   setFacebookUrl,
   instagramUrl,
   setInstagramUrl,
+  formMaintenanceStates,
+  setFormMaintenanceStates,
 }) => {
   const [fileName, setFileName] = useState("");
   const { t } = useTranslation();
+
+  // Handles toggling maintenance state for each form
+  const handleMaintenanceToggle = async (
+    key: "registration" | "selectionTests" | "accidentReport" | "waiver",
+    checked: boolean
+  ) => {
+    try {
+      // Mise à jour optimiste de l'UI
+      setFormMaintenanceStates((prev) => ({
+        ...prev,
+        [key]: checked,
+      }));
+
+      // Appel à l'API pour persister le changement
+      const response = await axios.put(
+        `http://localhost:5000/api/form-maintenance/${key}`,
+        {
+          is_maintenance: checked,
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error("Échec de la mise à jour");
+      }
+
+      // Notification de succès
+      toast.success(
+        `État de maintenance ${checked ? "activé" : "désactivé"} pour ${key}`
+      );
+    } catch (error) {
+      // En cas d'erreur, on revient à l'état précédent
+      setFormMaintenanceStates((prev) => ({
+        ...prev,
+        [key]: !checked,
+      }));
+      // Notification d'erreur
+      toast.error(
+        `Erreur lors de la mise à jour de l'état de maintenance pour ${key}`
+      );
+      console.error("Erreur:", error);
+    }
+  };
+
   /* -------------------- RENDER -------------------- */
   return (
     <motion.div
@@ -258,6 +318,87 @@ const GeneralSettings: React.FC<Props> = ({
                   </button>
                 )}
               </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Maintenance des formulaires */}
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("forms.maintenance.title")}</CardTitle>
+            <CardDescription>
+              {t("forms.maintenance.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Toggle Inscription */}
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+              <div>
+                <p className="font-medium">{t("academy_registration")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("forms.maintenance.registration_desc")}
+                </p>
+              </div>
+              <Switch
+                checked={formMaintenanceStates.registration}
+                onCheckedChange={(checked) =>
+                  handleMaintenanceToggle("registration", checked)
+                }
+              />
+            </div>
+
+            {/* Toggle Tests de sélection */}
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+              <div>
+                <p className="font-medium">{t("selection_tests")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("forms.maintenance.selection_desc")}
+                </p>
+              </div>
+              <Switch
+                checked={formMaintenanceStates.selectionTests}
+                onCheckedChange={(checked) =>
+                  handleMaintenanceToggle("selectionTests", checked)
+                }
+              />
+            </div>
+
+            {/* Toggle Déclaration d'accident */}
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+              <div>
+                <p className="font-medium">{t("accident_report")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("forms.maintenance.accident_desc")}
+                </p>
+              </div>
+              <Switch
+                checked={formMaintenanceStates.accidentReport}
+                onCheckedChange={(checked) =>
+                  handleMaintenanceToggle("accidentReport", checked)
+                }
+              />
+            </div>
+
+            {/* Toggle Décharge */}
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+              <div>
+                <p className="font-medium">{t("liability_waiver")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("forms.maintenance.waiver_desc")}
+                </p>
+              </div>
+              <Switch
+                checked={formMaintenanceStates.waiver}
+                onCheckedChange={(checked) =>
+                  handleMaintenanceToggle("waiver", checked)
+                }
+              />
             </div>
           </CardContent>
         </Card>

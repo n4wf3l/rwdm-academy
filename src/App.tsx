@@ -25,6 +25,8 @@ import Documents from "./pages/Documents";
 import Graphics from "./pages/Graphics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import EmailSettingsPage from "./pages/EmailSettingsPage";
+
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
 import ForgetPassword from "./pages/ForgetPassword";
@@ -194,6 +196,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/emails" element={<EmailSettingsPage />} />
             <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"

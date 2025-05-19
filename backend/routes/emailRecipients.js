@@ -48,7 +48,7 @@ router.put("/accident-report", async (req, res) => {
 // ✅ POST réel qui envoie l'email avec pièce jointe PDF
 router.post("/send-request/:id", async (req, res) => {
   const { id } = req.params;
-  console.log("📩 Envoi d’un email pour la demande ID :", id);
+  console.log("📩 Envoi d'un email pour la demande ID :", id);
 
   try {
     // 1. Récupération de la demande
@@ -62,7 +62,18 @@ router.post("/send-request/:id", async (req, res) => {
     const request = requests[0];
     const requestData = JSON.parse(request.data);
 
-    // 2. Récupération de l'adresse email de destination
+    // 2. Récupération du template d'email
+    const [templates] = await db.query("SELECT * FROM emails WHERE type = ?", [
+      request.type,
+    ]);
+
+    if (templates.length === 0) {
+      return res.status(404).json({ message: "Template d'email non trouvé" });
+    }
+
+    const emailTemplate = templates[0];
+
+    // 3. Récupération de l'adresse email de destination
     const [emails] = await db.query(
       "SELECT email FROM email_recipients WHERE type = ? LIMIT 1",
       ["accident-report"]
@@ -73,10 +84,8 @@ router.post("/send-request/:id", async (req, res) => {
 
     const recipient = emails[0].email;
 
-    // 3. Préparer la pièce jointe PDF
+    // 4. Préparer les pièces jointes
     let attachments = [];
-
-    // ✅ Gère filePath (string) ou filePaths (array)
     const filePathsArray = Array.isArray(requestData.filePaths)
       ? requestData.filePaths
       : requestData.filePath
@@ -93,58 +102,44 @@ router.post("/send-request/:id", async (req, res) => {
           content: fs.createReadStream(fileAbsolutePath),
           contentType: "application/pdf",
         });
-      } else {
-        console.warn("❗️Fichier non trouvé :", fileAbsolutePath);
       }
     });
 
-    // 4. Contenu de l’email
-    const htmlContent = `
-      <p>Madame, Monsieur,</p>
-      <p>Veuillez trouver ci-joint un document transmis par l’Académie du RWDM à l’attention de l’Union belge de football.</p>
-      <p>Ce document concerne :</p>
-      <ul>
-        <li><strong>Nom du joueur :</strong> ${
-          requestData.playerFirstName ?? "—"
-        } ${requestData.playerLastName ?? "—"}</li>
-        <li><strong>Club :</strong> ${requestData.clubName ?? "—"}</li>
-        <li><strong>Email du parent :</strong> ${requestData.email ?? "—"}</li>
-        <li><strong>Type de document :</strong> ${
-          requestData.documentLabel ?? request.type
-        }</li>
-        <li><strong>Date de l'accident :</strong> ${
-          requestData.accidentDate
-            ? new Date(requestData.accidentDate).toLocaleDateString("fr-BE")
-            : "—"
-        }</li>
-      </ul>
-      <p><strong>Description de l’incident selon la victime :</strong><br>${
-        requestData.description ?? "—"
-      }</p>
-      <p>📎 Le document PDF est joint à cet email.</p>
-      <br/>
-      <p>Cordialement,</p>
-      <p><strong>Académie du RWDM</strong><br/>Service administratif</p>
-    `;
+    // 5. Remplacer les variables dans le template
+    const htmlContent = emailTemplate.body
+      .replace(
+        /{playerName}/g,
+        `${requestData.playerFirstName || ""} ${
+          requestData.playerLastName || ""
+        }`
+      )
+      .replace(/{clubName}/g, requestData.clubName || "")
+      .replace(/{parentEmail}/g, requestData.email || "")
+      .replace(/{documentLabel}/g, requestData.documentLabel || request.type)
+      .replace(
+        /{accidentDate}/g,
+        requestData.accidentDate
+          ? new Date(requestData.accidentDate).toLocaleDateString("fr-BE")
+          : ""
+      )
+      .replace(/{description}/g, requestData.description || "")
+      .replace(/\n/g, "<br/>");
 
-    // 5. Config Nodemailer
+    // 6. Configurer et envoyer l'email
     const transporter = nodemailer.createTransport({
-      host: "smtp-auth.mailprotect.be",
-      port: 587,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
       secure: false,
       auth: {
-        user: "info@nainnovations.be",
-        pass: "mdp123",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
-    // 6. Envoi final
     const info = await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: recipient,
-      subject: `Nouvelle demande ${request.id} – ${
-        requestData.documentLabel ?? request.type
-      }`,
+      subject: emailTemplate.subject.replace(/{requestId}/g, request.id),
       html: htmlContent,
       attachments,
     });
@@ -157,7 +152,7 @@ router.post("/send-request/:id", async (req, res) => {
     res.json({ message: "Email envoyé avec succès !" });
   } catch (err) {
     console.error("❌ Erreur pendant l'envoi :", err);
-    res.status(500).json({ message: "Erreur lors de l’envoi de l’email." });
+    res.status(500).json({ message: "Erreur lors de l'envoi de l'email." });
   }
 });
 

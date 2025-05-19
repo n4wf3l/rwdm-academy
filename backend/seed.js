@@ -1,4 +1,3 @@
-// seed.js
 require("dotenv").config();
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
@@ -34,23 +33,14 @@ async function seedSuperadmin() {
     const plainPassword = "nawnaw1030"; // mot de passe en clair
     const role = "superadmin"; // Rôle à insérer
     const userFunction = "Fonction initiale";
-    const description = "Premier superadmin";
 
     // Hacher le mot de passe avec bcrypt
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    // Insertion dans la table users
+    // Insertion dans la table users sans le champ description
     await connection.execute(
-      "INSERT INTO users (firstName, lastName, email, password, role, `function`, description) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [
-        firstName,
-        lastName,
-        email,
-        hashedPassword,
-        role,
-        userFunction,
-        description,
-      ]
+      "INSERT INTO users (firstName, lastName, email, password, role, `function`) VALUES (?, ?, ?, ?, ?, ?)",
+      [firstName, lastName, email, hashedPassword, role, userFunction]
     );
 
     console.log("Superadmin inséré avec succès !");

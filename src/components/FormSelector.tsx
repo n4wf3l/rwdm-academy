@@ -11,9 +11,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 export type FormType =
   | "registration"
-  | "selection-tests"
-  | "accident-report"
-  | "responsibility-waiver";
+  | "selectionTests"
+  | "accidentReport"
+  | "waiver";
 
 interface FormOption {
   id: FormType;
@@ -43,23 +43,30 @@ const FormSelector: React.FC<FormSelectorProps> = ({
       icon: ClipboardCheck,
     },
     {
-      id: "selection-tests",
+      id: "selectionTests",
       name: t("selection_tests"),
       description: t("selection_tests_desc"),
       icon: ClipboardList,
     },
     {
-      id: "accident-report",
+      id: "accidentReport",
       name: t("accident_report"),
       description: t("accident_report_desc"),
       icon: AlertTriangle,
     },
     {
-      id: "responsibility-waiver",
+      id: "waiver",
       name: t("liability_waiver"),
       description: t("liability_waiver_desc"),
       icon: FileText,
     },
+  ];
+
+  const forms: { type: FormType; label: string }[] = [
+    { type: "registration", label: "academy_registration" },
+    { type: "selectionTests", label: "selection_tests" },
+    { type: "accidentReport", label: "accident_report" },
+    { type: "waiver", label: "liability_waiver" },
   ];
 
   return (

@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   Globe,
   UserIcon,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -308,6 +309,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               </Button>
             </Link>
 
+            {["owner", "superadmin"].includes(user.role) && (
+              <Link to="/emails">
+                <Button
+                  variant={isActive("/emails") ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    isActive("/emails")
+                      ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                      : ""
+                  )}
+                >
+                  <Mail className="mr-2 h-5 w-5" />
+                  Emails
+                </Button>
+              </Link>
+            )}
             {["owner", "superadmin"].includes(user.role) && (
               <Link to="/settings">
                 <Button

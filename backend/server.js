@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 5000;
 const router = express.Router();
 const crypto = require("crypto");
 const fetch = require("node-fetch");
+const formMailRouter = require("./routes/formMail");
 
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
@@ -707,6 +708,26 @@ app.get("/api/deleted-admins", authMiddleware, async (req, res) => {
   }
 });
 
+// Route publique pour vérifier un code d'accident
+app.get("/api/check-accident-code", async (req, res) => {
+  const { code, email } = req.query;
+
+  try {
+    const [rows] = await dbPool.execute(
+      `SELECT * FROM requests 
+       WHERE JSON_EXTRACT(data, '$.codeDossier') = ? 
+       AND JSON_EXTRACT(data, '$.email') = ?
+       AND JSON_EXTRACT(data, '$.documentLabel') = ?`,
+      [code, email, "Déclaration d'accident"]
+    );
+
+    res.json({ valid: rows.length > 0 });
+  } catch (error) {
+    console.error("❌ Erreur vérification code:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;
 
 // Vérifie si un code de dossier existe (utile avant d'envoyer un certificat de guérison)
@@ -990,8 +1011,8 @@ app.post("/api/reset-password", async (req, res) => {
 const emailRecipientsRoutes = require("./routes/emailRecipients");
 app.use("/api/email-recipients", emailRecipientsRoutes);
 
-const formMailRoutes = require("./routes/formMail");
-app.use("/api/form-mail", formMailRoutes);
+app.use("/api/form-mail", formMailRouter);
+app.use("/send-request", formMailRouter);
 
 const changeDataRoutes = require("./changeData");
 app.use("/api", changeDataRoutes);

@@ -26,6 +26,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useTranslation } from "@/hooks/useTranslation";
+import { FormProps } from "@/types/form";
 
 interface FormSectionProps {
   title: string;
@@ -69,7 +70,10 @@ const FormSection: React.FC<{
   </div>
 );
 
-const RegistrationForm = () => {
+const RegistrationForm: React.FC<FormProps> = ({
+  formData,
+  onFormDataChange,
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
@@ -246,12 +250,7 @@ const RegistrationForm = () => {
 
       const { requestId } = await response.json();
 
-      // 2. Envoi de l'email à l'adresse interne (RWDM/administration)
-      await fetch(`http://localhost:5000/send-request/${requestId}`, {
-        method: "POST",
-      });
-
-      // 3. Envoi de l'email de confirmation au parent
+      // 2. Envoi de l'email directement avec le template
       await fetch(
         "http://localhost:5000/api/form-mail/send-registration-email",
         {
@@ -261,19 +260,18 @@ const RegistrationForm = () => {
           },
           body: JSON.stringify({
             formData: requestData.formData,
-            requestId, // ← ⚠️ très important !
+            requestId,
           }),
         }
       );
 
-      // 4. Toast + Redirection
+      // 3. Toast + Redirection
       toast({
         title: t("toast_success_title"),
         description: t("toast_success_description"),
       });
 
       setIsSpellCheckOpen(false);
-
       navigate("/success/registration");
     } catch (error) {
       console.error("Erreur lors de la soumission :", error);

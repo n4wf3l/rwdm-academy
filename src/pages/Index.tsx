@@ -8,10 +8,15 @@ import FormWrapper from "../components/FormWrapper";
 import AnimatedTransition from "../components/AnimatedTransition";
 import SplashComponent from "../components/SplashComponent";
 import MaintenancePage from "../components/MaintenancePage";
+import MaintenancePage2 from "../components/MaintenancePage2";
 import { motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
 import { Info } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import RegistrationForm from "@/components/RegistrationForm";
+import SelectionTestsForm from "@/components/SelectionTestsForm";
+import AccidentReportForm from "@/components/AccidentReportForm";
+import ResponsibilityWaiverForm from "@/components/ResponsibilityWaiverForm";
 
 const Index: React.FC = () => {
   const [maintenanceMode, setMaintenanceMode] = useState<boolean | null>(null);
@@ -24,8 +29,27 @@ const Index: React.FC = () => {
     const saved = localStorage.getItem("formData");
     return saved ? JSON.parse(saved) : {};
   });
+  const [formMaintenanceStates, setFormMaintenanceStates] = useState({
+    registration: false,
+    selectionTests: false,
+    accidentReport: false,
+    waiver: false,
+  });
 
   const { t } = useTranslation();
+
+  // Déplacez tous les useEffect au début, juste après les useState
+  useEffect(() => {
+    // Charger les états de maintenance
+    fetch("http://localhost:5000/api/form-maintenance")
+      .then((res) => res.json())
+      .then((data) => {
+        setFormMaintenanceStates(data);
+      })
+      .catch((error) => {
+        console.error("Erreur chargement maintenance:", error);
+      });
+  }, []);
 
   // ─── 1) Charger le flag maintenance depuis l'API ─────────────────────────
   useEffect(() => {
@@ -40,7 +64,6 @@ const Index: React.FC = () => {
         setMaintenanceMode(Boolean(data.maintenanceMode));
       })
       .catch(() => {
-        // Par défaut, on désactive la maintenance en cas d'erreur
         setMaintenanceMode(false);
       });
   }, []);
@@ -100,6 +123,62 @@ const Index: React.FC = () => {
   }
 
   // ─── 6) Sinon, on affiche le flow normal ────────────────────────────────
+  const renderForm = () => {
+    // Ajoutez un console.log pour débugger
+    console.log("Current form:", currentForm);
+    console.log("Maintenance states:", formMaintenanceStates);
+
+    // Vérifier l'état de maintenance du formulaire actuel
+    if (formMaintenanceStates[currentForm]) {
+      console.log("Form is in maintenance");
+      return (
+        <MaintenancePage2
+          formType={
+            currentForm as
+              | "registration"
+              | "selectionTests"
+              | "accidentReport"
+              | "waiver"
+          }
+        />
+      );
+    }
+
+    // Si pas en maintenance, afficher le formulaire approprié
+    switch (currentForm) {
+      case "registration":
+        return (
+          <RegistrationForm
+            formData={formData}
+            onFormDataChange={handleFormDataChange}
+          />
+        );
+      case "selectionTests":
+        return (
+          <SelectionTestsForm
+            formData={formData}
+            onFormDataChange={handleFormDataChange}
+          />
+        );
+      case "accidentReport":
+        return (
+          <AccidentReportForm
+            formData={formData}
+            onFormDataChange={handleFormDataChange}
+          />
+        );
+      case "waiver":
+        return (
+          <ResponsibilityWaiverForm
+            formData={formData}
+            onFormDataChange={handleFormDataChange}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
       <Helmet>
@@ -160,13 +239,7 @@ const Index: React.FC = () => {
             </div>
 
             {/* Formulaire */}
-            <div id="form-start">
-              <FormWrapper
-                formType={currentForm}
-                formData={formData}
-                onFormDataChange={handleFormDataChange}
-              />
-            </div>
+            <div id="form-start">{renderForm()}</div>
           </main>
 
           <Footer />
