@@ -1512,4 +1512,11 @@ export const translationsFR = {
   appointment_singular: "rendez-vous prévu",
   appointments_plural: "rendez-vous prévus",
   dropdown_send_email: "Envoyer un email",
+  "dialog.overdueWarning":
+    "Attention : ces membres ont des paiements en retard qui nécessitent une action rapide.",
+  "search.playerWithOverduePlaceholder":
+    "Rechercher un membre avec des retards...",
+  days: "jours",
+  "summary.balance": "Solde",
+  "overdue.none": "Aucun paiement en retard.",
 };

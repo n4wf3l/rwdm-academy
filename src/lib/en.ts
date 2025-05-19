@@ -1408,4 +1408,11 @@ export const translationsEN = {
   appointment_singular: "appointment",
   appointments_plural: "appointments",
   dropdown_send_email: "Send email",
+  "dialog.overdueWarning":
+    "Warning: these members have overdue payments that require prompt action.",
+  "search.playerWithOverduePlaceholder":
+    "Search for a player with overdue payments...",
+  days: "days",
+  "summary.balance": "Balance",
+  "overdue.none": "No overdue payments.",
 };

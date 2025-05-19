@@ -39,6 +39,7 @@ import {
 import { motion } from "framer-motion";
 import ApiKeyModal from "@/components/ApiKeyModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import OverduePaymentsModal from "@/components/graphics/OverduePaymentsModal";
 
 // Normalise "Eagles ... Academy" → "BEFA …"
 function normalizeBEFA(raw: string): string {
@@ -199,6 +200,10 @@ const Graphics: React.FC = () => {
       .sort()
       .flatMap((prefix) => groups[prefix].sort());
   }, [allCats]);
+
+  // 1. Ajoutez ces états pour gérer la modal de retards
+  const [overdueInvoices, setOverdueInvoices] = useState<any[]>([]);
+  const [overdueModalOpen, setOverdueModalOpen] = useState(false);
 
   return (
     <AdminLayout newRequestsCount={newReqCount}>
@@ -386,12 +391,23 @@ const Graphics: React.FC = () => {
                     color: "text-yellow-500",
                     value: filtered.filter((i) => i.status === "too_late")
                       .length,
+                    onClick: () => {
+                      // Filtrer les factures en retard et ouvrir la modal
+                      const overdueItems = filtered.filter(
+                        (i) => i.status === "too_late"
+                      );
+                      setOverdueInvoices(overdueItems);
+                      setOverdueModalOpen(true);
+                    },
                   },
-                ].map(({ title, icon: Icon, color, value }) => (
+                ].map(({ title, icon: Icon, color, value, onClick }) => (
                   <motion.div
                     key={title}
-                    className="transform transition-transform duration-200 hover:scale-105"
+                    className={`transform transition-transform duration-200 hover:scale-105 ${
+                      onClick ? "cursor-pointer" : ""
+                    }`}
                     whileHover={{ y: -4 }}
+                    onClick={onClick}
                   >
                     <Card>
                       <CardHeader>
@@ -400,7 +416,7 @@ const Graphics: React.FC = () => {
                       <CardContent className="flex items-center">
                         <Icon className={`h-6 w-6 ${color}`} />
                         <span className="ml-3 text-2xl font-semibold">
-                          {value} {title !== "Retards" ? "€" : ""}
+                          {value} {title !== t("stats.overdue") ? "€" : ""}
                         </span>
                       </CardContent>
                     </Card>
@@ -579,6 +595,11 @@ const Graphics: React.FC = () => {
           onClose={() => setModalOpen(false)}
           category={selCatName}
           invoices={selCatInvs}
+        />
+        <OverduePaymentsModal
+          open={overdueModalOpen}
+          onClose={() => setOverdueModalOpen(false)}
+          overdueInvoices={overdueInvoices}
         />
       </motion.div>
     </AdminLayout>

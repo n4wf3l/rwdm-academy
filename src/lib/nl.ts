@@ -1445,4 +1445,11 @@ export const translationsNL = {
   appointment_singular: "afspraak",
   appointments_plural: "afspraken",
   dropdown_send_email: "E-mail verzenden",
+  "dialog.overdueWarning":
+    "Let op: deze leden hebben achterstallige betalingen die snelle actie vereisen.",
+  "search.playerWithOverduePlaceholder":
+    "Zoek een lid met achterstallige betalingen...",
+  days: "dagen",
+  "summary.balance": "Saldo",
+  "overdue.none": "Geen achterstallige betalingen.",
 };
