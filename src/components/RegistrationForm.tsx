@@ -333,6 +333,83 @@ const RegistrationForm: React.FC<FormProps> = ({
     setBirthDate(date);
   };
 
+  // Ajoutez ces états pour tracker la synchronisation
+  const [syncAddressWithPlayer, setSyncAddressWithPlayer] = useState(true);
+  const [syncPostalCodeWithPlayer, setSyncPostalCodeWithPlayer] =
+    useState(true);
+
+  // Ajoutez ces effets pour synchroniser automatiquement
+  useEffect(() => {
+    if (syncAddressWithPlayer) {
+      setParent1Address(address);
+    }
+  }, [address, syncAddressWithPlayer]);
+
+  useEffect(() => {
+    if (syncPostalCodeWithPlayer) {
+      setParent1PostalCode(postalCode);
+    }
+  }, [postalCode, syncPostalCodeWithPlayer]);
+
+  // Modifiez les champs d'adresse et code postal du parent1
+  // Dans la partie "primary_guardian"
+  <div className="space-y-2">
+    <Label htmlFor="parent1Address">{t("label_parent_address")}</Label>
+    <div className="relative">
+      <Input
+        id="parent1Address"
+        className="form-input-base pr-8"
+        value={parent1Address}
+        onChange={(e) => {
+          setParent1Address(alphaNumeric(e.target.value));
+          setSyncAddressWithPlayer(false);
+        }}
+        placeholder="Rue Charles Malis 61"
+        required
+      />
+      <button
+        type="button"
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+        onClick={() => {
+          setParent1Address("");
+          setSyncAddressWithPlayer(false);
+        }}
+        aria-label="Effacer l'adresse"
+      >
+        ×
+      </button>
+    </div>
+  </div>;
+
+  <div className="space-y-2">
+    <Label htmlFor="parent1PostalCode">{t("label_parent_postal_code")}</Label>
+    <div className="relative">
+      <Input
+        id="parent1PostalCode"
+        className="form-input-base pr-8"
+        value={parent1PostalCode}
+        onChange={(e) => {
+          setParent1PostalCode(numbersOnly(e.target.value));
+          setSyncPostalCodeWithPlayer(false);
+        }}
+        placeholder="1080"
+        maxLength={4}
+        required
+      />
+      <button
+        type="button"
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+        onClick={() => {
+          setParent1PostalCode("");
+          setSyncPostalCodeWithPlayer(false);
+        }}
+        aria-label="Effacer le code postal"
+      >
+        ×
+      </button>
+    </div>
+  </div>;
+
   // Ajoutez ces fonctions de validation en haut du composant
   const numbersOnly = (value: string) => value.replace(/[^0-9]/g, "");
   const lettersOnly = (value: string) => value.replace(/[^a-zA-ZÀ-ÿ\s-]/g, "");
@@ -649,32 +726,60 @@ const RegistrationForm: React.FC<FormProps> = ({
                       <Label htmlFor="parent1Address">
                         {t("label_parent_address")}
                       </Label>
-                      <Input
-                        id="parent1Address"
-                        className="form-input-base"
-                        value={parent1Address}
-                        onChange={(e) =>
-                          setParent1Address(alphaNumeric(e.target.value))
-                        }
-                        placeholder="Rue Charles Malis 61"
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="parent1Address"
+                          className="form-input-base pr-8"
+                          value={parent1Address}
+                          onChange={(e) => {
+                            setParent1Address(alphaNumeric(e.target.value));
+                            setSyncAddressWithPlayer(false);
+                          }}
+                          placeholder="Rue Charles Malis 61"
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          onClick={() => {
+                            setParent1Address("");
+                            setSyncAddressWithPlayer(false);
+                          }}
+                          aria-label="Effacer l'adresse"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="parent1PostalCode">
                         {t("label_parent_postal_code")}
                       </Label>
-                      <Input
-                        id="parent1PostalCode"
-                        className="form-input-base"
-                        value={parent1PostalCode}
-                        onChange={(e) =>
-                          setParent1PostalCode(numbersOnly(e.target.value))
-                        }
-                        placeholder="1080"
-                        maxLength={4}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="parent1PostalCode"
+                          className="form-input-base pr-8"
+                          value={parent1PostalCode}
+                          onChange={(e) => {
+                            setParent1PostalCode(numbersOnly(e.target.value));
+                            setSyncPostalCodeWithPlayer(false);
+                          }}
+                          placeholder="1080"
+                          maxLength={4}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          onClick={() => {
+                            setParent1PostalCode("");
+                            setSyncPostalCodeWithPlayer(false);
+                          }}
+                          aria-label="Effacer le code postal"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="parent1Gsm">
