@@ -1,5 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -105,22 +104,55 @@
   .glass-panel {
     @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-700/20 shadow-lg;
   }
-  
+
   .form-input-base {
     @apply w-full px-4 py-3 rounded-lg border border-border bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
   }
-  
+
   .button-transition {
     @apply transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98];
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
 }
 
 @layer utilities {
+  /* Styles de scrollbar existants */
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Nouvelle personnalisation de scrollbar en rouge */
+
+  /* Pour Chrome, Safari, Opera, et nouveaux Edge */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.red.600");
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.red.500");
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  /* Pour Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.red.600") transparent;
   }
 }
