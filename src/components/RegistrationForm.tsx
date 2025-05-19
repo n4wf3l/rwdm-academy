@@ -470,7 +470,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                       Brussels Eagles Football Academy
                     </SelectItem>
                     <SelectItem value="Red For Ever Academy">
-                      Red For Ever Academy
+                      RWDM ForEver Academy
                     </SelectItem>
                     <SelectItem value="RWDM Academy">RWDM Academy</SelectItem>
                   </SelectContent>

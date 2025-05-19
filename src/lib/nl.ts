@@ -343,7 +343,7 @@ export const translationsNL = {
   position_left_wing: "Linksbuiten",
   position_striker: "Spits",
   academy_RWDM_elite: "RWDM Academy (Elite)",
-  academy_RFE_provincial: "Red For Ever Academy (Provincialen)",
+  academy_RFE_provincial: "RWDM ForEver Academy (Provincialen)",
   selection_error_date_past_title: "Fout",
   selection_error_date_past_desc: "De datum mag niet in het verleden liggen.",
   accident_info_alert_title: "Belangrijk",
@@ -1453,4 +1453,9 @@ export const translationsNL = {
   "summary.balance": "Saldo",
   "overdue.none": "Geen achterstallige betalingen.",
   "button.print": "Afdrukken",
+  totalPlayersAcademy: "Totaal aantal academiespelers",
+  withoutDuplicateWarning:
+    "Dit aantal kan spelers bevatten die in meerdere teams worden geteld",
+  withoutDuplicates: "Zonder duplicaten",
+  withDuplicates: "Met duplicaten",
 };

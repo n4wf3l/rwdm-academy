@@ -362,7 +362,7 @@ export const translationsFR = {
   position_left_wing: "Ailier gauche",
   position_striker: "Attaquant pointe",
   academy_RWDM_elite: "RWDM Academy (Elite)",
-  academy_RFE_provincial: "Red For Ever Academy (Provinciaux)",
+  academy_RFE_provincial: "RWDM ForEver Academy (Provinciaux)",
 
   selection_error_date_past_title: "Erreur",
   selection_error_date_past_desc: "La date ne peut pas être dans le passé.",
@@ -1520,4 +1520,9 @@ export const translationsFR = {
   "summary.balance": "Solde",
   "overdue.none": "Aucun paiement en retard.",
   "button.print": "Imprimer",
+  totalPlayersAcademy: "Total des joueurs de l'académie",
+  withoutDuplicateWarning:
+    "Ce nombre peut inclure des joueurs comptés dans plusieurs équipes",
+  withoutDuplicates: "Sans doublons",
+  withDuplicates: "Avec doublons",
 };

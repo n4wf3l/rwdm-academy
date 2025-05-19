@@ -51,7 +51,14 @@ const PyramidStructure: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const { rwTeams, befaTeams, topTeam, pyramidLevels } = useMemo(() => {
+  const {
+    rwTeams,
+    befaTeams,
+    topTeam,
+    pyramidLevels,
+    totalPlayers,
+    uniquePlayers,
+  } = useMemo(() => {
     const rw: TeamInfo[] = [];
     const befa: TeamInfo[] = [];
     let top: TeamInfo | null = null;
@@ -119,11 +126,25 @@ const PyramidStructure: React.FC = () => {
       }
     });
 
+    // Calculer le total des joueurs (avec doublons)
+    const rwTotal = rw.reduce((sum, t) => sum + t.players, 0);
+    const befaTotal = befa.reduce((sum, t) => sum + t.players, 0);
+    const pyramidTotal = levels.reduce((sum, l) => sum + l.players, 0);
+    const topTotal = top?.players || 0;
+    const totalPlayers = rwTotal + befaTotal + pyramidTotal + topTotal;
+
+    // Estimation du nombre de joueurs uniques (sans doublons)
+    // En supposant qu'en moyenne, un joueur joue dans 1.15 équipes
+    const estimatedUniqueRate = 1.15;
+    const uniquePlayers = Math.round(totalPlayers / estimatedUniqueRate);
+
     return {
       rwTeams: rw,
       befaTeams: befa,
       topTeam: top,
       pyramidLevels: levels,
+      totalPlayers,
+      uniquePlayers,
     };
   }, [teams]);
 
@@ -199,8 +220,37 @@ const PyramidStructure: React.FC = () => {
   return (
     <div className="relative">
       {/* Header */}
-
       <CategoryCounts teams={teams} loading={loading} />
+
+      {/* Total Players Card */}
+      {!loading && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <Card className="bg-gradient-to-r from-black to-red-600 text-white">
+            <CardContent className="flex flex-col items-center py-4">
+              <h2 className="text-2xl font-bold mb-2">
+                {t("totalPlayersAcademy")}
+              </h2>
+              <div className="flex items-center gap-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold mb-1">{uniquePlayers}</div>
+                  <p className="text-xs opacity-80">{t("withoutDuplicates")}</p>
+                </div>
+                <div className="text-center opacity-70">
+                  <div className="text-2xl font-semibold mb-1">
+                    {totalPlayers}
+                  </div>
+                  <p className="text-xs opacity-80">{t("withDuplicates")}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Grille */}
       <div className="flex justify-center items-start gap-8 border border-gray-200 rounded-lg p-6">
@@ -310,7 +360,7 @@ const SideBox: React.FC<{
   return (
     <div
       onClick={onClick}
-      className="bg-blue-900 text-white px-4 py-3 rounded-lg shadow-md w-48 cursor-pointer transform transition flex flex-col items-center"
+      className="bg-black text-white px-4 py-3 rounded-lg shadow-md w-48 cursor-pointer transform transition flex flex-col items-center"
     >
       <h4 className="font-bold mb-1">{title}</h4>
       <p className="text-xs text-blue-100 mb-2">

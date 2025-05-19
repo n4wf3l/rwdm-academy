@@ -539,64 +539,6 @@ const About = () => {
             </Card>
           </div>
         </motion.div>
-
-        {/* Notre équipe */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mb-12"
-        >
-          <h2 className="text-3xl font-bold text-rwdm-blue dark:text-white mb-8 text-center relative inline-block">
-            {t("team_title")}
-            <motion.div
-              className="absolute -bottom-2 left-0 h-1 bg-rwdm-red rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            />
-          </h2>
-
-          {teamMembers.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-300">
-              {t("no_team_members")}
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {teamMembers.map((member, index) => (
-                <motion.div
-                  key={member.email || index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 * index }}
-                >
-                  <Card className="group h-full glass-panel border-0 shadow-lg overflow-hidden transition-all duration-300 transform hover:-translate-y-1 hover:scale-105">
-                    <CardContent className="p-6 text-center">
-                      <img
-                        src={member.profilePicture || "/avatar.jpg"}
-                        alt={`${member.firstName} ${member.lastName}`}
-                        className="w-32 h-32 object-cover rounded-full mx-auto border shadow"
-                        onError={(e) => {
-                          const target = e.currentTarget as HTMLImageElement;
-                          if (
-                            target.src !==
-                            window.location.origin + "/avatar.jpg"
-                          ) {
-                            target.src = "/avatar.jpg";
-                          }
-                        }}
-                      />
-                      <h3 className="text-xl font-bold mb-1 text-rwdm-blue dark:text-white group-hover:text-rwdm-red transition-colors duration-300">
-                        {member.firstName} {member.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-500">{member.function}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
       </main>
       <Footer />
     </div>

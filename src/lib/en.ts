@@ -339,7 +339,7 @@ export const translationsEN = {
   position_left_wing: "Left winger",
   position_striker: "Striker",
   academy_RWDM_elite: "RWDM Academy (Elite)",
-  academy_RFE_provincial: "Red For Ever Academy (Provincials)",
+  academy_RFE_provincial: "RWDM ForEver Academy (Provincials)",
   selection_error_date_past_title: "Error",
   selection_error_date_past_desc: "Date cannot be in the past.",
   accident_info_alert_title: "Important",
@@ -1416,4 +1416,9 @@ export const translationsEN = {
   "summary.balance": "Balance",
   "overdue.none": "No overdue payments.",
   "button.print": "Print",
+  totalPlayersAcademy: "Total academy players",
+  withoutDuplicateWarning:
+    "This number may include players counted in multiple teams",
+  withoutDuplicates: "Without duplicates",
+  withDuplicates: "With duplicates",
 };
