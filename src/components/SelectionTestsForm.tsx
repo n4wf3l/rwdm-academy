@@ -79,10 +79,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
       t("category_U11"),
       t("category_U12"),
       t("category_U13"),
-      t("category_U14_full"),
+      t("category_U14"),
       t("category_U15_full"),
       t("category_U16"),
-      t("category_U17"),
+      t("category_U17_full"),
       t("category_U18"),
       t("category_U19_full"),
       t("category_U21"),
@@ -124,7 +124,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
   const [email, setEmail] = useState<string>("");
   const [currentClub, setCurrentClub] = useState<string>("");
   const [previousClub, setPreviousClub] = useState<string>("");
-  const [position, setPosition] = useState<string>("");
+  const [position, setPosition] = useState<string>(formData.position || "");
 
   // États pour les informations du responsable légal
   const [parentLastName, setParentLastName] = useState<string>("");
@@ -201,16 +201,18 @@ const SelectionTestsForm: React.FC<FormProps> = ({
   };
 
   useEffect(() => {
-    const isPetit = ["U5", "U6", "U7", "U8", "U9"].some((prefix) =>
-      noyau.startsWith(prefix)
-    );
+    // Ce log nous montre quand l'effet se déclenche
+    console.log("Effect triggered, noyau:", noyau);
 
-    if (isPetit) {
-      setPosition(t("selection_position_default"));
-    } else {
-      setPosition(""); // autoriser la sélection manuelle
+    if (["U5", "U6", "U7", "U8", "U9"].includes(noyau)) {
+      const defaultPos = t("selection_position_default");
+      console.log("Setting default position:", defaultPos);
+      setPosition(defaultPos);
+      onFormDataChange?.("position", defaultPos);
     }
-  }, [noyau, t]);
+    // Ne pas réinitialiser si noyau change mais que ce n'est pas U5-U9
+    // Retirer le "else setPosition("")"
+  }, [noyau, t, onFormDataChange]);
 
   useEffect(() => {
     if (!isCooldown) return;
@@ -374,14 +376,6 @@ const SelectionTestsForm: React.FC<FormProps> = ({
     { label: t("selection_spellcheck_field_parent_email"), value: parentEmail },
   ];
 
-  useEffect(() => {
-    if (["U5", "U6", "U7", "U8", "U9"].includes(noyau)) {
-      setPosition(t("selection_position_default"));
-    } else {
-      setPosition(""); // Réinitialiser si l'utilisateur choisit un autre noyau
-    }
-  }, [noyau, t]);
-
   // Ajouter ces fonctions de validation après les imports
   const lettersOnly = (value: string) => value.replace(/[^a-zA-ZÀ-ÿ\s-]/g, "");
   const numbersOnly = (value: string) => value.replace(/[^0-9]/g, "");
@@ -447,7 +441,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {(["U15", "U14", "U19"].some((p) => noyau.startsWith(p))
+                      {(["U15", "U17", "U19"].some((p) => noyau.startsWith(p))
                         ? ACADEMIES
                         : ["RWDM Academy"]
                       ).map((option) => (
@@ -600,14 +594,18 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     />
                   ) : (
                     <Select
-                      onValueChange={setPosition}
+                      onValueChange={(value) => {
+                        console.log("Selected position:", value); // Pour déboguer
+                        setPosition(value);
+                        onFormDataChange?.("position", value);
+                      }}
+                      defaultValue={position}
                       value={position}
-                      required
                     >
-                      <SelectTrigger className="form-input-base">
-                        <SelectValue
-                          placeholder={t("selection_placeholder_position")}
-                        />
+                      <SelectTrigger id="position" className="form-input-base">
+                        <SelectValue>
+                          {position || t("selection_placeholder_position")}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {POSITIONS.map((pos) => (
