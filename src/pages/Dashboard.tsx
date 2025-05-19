@@ -9,11 +9,12 @@ import AdminLayout from "@/components/AdminLayout";
 import { io } from "socket.io-client";
 
 // Types et composants
-import RequestDetailsModal, {
+import {
   Request,
   RequestType,
   RequestStatus,
 } from "@/components/RequestDetailsModal";
+import RequestDetailsModal from "@/components/RequestDetailsModal.tsx"; // ou .jsx
 import SearchFilters from "@/components/dashboard/SearchFilters";
 import RequestsTable, {
   translateRequestType,
@@ -610,22 +611,32 @@ const Dashboard = () => {
   // Quand on clique sur "Send" du certificat : envoyer l'email ET marquer les deux comme terminés
   const sendHealingCertificate = async (requestId: string) => {
     try {
+      // Envoyer le documentLabel et le type avec la requête
       await axios.post(
-        `http://localhost:5000/api/email-recipients/send-request/${requestId}`
+        `http://localhost:5000/api/email-recipients/send-request/${requestId}`,
+        {
+          documentLabel: "Certificat de guérison",
+          type: "healing-notify",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      // 1. Trouver les deux demandes (décla + certificat) avec le même codeDossier
+      // Trouver les deux demandes avec le même codeDossier
       const healingRequest = requests.find((r) => r.id === requestId);
       const code = healingRequest?.details?.codeDossier;
 
-      if (!code) throw new Error("Code dossier manquant.");
+      if (code) {
+        const toMarkCompleted = requests.filter(
+          (r) => r.details?.codeDossier === code && r.type === "accident-report"
+        );
 
-      const toMarkCompleted = requests.filter(
-        (r) => r.details?.codeDossier === code && r.type === "accident-report"
-      );
-
-      for (const req of toMarkCompleted) {
-        await handleUpdateStatus(req.id, "completed");
+        for (const req of toMarkCompleted) {
+          await handleUpdateStatus(req.id, "completed");
+        }
       }
 
       toast({

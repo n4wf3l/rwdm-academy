@@ -266,8 +266,11 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                               )}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (!isDeclarationSent)
+                                if (!isDeclarationSent) {
                                   setSelectedIdToSend(declaration.id);
+                                  // Set request type for email
+                                  declaration.type = "accident-report";
+                                }
                               }}
                             >
                               {isDeclarationSent ? (
@@ -320,8 +323,15 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                               )}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (!isHealingSent)
+                                if (!isHealingSent) {
                                   setSelectedHealingIdToSend(healing.id);
+                                  // Type assertion pour contourner la vérification TypeScript
+                                  (healing as any).type = "healing-notify";
+                                  healing.details = {
+                                    ...healing.details,
+                                    documentLabel: "Certificat de guérison",
+                                  };
+                                }
                               }}
                             >
                               {isHealingSent ? (

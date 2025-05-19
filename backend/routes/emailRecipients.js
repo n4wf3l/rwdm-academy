@@ -52,39 +52,88 @@ router.post("/send-request/:id", async (req, res) => {
 
   try {
     // 1. Récupération de la demande
-    const [requests] = await db.query("SELECT * FROM requests WHERE id = ?", [
-      id,
-    ]);
+    const [requests] = await db.query(
+      `SELECT r.*, 
+        CONCAT(u.firstName, ' ', u.lastName) as admin_name
+      FROM requests r
+      LEFT JOIN users u ON r.assigned_to = u.id
+      WHERE r.id = ?`,
+      [id]
+    );
+
     if (requests.length === 0) {
-      return res.status(404).json({ message: "Demande non trouvée" });
+      console.log("❌ Demande non trouvée:", id);
+      return res.status(404).json({
+        message: "Demande non trouvée",
+        requestId: id,
+      });
     }
 
     const request = requests[0];
     const requestData = JSON.parse(request.data);
 
-    // 2. Récupération du template d'email
+    // Vérifier si on a reçu des données supplémentaires du frontend
+    if (req.body.documentLabel) {
+      requestData.documentLabel = req.body.documentLabel;
+    }
+
+    if (req.body.type) {
+      request.type = req.body.type;
+    }
+
+    console.log("📑 Données de la demande:", {
+      id: request.id,
+      type: request.type,
+      data: requestData,
+    });
+
+    // 2. Déterminer le type d'email et le destinataire
+    let emailType;
+
+    // Check si c'est un certificat de guérison
+    if (
+      requestData.documentLabel === "Certificat de guérison" ||
+      requestData.documentLabel === "Geneescertificaat"
+    ) {
+      emailType = "healing-notify";
+    } else {
+      emailType = "accident-notify";
+    }
+
+    console.log("Type de document:", {
+      id: request.id,
+      documentLabel: requestData.documentLabel,
+      emailType,
+    });
+
+    // 3. Récupération du template d'email
     const [templates] = await db.query("SELECT * FROM emails WHERE type = ?", [
-      request.type,
+      emailType,
     ]);
 
     if (templates.length === 0) {
-      return res.status(404).json({ message: "Template d'email non trouvé" });
+      return res.status(404).json({
+        message: `Template d'email non trouvé pour le type ${emailType}`,
+      });
     }
 
     const emailTemplate = templates[0];
 
-    // 3. Récupération de l'adresse email de destination
+    // 4. Récupération de l'adresse email du destinataire
+    // AVANT: const recipientType = ...
+    // MODIFIÉ: Utilisation du même type de destinataire pour les deux types d'emails
     const [emails] = await db.query(
-      "SELECT email FROM email_recipients WHERE type = ? LIMIT 1",
-      ["accident-report"]
+      "SELECT email FROM email_recipients WHERE type = ?",
+      ["accident-report"] // Toujours utiliser accident-report comme destinataire
     );
+
     if (emails.length === 0) {
-      return res.status(404).json({ message: "Email non trouvé" });
+      return res.status(404).json({ message: "Email destinataire non trouvé" });
     }
 
     const recipient = emails[0].email;
 
-    // 4. Préparer les pièces jointes
+    // 5. Préparer les pièces jointes
     let attachments = [];
     const filePathsArray = Array.isArray(requestData.filePaths)
       ? requestData.filePaths
@@ -105,7 +154,7 @@ router.post("/send-request/:id", async (req, res) => {
       }
     });
 
-    // 5. Remplacer les variables dans le template
+    // 6. Remplacer les variables dans le template
     const htmlContent = emailTemplate.body
       .replace(
         /{playerName}/g,
@@ -123,9 +172,10 @@ router.post("/send-request/:id", async (req, res) => {
           : ""
       )
       .replace(/{description}/g, requestData.description || "")
+      .replace(/{adminName}/g, request.admin_name || "Non assigné")
       .replace(/\n/g, "<br/>");
 
-    // 6. Configurer et envoyer l'email
+    // 7. Configurer et envoyer l'email
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
@@ -146,13 +196,16 @@ router.post("/send-request/:id", async (req, res) => {
 
     console.log("✅ Email bien envoyé :", info.messageId);
 
-    // 7. Mettre à jour le champ sent_at
+    // 8. Mettre à jour le champ sent_at
     await db.query("UPDATE requests SET sent_at = NOW() WHERE id = ?", [id]);
 
     res.json({ message: "Email envoyé avec succès !" });
   } catch (err) {
     console.error("❌ Erreur pendant l'envoi :", err);
-    res.status(500).json({ message: "Erreur lors de l'envoi de l'email." });
+    res.status(500).json({
+      message: "Erreur lors de l'envoi de l'email.",
+      error: err.message,
+    });
   }
 });
 
