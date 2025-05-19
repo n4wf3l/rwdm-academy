@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar as CalendarIcon, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/AdminLayout";
+import { io } from "socket.io-client";
 
 // Types et composants
 import RequestDetailsModal, {
@@ -14,7 +15,9 @@ import RequestDetailsModal, {
   RequestStatus,
 } from "@/components/RequestDetailsModal";
 import SearchFilters from "@/components/dashboard/SearchFilters";
-import RequestsTable from "@/components/dashboard/RequestsTable";
+import RequestsTable, {
+  translateRequestType,
+} from "@/components/dashboard/RequestsTable";
 import CompletedRequestsCard from "@/components/dashboard/CompletedRequestsCard";
 import PendingAccidentsCard from "@/components/dashboard/PendingAccidentsCard";
 import StatisticsCard from "@/components/dashboard/StatisticsCard";
@@ -42,6 +45,8 @@ export interface Admin {
   role: string;
   name: string;
 }
+
+const notificationSound = new Audio("/notification.mp3");
 
 const Dashboard = () => {
   const [requests, setRequests] = useState<Request[]>([]);
@@ -674,6 +679,54 @@ const Dashboard = () => {
     setSelectedRequest(null);
     setIsAppointmentDialogOpen(false);
   };
+
+  useEffect(() => {
+    // Créer la connexion WebSocket
+    const socket = io("http://localhost:5000");
+
+    socket.on("connect", () => {
+      console.log("Connecté au serveur WebSocket");
+    });
+
+    socket.on("newRequest", (newRequest) => {
+      console.log("Nouvelle demande reçue:", newRequest);
+
+      setRequests((prevRequests) => {
+        // S'assurer que la demande n'existe pas déjà
+        const exists = prevRequests.some((req) => req.id === newRequest.id);
+        if (exists) return prevRequests;
+
+        // Jouer le son de notification
+        notificationSound.play().catch((err) => {
+          console.log("Impossible de jouer le son:", err);
+        });
+
+        return [
+          {
+            ...newRequest,
+            date: new Date(newRequest.date),
+          },
+          ...prevRequests,
+        ];
+      });
+
+      toast({
+        title: t("toast_new_request_title"),
+        description: t("toast_new_request_description")
+          .replace("{{type}}", translateRequestType(newRequest.type))
+          .replace("{{name}}", newRequest.name),
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Déconnecté du serveur WebSocket");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <div className="space-y-6">

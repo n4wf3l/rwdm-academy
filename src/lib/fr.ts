@@ -1496,4 +1496,7 @@ export const translationsFR = {
   "forms.maintenance.waiver_desc":
     "Mettre le formulaire de décharge de responsabilité en maintenance.",
   brussels: "Bruxelles",
+  toast_new_request_title: "Nouvelle demande reçue",
+  toast_new_request_description:
+    "Une nouvelle demande de type {{type}} de {{name}} est arrivée.",
 };

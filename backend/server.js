@@ -17,6 +17,8 @@ const router = express.Router();
 const crypto = require("crypto");
 const fetch = require("node-fetch");
 const formMailRouter = require("./routes/formMail");
+const http = require("http");
+const { Server } = require("socket.io");
 
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
@@ -533,11 +535,23 @@ app.post("/api/requests", async (req, res) => {
       JSON.stringify(formData),
       assignedTo || null,
     ]);
-    await connection.end();
+
+    // Émettre l'événement après insertion réussie
+    io.emit("newRequest", {
+      id: result.insertId,
+      type,
+      name: formData.playerLastName
+        ? `${formData.playerLastName} ${formData.playerFirstName}`
+        : "Inconnu",
+      email: formData.email || "Non spécifié",
+      date: new Date(),
+      status: "new",
+      details: formData,
+    });
 
     res.status(201).json({
       message: "Demande enregistrée avec succès",
-      requestId: result.insertId, // ✅ Important pour le frontend
+      requestId: result.insertId,
     });
   } catch (error) {
     console.error("❌ Erreur lors de l'insertion :", error);
@@ -1017,8 +1031,15 @@ app.use("/send-request", formMailRouter);
 const changeDataRoutes = require("./changeData");
 app.use("/api", changeDataRoutes);
 
-module.exports = app;
-// Lancer le serveur
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5174",
+    methods: ["GET", "POST"],
+  },
+});
+
+// À la fin du fichier, remplacer app.listen par :
+server.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });

@@ -1430,4 +1430,7 @@ export const translationsNL = {
     "Zet het ongevallenformulier in onderhoud.",
   "forms.maintenance.waiver_desc": "Zet het vrijwaringsformulier in onderhoud.",
   brussels: "Brussel",
+  toast_new_request_title: "Nieuw verzoek ontvangen",
+  toast_new_request_description:
+    "Een nieuw verzoek van het type {{type}} van {{name}} is aangekomen.",
 };

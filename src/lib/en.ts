@@ -1393,4 +1393,7 @@ export const translationsEN = {
   "forms.maintenance.waiver_desc":
     "Put the liability waiver form in maintenance.",
   brussels: "Brussels",
+  toast_new_request_title: "New request received",
+  toast_new_request_description:
+    "A new {{type}} request from {{name}} has arrived.",
 };

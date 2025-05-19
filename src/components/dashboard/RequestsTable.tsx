@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
+import { io } from "socket.io-client";
 
 // Types localement
 export type RequestStatus =
@@ -174,6 +175,24 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t, lang } = useTranslation();
+  const [isConnected, setIsConnected] = useState(false); // Exemple d'indicateur de connexion
+
+  useEffect(() => {
+    const socket = io("http://localhost:5000");
+
+    socket.on("connect", () => {
+      setIsConnected(true);
+    });
+
+    socket.on("disconnect", () => {
+      setIsConnected(false);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const handleUpdateStatus = (requestId: string, newStatus: RequestStatus) => {
     // Rien ici pour "rejected", car la suppression est gérée dans Dashboard
 
@@ -486,9 +505,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 return (
                   <motion.tr
                     key={request.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, backgroundColor: "#e3f2fd" }}
+                    animate={{ opacity: 1, backgroundColor: "#ffffff" }}
+                    transition={{ duration: 0.5 }}
                     className={cn(
                       "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
                       isAssignedToCurrentUser &&
