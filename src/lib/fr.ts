@@ -891,7 +891,7 @@ export const translationsFR = {
   pending_accidents_info:
     "Les déclarations d'accidents sont mises en attente ici en attente du certificat de guérison respectif.",
   valid_accidents_label: "Les déclarations en ordre",
-  dialog_edit_federation_email_title: "Modifier l’email de l’Union Belge",
+  dialog_edit_federation_email_title: "Modifier l’email de l'Union Belge",
   button_save: "Enregistrer",
   placeholder_new_recipient: "Nouveau destinataire",
   table_header_id: "ID",
@@ -1499,4 +1499,16 @@ export const translationsFR = {
   toast_new_request_title: "Nouvelle demande reçue",
   toast_new_request_description:
     "Une nouvelle demande de type {{type}} de {{name}} est arrivée.",
+  // Types de demandes
+  request_type_registration: "Inscription à l'académie",
+  request_type_selection_tests: "Tests de sélection",
+  request_type_accident_report: "Déclaration d'accident",
+  request_type_responsibility_waiver: "Décharge de responsabilité",
+  status_unknown: "Unknown",
+  please_select_date_first: "Veuillez d'abord sélectionner une date",
+  admin_auto_assigned: "Administrateur assigné automatiquement",
+  today_appointments: "Aujourd'hui",
+  no_appointments_today: "Aucun rendez-vous",
+  appointment_singular: "rendez-vous prévu",
+  appointments_plural: "rendez-vous prévus",
 };

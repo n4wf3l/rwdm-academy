@@ -102,16 +102,16 @@ const emailEndpointByType: Record<RequestType, string> = {
 /**
  * Fonction utilitaire pour traduire le type de demande
  */
-export function translateRequestType(type: RequestType): string {
+export function translateRequestType(type: RequestType, t: any): string {
   switch (type) {
     case "registration":
-      return "Inscription à l'académie";
+      return t("request_type_registration");
     case "selection-tests":
-      return "Tests de sélection";
+      return t("request_type_selection_tests");
     case "accident-report":
-      return "Déclaration d'accident";
+      return t("request_type_accident_report");
     case "responsibility-waiver":
-      return "Décharge de responsabilité";
+      return t("request_type_responsibility_waiver");
     default:
       return type;
   }
@@ -120,24 +120,40 @@ export function translateRequestType(type: RequestType): string {
 /**
  * Retourne le Badge correspondant au statut
  */
-export function getStatusBadge(status: RequestStatus) {
+export function getStatusBadge(status: RequestStatus, t: any) {
   const baseClass = "whitespace-nowrap";
 
   switch (status) {
     case "new":
-      return <Badge className={`${baseClass} bg-blue-500`}>Nouveau</Badge>;
+      return (
+        <Badge className={`${baseClass} bg-blue-500`}>{t("status_new")}</Badge>
+      );
     case "assigned":
-      return <Badge className={`${baseClass} bg-purple-500`}>Assigné</Badge>;
+      return (
+        <Badge className={`${baseClass} bg-purple-500`}>
+          {t("status_assigned")}
+        </Badge>
+      );
     case "in-progress":
       return (
-        <Badge className={`bg-yellow-500 whitespace-nowrap`}>En cours</Badge>
+        <Badge className={`bg-yellow-500 whitespace-nowrap`}>
+          {t("status_in_progress")}
+        </Badge>
       );
     case "completed":
-      return <Badge className={`${baseClass} bg-green-500`}>Terminé</Badge>;
+      return (
+        <Badge className={`${baseClass} bg-green-500`}>
+          {t("status_completed")}
+        </Badge>
+      );
     case "rejected":
-      return <Badge className={`${baseClass} bg-red-500`}>Rejeté</Badge>;
+      return (
+        <Badge className={`${baseClass} bg-red-500`}>
+          {t("status_rejected")}
+        </Badge>
+      );
     default:
-      return <Badge className={baseClass}>Inconnu</Badge>;
+      return <Badge className={baseClass}>{t("status_unknown")}</Badge>;
   }
 }
 
@@ -520,7 +536,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                     </TableCell>
 
                     <TableCell>
-                      {translateRequestType(request.type)}
+                      {translateRequestType(request.type, t)}
                       {request.type === "accident-report" &&
                         request.details?.documentLabel ===
                           "Déclaration d'accident" &&
@@ -540,7 +556,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                       </div>
                     </TableCell>
 
-                    <TableCell>{getStatusBadge(request.status)}</TableCell>
+                    <TableCell>{getStatusBadge(request.status, t)}</TableCell>
                     <TableCell>
                       {["owner", "superadmin"].includes(currentUserRole) ? (
                         <Select

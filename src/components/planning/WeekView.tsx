@@ -260,17 +260,36 @@ const WeekView: React.FC<WeekViewProps> = ({
         w-full flex flex-col items-start
         p-0.5 gap-0.5
         rounded-md text-xs cursor-pointer
-        ${
-          appt.type === "registration"
-            ? "bg-green-100 border-l-4 border-green-500"
-            : appt.type === "selection-tests"
-            ? "bg-blue-100 border-l-4 border-blue-500"
-            : appt.type === "accident-report"
-            ? "bg-red-100 border-l-4 border-red-500"
-            : appt.type === "responsibility-waiver"
-            ? "bg-purple-100 border-l-4 border-purple-500"
-            : "bg-gray-100 border-l-4 border-gray-500"
-        }
+        ${(() => {
+          console.log("Type de rendez-vous:", appt.type); // Pour déboguer
+          const type = appt.type.toLowerCase();
+
+          if (type.includes("registration") || type === "registration")
+            return "bg-green-100 border-l-4 border-green-500";
+
+          if (
+            type.includes("selection") ||
+            type === "selection-tests" ||
+            type === "selection_tests"
+          )
+            return "bg-blue-100 border-l-4 border-blue-500";
+
+          if (
+            type.includes("accident") ||
+            type === "accident-report" ||
+            type === "accident_report"
+          )
+            return "bg-red-100 border-l-4 border-red-500";
+
+          if (
+            type.includes("responsibility") ||
+            type === "responsibility-waiver" ||
+            type === "responsibility_waiver"
+          )
+            return "bg-purple-100 border-l-4 border-purple-500";
+
+          return "bg-gray-100 border-l-4 border-gray-500"; // Par défaut
+        })()}
       `}
                                       >
                                         {/* 1. Nom de l’admin */}

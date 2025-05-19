@@ -655,7 +655,7 @@ const Dashboard = () => {
   const handleAppointmentTypeSelection = (type: "test" | "secretariat") => {
     if (!selectedRequest) return;
 
-    // Toujours fermer le 1er modal et ouvrir le 2ᵉ
+    // Fermer le 1er modal et ouvrir le 2ᵉ
     setIsAppointmentDialogOpen(false);
     setIsAddAppointmentDialogOpen(true);
 
@@ -663,10 +663,12 @@ const Dashboard = () => {
     setNewAppointmentPerson(selectedRequest.name);
     setNewAppointmentEmail(selectedRequest.email);
 
-    // Choisir le bon type de rdv pour AddAppointmentDialog
-    setNewAppointmentType(
-      type === "secretariat" ? "registration" : "selection-tests"
-    );
+    // Définir le type de rendez-vous en fonction du choix
+    if (type === "test") {
+      setNewAppointmentType("selection-tests"); // Utiliser la forme avec tiret
+    } else {
+      setNewAppointmentType("registration");
+    }
   };
 
   const openAppointmentDialog = (request: Request) => {
@@ -713,7 +715,7 @@ const Dashboard = () => {
       toast({
         title: t("toast_new_request_title"),
         description: t("toast_new_request_description")
-          .replace("{{type}}", translateRequestType(newRequest.type))
+          .replace("{{type}}", translateRequestType(newRequest.type, t))
           .replace("{{name}}", newRequest.name),
       });
     });

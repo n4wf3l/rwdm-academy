@@ -15,6 +15,7 @@ import {
   Globe,
   UserIcon,
   Mail,
+  CalendarCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -29,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "./ui/badge";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import ViewProfile from "@/components/members/ViewProfile"; // Nouvel import
+import { format } from "date-fns";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -60,6 +62,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false); // Nouvel état
+  const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(0); // Ajouté pour le compteur de rendez-vous du jour
   const location = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -118,6 +121,39 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       .catch((err) =>
         console.error("Erreur lors de la récupération de l'utilisateur:", err)
       );
+  }, []);
+
+  // Récupération des rendez-vous du jour
+  useEffect(() => {
+    const fetchTodayAppointments = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/appointments", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        if (!response.ok) throw new Error("Erreur récupération rendez-vous");
+
+        const data = await response.json();
+        const today = format(new Date(), "yyyy-MM-dd");
+
+        // Filtrer les rendez-vous pour aujourd'hui
+        const todayAppointments = data.filter(
+          (appointment) =>
+            format(new Date(appointment.date), "yyyy-MM-dd") === today
+        );
+
+        setTodayAppointmentsCount(todayAppointments.length);
+      } catch (error) {
+        console.error("Erreur lors du fetch des rendez-vous du jour:", error);
+      }
+    };
+
+    fetchTodayAppointments();
+
+    // Rafraîchir toutes les 5 minutes
+    const intervalId = setInterval(fetchTodayAppointments, 5 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const isActive = (path: string) => location.pathname === path;
@@ -358,6 +394,35 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               </Link>
             )}
           </nav>
+
+          {/* Bloc des rendez-vous du jour - PLACEZ-LE ICI */}
+          <div className="mx-4 mb-4">
+            <Link
+              to="/planning"
+              className="block cursor-pointer transition-transform hover:scale-[1.02]"
+            >
+              <div className="flex items-center justify-center gap-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
+                <CalendarCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                    {t("today_appointments")}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg font-bold text-blue-700 dark:text-blue-200">
+                      {todayAppointmentsCount}
+                    </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {todayAppointmentsCount === 0
+                        ? t("no_appointments_today")
+                        : todayAppointmentsCount === 1
+                        ? t("appointment_singular")
+                        : t("appointments_plural")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
 
           {/* Bloc en bas du sidebar */}
           <div className="p-4 border-t">

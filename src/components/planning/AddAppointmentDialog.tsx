@@ -34,6 +34,13 @@ import {
 } from "./planningUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Textarea } from "@/components/ui/textarea";
+
+type RequestType =
+  | "registration"
+  | "selection-tests"
+  | "accident-report"
+  | "responsibility-waiver";
 
 interface AddAppointmentDialogProps {
   isOpen: boolean;
@@ -55,6 +62,7 @@ interface AddAppointmentDialogProps {
   availableTimeSlots: string[];
   appointments: Appointment[];
   addAppointmentToState: (appointment: any) => void;
+  requestType?: RequestType; // Type optionnel provenant de la demande sélectionnée
 }
 
 const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
@@ -77,10 +85,23 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   availableTimeSlots,
   appointments,
   addAppointmentToState,
+  requestType, // Ajout de requestType ici
 }) => {
   const [admins, setAdmins] = useState<{ id: string; name: string }[]>([]);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{
+    id: number;
+    firstName: string;
+    lastName: string;
+    role: string;
+  }>({
+    id: 0,
+    firstName: "",
+    lastName: "",
+    role: "",
+  });
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -109,6 +130,65 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
     fetchAdmins();
   }, []);
+
+  useEffect(() => {
+    if (requestType) {
+      // Mapper le type de demande au type de rendez-vous
+      switch (requestType) {
+        case "registration":
+          setNewAppointmentType("registration"); // Pour une inscription, on propose un test de sélection
+          break;
+        case "selection-tests":
+          setNewAppointmentType("selection-tests");
+          break;
+        case "accident-report":
+          setNewAppointmentType("accident-report");
+          break;
+        case "responsibility-waiver":
+          setNewAppointmentType("responsibility-waiver");
+          break;
+        default:
+          setNewAppointmentType("other");
+      }
+    }
+  }, [requestType]);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:5000/api/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération de l'utilisateur");
+        }
+
+        const userData = await response.json();
+        setCurrentUser(userData);
+
+        // Si l'utilisateur est un admin simple, l'assigner automatiquement
+        if (userData.role === "admin" && admins.length > 0) {
+          const userAdmin = admins.find((a) => a.id === userData.id.toString());
+          if (userAdmin) {
+            setNewAppointmentAdmin(userAdmin.id);
+          }
+        }
+      } catch (error) {
+        console.error(
+          "Erreur lors de la récupération de l'utilisateur:",
+          error
+        );
+      }
+    };
+
+    fetchCurrentUser();
+  }, [admins]); // Dépendance à admins pour s'exécuter quand la liste est chargée
 
   const sendAppointmentEmail = async (appointmentData) => {
     try {
@@ -248,7 +328,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               <Label htmlFor="appointmentDate">
                 {t("appointment_date_label")}
               </Label>
-              <Popover>
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -266,7 +346,10 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                   <Calendar
                     mode="single"
                     selected={newAppointmentDate}
-                    onSelect={setNewAppointmentDate}
+                    onSelect={(date) => {
+                      setNewAppointmentDate(date);
+                      setCalendarOpen(false); // Ferme automatiquement le popover après sélection
+                    }}
                     locale={fr}
                     disabled={(date) => date < new Date()}
                     initialFocus
@@ -278,13 +361,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="appointmentTime">
-                {t("appointment_type_label")}
+                {t("emails.variables.time")}{" "}
+                {/* Correction du label pour "Heure" */}
               </Label>
               <Select
                 value={newAppointmentTime}
                 onValueChange={setNewAppointmentTime}
+                disabled={!newAppointmentDate} // Désactiver si aucune date n'est sélectionnée
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className={
+                    !newAppointmentDate ? "opacity-50 cursor-not-allowed" : ""
+                  }
+                >
                   <SelectValue placeholder={t("select_time_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -295,6 +384,11 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              {!newAppointmentDate && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("please_select_date_first")}
+                </p>
+              )}
             </div>
           </div>
 
@@ -315,13 +409,19 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 <SelectItem value="registration">
                   {t("type_registration")}
                 </SelectItem>
-                <SelectItem value="selection_tests">
+                <SelectItem value="selection-tests">
+                  {" "}
+                  {/* Utiliser tiret ici, PAS underscore */}
                   {t("type_selection_tests")}
                 </SelectItem>
-                <SelectItem value="accident_report">
+                <SelectItem value="accident-report">
+                  {" "}
+                  {/* Utiliser tiret ici */}
                   {t("type_accident_report")}
                 </SelectItem>
-                <SelectItem value="responsibility_waiver">
+                <SelectItem value="responsibility-waiver">
+                  {" "}
+                  {/* Utiliser tiret ici */}
                   {t("type_responsibility_waiver")}
                 </SelectItem>
                 <SelectItem value="other">{t("type_other")}</SelectItem>
@@ -355,8 +455,15 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             <Select
               value={newAppointmentAdmin}
               onValueChange={setNewAppointmentAdmin}
+              disabled={currentUser.role === "admin"} // Désactiver pour les admins simples
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={
+                  currentUser.role === "admin"
+                    ? "opacity-80 cursor-not-allowed"
+                    : ""
+                }
+              >
                 <SelectValue placeholder={t("select_admin_placeholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -373,14 +480,20 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 )}
               </SelectContent>
             </Select>
+            {currentUser.role === "admin" && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("admin_auto_assigned")}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="appointmentNotes">{t("notes_label")}</Label>
-            <Input
+            <Textarea
               id="appointmentNotes"
               value={newAppointmentNotes}
               onChange={(e) => setNewAppointmentNotes(e.target.value)}
               placeholder={t("notes_placeholder")}
+              autoResize
             />
           </div>
 

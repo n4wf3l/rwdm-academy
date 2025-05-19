@@ -132,7 +132,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                       </TableCell>
 
                       <TableCell>
-                        {translateRequestType(request.type)}
+                        {translateRequestType(request.type, t)}
                         {request.type === "accident-report" &&
                           request.details?.documentLabel ===
                             "Déclaration d'accident" &&
@@ -152,7 +152,7 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                         </div>
                       </TableCell>
 
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
+                      <TableCell>{getStatusBadge(request.status, t)}</TableCell>
 
                       <TableCell>{assignedName}</TableCell>
 

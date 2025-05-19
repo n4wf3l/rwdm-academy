@@ -22,7 +22,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 type Props = {
   documents: ModalRequest[];
   formatRequestId: (id: string | number) => string;
-  translateDocumentType: (type: string) => string;
   onViewDetails: (doc: ModalRequest) => void;
   onEditRequest: (doc: ModalRequest) => void;
   onRevertRequest: (id: string) => void;
@@ -34,7 +33,6 @@ const ITEMS_PER_PAGE = 10;
 const DocumentsTable: React.FC<Props> = ({
   documents,
   formatRequestId,
-  translateDocumentType,
   onViewDetails,
   onEditRequest,
   onRevertRequest,
@@ -46,7 +44,23 @@ const DocumentsTable: React.FC<Props> = ({
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
   const { t } = useTranslation();
+  const getTranslatedDocumentType = (type: string) => {
+    switch (type) {
+      case "registration":
+        return t("request_type_registration");
+      case "selection-tests":
+        return t("request_type_selection_tests");
+      case "accident-report":
+        return t("request_type_accident_report");
+      case "responsibility-waiver":
+        return t("request_type_responsibility_waiver");
+      default:
+        return type;
+    }
+  };
+
   const headers = [
     "tableHeaderID",
     "tableHeaderType",
@@ -100,7 +114,7 @@ const DocumentsTable: React.FC<Props> = ({
                   onClick={() => onViewDetails(doc)}
                   className="cursor-pointer"
                 >
-                  {translateDocumentType(doc.type)}
+                  {getTranslatedDocumentType(doc.type)}
                   {doc.type === "accident-report" &&
                     doc.details.documentLabel === "Déclaration d'accident" &&
                     " (1/2)"}
