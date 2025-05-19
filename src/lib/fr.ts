@@ -1511,4 +1511,5 @@ export const translationsFR = {
   no_appointments_today: "Aucun rendez-vous",
   appointment_singular: "rendez-vous prévu",
   appointments_plural: "rendez-vous prévus",
+  dropdown_send_email: "Envoyer un email",
 };

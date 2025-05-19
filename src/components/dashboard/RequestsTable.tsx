@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  Mail,
 } from "lucide-react"; // Importer l'icône Calendar
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "../ui/ConfirmationDialog";
@@ -659,6 +660,27 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                               <Eye className="h-5 w-5 text-gray-600" />
                               <span className="text-sm text-gray-800">
                                 {t("dropdown_view_request")}
+                              </span>
+                            </DropdownMenuItem>
+
+                            {/* Envoyer un email */}
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const mailtoLink = `mailto:${
+                                  request.email
+                                }?subject=RWDM Academy - ${translateRequestType(
+                                  request.type,
+                                  t
+                                )}`;
+                                window.location.href = mailtoLink;
+                              }}
+                              title={t("dropdown_send_email")}
+                              className="flex items-center gap-3 hover:bg-gray-200 transition-all duration-200 ease-in-out px-4 py-2"
+                            >
+                              <Mail className="h-5 w-5 text-gray-600" />
+                              <span className="text-sm text-gray-800">
+                                {t("dropdown_send_email")}
                               </span>
                             </DropdownMenuItem>
 

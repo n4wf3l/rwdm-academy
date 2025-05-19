@@ -1444,4 +1444,5 @@ export const translationsNL = {
   no_appointments_today: "Geen afspraken vandaag",
   appointment_singular: "afspraak",
   appointments_plural: "afspraken",
+  dropdown_send_email: "E-mail verzenden",
 };

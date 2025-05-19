@@ -1407,4 +1407,5 @@ export const translationsEN = {
   no_appointments_today: "No appointments for today.",
   appointment_singular: "appointment",
   appointments_plural: "appointments",
+  dropdown_send_email: "Send email",
 };
