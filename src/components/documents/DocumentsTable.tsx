@@ -18,14 +18,20 @@ import { Button } from "@/components/ui/button";
 import { Eye, Pencil, RotateCcw, FileText, Settings } from "lucide-react";
 import { Request as ModalRequest } from "@/components/RequestDetailsModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Checkbox } from "@/components/ui/checkbox";
+
+type ModalRequestWithEmail = ModalRequest & { email: string };
 
 type Props = {
-  documents: ModalRequest[];
+  documents: ModalRequestWithEmail[];
   formatRequestId: (id: string | number) => string;
-  onViewDetails: (doc: ModalRequest) => void;
-  onEditRequest: (doc: ModalRequest) => void;
+  onViewDetails: (doc: ModalRequestWithEmail) => void;
+  onEditRequest: (doc: ModalRequestWithEmail) => void;
   onRevertRequest: (id: string) => void;
-  onGeneratePDF: (doc: ModalRequest) => void;
+  onGeneratePDF: (doc: ModalRequestWithEmail) => void;
+  archiveMode?: boolean;
+  selectedDocuments?: Set<string>;
+  onToggleSelection?: (id: string) => void;
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -37,6 +43,9 @@ const DocumentsTable: React.FC<Props> = ({
   onEditRequest,
   onRevertRequest,
   onGeneratePDF,
+  archiveMode,
+  selectedDocuments,
+  onToggleSelection,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(documents.length / ITEMS_PER_PAGE);
@@ -77,6 +86,15 @@ const DocumentsTable: React.FC<Props> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            {archiveMode && (
+              <motion.th
+                className="px-4 py-2 text-left font-medium w-12"
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+              >
+                {t("select")}
+              </motion.th>
+            )}
             {headers.map((key, i) => (
               <motion.th
                 key={key}
@@ -96,24 +114,48 @@ const DocumentsTable: React.FC<Props> = ({
             {paginatedDocs.map((doc, idx) => (
               <motion.tr
                 key={doc.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                  archiveMode ? "" : "cursor-pointer"
+                } ${
+                  selectedDocuments?.has(doc.id)
+                    ? "bg-amber-50 dark:bg-amber-900/20"
+                    : ""
+                }`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.03 }}
                 exit={{ opacity: 0 }}
                 layout
+                onClick={() => {
+                  if (!archiveMode) {
+                    console.log("Row clicked!", doc);
+                    onViewDetails(doc);
+                  }
+                }}
               >
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
+                {archiveMode && (
+                  <TableCell className="w-12 border-r">
+                    <div
+                      className="flex items-center justify-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSelection?.(doc.id);
+                      }}
+                    >
+                      <Checkbox
+                        checked={selectedDocuments?.has(doc.id)}
+                        className="cursor-pointer"
+                        onCheckedChange={() => {}}
+                      />
+                    </div>
+                  </TableCell>
+                )}
+
+                <TableCell className="cursor-pointer">
                   {formatRequestId(doc.id)}
                 </TableCell>
 
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
+                <TableCell className="cursor-pointer">
                   {getTranslatedDocumentType(doc.type)}
                   {doc.type === "accident-report" &&
                     doc.details.documentLabel === "Déclaration d'accident" &&
@@ -123,40 +165,21 @@ const DocumentsTable: React.FC<Props> = ({
                     " (2/2)"}
                 </TableCell>
 
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
-                  {doc.name}
-                </TableCell>
+                <TableCell className="cursor-pointer">{doc.name}</TableCell>
 
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
-                  {doc.email}
-                </TableCell>
+                <TableCell className="cursor-pointer">{doc.email}</TableCell>
 
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
+                <TableCell className="cursor-pointer">
                   <span className="inline-flex items-center justify-center rounded-full bg-green-500 text-white text-xs font-semibold px-2.5 py-0.5">
                     {t("completed")}
                   </span>
                 </TableCell>
 
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
+                <TableCell className="cursor-pointer">
                   {doc.assignedTo}
                 </TableCell>
 
-                <TableCell
-                  onClick={() => onViewDetails(doc)}
-                  className="cursor-pointer"
-                >
+                <TableCell className="cursor-pointer">
                   {doc.date ? new Date(doc.date).toLocaleDateString() : "N/A"}
                 </TableCell>
 

@@ -1421,4 +1421,11 @@ export const translationsEN = {
     "This number may include players counted in multiple teams",
   withoutDuplicates: "Without duplicates",
   withDuplicates: "With duplicates",
+  selectAll: "Select All",
+  deselectAll: "Deselect All",
+  archiveSelected: "Archive Selected",
+  archivingInProgress: "Archiving in Progress",
+  exitArchiveMode: "Exit Archive Mode",
+  archiveMode: "Archive Mode",
+  select: "Select",
 };

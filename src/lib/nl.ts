@@ -1458,4 +1458,11 @@ export const translationsNL = {
     "Dit aantal kan spelers bevatten die in meerdere teams worden geteld",
   withoutDuplicates: "Zonder duplicaten",
   withDuplicates: "Met duplicaten",
+  selectAll: "Alles selecteren",
+  deselectAll: "Alles deselecteren",
+  archiveSelected: "Selectie archiveren",
+  archivingInProgress: "Bezig met archiveren",
+  exitArchiveMode: "Archiveringsmodus verlaten",
+  archiveMode: "Archiveringsmodus",
+  select: "Selecteren",
 };

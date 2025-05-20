@@ -1525,4 +1525,11 @@ export const translationsFR = {
     "Ce nombre peut inclure des joueurs comptés dans plusieurs équipes",
   withoutDuplicates: "Sans doublons",
   withDuplicates: "Avec doublons",
+  selectAll: "Tout sélectionner",
+  deselectAll: "Tout désélectionner",
+  archiveSelected: "Archiver la sélection",
+  archivingInProgress: "Archivage en cours",
+  exitArchiveMode: "Quitter le mode archive",
+  archiveMode: "Mode archive",
+  select: "Sélectionner",
 };
