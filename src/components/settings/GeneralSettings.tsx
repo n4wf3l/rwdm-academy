@@ -54,6 +54,10 @@ interface Props {
       waiver: boolean;
     }>
   >;
+  accidentFormFR: string;
+  setAccidentFormFR: React.Dispatch<React.SetStateAction<string>>;
+  accidentFormNL: string;
+  setAccidentFormNL: React.Dispatch<React.SetStateAction<string>>;
 }
 
 /* ---------- helpers identiques à AboutSettings ---------- */
@@ -131,6 +135,10 @@ const GeneralSettings: React.FC<Props> = ({
   setInstagramUrl,
   formMaintenanceStates,
   setFormMaintenanceStates,
+  accidentFormFR,
+  setAccidentFormFR,
+  accidentFormNL,
+  setAccidentFormNL,
 }) => {
   const [fileName, setFileName] = useState("");
   const { t } = useTranslation();
@@ -352,7 +360,6 @@ const GeneralSettings: React.FC<Props> = ({
                 }
               />
             </div>
-
             {/* Toggle Tests de sélection */}
             <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
               <div>
@@ -399,6 +406,158 @@ const GeneralSettings: React.FC<Props> = ({
                   handleMaintenanceToggle("waiver", checked)
                 }
               />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Maintenance des formulaires */}
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("accident_form_documents")}</CardTitle>
+            <CardDescription>
+              {t("accident_form_documents_desc")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Formulaires PDF de déclaration d'accident */}
+            <div className="mt-3 p-4 rounded-lg border bg-card">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* PDF Français */}
+                <div className="space-y-2 p-3 border rounded-md bg-gray-50 dark:bg-gray-900/50">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t("medical_language_fr")}
+                  </p>
+
+                  {accidentFormFR && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md text-sm flex justify-between items-center">
+                      <span className="truncate max-w-[150px]">
+                        {accidentFormFR.split("/").pop()}
+                      </span>
+                      <a
+                        href={accidentFormFR}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 ml-2 text-xs"
+                      >
+                        {t("preview")}
+                      </a>
+                    </div>
+                  )}
+
+                  <div>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      id="accidentFormFR"
+                      className="cursor-pointer"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        // Max 5 MB
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error(t("file_too_large_5mb"));
+                          e.target.value = "";
+                          return;
+                        }
+
+                        try {
+                          const formData = new FormData();
+                          formData.append("pdfFile", file);
+                          formData.append("language", "FR");
+
+                          const response = await axios.post(
+                            "http://localhost:5000/api/accident-forms/upload",
+                            formData
+                          );
+
+                          if (response.data?.filePath) {
+                            setAccidentFormFR(response.data.filePath);
+                            toast.success(t("file_uploaded_success"));
+                          }
+                        } catch (err) {
+                          toast.error(t("file_upload_error"));
+                          console.error(err);
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {t("pdf_only")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* PDF Néerlandais */}
+                <div className="space-y-2 p-3 border rounded-md bg-gray-50 dark:bg-gray-900/50">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t("medical_language_nl")}
+                  </p>
+
+                  {accidentFormNL && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md text-sm flex justify-between items-center">
+                      <span className="truncate max-w-[150px]">
+                        {accidentFormNL.split("/").pop()}
+                      </span>
+                      <a
+                        href={accidentFormNL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 ml-2 text-xs"
+                      >
+                        {t("preview")}
+                      </a>
+                    </div>
+                  )}
+
+                  <div>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      id="accidentFormNL"
+                      className="cursor-pointer"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        // Max 5 MB
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error(t("file_too_large_5mb"));
+                          e.target.value = "";
+                          return;
+                        }
+
+                        try {
+                          const formData = new FormData();
+                          formData.append("pdfFile", file);
+                          formData.append("language", "NL");
+
+                          const response = await axios.post(
+                            "http://localhost:5000/api/accident-forms/upload",
+                            formData
+                          );
+
+                          if (response.data?.filePath) {
+                            setAccidentFormNL(response.data.filePath);
+                            toast.success(t("file_uploaded_success"));
+                          }
+                        } catch (err) {
+                          toast.error(t("file_upload_error"));
+                          console.error(err);
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {t("pdf_only")}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

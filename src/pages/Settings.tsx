@@ -18,8 +18,11 @@ import {
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useNavigate } from "react-router-dom";
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
+
   // --- Mode Maintenance ---
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [togglingMaintenance, setTogglingMaintenance] = useState(false);
@@ -124,6 +127,14 @@ const Settings: React.FC = () => {
     accidentReport: false,
     waiver: false,
   });
+
+  // --- Accident Forms ---
+  const [accidentFormFR, setAccidentFormFR] = useState<string>(
+    "/declaration_accident.pdf"
+  );
+  const [accidentFormNL, setAccidentFormNL] = useState<string>(
+    "/melding_ongeval.pdf"
+  );
 
   // --- Récupérer count "Nouveau" ---
   useEffect(() => {
@@ -299,6 +310,54 @@ const Settings: React.FC = () => {
     }
   };
 
+  // --- Récupérer les chemins des PDFs depuis l'API ---
+  useEffect(() => {
+    const fetchAccidentForms = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/accident-forms"
+        );
+        if (response.data?.forms) {
+          const frForm = response.data.forms.find(
+            (form: any) => form.language === "FR"
+          );
+          const nlForm = response.data.forms.find(
+            (form: any) => form.language === "NL"
+          );
+
+          if (frForm?.file_path) setAccidentFormFR(frForm.file_path);
+          if (nlForm?.file_path) setAccidentFormNL(nlForm.file_path);
+        }
+      } catch (error) {
+        console.error(
+          "Erreur lors de la récupération des formulaires d'accident:",
+          error
+        );
+      }
+    };
+
+    fetchAccidentForms();
+  }, []);
+
+  // Vérification de sécurité directe dans le composant
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const userRole = payload.role?.toLowerCase();
+
+        if (!["owner", "superadmin"].includes(userRole)) {
+          console.log("BLOCAGE DIRECT: Admin tente d'accéder à Settings");
+          navigate("/dashboard", { replace: true });
+        }
+      } catch (error) {
+        console.error("Erreur token:", error);
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [navigate]);
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <motion.div
@@ -415,6 +474,10 @@ const Settings: React.FC = () => {
                 setInstagramUrl={setInstagramUrl}
                 formMaintenanceStates={formMaintenanceStates}
                 setFormMaintenanceStates={setFormMaintenanceStates}
+                accidentFormFR={accidentFormFR}
+                setAccidentFormFR={setAccidentFormFR}
+                accidentFormNL={accidentFormNL}
+                setAccidentFormNL={setAccidentFormNL}
               />
             </TabsContent>
             <TabsContent value="about">

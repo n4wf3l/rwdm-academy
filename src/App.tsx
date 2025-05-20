@@ -60,32 +60,72 @@ function App() {
     const token = localStorage.getItem("token");
     if (token) {
       try {
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        console.log("===== DÉBOGAGE TOKEN =====");
+        console.log("Token décodé:", decoded);
+        console.log("Rôle utilisateur:", decoded.role);
+        console.log("Type de rôle:", typeof decoded.role);
+        console.log("=========================");
+      } catch (error) {
+        console.error("Erreur lors du décodage du token:", error);
+      }
+    }
+  }, []);
+
+  // DÉCOMMENTEZ CETTE PARTIE, elle est essentielle
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
         const payload = JSON.parse(atob(token.split(".")[1]));
-        if (
-          payload.role &&
-          ["admin", "superadmin", "owner"].includes(payload.role.toLowerCase())
-        ) {
-          // Liste des routes admin
-          const adminRoutes = [
+        const userRole = payload.role?.toLowerCase();
+
+        // Définir les routes par rôle
+        const routesByRole = {
+          admin: [
+            "/dashboard",
+            "/members",
+            "/planning",
+            "/documents",
+            "/graphics",
+          ],
+          superadmin: [
             "/dashboard",
             "/members",
             "/planning",
             "/documents",
             "/graphics",
             "/settings",
-          ];
+            "/emails",
+          ],
+          owner: [
+            "/dashboard",
+            "/members",
+            "/planning",
+            "/documents",
+            "/graphics",
+            "/settings",
+            "/emails",
+          ],
+        };
 
-          const isOnAdminPage = adminRoutes.includes(window.location.pathname);
-          const isOnHomepage = window.location.pathname === "/";
+        // DÉCOMMENTER cette partie: ⚠️
+        const allowedRoutes = routesByRole[userRole] || [];
+        const isOnAllowedPage = allowedRoutes.includes(
+          window.location.pathname
+        );
+        const isOnHomepage = window.location.pathname === "/";
 
-          if (!isOnAdminPage && !isOnHomepage) {
-            const dashboardUrl =
-              window.location.hostname === "localhost"
-                ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
-                : "https://admin.example.com/dashboard";
+        if (!isOnAllowedPage && !isOnHomepage) {
+          console.log(
+            `🛑 BLOCAGE: ${userRole} tente d'accéder à ${window.location.pathname}`
+          );
+          const dashboardUrl =
+            window.location.hostname === "localhost"
+              ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
+              : "https://admin.example.com/dashboard";
 
-            window.location.href = dashboardUrl;
-          }
+          window.location.href = dashboardUrl;
         }
       } catch (error) {
         console.error("Erreur lors du décodage du token :", error);
@@ -169,7 +209,7 @@ function App() {
             <Route
               path="/graphics"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["owner"]}>
                   <DesktopOnlyWrapper>
                     <Graphics />
                   </DesktopOnlyWrapper>
@@ -181,7 +221,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DesktopOnlyWrapper>
-                    <Planning />
+                    <Planning /> {/* Correction ici */}
                   </DesktopOnlyWrapper>
                 </ProtectedRoute>
               }
@@ -189,7 +229,7 @@ function App() {
             <Route
               path="/settings"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={["owner", "superadmin"]}>
                   <DesktopOnlyWrapper>
                     <Settings />
                   </DesktopOnlyWrapper>
@@ -197,7 +237,14 @@ function App() {
               }
             />
 
-            <Route path="/emails" element={<EmailSettingsPage />} />
+            <Route
+              path="/emails"
+              element={
+                <ProtectedRoute allowedRoles={["owner", "superadmin"]}>
+                  <EmailSettingsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"

@@ -1428,4 +1428,18 @@ export const translationsEN = {
   exitArchiveMode: "Exit Archive Mode",
   archiveMode: "Archive Mode",
   select: "Select",
+  accident_form_documents: "Documents",
+  accident_form_documents_desc:
+    "Please upload the required documents for the accident report.",
+  preview: "Preview",
+  file_uploaded_success: "File uploaded successfully",
+  file_upload_error: "Error uploading file",
+  pdf_only: "Only PDF files are allowed",
+  file_too_large: "File size exceeds the limit of 2MB",
+  file_too_large_5mb: "File size exceeds the limit of 5MB",
+  download_error_title: "Download Error",
+  download_error_description: "Unable to download the file.",
+  pdf_not_available: "PDF not available",
+  not_available: "Not available",
+  pdf_not_configured: "The PDF generation is not configured for this request.",
 };

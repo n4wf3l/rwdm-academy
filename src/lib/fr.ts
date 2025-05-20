@@ -1532,4 +1532,31 @@ export const translationsFR = {
   exitArchiveMode: "Quitter le mode archive",
   archiveMode: "Mode archive",
   select: "Sélectionner",
+  accident_form_documents: "Formulaires PDF de déclaration d'accident",
+  accident_form_documents_desc:
+    "Mettez à jour les formulaires PDF qui seront téléchargeables par les utilisateurs.",
+  preview: "Aperçu",
+  file_uploaded_success: "Fichier téléchargé avec succès",
+  file_upload_error: "Erreur lors du téléchargement du fichier",
+  pdf_only: "Format PDF uniquement, max 5 Mo",
+  file_too_large: "Le fichier est trop volumineux (max {{size}})",
+  file_too_large_5mb: "Le fichier est trop volumineux (max 5 Mo)",
+  download_error_title: "Erreur de téléchargement",
+  download_error_description:
+    "Impossible de télécharger le fichier. Veuillez réessayer.",
+  pdf_not_available:
+    "Aucun formulaire PDF n'est actuellement configuré. Veuillez contacter l'administrateur.",
+  not_available: "(non disponible)",
+  pdf_not_configured:
+    "Ce formulaire n'a pas encore été configuré par l'administrateur.",
+  appointments_archive_mode: "Mode archive des rendez-vous",
+  appointment_date: "Date",
+  appointment_time: "Heure",
+  appointment_type: "Type",
+  appointment_client: "Client",
+  appointment_email: "Email",
+  appointment_admin: "Administrateur",
+  archive_success: "Archive créée avec succès",
+  archive_error: "Erreur lors de l'archivage",
+  no_selected_appointments: "Aucun rendez-vous sélectionné",
 };

@@ -27,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Archive,
 } from "lucide-react";
 import {
   Dialog,
@@ -84,6 +85,7 @@ import DayView from "@/components/planning/DayView";
 import WeekView from "@/components/planning/WeekView";
 import AddAppointmentDialog from "@/components/planning/AddAppointmentDialog";
 import AppointmentDetailsDialog from "@/components/planning/AppointmentDetailsDialog";
+import ListOfAllAppointments from "@/components/planning/ListOfAllAppointments";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -112,6 +114,7 @@ const Planning = () => {
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [newRequestsCount, setNewRequestsCount] = useState(0);
   const [adminFilter, setAdminFilter] = useState<string>("all");
+  const [archiveMode, setArchiveMode] = useState(false);
   const location = useLocation();
   const { toast } = useToast();
 
@@ -431,6 +434,48 @@ const Planning = () => {
     }
   }
 
+  // Ajouter cette fonction pour générer des badges d'appointement
+  const getAppointmentBadge = (type: AppointmentType) => {
+    switch (type) {
+      case "registration":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300">
+            {t("registration_label")}
+          </span>
+        );
+      case "selection-tests":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300">
+            {t("selection_tests_label")}
+          </span>
+        );
+      case "accident-report":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300">
+            {t("accident_report_label")}
+          </span>
+        );
+      case "responsibility-waiver":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-300">
+            {t("responsibility_waiver_label")}
+          </span>
+        );
+      case "other":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-300">
+            {t("other_label")}
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-300">
+            {type}
+          </span>
+        );
+    }
+  };
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <motion.div
@@ -464,6 +509,7 @@ const Planning = () => {
             </motion.p>
           </div>
 
+          {/* Div modifiée pour inclure le bouton d'archive */}
           <motion.div
             className="flex gap-2"
             initial={{ opacity: 0 }}
@@ -471,8 +517,18 @@ const Planning = () => {
             transition={{ delay: 0.3 }}
           >
             <Button
+              variant={archiveMode ? "default" : "outline"}
+              className={archiveMode ? "bg-amber-600 hover:bg-amber-700" : ""}
+              onClick={() => setArchiveMode(!archiveMode)}
+            >
+              <Archive className="mr-2 h-4 w-4" />
+              {archiveMode ? t("exitArchiveMode") : t("archiveMode")}
+            </Button>
+
+            <Button
               className="bg-rwdm-blue"
               onClick={() => setIsScheduleModalOpen(true)}
+              disabled={archiveMode}
             >
               <Plus className="mr-2 h-4 w-4" />
               {t("add_appointment")}
@@ -480,72 +536,89 @@ const Planning = () => {
           </motion.div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Tabs
-            defaultValue="week"
-            className="w-full"
-            onValueChange={(value) => setCurrentView(value as "day" | "week")}
+        {/* Remplacement conditionnel de la section Tabs par la liste des rendez-vous archivés */}
+        {archiveMode ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="mt-6"
           >
-            <div className="flex items-center justify-between mt-4">
-              <TabsList className="grid max-w-xs grid-cols-2">
-                <TabsTrigger value="day">{t("view_day")}</TabsTrigger>
-                <TabsTrigger value="week">{t("view_week")}</TabsTrigger>
-              </TabsList>
-              <Select
-                value={adminFilter}
-                onValueChange={handleAdminFilterChange}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={t("all_admins")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("all_admins")}</SelectItem>
-                  {uniqueAdmins.map((admin) => (
-                    <SelectItem key={admin.id} value={admin.fullName}>
-                      {admin.fullName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <ListOfAllAppointments
+              appointments={appointments}
+              onExitArchiveMode={() => setArchiveMode(false)}
+              getAppointmentBadge={getAppointmentBadge}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Tabs
+              defaultValue="week"
+              className="w-full"
+              onValueChange={(value) => setCurrentView(value as "day" | "week")}
+            >
+              <div className="flex items-center justify-between mt-4">
+                <TabsList className="grid max-w-xs grid-cols-2">
+                  <TabsTrigger value="day">{t("view_day")}</TabsTrigger>
+                  <TabsTrigger value="week">{t("view_week")}</TabsTrigger>
+                </TabsList>
+                <Select
+                  value={adminFilter}
+                  onValueChange={handleAdminFilterChange}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder={t("all_admins")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("all_admins")}</SelectItem>
+                    {uniqueAdmins.map((admin) => (
+                      <SelectItem key={admin.id} value={admin.fullName}>
+                        {admin.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <TabsContent value="day" className="mt-4">
-              <DayView
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                hasAppointmentsOnDate={hasAppointmentsOnDate}
-                sortedAppointments={sortAppointmentsByTime(
-                  filteredAppointments.filter(
-                    (appointment) =>
-                      format(appointment.date, "yyyy-MM-dd") === selectedDateStr
-                  )
-                )}
-                setNewAppointmentDate={setNewAppointmentDate}
-                setIsScheduleModalOpen={setIsScheduleModalOpen}
-                showAppointmentDetails={showAppointmentDetails}
-                adminFilter={adminFilter}
-              />
-            </TabsContent>
+              <TabsContent value="day" className="mt-4">
+                <DayView
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  hasAppointmentsOnDate={hasAppointmentsOnDate}
+                  sortedAppointments={sortAppointmentsByTime(
+                    filteredAppointments.filter(
+                      (appointment) =>
+                        format(appointment.date, "yyyy-MM-dd") ===
+                        selectedDateStr
+                    )
+                  )}
+                  setNewAppointmentDate={setNewAppointmentDate}
+                  setIsScheduleModalOpen={setIsScheduleModalOpen}
+                  showAppointmentDetails={showAppointmentDetails}
+                  adminFilter={adminFilter}
+                />
+              </TabsContent>
 
-            <TabsContent value="week" className="mt-4">
-              <WeekView
-                currentWeek={currentWeek}
-                daysOfWeek={daysOfWeek}
-                goToPreviousWeek={goToPreviousWeek}
-                goToCurrentWeek={goToCurrentWeek}
-                goToNextWeek={goToNextWeek}
-                hours={hours}
-                appointments={filteredAppointments}
-                handleTimeSlotClick={handleTimeSlotClick}
-                showAppointmentDetails={showAppointmentDetails}
-              />
-            </TabsContent>
-          </Tabs>
-        </motion.div>
+              <TabsContent value="week" className="mt-4">
+                <WeekView
+                  currentWeek={currentWeek}
+                  daysOfWeek={daysOfWeek}
+                  goToPreviousWeek={goToPreviousWeek}
+                  goToCurrentWeek={goToCurrentWeek}
+                  goToNextWeek={goToNextWeek}
+                  hours={hours}
+                  appointments={filteredAppointments}
+                  handleTimeSlotClick={handleTimeSlotClick}
+                  showAppointmentDetails={showAppointmentDetails}
+                />
+              </TabsContent>
+            </Tabs>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Modal for adding an appointment */}

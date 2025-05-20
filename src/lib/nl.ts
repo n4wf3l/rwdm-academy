@@ -1465,4 +1465,21 @@ export const translationsNL = {
   exitArchiveMode: "Archiveringsmodus verlaten",
   archiveMode: "Archiveringsmodus",
   select: "Selecteren",
+  accident_form_documents: "Documenten voor ongevalsaangifte",
+  accident_form_documents_desc:
+    "Upload hier de documenten die aan de ongevalsaangifte zijn gekoppeld.",
+  preview: "Voorbeeld",
+  file_uploaded_success: "Bestand succesvol geüpload",
+  file_upload_error: "Fout bij het uploaden van het bestand",
+  pdf_only: "Alleen PDF-bestanden zijn toegestaan",
+  file_too_large: "Het bestand is te groot",
+  file_too_large_5mb: "Het bestand mag niet groter zijn dan 5 MB",
+  download_error_title: "Fout bij het downloaden",
+  download_error_description:
+    "Het is niet mogelijk om het bestand te downloaden.",
+  pdf_not_available:
+    "Het PDF-bestand is momenteel niet beschikbaar. Neem contact op met de beheerder.",
+  not_available: "Niet beschikbaar",
+  pdf_not_configured:
+    "Geen PDF-formulier is momenteel geconfigureerd. Neem contact op met de beheerder.",
 };

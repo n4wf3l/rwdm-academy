@@ -230,4 +230,173 @@ router.put("/form-maintenance/:formType", async (req, res) => {
   }
 });
 
+// Route pour récupérer les formulaires
+router.get("/accident-forms", async (req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    const [forms] = await connection.execute(
+      "SELECT * FROM accident_declaration_forms WHERE is_active = 1"
+    );
+    await connection.end();
+
+    res.json({ forms });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des formulaires:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// Route pour uploader un formulaire
+router.post(
+  "/accident-forms/upload",
+  upload.single("pdfFile"),
+  async (req, res) => {
+    if (!req.file || !req.body.language) {
+      return res.status(400).json({ error: "Fichier ou langue manquant" });
+    }
+
+    // S'assurer que le dossier forms existe
+    const formsDir = path.join(__dirname, "../uploads/forms");
+    if (!fs.existsSync(formsDir)) {
+      fs.mkdirSync(formsDir, { recursive: true });
+    }
+
+    // Déplacer le fichier dans le dossier forms
+    const oldPath = req.file.path;
+    const filename = path.basename(oldPath);
+    const newPath = path.join(formsDir, filename);
+
+    fs.renameSync(oldPath, newPath);
+
+    const { language } = req.body;
+    const filePath = `/uploads/forms/${filename}`;
+
+    try {
+      const connection = await mysql.createConnection(dbConfig);
+
+      // Vérifier si un formulaire existe déjà pour cette langue
+      const [existingForms] = await connection.execute(
+        "SELECT id, file_path FROM accident_declaration_forms WHERE language = ? AND is_active = 1",
+        [language]
+      );
+
+      // Si un formulaire existant est trouvé
+      if (existingForms && existingForms.length > 0) {
+        const oldForm = existingForms[0];
+        const oldFilePath = oldForm.file_path;
+
+        // Mettre à jour l'entrée existante plutôt que d'en créer une nouvelle
+        await connection.execute(
+          "UPDATE accident_declaration_forms SET file_path = ?, original_filename = ?, file_size = ? WHERE id = ?",
+          [filePath, req.file.originalname, req.file.size, oldForm.id]
+        );
+
+        // Supprimer l'ancien fichier du système de fichiers
+        try {
+          const oldFullPath = path.join(
+            __dirname,
+            "..",
+            oldFilePath.startsWith("/") ? oldFilePath.substring(1) : oldFilePath
+          );
+          if (fs.existsSync(oldFullPath)) {
+            fs.unlinkSync(oldFullPath);
+            console.log(`Ancien fichier supprimé: ${oldFullPath}`);
+          }
+        } catch (fileError) {
+          console.error(
+            `Erreur lors de la suppression de l'ancien fichier: ${fileError}`
+          );
+          // On continue même si la suppression du fichier échoue
+        }
+      } else {
+        // Pas de formulaire existant, créer une nouvelle entrée
+        await connection.execute(
+          "INSERT INTO accident_declaration_forms (language, file_path, original_filename, file_size, is_active) VALUES (?, ?, ?, ?, 1)",
+          [language, filePath, req.file.originalname, req.file.size]
+        );
+      }
+
+      await connection.end();
+
+      res.json({
+        success: true,
+        filePath,
+        message: `Formulaire ${language} mis à jour`,
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'upload du formulaire:", error);
+      res.status(500).json({ error: "Erreur serveur" });
+    }
+  }
+);
+
+// Route pour télécharger un formulaire d'accident
+router.get("/accident-forms/download/:language", async (req, res) => {
+  try {
+    const { language } = req.params;
+
+    // Valider le paramètre de langue
+    if (language !== "FR" && language !== "NL") {
+      return res.status(400).json({ error: "Langue invalide" });
+    }
+
+    // Créer une connexion à la base de données
+    const connection = await mysql.createConnection(dbConfig);
+
+    // Récupérer les informations du fichier dans la base de données
+    const [forms] = await connection.execute(
+      "SELECT file_path, original_filename FROM accident_declaration_forms WHERE language = ? AND is_active = 1",
+      [language]
+    );
+
+    // Fermer la connexion
+    await connection.end();
+
+    // Si aucun formulaire n'est trouvé, retourner une erreur claire
+    if (!forms || forms.length === 0) {
+      return res.status(404).json({
+        error: `Aucun formulaire ${language} n'a été configuré. Veuillez contacter l'administrateur.`,
+      });
+    }
+
+    // Utiliser le fichier trouvé en base de données
+    const { file_path, original_filename } = forms[0];
+
+    // Construire le chemin correct
+    const relativePath = file_path.startsWith("/")
+      ? file_path.substring(1)
+      : file_path;
+    const filePath = path.join(__dirname, "..", relativePath);
+    const fileName = original_filename || path.basename(file_path);
+
+    // Vérifier si le fichier existe
+    if (!fs.existsSync(filePath)) {
+      console.error(`Fichier non trouvé: ${filePath}`);
+      return res.status(404).json({
+        error: `Le fichier '${fileName}' n'a pas été trouvé sur le serveur.`,
+      });
+    }
+
+    console.log(`Envoi du fichier: ${filePath}, nom: ${fileName}`);
+
+    // Définir les headers pour le téléchargement
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+
+    // Envoyer le fichier
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.on("error", (err) => {
+      console.error(`Erreur lors de la lecture du fichier: ${err}`);
+      return res
+        .status(500)
+        .json({ error: "Erreur lors de la lecture du fichier" });
+    });
+
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error("Erreur lors du téléchargement du formulaire:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;
