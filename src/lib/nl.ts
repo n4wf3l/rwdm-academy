@@ -1482,4 +1482,5 @@ export const translationsNL = {
   not_available: "Niet beschikbaar",
   pdf_not_configured:
     "Geen PDF-formulier is momenteel geconfigureerd. Neem contact op met de beheerder.",
+  "filters.allSeasons": "Alle seizoenen",
 };

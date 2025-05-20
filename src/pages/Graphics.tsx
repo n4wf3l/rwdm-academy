@@ -75,11 +75,24 @@ function CollapsibleCard({
   );
 }
 
+// Fonction pour extraire la saison d'un numéro de facture
+const extractSeasonFromInvoiceNumber = (
+  invoiceNumber: string
+): string | null => {
+  // Format attendu: INV-2023-2024-XXX
+  const match = invoiceNumber?.match(/INV-(\d{4})-(\d{4})/i);
+  if (match && match[1] && match[2]) {
+    return `${match[1]}-${match[2]}`;
+  }
+  return null;
+};
+
 const Graphics: React.FC = () => {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterPlayer, setFilterPlayer] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedSeason, setSelectedSeason] = useState("all"); // Nouveau state pour la saison
   const [modalOpen, setModalOpen] = useState(false);
   const [selCatName, setSelCatName] = useState("");
   const [selCatInvs, setSelCatInvs] = useState<any[]>([]);
@@ -102,12 +115,26 @@ const Graphics: React.FC = () => {
       .finally(() => setLoading(false));
   }, [API]);
 
+  // Liste des saisons disponibles
+  const availableSeasons = useMemo(() => {
+    const seasons = new Set<string>();
+    seasons.add("all"); // Option pour "Toutes les saisons"
+
+    invoices.forEach((inv) => {
+      const season = extractSeasonFromInvoiceNumber(inv.invoiceNumber);
+      if (season) seasons.add(season);
+    });
+
+    return Array.from(seasons).sort();
+  }, [invoices]);
+
   // Enrichissement & normalisation
   const enriched = useMemo(
     () =>
       invoices.map((inv) => ({
         ...inv,
         normCat: normalizeBEFA(inv.revenueItemName || ""),
+        season: extractSeasonFromInvoiceNumber(inv.invoiceNumber) || "unknown",
       })),
     [invoices]
   );
@@ -118,7 +145,7 @@ const Graphics: React.FC = () => {
     [enriched]
   );
 
-  // Filtre
+  // Filtre avec saison
   const filtered = useMemo(
     () =>
       enriched.filter((inv) => {
@@ -127,9 +154,11 @@ const Graphics: React.FC = () => {
           .includes(filterPlayer.toLowerCase());
         const okCat =
           selectedCategory === "all" || inv.normCat === selectedCategory;
-        return okName && okCat;
+        const okSeason =
+          selectedSeason === "all" || inv.season === selectedSeason;
+        return okName && okCat && okSeason;
       }),
-    [enriched, filterPlayer, selectedCategory]
+    [enriched, filterPlayer, selectedCategory, selectedSeason]
   );
 
   // Groupement pour vignettes
@@ -160,13 +189,46 @@ const Graphics: React.FC = () => {
   }, [invoices]);
 
   const monthlyTrend = useMemo(() => {
-    const m = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
-    return m.map((mo) => ({
-      month: mo,
-      paid: Math.random() * 50000,
-      unpaid: Math.random() * 20000,
-    }));
-  }, [invoices]);
+    // Définir les mois pour l'année courante
+    const currentYear = new Date().getFullYear();
+    const months = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((month) => {
+      return {
+        month: new Date(currentYear, month, 1).toLocaleDateString("fr-FR", {
+          month: "short",
+        }),
+        paid: 0,
+        unpaid: 0,
+      };
+    });
+
+    // Filtrer les factures selon les critères actuels
+    const relevantInvoices = filtered;
+
+    // Agréger les données par mois
+    relevantInvoices.forEach((invoice) => {
+      if (invoice.invoiceDate) {
+        const invoiceDate = new Date(invoice.invoiceDate);
+        const monthIndex = invoiceDate.getMonth();
+
+        // Seulement si l'année est celle en cours
+        if (
+          invoiceDate.getFullYear() === currentYear &&
+          monthIndex >= 0 &&
+          monthIndex < 12
+        ) {
+          const totalAmount = parseFloat(invoice.totalAmount || "0");
+          const paidAmount = parseFloat(invoice.paidAmount || "0");
+
+          months[monthIndex].paid += paidAmount;
+          months[monthIndex].unpaid += totalAmount - paidAmount;
+        }
+      }
+    });
+
+    // Ne renvoyer que les mois jusqu'au mois actuel
+    const currentMonth = new Date().getMonth();
+    return months.slice(0, currentMonth + 1);
+  }, [filtered]);
 
   // Toggle API active/inactive
   const [apiActive, setApiActive] = useState<boolean>(true); // par défaut true
@@ -284,7 +346,7 @@ const Graphics: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Filtreur */}
+              {/* Filtreur amélioré avec filtre de saison */}
               <motion.div
                 className="mb-4"
                 initial={{ y: -10, opacity: 0 }}
@@ -296,7 +358,10 @@ const Graphics: React.FC = () => {
                     <CardTitle>{t("filters.title")}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <motion.div className="flex gap-4" layout>
+                    <motion.div
+                      className="flex flex-col md:flex-row gap-4"
+                      layout
+                    >
                       <motion.div
                         className="relative flex-1"
                         whileHover={{ scale: 1.01 }}
@@ -309,28 +374,57 @@ const Graphics: React.FC = () => {
                           onChange={(e) => setFilterPlayer(e.target.value)}
                         />
                       </motion.div>
-                      <motion.div whileHover={{ scale: 1.01 }}>
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        className="w-full md:w-48"
+                      >
                         <Select
                           value={selectedCategory}
                           onValueChange={(v) => setSelectedCategory(v)}
                         >
-                          <SelectTrigger className="w-48">
+                          <SelectTrigger>
                             <SelectValue
                               placeholder={t("filters.allCategories")}
                             />
                           </SelectTrigger>
                           <SelectContent>
-                            {/* L’option « Toutes catégories » */}
                             <SelectItem value="all">
                               {t("filters.allCategories")}
                             </SelectItem>
-
-                            {/* Toutes les autres, déjà triées par préfixe et en bloc */}
                             {sortedCategories
                               .filter((cat) => cat !== "all")
                               .map((cat) => (
                                 <SelectItem key={cat} value={cat}>
                                   {cat}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </motion.div>
+
+                      {/* Nouveau filtre par saison */}
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        className="w-full md:w-48"
+                      >
+                        <Select
+                          value={selectedSeason}
+                          onValueChange={(v) => setSelectedSeason(v)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={t("filters.allSeasons")}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">
+                              {t("filters.allSeasons")}
+                            </SelectItem>
+                            {availableSeasons
+                              .filter((season) => season !== "all")
+                              .map((season) => (
+                                <SelectItem key={season} value={season}>
+                                  {season}
                                 </SelectItem>
                               ))}
                           </SelectContent>

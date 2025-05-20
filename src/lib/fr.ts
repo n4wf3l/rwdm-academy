@@ -1559,4 +1559,5 @@ export const translationsFR = {
   archive_success: "Archive créée avec succès",
   archive_error: "Erreur lors de l'archivage",
   no_selected_appointments: "Aucun rendez-vous sélectionné",
+  "filters.allSeasons": "Toutes les saisons",
 };

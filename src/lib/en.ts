@@ -1442,4 +1442,5 @@ export const translationsEN = {
   pdf_not_available: "PDF not available",
   not_available: "Not available",
   pdf_not_configured: "The PDF generation is not configured for this request.",
+  "filters.allSeasons": "All seasons",
 };
