@@ -40,8 +40,7 @@ import { Pencil } from "lucide-react";
 // Importation de la modale et de ses types
 import RequestDetailsModal, {
   Request as ModalRequest,
-  RequestStatus,
-} from "@/components/RequestDetailsModal";
+} from "@/components/RequestDetailsModal.tsx";
 import html2canvas from "html2canvas";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { AnimatePresence, motion } from "framer-motion";
@@ -58,6 +57,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminMonthlyChart from "@/components/documents/StatisticsCard";
 
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Types pour les documents
 type DocumentType =
@@ -65,6 +70,14 @@ type DocumentType =
   | "selection-tests"
   | "responsibility-waiver"
   | "accident-report";
+
+// Ajout du type RequestStatus
+type RequestStatus =
+  | "new"
+  | "assigned"
+  | "in-progress"
+  | "completed"
+  | "rejected";
 
 interface Document {
   id: string;
@@ -108,6 +121,7 @@ const Documents = () => {
   const [newRequestsCount, setNewRequestsCount] = useState(0);
   const [editRequest, setEditRequest] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
 
   function mapDbStatus(dbStatus: string): RequestStatus {
     switch (dbStatus) {
@@ -522,10 +536,12 @@ const Documents = () => {
                       <DocumentsTable
                         documents={modalRequests}
                         formatRequestId={formatRequestId}
-                        translateDocumentType={translateDocumentType}
                         onViewDetails={(req) => {
+                          console.log("onViewDetails called with:", req);
                           setSelectedRequest(req);
+                          console.log("selectedRequest set to:", req);
                           setIsModalOpen(true);
+                          console.log("isModalOpen set to:", true);
                         }}
                         onEditRequest={(req) => {
                           setEditRequest(req);
@@ -567,22 +583,6 @@ const Documents = () => {
 
         {/* Modales avec animations */}
         <AnimatePresence>
-          {isModalOpen && selectedRequest && (
-            <motion.div
-              key="details-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <RequestDetailsModal
-                isOpen={true}
-                onClose={() => setIsModalOpen(false)}
-                request={selectedRequest}
-                ref={modalRef}
-              />
-            </motion.div>
-          )}
-
           {confirmPDFRequest && (
             <motion.div
               key="confirm-pdf-modal"
@@ -655,7 +655,40 @@ const Documents = () => {
               />
             </motion.div>
           )}
+
+          {isTestDialogOpen && (
+            <motion.div
+              key="test-dialog"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Dialog
+                open={isTestDialogOpen}
+                onOpenChange={setIsTestDialogOpen}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Test Dialog</DialogTitle>
+                  </DialogHeader>
+                  <div>
+                    This is a test dialog to verify the component works.
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </motion.div>
+          )}
         </AnimatePresence>
+
+        {/* RequestDetailsModal Direct Rendering */}
+        {isModalOpen && selectedRequest && (
+          <RequestDetailsModal
+            isOpen={true}
+            onClose={() => setIsModalOpen(false)}
+            request={selectedRequest}
+            ref={modalRef}
+          />
+        )}
       </Tabs>
     </AdminLayout>
   );
