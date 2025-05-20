@@ -21,11 +21,12 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, nl, enGB } from "date-fns/locale";
 import { Separator } from "@/components/ui/separator";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import React, { useRef, forwardRef } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /* ======================= TYPES ======================= */
 
@@ -43,7 +44,8 @@ export type RequestType =
   | "responsibility-waiver";
 
 export interface RequestDetails {
-  // Pour inscription
+  // Mêmes interfaces qu'avant
+  // ...
   season?: string;
   academy?: string;
   birthPlace?: string;
@@ -55,9 +57,9 @@ export interface RequestDetails {
   category?: string;
 
   // Pour inscription – infos joueur
-  lastName?: string; // pour "registration"
-  firstName?: string; // pour "registration"
-  birthDate?: string; // ISO
+  lastName?: string;
+  firstName?: string;
+  birthDate?: string;
 
   // Pour inscription – responsable principal
   parent1Type?: string;
@@ -87,22 +89,22 @@ export interface RequestDetails {
   // Pour "responsibility-waiver" infos joueur
   playerLastName?: string;
   playerFirstName?: string;
-  playerBirthDate?: string; // ISO
-  previousClub?: string; // ou null
+  playerBirthDate?: string;
+  previousClub?: string;
 
   // Pour tests de sélection
-  noyau?: string; // ex: "U7"
-  testStartDate?: string; // ISO
-  testEndDate?: string; // ISO
+  noyau?: string;
+  testStartDate?: string;
+  testEndDate?: string;
 
   // Consentement & signature
   imageConsent?: boolean;
-  signature?: string; // Base64 ou URL
-  signatureDate?: string; // ISO
+  signature?: string;
+  signatureDate?: string;
   approvalText?: string;
 
   // Relation parentale (pour tests de sélection)
-  parentRelation?: string; // ex: "parent" ou "representant"
+  parentRelation?: string;
 
   // Pour accident-report
   accidentDate?: string;
@@ -123,7 +125,7 @@ export interface Request {
   assignedTo?: string;
   details: RequestDetails;
   rejectedAt?: Date;
-  sent_at?: string | null; // 👈 Ajoute cette ligne
+  sent_at?: string | null;
 }
 
 export interface RequestDetailsModalProps {
@@ -134,36 +136,51 @@ export interface RequestDetailsModalProps {
 
 /* ======================= HELPERS ======================= */
 
-const translateRequestType = (type: RequestType): string => {
+const translateRequestType = (
+  type: RequestType,
+  t: (key: string) => string
+): string => {
   switch (type) {
     case "registration":
-      return "Inscription à l'académie";
+      return t("request_type.registration");
     case "selection-tests":
-      return "Tests de sélection";
+      return t("request_type.selection_tests");
     case "accident-report":
-      return "Déclaration d'accident";
+      return t("request_type.accident_report");
     case "responsibility-waiver":
-      return "Décharge de responsabilité";
+      return t("request_type.responsibility_waiver");
     default:
       return type;
   }
 };
 
-const getStatusBadge = (status: RequestStatus) => {
+const getStatusBadge = (status: RequestStatus, t: (key: string) => string) => {
   switch (status) {
     case "new":
-      return <Badge className="bg-blue-500">Nouveau</Badge>;
+      return <Badge className="bg-blue-500">{t("status.new")}</Badge>;
     case "assigned":
-      return <Badge className="bg-purple-500">Assigné</Badge>;
+      return <Badge className="bg-purple-500">{t("status.assigned")}</Badge>;
     case "in-progress":
-      return <Badge className="bg-yellow-500">En cours</Badge>;
+      return <Badge className="bg-yellow-500">{t("status.in_progress")}</Badge>;
     case "completed":
-      return <Badge className="bg-green-500">Terminé</Badge>;
+      return <Badge className="bg-green-500">{t("status.completed")}</Badge>;
     case "rejected":
-      return <Badge className="bg-red-500">Rejeté</Badge>;
+      return <Badge className="bg-red-500">{t("status.rejected")}</Badge>;
     default:
-      return <Badge>Inconnu</Badge>;
+      return <Badge>{t("status.unknown")}</Badge>;
   }
+};
+
+// Ajouter cette fonction auxiliaire en haut de votre fichier
+const interpolate = (text: string, variables: Record<string, any>): string => {
+  let result = text;
+  Object.keys(variables).forEach((key) => {
+    result = result.replace(
+      new RegExp(`{${key}}`, "g"),
+      String(variables[key] || "…")
+    );
+  });
+  return result;
 };
 
 /* ======================= COMPOSANTS UI ======================= */
@@ -199,73 +216,81 @@ const Field: React.FC<{
 /* ======================= RENDERING DES TYPES ======================= */
 
 /* 1) Pour "registration" (Inscription à l'académie) */
-const renderRegistrationContent = (request: Request) => {
+const renderRegistrationContent = (
+  request: Request,
+  t: (key: string) => string,
+  locale: string
+) => {
   const d = request.details;
+  const dateLocale = locale === "fr" ? fr : locale === "nl" ? nl : enGB;
+
   return (
     <>
-      <Section title="Saison d'inscription">
+      <Section title={t("registration.season_title")}>
         <div className="flex gap-4 flex-wrap">
           <Field
-            label="Saison"
+            label={t("registration.season")}
             value={d.season || "-"}
             icon={<CalendarIcon className="h-4 w-4" />}
           />
           <Field
-            label="Académie"
+            label={t("registration.academy")}
             value={d.academy || "-"}
             icon={<GraduationCap className="h-4 w-4" />}
           />
         </div>
       </Section>
 
-      <Section title="Informations du joueur">
+      <Section title={t("registration.player_info")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field
-            label="Nom"
+            label={t("registration.lastName")}
             value={d.lastName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Prénom"
+            label={t("registration.firstName")}
             value={d.firstName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Date de naissance"
+            label={t("registration.birthDate")}
             value={
               d.birthDate
-                ? format(new Date(d.birthDate), "dd/MM/yyyy", { locale: fr })
+                ? format(new Date(d.birthDate), "dd/MM/yyyy", {
+                    locale: dateLocale,
+                  })
                 : "-"
             }
             icon={<CalendarIcon className="h-4 w-4" />}
           />
           <Field
-            label="Lieu de naissance"
+            label={t("registration.birthPlace")}
             value={d.birthPlace || "-"}
             icon={<MapPin className="h-4 w-4" />}
           />
           <Field
-            label="Adresse"
+            label={t("registration.address")}
             value={d.address || "-"}
             icon={<MapPin className="h-4 w-4" />}
           />
           <Field
-            label="Code postal"
+            label={t("registration.postalCode")}
             value={d.postalCode || "-"}
             icon={<MapPin className="h-4 w-4" />}
           />
           <Field
-            label="Ville"
+            label={t("registration.city")}
             value={d.city || "-"}
             icon={<MapPin className="h-4 w-4" />}
           />
           <Field
-            label="Club actuel"
+            label={t("registration.currentClub")}
             value={d.currentClub || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
-            label="Catégorie"
+            label={t("registration.category")}
             value={d.category || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
@@ -274,45 +299,45 @@ const renderRegistrationContent = (request: Request) => {
 
       {/* Informations du responsable principal */}
       {(d.parent1LastName || d.parent1FirstName || d.parent1Phone) && (
-        <Section title="Informations du responsable principal">
+        <Section title={t("registration.primary_guardian")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
-              label="Type"
+              label={t("registration.guardian_type")}
               value={d.parent1Type || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Nom"
+              label={t("registration.lastName")}
               value={d.parent1LastName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Prénom"
+              label={t("registration.firstName")}
               value={d.parent1FirstName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Téléphone"
+              label={t("registration.phone")}
               value={d.parent1Phone || "-"}
               icon={<Phone className="h-4 w-4" />}
             />
             <Field
-              label="Email"
+              label={t("registration.email")}
               value={d.parent1Email || "-"}
               icon={<Mail className="h-4 w-4" />}
             />
             <Field
-              label="Adresse"
+              label={t("registration.address")}
               value={d.parent1Address || "-"}
               icon={<MapPin className="h-4 w-4" />}
             />
             <Field
-              label="Code postal"
+              label={t("registration.postalCode")}
               value={d.parent1PostalCode || "-"}
               icon={<MapPin className="h-4 w-4" />}
             />
             <Field
-              label="GSM"
+              label={t("registration.gsm")}
               value={d.parent1Gsm || "-"}
               icon={<Phone className="h-4 w-4" />}
             />
@@ -322,45 +347,45 @@ const renderRegistrationContent = (request: Request) => {
 
       {/* Informations du responsable secondaire */}
       {(d.parent2LastName || d.parent2FirstName || d.parent2Phone) && (
-        <Section title="Informations du responsable secondaire">
+        <Section title={t("registration.secondary_guardian")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
-              label="Type"
+              label={t("registration.guardian_type")}
               value={d.parent2Type || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Nom"
+              label={t("registration.lastName")}
               value={d.parent2LastName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Prénom"
+              label={t("registration.firstName")}
               value={d.parent2FirstName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Téléphone"
+              label={t("registration.phone")}
               value={d.parent2Phone || "-"}
               icon={<Phone className="h-4 w-4" />}
             />
             <Field
-              label="Email"
+              label={t("registration.email")}
               value={d.parent2Email || "-"}
               icon={<Mail className="h-4 w-4" />}
             />
             <Field
-              label="Adresse"
+              label={t("registration.address")}
               value={d.parent2Address || "-"}
               icon={<MapPin className="h-4 w-4" />}
             />
             <Field
-              label="Code postal"
+              label={t("registration.postalCode")}
               value={d.parent2PostalCode || "-"}
               icon={<MapPin className="h-4 w-4" />}
             />
             <Field
-              label="GSM"
+              label={t("registration.gsm")}
               value={d.parent2Gsm || "-"}
               icon={<Phone className="h-4 w-4" />}
             />
@@ -368,13 +393,13 @@ const renderRegistrationContent = (request: Request) => {
         </Section>
       )}
 
-      <Section title="Consentement à l'image">
+      <Section title={t("registration.image_consent")}>
         <Field
-          label="Consentement"
+          label={t("registration.consent")}
           value={
             d.imageConsent
-              ? "J'accepte que des photos de mon enfant soient prises et utilisées à des fins promotionnelles."
-              : "Non consenti"
+              ? t("registration.consent_accepted")
+              : t("registration.consent_declined")
           }
           icon={
             d.imageConsent ? (
@@ -386,20 +411,26 @@ const renderRegistrationContent = (request: Request) => {
         />
       </Section>
 
-      <Section title="Signature">
+      <Section title={t("common.signature")}>
         {d.signature ? (
           <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 w-full max-w-sm">
-            <img src={d.signature} alt="Signature" className="w-full" />
+            <img
+              src={d.signature}
+              alt={t("common.signature_alt")}
+              className="w-full"
+            />
           </div>
         ) : (
           <p className="text-sm text-gray-900 dark:text-gray-100">-</p>
         )}
         <Field
-          label="Date de signature"
+          label={t("common.signature_date")}
           value={
             d.signatureDate
-              ? format(new Date(d.signatureDate), "dd/MM/yyyy", { locale: fr })
-              : format(request.date, "dd/MM/yyyy", { locale: fr })
+              ? format(new Date(d.signatureDate), "dd/MM/yyyy", {
+                  locale: dateLocale,
+                })
+              : format(request.date, "dd/MM/yyyy", { locale: dateLocale })
           }
           icon={<CalendarIcon className="h-4 w-4" />}
         />
@@ -409,113 +440,120 @@ const renderRegistrationContent = (request: Request) => {
 };
 
 /* 2) Pour "selection-tests" */
-const renderSelectionTestsContent = (request: Request) => {
+const renderSelectionTestsContent = (
+  request: Request,
+  t: (key: string) => string,
+  locale: string
+) => {
   const d = request.details;
+  const dateLocale = locale === "fr" ? fr : locale === "nl" ? nl : enGB;
+
   return (
     <>
-      <Section title="Informations sur les tests">
+      <Section title={t("selection.test_info")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Noyau */}
           <Field
-            label="Catégorie"
+            label={t("selection.category")}
             value={d.noyau || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
-
-          {/* Académie */}
           <Field
-            label="Académie"
+            label={t("selection.academy")}
             value={d.academy || "-"}
             icon={<GraduationCap className="h-4 w-4" />}
           />
         </div>
       </Section>
 
-      <Section title="Informations du joueur">
+      <Section title={t("selection.player_info")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field
-            label="Nom"
+            label={t("selection.lastName")}
             value={d.lastName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Prénom"
+            label={t("selection.firstName")}
             value={d.firstName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Date de naissance"
+            label={t("selection.birthDate")}
             value={
               d.playerBirthDate
                 ? format(new Date(d.playerBirthDate), "dd/MM/yyyy", {
-                    locale: fr,
+                    locale: dateLocale,
                   })
                 : "-"
             }
             icon={<CalendarIcon className="h-4 w-4" />}
           />
           <Field
-            label="Téléphone (GSM)"
+            label={t("selection.phone")}
             value={d.phone || "-"}
             icon={<Phone className="h-4 w-4" />}
           />
           <Field
-            label="Email"
+            label={t("selection.email")}
             value={d.email || "-"}
             icon={<Mail className="h-4 w-4" />}
           />
           <Field
-            label="Club actuel"
+            label={t("selection.currentClub")}
             value={d.currentClub || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
-            label="Club précédent"
+            label={t("selection.previousClub")}
             value={d.previousClub || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
-            label="Position"
+            label={t("selection.position")}
             value={d.position || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
         </div>
       </Section>
 
-      <Section title="Informations des responsables légaux">
+      <Section title={t("selection.guardian_info")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field
-            label="Nom"
+            label={t("selection.lastName")}
             value={d.parentLastName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Prénom"
+            label={t("selection.firstName")}
             value={d.parentFirstName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Téléphone (GSM)"
+            label={t("selection.phone")}
             value={d.parentPhone || "-"}
             icon={<Phone className="h-4 w-4" />}
           />
           <Field
-            label="Email"
+            label={t("selection.email")}
             value={d.parentEmail || "-"}
             icon={<Mail className="h-4 w-4" />}
           />
           <Field
-            label="Relation"
+            label={t("selection.relation")}
             value={d.parentRelation || "-"}
             icon={<User className="h-4 w-4" />}
           />
         </div>
       </Section>
 
-      <Section title="Signature">
+      <Section title={t("common.signature")}>
         {d.signature ? (
           <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 w-full max-w-sm">
-            <img src={d.signature} alt="Signature" className="w-full" />
+            <img
+              src={d.signature}
+              alt={t("common.signature_alt")}
+              className="w-full"
+            />
           </div>
         ) : (
           <p className="text-sm text-gray-900 dark:text-gray-100">-</p>
@@ -525,72 +563,79 @@ const renderSelectionTestsContent = (request: Request) => {
   );
 };
 
-/* 2) Pour "accident-declaration" */
-const renderAccidentReportContent = (request: Request) => {
+/* 3) Pour "accident-report" */
+const renderAccidentReportContent = (
+  request: Request,
+  t: (key: string) => string,
+  locale: string
+) => {
   const d = request.details;
+  const dateLocale = locale === "fr" ? fr : locale === "nl" ? nl : enGB;
 
   return (
     <>
-      <Section title="Informations sur l'accident">
+      <Section title={t("accident.info_title")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field
-            label="Date de l'accident"
+            label={t("accident.date")}
             value={
               d.accidentDate
-                ? format(new Date(d.accidentDate), "dd/MM/yyyy", { locale: fr })
+                ? format(new Date(d.accidentDate), "dd/MM/yyyy", {
+                    locale: dateLocale,
+                  })
                 : "-"
             }
             icon={<CalendarIcon className="h-4 w-4" />}
           />
           <Field
-            label="Académie"
+            label={t("accident.academy")}
             value={d.academy || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
-            label="Nom du joueur"
+            label={t("accident.playerLastName")}
             value={d.playerLastName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Prénom du joueur"
+            label={t("accident.playerFirstName")}
             value={d.playerFirstName || "-"}
             icon={<User className="h-4 w-4" />}
           />
           <Field
-            label="Adresse e-mail"
+            label={t("accident.email")}
             value={d.email || "-"}
             icon={<Mail className="h-4 w-4" />}
           />
           <Field
-            label="Numéro de téléphone"
+            label={t("accident.phone")}
             value={d.phone || "-"}
             icon={<Phone className="h-4 w-4" />}
           />
           <Field
-            label="Code du dossier"
+            label={t("accident.codeDossier")}
             value={d.codeDossier || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
           <Field
-            label="Type de document"
+            label={t("accident.documentLabel")}
             value={d.documentLabel || "-"}
             icon={<FileText className="h-4 w-4" />}
           />
         </div>
       </Section>
 
-      <Section title="Description de l'accident">
+      <Section title={t("accident.description_title")}>
         <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-            {d.description || "Aucune description fournie."}
+            {d.description || t("accident.no_description")}
           </p>
         </div>
       </Section>
 
       {Array.isArray(d.filePaths) && d.filePaths.length > 0 ? (
         <div data-ignore-pdf>
-          <Section title="Documents justificatifs">
+          <Section title={t("accident.supporting_documents")}>
             <div className="space-y-2">
               {d.filePaths.map((file: string, index: number) => (
                 <a
@@ -603,7 +648,9 @@ const renderAccidentReportContent = (request: Request) => {
                hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <FileText className="h-5 w-5 mr-2 text-rwdm-blue" />
-                  <span className="text-sm">Voir le document {index + 1}</span>
+                  <span className="text-sm">
+                    {t("accident.view_document")} {index + 1}
+                  </span>
                 </a>
               ))}
             </div>
@@ -611,7 +658,7 @@ const renderAccidentReportContent = (request: Request) => {
         </div>
       ) : d.filePath ? (
         <div data-ignore-pdf>
-          <Section title="Document justificatif">
+          <Section title={t("accident.supporting_document")}>
             <a
               href={`http://localhost:5000${d.filePath}`}
               target="_blank"
@@ -621,30 +668,29 @@ const renderAccidentReportContent = (request: Request) => {
            hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <FileText className="h-5 w-5 mr-2 text-rwdm-blue" />
-              <span className="text-sm">Voir le document PDF</span>
+              <span className="text-sm">{t("accident.view_pdf")}</span>
             </a>
           </Section>
         </div>
       ) : null}
 
-      <Section title="Signature">
+      <Section title={t("common.signature")}>
         {d.signature ? (
           <div
             className="border border-gray-200 dark:border-gray-700 
                           rounded-md p-4 w-full max-w-sm"
           >
-            <img src={d.signature} alt="Signature" className="w-full" />
+            <img
+              src={d.signature}
+              alt={t("common.signature_alt")}
+              className="w-full"
+            />
           </div>
         ) : (
           <p className="text-sm text-gray-900 dark:text-gray-100">-</p>
         )}
         <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-          <p>
-            En vue d'une gestion efficace de mon dossier, et uniquement à cet
-            effet, je donne autorisation au traitement des données médicales me
-            concernant relatives à l'accident dont j'ai été victime, comme
-            décrit dans la "Déclaration de confidentialité".
-          </p>
+          <p>{t("accident.data_consent")}</p>
         </div>
       </Section>
     </>
@@ -652,148 +698,114 @@ const renderAccidentReportContent = (request: Request) => {
 };
 
 /* 4) Pour "responsibility-waiver" (Décharge de responsabilité) */
-const renderResponsibilityWaiverContent = (request: Request) => {
+const renderResponsibilityWaiverContent = (
+  request: Request,
+  t: (key: string) => string,
+  locale: string,
+  pdfRef: React.RefObject<HTMLDivElement>,
+  generatePDF: () => Promise<void>
+) => {
   const d = request.details;
-  const pdfRef = useRef<HTMLDivElement>(null);
-
-  // 📌 Fonction pour générer le PDF
-  const generatePDF = async () => {
-    const input = pdfRef.current;
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    // Convertir la partie HTML en image
-    const canvas = await html2canvas(input, {
-      scale: 2,
-      backgroundColor: "#ffffff",
-    });
-    const imgData = canvas.toDataURL("image/png");
-
-    // Ajouter le logo avec proportions correctes
-    const logo = new Image();
-    logo.src = "/logo.png"; // Chemin du logo
-    logo.onload = () => {
-      const logoWidth = 30; // Largeur souhaitée
-      const logoHeight = (logo.height / logo.width) * logoWidth; // Calcul de la hauteur en conservant le ratio
-
-      pdf.addImage(
-        logo,
-        "PNG",
-        (210 - logoWidth) / 2,
-        10,
-        logoWidth,
-        logoHeight
-      ); // Centrage dynamique
-
-      // Ajouter le titre
-      pdf.setFontSize(18);
-      pdf.text("Décharge de responsabilité", 105, logoHeight + 20, {
-        align: "center",
-      });
-
-      // Ajouter le contenu du formulaire converti en image
-      pdf.addImage(imgData, "PNG", 10, logoHeight + 30, 190, 220);
-
-      // Télécharger le PDF
-      pdf.save("Decharge_Responsabilite.pdf");
-    };
-  };
+  const dateLocale = locale === "fr" ? fr : locale === "nl" ? nl : enGB;
 
   return (
     <div>
-      <div data-ignore-pdf>
-        <Button
-          onClick={generatePDF}
-          className="block mx-auto bg-green-600 hover:bg-green-700 text-white mt-4 mb-10"
-        >
-          Générer PDF
-        </Button>
-      </div>
-
-      {/* 📌 Zone qui sera capturée en PDF */}
+      {/* Zone qui sera capturée en PDF */}
       <div ref={pdfRef} className="p-4 bg-white rounded-lg shadow-md">
-        <Section title="Informations du parent/tuteur">
+        <Section title={t("waiver.parent_info")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
-              label="Nom"
+              label={t("waiver.lastName")}
               value={d.parentLastName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Prénom"
+              label={t("waiver.firstName")}
               value={d.parentFirstName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Téléphone"
+              label={t("waiver.phone")}
               value={d.parentPhone || "-"}
               icon={<Phone className="h-4 w-4" />}
             />
             <Field
-              label="Email"
+              label={t("waiver.email")}
               value={d.parentEmail || "-"}
               icon={<Mail className="h-4 w-4" />}
             />
           </div>
         </Section>
 
-        <Section title="Informations du joueur">
+        <Section title={t("waiver.player_info")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
-              label="Nom"
+              label={t("waiver.lastName")}
               value={d.playerLastName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Prénom"
+              label={t("waiver.firstName")}
               value={d.playerFirstName || "-"}
               icon={<User className="h-4 w-4" />}
             />
             <Field
-              label="Date de naissance"
-              value={d.playerBirthDate || "-"}
+              label={t("waiver.birthDate")}
+              value={
+                d.playerBirthDate
+                  ? format(new Date(d.playerBirthDate), "dd/MM/yyyy", {
+                      locale: dateLocale,
+                    })
+                  : "-"
+              }
               icon={<CalendarIcon className="h-4 w-4" />}
             />
             <Field
-              label="Club actuel"
+              label={t("waiver.currentClub")}
               value={d.currentClub || "-"}
               icon={<FileText className="h-4 w-4" />}
             />
           </div>
         </Section>
 
-        <Section title="Décharge de responsabilité">
+        <Section title={t("waiver.waiver_title")}>
           <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-              {`Je soussigné(e), ${d.parentFirstName || "…"} ${
-                d.parentLastName || "…"
-              }, représentant légal du joueur ${d.playerFirstName || "…"} ${
-                d.playerLastName || "…"
-              }, né(e) le ${d.playerBirthDate || "…"}, et affilié(e) au club ${
-                d.currentClub || "…"
-              } décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.`}
+              {interpolate(t("waiver.waiver_text"), {
+                parentFirstName: d.parentFirstName,
+                parentLastName: d.parentLastName,
+                playerFirstName: d.playerFirstName,
+                playerLastName: d.playerLastName,
+                playerBirthDate: d.playerBirthDate,
+                currentClub: d.currentClub,
+              })}
             </p>
           </div>
         </Section>
 
-        <Section title="Date et confirmation">
+        <Section title={t("waiver.date_confirmation")}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field
-              label="Date de signature"
+              label={t("waiver.signatureDate")}
               value={d.signatureDate || "-"}
               icon={<CalendarIcon className="h-4 w-4" />}
             />
             <Field
-              label="Mention"
+              label={t("waiver.approvalText")}
               value={d.approvalText || "-"}
               icon={<Check className="h-4 w-4" />}
             />
           </div>
         </Section>
 
-        <Section title="Signature">
+        <Section title={t("common.signature")}>
           {d.signature ? (
             <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 w-full max-w-sm">
-              <img src={d.signature} alt="Signature" className="w-full" />
+              <img
+                src={d.signature}
+                alt={t("common.signature_alt")}
+                className="w-full"
+              />
             </div>
           ) : (
             <p className="text-sm text-gray-900 dark:text-gray-100">-</p>
@@ -810,22 +822,74 @@ const RequestDetailsModal = forwardRef<
   HTMLDivElement,
   RequestDetailsModalProps
 >(({ isOpen, onClose, request }, ref) => {
+  const { t, lang } = useTranslation();
+  const pdfRef = useRef<HTMLDivElement>(null);
+
   if (!isOpen || !request) return null;
+
+  const generatePDF = async () => {
+    const input = pdfRef.current;
+    if (!input) return;
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+    });
+    const imgData = canvas.toDataURL("image/png");
+
+    // Ajouter le logo
+    const logo = new Image();
+    logo.src = "/logo.png";
+    logo.onload = () => {
+      const logoWidth = 30;
+      const logoHeight = (logo.height / logo.width) * logoWidth;
+
+      pdf.addImage(
+        logo,
+        "PNG",
+        (210 - logoWidth) / 2,
+        10,
+        logoWidth,
+        logoHeight
+      );
+
+      // Ajouter le titre
+      pdf.setFontSize(18);
+      pdf.text(t("waiver.pdf_title"), 105, logoHeight + 20, {
+        align: "center",
+      });
+
+      // Ajouter le contenu
+      pdf.addImage(imgData, "PNG", 10, logoHeight + 30, 190, 220);
+
+      // Télécharger
+      pdf.save(t("waiver.pdf_filename"));
+    };
+  };
 
   const renderContent = () => {
     switch (request.type) {
       case "registration":
-        return renderRegistrationContent(request);
+        return renderRegistrationContent(request, t, lang);
       case "selection-tests":
-        return renderSelectionTestsContent(request);
+        return renderSelectionTestsContent(request, t, lang);
       case "accident-report":
-        return renderAccidentReportContent(request);
+        return renderAccidentReportContent(request, t, lang);
       case "responsibility-waiver":
-        return renderResponsibilityWaiverContent(request);
+        return renderResponsibilityWaiverContent(
+          request,
+          t,
+          lang,
+          pdfRef,
+          generatePDF
+        );
       default:
-        return <p>Type de demande non reconnu.</p>;
+        return <p>{t("common.unknown_request_type")}</p>;
     }
   };
+
+  const dateLocale = lang === "fr" ? fr : lang === "nl" ? nl : enGB;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -836,13 +900,17 @@ const RequestDetailsModal = forwardRef<
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-xl">
-              {translateRequestType(request.type)}
+              {translateRequestType(request.type, t)}
             </span>
-            <div data-ignore-pdf>{getStatusBadge(request.status)}</div>
+            <div data-ignore-pdf>{getStatusBadge(request.status, t)}</div>
           </DialogTitle>
           <DialogDescription>
-            Demande #{request.id} •{" "}
-            {format(request.date, "dd MMMM yyyy", { locale: fr })}
+            {interpolate(t("request.id_and_date"), {
+              id: request.id,
+              date: format(request.date, "dd MMMM yyyy", {
+                locale: dateLocale,
+              }),
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -885,8 +953,10 @@ const RequestDetailsModal = forwardRef<
 
                 <div className="mt-4 md:mt-0">
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Soumis le{" "}
-                    {format(request.date, "dd MMMM yyyy", { locale: fr })}
+                    {t("request.submitted_on")}{" "}
+                    {format(request.date, "dd MMMM yyyy", {
+                      locale: dateLocale,
+                    })}
                   </span>
                 </div>
               </div>
@@ -899,7 +969,7 @@ const RequestDetailsModal = forwardRef<
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} data-ignore-pdf>
-            Fermer
+            {t("button.close")}
           </Button>
         </DialogFooter>
       </DialogContent>
