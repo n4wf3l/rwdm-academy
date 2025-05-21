@@ -246,22 +246,30 @@ const Documents = () => {
         return "Non spécifié";
       }
 
+      // Modifier la partie du code qui crée les documents formatés
       const formattedDocuments: Document[] = completedDocuments.map(
         (doc: any) => {
           const parsedData = JSON.parse(doc.data || "{}");
 
+          // Extraire le nom du joueur avec priorité
+          const playerName = {
+            firstName: parsedData.playerFirstName || parsedData.firstName || "",
+            lastName: parsedData.playerLastName || parsedData.lastName || "",
+          };
+
+          // Utiliser le nom du parent seulement si nom du joueur n'existe pas
           return {
             id: doc.id,
             type: doc.type,
             name:
+              playerName.firstName ||
               parsedData.parent1FirstName ||
-              parsedData.parentFirstName || // Ajout de parentFirstName comme fallback
-              parsedData.playerFirstName ||
+              parsedData.parentFirstName ||
               "Inconnu",
             surname:
+              playerName.lastName ||
               parsedData.parent1LastName ||
-              parsedData.parentLastName || // Ajout de parentLastName comme fallback
-              parsedData.playerLastName ||
+              parsedData.parentLastName ||
               "Inconnu",
             email: extractEmail(parsedData),
             phone: extractPhone(parsedData),
@@ -987,6 +995,27 @@ const Documents = () => {
     }
   };
 
+  // Ajouter cette fonction au début du composant Documents
+  const getPlayerName = (details: any) => {
+    // Ordre de priorité pour le prénom: playerFirstName, firstName, parentFirstName
+    let firstName = "";
+    if (details.playerFirstName) {
+      firstName = details.playerFirstName;
+    } else if (details.firstName) {
+      firstName = details.firstName;
+    }
+
+    // Ordre de priorité pour le nom: playerLastName, lastName, parentLastName
+    let lastName = "";
+    if (details.playerLastName) {
+      lastName = details.playerLastName;
+    } else if (details.lastName) {
+      lastName = details.lastName;
+    }
+
+    return { firstName, lastName };
+  };
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <Tabs defaultValue="completed" className="w-full">
@@ -1294,20 +1323,48 @@ const Documents = () => {
                 onClose={() => setIsEditOpen(false)}
                 request={editRequest}
                 onSaved={(updated) => {
+                  // Extraire le nom du joueur en priorité des détails mis à jour
+                  const playerName = getPlayerName(updated.details);
+                  const playerFirstName = playerName.firstName;
+                  const playerLastName = playerName.lastName;
+
+                  // Mettre à jour la liste complète des documents
                   setDocuments((docs) =>
                     docs.map((d) =>
                       d.id === updated.id
-                        ? { ...d, details: updated.details }
+                        ? {
+                            ...d,
+                            details: updated.details,
+                            name: playerFirstName || d.name,
+                            surname: playerLastName || d.surname,
+                            email: updated.email || d.email,
+                            data: updated.details,
+                          }
                         : d
                     )
                   );
+
+                  // Mettre à jour également les documents filtrés
                   setFilteredDocuments((docs) =>
                     docs.map((d) =>
                       d.id === updated.id
-                        ? { ...d, details: updated.details }
+                        ? {
+                            ...d,
+                            details: updated.details,
+                            name: playerFirstName || d.name,
+                            surname: playerLastName || d.surname,
+                            email: updated.email || d.email,
+                            data: updated.details,
+                          }
                         : d
                     )
                   );
+
+                  // Force le rafraîchissement de la liste après mise à jour
+                  setTimeout(() => {
+                    // Rafraîchir les documents depuis le serveur pour assurer la cohérence des données
+                    fetchCompletedDocuments();
+                  }, 100);
                 }}
               />
             </motion.div>

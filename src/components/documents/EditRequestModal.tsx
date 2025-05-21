@@ -10,16 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Request, RequestDetails } from "@/components/RequestDetailsModal";
+import { Request } from "@/components/RequestDetailsModal";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useTranslation } from "@/hooks/useTranslation";
+
+interface RequestDetails {
+  [key: string]: any;
+}
 
 interface EditRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   request: Request | null;
-  onSaved: (updated: Request) => void;
+  onSaved: (updated: Request & { email?: string }) => void; // Ajout d'email comme propriété optionnelle
 }
 
 const EditRequestModal: React.FC<EditRequestModalProps> = ({
@@ -172,6 +176,9 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
       return;
     }
     try {
+      // Stocker les détails locaux avant l'appel API
+      const detailsToUpdate = { ...details };
+
       const res = await fetch(
         `http://localhost:5000/api/requests/${request.id}`,
         {
@@ -180,18 +187,51 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ details }),
+          body: JSON.stringify({ details: detailsToUpdate }),
         }
       );
+
       if (!res.ok) throw new Error((await res.json()).message);
+
       const updated = await res.json();
-      onSaved({ ...request, details: updated.details });
+      console.log("Réponse de l'API après mise à jour:", updated);
+
+      // Si la réponse ne contient pas les détails, utiliser nos détails locaux
+      const updatedDetails = updated.details || detailsToUpdate;
+
+      // Construction du nom avec vérification de l'existence des propriétés
+      let updatedName = request.name;
+
+      if (updatedDetails.playerFirstName && updatedDetails.playerLastName) {
+        updatedName = `${updatedDetails.playerFirstName} ${updatedDetails.playerLastName}`;
+      } else if (updatedDetails.firstName && updatedDetails.lastName) {
+        updatedName = `${updatedDetails.firstName} ${updatedDetails.lastName}`;
+      } else if (
+        updatedDetails.parentFirstName &&
+        updatedDetails.parentLastName
+      ) {
+        updatedName = `${updatedDetails.parentFirstName} ${updatedDetails.parentLastName}`;
+      }
+
+      // Utiliser TS type assertion pour résoudre le problème de typage
+      const updatedRequest = {
+        ...request,
+        details: updatedDetails,
+        name: updatedName,
+        email: updatedDetails.email || updatedDetails.parentEmail || "",
+      } as Request & { email: string };
+
+      // Déclencher la mise à jour dans le parent
+      onSaved(updatedRequest);
+
       toast({
         title: t("toast.updated"),
         description: t("toast.updatedDesc"),
       });
+
       onClose();
     } catch (err: any) {
+      console.error("Erreur lors de la sauvegarde:", err);
       toast({
         title: t("toast.error"),
         description: err.message || t("toast.saveFailed"),
@@ -221,7 +261,11 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
               ].includes(key);
               const formatted =
                 key.toLowerCase().includes("date") && value
-                  ? format(new Date(value), "dd MMMM yyyy", { locale: fr })
+                  ? format(
+                      new Date(value as string | number | Date),
+                      "dd MMMM yyyy",
+                      { locale: fr }
+                    )
                   : value ?? "";
 
               return (
@@ -229,7 +273,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                   <Label htmlFor={key}>{LABELS[key] ?? key}</Label>
                   <Input
                     id={key}
-                    value={formatted}
+                    value={String(formatted)} // Convertir explicitement en string
                     placeholder={PLACEHOLDERS[key] ?? ""}
                     onChange={(e) => handleChange(key, e.target.value)}
                     disabled={isReadOnly}
