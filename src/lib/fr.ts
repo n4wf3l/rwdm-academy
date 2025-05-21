@@ -14,9 +14,10 @@ export const translationsFR = {
   cancel: "Annuler",
   academy_registration: "Demande d'inscription à l'académie",
   academy_registration_desc:
-    "Formulaire d'inscription pour rejoindre l'académie RWDM",
+    "Formulaire d'inscription pour rejoindre l'académie RWDM (U5-U9)",
   selection_tests: "Demande de test de sélection",
-  selection_tests_desc: "Inscription aux tests de sélection pour l'académie",
+  selection_tests_desc:
+    "Demande d'inscription aux tests de sélection pour l'académie (U5-U21)",
   accident_report: "Déclaration d'accident",
   accident_report_desc: "Formulaire pour déclarer un accident survenu",
   liability_waiver: "Décharge de responsabilité",
@@ -1405,7 +1406,7 @@ export const translationsFR = {
   "toast.sendErrorDescription":
     "Impossible d'envoyer le message pour l'instant.",
   // Ajouter au fichier fr.ts
-  "emails.title": "Emails",
+  "emails.title": "Gestion d'emails",
   "emails.description":
     "Personnalisez les emails automatiques envoyés aux utilisateurs.",
   "emails.guide": "Guide d'utilisation",
@@ -1664,4 +1665,9 @@ export const translationsFR = {
   "waiver.waiver_text_part4": "et affilié(e) au club",
   "waiver.waiver_text_part5":
     "décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.",
+  "email.type.refus_registration": "Refus d'inscription",
+  "email.type.refus_selection": "Refus de test",
+  "email.type.refus_accident": "Refus d'accident",
+  "email.type.refus_healing": "Refus de guérison",
+  "email.type.refus_waiver": "Refus de décharge",
 };

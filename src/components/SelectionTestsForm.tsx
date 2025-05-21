@@ -277,11 +277,14 @@ const SelectionTestsForm: React.FC<FormProps> = ({
   };
 
   const finalSubmit = async () => {
+    // S'assurer que noyau est bien le code court (U15, U19, etc.)
+    const categoryCode = noyau.split(" ")[0];
+
     const requestData = {
       type: "selection-tests",
       formData: {
         // Informations sur les tests
-        noyau,
+        noyau: categoryCode, // Utiliser le code court
         academy,
         testStartDate,
         testEndDate,
@@ -402,7 +405,15 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                 {/* Colonne 1 : Catégorie */}
                 <div className="space-y-2">
                   <Label htmlFor="noyau">{t("selection_label_category")}</Label>
-                  <Select onValueChange={setNoyau} value={noyau} required>
+                  <Select
+                    onValueChange={(value) => {
+                      // Extraire uniquement le code de catégorie (U5, U15, etc.)
+                      const categoryCode = value.split(" ")[0];
+                      setNoyau(categoryCode);
+                    }}
+                    value={noyau}
+                    required
+                  >
                     <SelectTrigger className="form-input-base">
                       <SelectValue
                         placeholder={t("selection_placeholder_category")}
@@ -410,12 +421,13 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     </SelectTrigger>
                     <SelectContent>
                       {NOYAUX.map((option) => {
+                        const categoryCode = option.split(" ")[0]; // Extraire juste le code (U15, U19, etc.)
                         const [main, noteWithParen] = option.split("(");
                         const note = noteWithParen
                           ? noteWithParen.replace(")", "")
                           : null;
                         return (
-                          <SelectItem key={option} value={option}>
+                          <SelectItem key={option} value={categoryCode}>
                             <span>{main.trim()}</span>
                             {note && (
                               <span className="ml-1 text-xs text-gray-500">

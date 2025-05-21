@@ -367,16 +367,26 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     decision: "accepted" | "rejected"
   ) => {
     try {
-      // Mapping correct des types selon votre base de données
-      const typeMapping = {
-        registration: "registration_confirmed",
-        "selection-tests": "selection_confirmed",
-        "accident-report": "accident_confirmed",
-        healing: "healing_confirmed",
-        "responsibility-waiver": "waiver_confirmed",
+      // Mappings des types de demandes vers les templates d'emails
+      const mappings = {
+        accepted: {
+          registration: "registration_confirmed",
+          "selection-tests": "selection_confirmed",
+          "accident-report": "accident_confirmed",
+          healing: "healing_confirmed",
+          "responsibility-waiver": "waiver_confirmed",
+        },
+        rejected: {
+          registration: "refus_registration",
+          "selection-tests": "refus_selection",
+          "accident-report": "refus_accident",
+          healing: "refus_healing",
+          "responsibility-waiver": "refus_waiver",
+        },
       };
 
-      const template = typeMapping[request.type];
+      // Sélectionner le template approprié selon la décision
+      const template = mappings[decision][request.type];
       console.log("📧 Type de template utilisé:", template);
 
       const response = await fetch(
@@ -405,14 +415,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
       const data = await response.json();
       toast({
-        title: "Confirmation envoyée",
-        description: "L'email de confirmation a été envoyé avec succès.",
+        title:
+          decision === "accepted" ? "Confirmation envoyée" : "Refus envoyé",
+        description: `L'email de ${
+          decision === "accepted" ? "confirmation" : "refus"
+        } a été envoyé avec succès.`,
       });
     } catch (error) {
-      console.error("❌ Erreur envoi confirmation:", error);
+      console.error("❌ Erreur envoi email:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer l'email de confirmation.",
+        description: `Impossible d'envoyer l'email de ${
+          decision === "accepted" ? "confirmation" : "refus"
+        }.`,
         variant: "destructive",
       });
     }
@@ -822,10 +837,9 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                 : "rejected"
             );
 
-            /* 2. Envoi d’email si la case est cochée */
+            /* 2. Envoi d'email si la case est cochée */
             if (sendEmail) {
               const decision = type === "accept" ? "accepted" : "rejected";
-
               sendConfirmationEmail(request, decision);
             }
 
@@ -835,7 +849,11 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
           }}
           message={`Êtes-vous sûr de vouloir ${
             pendingAction?.type === "accept" ? "accepter" : "rejeter"
-          } cette demande ? Cette action est importante.`}
+          } cette demande ? ${
+            pendingAction?.type === "accept"
+              ? "Un email de confirmation sera envoyé au demandeur."
+              : "Un email de refus sera envoyé au demandeur."
+          }`}
           showEmailCheckbox
         />
       </motion.div>

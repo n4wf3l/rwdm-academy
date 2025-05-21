@@ -13,10 +13,11 @@ export const translationsEN = {
   choose_language: "Choose your language",
   cancel: "Cancel",
   academy_registration: "Academy Registration Request",
-  academy_registration_desc: "Form to register and join the RWDM Academy",
+  academy_registration_desc:
+    "Form to register and join the RWDM Academy (U5-U9)",
   selection_tests: "Selection Tests",
   selection_tests_desc:
-    "Form to register for the RWDM Academy's selection tests",
+    "Form to register for the RWDM Academy's selection tests (U5-U21)",
   accident_report: "Accident Report",
   accident_report_desc: "Form to report an accident that occurred",
   liability_waiver: "Responsability Waiver",
@@ -1558,4 +1559,9 @@ export const translationsEN = {
   "waiver.waiver_text_part4": "and affiliated with club",
   "waiver.waiver_text_part5":
     "hereby release RWDM Academy from any liability for accidents that may occur during training sessions and/or friendly matches.",
+  "email.type.refus_registration": "Registration rejection",
+  "email.type.refus_selection": "Test rejection",
+  "email.type.refus_accident": "Accident report rejection",
+  "email.type.refus_healing": "Healing certificate rejection",
+  "email.type.refus_waiver": "Waiver rejection",
 };

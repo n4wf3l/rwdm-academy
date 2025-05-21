@@ -14,9 +14,10 @@ export const translationsNL = {
   cancel: "Annuleren",
   academy_registration: "Inschrijvingsaanvraag voor de academie",
   academy_registration_desc:
-    "Inschrijvingsformulier om lid te worden van de RWDM Academy",
+    "Inschrijvingsformulier om lid te worden van de RWDM Academy (U5-U9)",
   selection_tests: "Selectietestaanvraag",
-  selection_tests_desc: "Inschrijving voor de selectietesten van de academie",
+  selection_tests_desc:
+    "Inschrijving voor de selectietesten van de academie (U5-U21)",
   accident_report: "Ongevallenverklaring",
   accident_report_desc: "Formulier om een ongeval te melden",
   liability_waiver: "Aansprakelijkheidsontheffing",
@@ -1598,4 +1599,9 @@ export const translationsNL = {
   "waiver.waiver_text_part4": "en aangesloten bij club",
   "waiver.waiver_text_part5":
     "onthef de RWDM Academy van alle aansprakelijkheid in geval van ongevallen die kunnen gebeuren tijdens trainingen en/of vriendschappelijke wedstrijden.",
+  "email.type.refus_registration": "Afwijzing inschrijving",
+  "email.type.refus_selection": "Afwijzing test",
+  "email.type.refus_accident": "Afwijzing ongeval",
+  "email.type.refus_healing": "Afwijzing genezing",
+  "email.type.refus_waiver": "Afwijzing vrijwaring",
 };

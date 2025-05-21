@@ -30,8 +30,8 @@ const emailTypes = [
   // Demandes
   { key: "registration" },
   { key: "selection" },
-  { key: "accident-report" },
-  { key: "healing-certificate" },
+  { key: "accident" },
+  { key: "healing" },
   { key: "waiver" },
   // Confirmations
   { key: "registration_confirmed" },
@@ -39,6 +39,12 @@ const emailTypes = [
   { key: "accident_confirmed" },
   { key: "healing_confirmed" },
   { key: "waiver_confirmed" },
+  // Refus (nouveaux types)
+  { key: "refus_registration" },
+  { key: "refus_selection" },
+  { key: "refus_accident" },
+  { key: "refus_healing" },
+  { key: "refus_waiver" },
   // Envois Union Belge
   { key: "accident-notify" },
   { key: "healing-notify" },
@@ -276,6 +282,17 @@ const EmailSettingsPage: React.FC = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, emailTemplates]);
 
+  // Ajuster la hauteur du textarea quand on change d'onglet
+  useEffect(() => {
+    const textarea = document.querySelector("textarea");
+    if (textarea) {
+      setTimeout(() => {
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }, 0);
+    }
+  }, [activeTab, emailTemplates[activeTab]?.body]);
+
   return (
     <AdminLayout>
       <motion.div
@@ -366,34 +383,109 @@ const EmailSettingsPage: React.FC = () => {
                   {t("emails.variables.playerName")} : {"{playerName}"}
                 </code>
 
-                {/* Variables spécifiques aux accidents et certificats */}
-                {activeTab === "accident-report" && (
+                {/* Variables pour inscription */}
+                {activeTab === "registration" && (
                   <>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Date de l'accident : {"{accidentDate}"}
+                      Prénom du joueur : {"{firstName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Description : {"{description}"}
+                      Nom du joueur : {"{lastName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Club : {"{clubName}"}
+                      Date de naissance : {"{birthDate}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Email parent : {"{parentEmail}"}
+                      Lieu de naissance : {"{birthPlace}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Adresse : {"{address}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code postal : {"{postalCode}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Ville : {"{city}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Catégorie : {"{category}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Club actuel : {"{currentClub}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Saison : {"{season}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom parent 1 : {"{parent1LastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom parent 1 : {"{parent1FirstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Téléphone parent 1 : {"{parent1Phone}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Email parent 1 : {"{parent1Email}"}
                     </code>
                   </>
                 )}
 
-                {activeTab === "healing-certificate" && (
+                {/* Variables pour déclaration d'accident */}
+                {activeTab === "accident" && ( // Modifié de "accident-report" à "accident"
+                  <>
+                    {/* Variables de base */}
+
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour certificat de guérison */}
+                {activeTab === "healing" && ( // Modifié de "healing-certificate" à "healing"
+                  <>
+                    {/* Variables de base */}
+
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour tests de sélection */}
+                {activeTab === "selection" && (
                   <>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Type document : {"{documentLabel}"}
+                      Nom du joueur : {"{playerName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Club : {"{clubName}"}
+                      Catégorie : {"{category}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Email parent : {"{parentEmail}"}
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du parent : {"{parentName}"}
+                    </code>
+                    {/* Variables détaillées que vous aviez déjà ajoutées */}
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom du joueur : {"{firstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{lastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Position : {"{position}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Académie : {"{academy}"}
                     </code>
                   </>
                 )}
@@ -416,6 +508,274 @@ const EmailSettingsPage: React.FC = () => {
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
                       Notes : {"{notes}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour les décharges */}
+                {activeTab === "waiver" && (
+                  <>
+                    {/* Variables de base */}
+
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour confirmation d'inscription */}
+                {activeTab === "registration_confirmed" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom du joueur : {"{firstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{lastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Date de naissance : {"{birthDate}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Lieu de naissance : {"{birthPlace}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Adresse : {"{address}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code postal : {"{postalCode}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Ville : {"{city}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Catégorie : {"{category}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Club actuel : {"{currentClub}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Saison : {"{season}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom parent 1 : {"{parent1LastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom parent 1 : {"{parent1FirstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Téléphone parent 1 : {"{parent1Phone}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Email parent 1 : {"{parent1Email}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour confirmation de test de sélection */}
+                {activeTab === "selection_confirmed" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{playerName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Catégorie : {"{category}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du parent : {"{parentName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom du joueur : {"{firstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{lastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Position : {"{position}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Académie : {"{academy}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour confirmation de déclaration d'accident */}
+                {activeTab === "accident_confirmed" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour confirmation de certificat de guérison */}
+                {activeTab === "healing_confirmed" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour confirmation de décharge */}
+                {activeTab === "waiver_confirmed" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour refus d'inscription */}
+                {activeTab === "refus_registration" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom du joueur : {"{firstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{lastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Date de naissance : {"{birthDate}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Lieu de naissance : {"{birthPlace}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Adresse : {"{address}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code postal : {"{postalCode}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Ville : {"{city}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Catégorie : {"{category}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Club actuel : {"{currentClub}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Saison : {"{season}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom parent 1 : {"{parent1LastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom parent 1 : {"{parent1FirstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Téléphone parent 1 : {"{parent1Phone}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Email parent 1 : {"{parent1Email}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour refus de test de sélection */}
+                {activeTab === "refus_selection" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{playerName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Catégorie : {"{category}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du parent : {"{parentName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Prénom du joueur : {"{firstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Nom du joueur : {"{lastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Position : {"{position}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Académie : {"{academy}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour refus de déclaration d'accident */}
+                {activeTab === "refus_accident" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour refus de certificat de guérison */}
+                {activeTab === "refus_healing" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour refus de décharge */}
+                {activeTab === "refus_waiver" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      ID de la demande : {"{requestId}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour les notifications à l'Union Belge - accident */}
+                {activeTab === "accident-notify" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Club : {"{clubName}"}
+                    </code>
+
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Date de l'accident : {"{accidentDate}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Description : {"{description}"}
+                    </code>
+                  </>
+                )}
+
+                {/* Variables pour les notifications à l'Union Belge - guérison */}
+                {activeTab === "healing-notify" && (
+                  <>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Club : {"{clubName}"}
+                    </code>
+
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Date de l'accident : {"{accidentDate}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Code dossier : {"{codeDossier}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      Catégorie : {"{category}"}
                     </code>
                   </>
                 )}
@@ -534,12 +894,23 @@ const EmailSettingsPage: React.FC = () => {
               ) : (
                 <textarea
                   value={emailTemplates[activeTab]?.body || ""}
-                  onChange={(e) =>
-                    handleChange(activeTab, "body", e.target.value)
-                  }
+                  onChange={(e) => {
+                    handleChange(activeTab, "body", e.target.value);
+                    // Ajustement automatique de la hauteur
+                    const textarea = e.target;
+                    textarea.style.height = "auto";
+                    textarea.style.height = `${textarea.scrollHeight}px`;
+                  }}
+                  ref={(textareaRef) => {
+                    // Ajuster la hauteur initiale au chargement
+                    if (textareaRef) {
+                      textareaRef.style.height = "auto";
+                      textareaRef.style.height = `${textareaRef.scrollHeight}px`;
+                    }
+                  }}
                   placeholder={t("emails.body.placeholder")}
-                  rows={8}
-                  className="w-full border-0 rounded-none p-4 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 resize-vertical whitespace-pre-wrap"
+                  rows={4} // Commencer avec moins de lignes
+                  className="w-full border-0 rounded-none p-4 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 overflow-hidden resize-none"
                 />
               )}
             </motion.div>
@@ -583,7 +954,7 @@ const EmailSettingsPage: React.FC = () => {
                   .filter(
                     (type) =>
                       !type.key.includes("_") &&
-                      !type.key.includes("-notify") &&
+                      !type.key.includes("-") && // Ajoutez cette ligne pour exclure tous les types avec tiret
                       !type.key.includes("appointment")
                   )
                   .map(({ key }) => (
@@ -623,13 +994,38 @@ const EmailSettingsPage: React.FC = () => {
                   ))}
               </div>
 
+              {/* Refus */}
+              <div>
+                <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
+                  REFUS
+                </h3>
+                {emailTypes
+                  .filter((type) => type.key.includes("refus_"))
+                  .map(({ key }) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveTab(key)}
+                      className={`w-full text-left px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                        activeTab === key
+                          ? "bg-rwdm-blue text-white"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {t(`email.type.${key}` as any)}
+                    </button>
+                  ))}
+              </div>
+
               {/* Envois Union Belge */}
               <div>
                 <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
                   {t("emails.type.union")}
                 </h3>
                 {emailTypes
-                  .filter((type) => type.key.includes("-notify"))
+                  .filter((type) =>
+                    // Supprimer accident-report et healing-certificate, ne garder que les notifications
+                    type.key.includes("-notify")
+                  )
                   .map(({ key }) => (
                     <button
                       key={key}
@@ -670,6 +1066,26 @@ const EmailSettingsPage: React.FC = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Ajouter dans votre fichier CSS global */}
+      <style>{`
+        .resize-handle-fix {
+          resize: vertical;
+        }
+
+        .resize-handle-fix::-webkit-resizer {
+          height: 10px;
+          width: 10px;
+          background: transparent;
+          border-right: 2px solid rgba(0, 0, 0, 0.2);
+          border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .resize-handle-fix::-webkit-resizer {
+          border-right: 2px solid rgba(255, 255, 255, 0.2);
+          border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
     </AdminLayout>
   );
 };

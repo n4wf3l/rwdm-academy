@@ -442,6 +442,9 @@ const AccidentReportForm: React.FC<FormProps> = ({
         : "application/pdf,image/jpeg,image/png";
     const multipleAttr = documentType === "healing-certificate";
 
+    // Ajoutez une référence à l'input
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-center w-full">
@@ -464,13 +467,20 @@ const AccidentReportForm: React.FC<FormProps> = ({
               </p>
             </div>
             <input
+              ref={fileInputRef}
               id={inputId}
               name="pdfFiles"
               type="file"
               accept={acceptAttr}
               multiple={multipleAttr}
               className="hidden"
-              onChange={handleFileChange}
+              onChange={(e) => {
+                handleFileChange(e);
+                // Réinitialiser l'input après la sélection
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
             />
           </label>
         </div>
@@ -878,22 +888,25 @@ const AccidentReportForm: React.FC<FormProps> = ({
               isCooldown ||
               !signature ||
               !hasAcceptedPolicy ||
-              !accidentDate ||
-              !clubName ||
-              !academy ||
               !playerLastName ||
               !playerFirstName ||
               !email ||
-              !phone ||
-              !accidentDescription ||
-              !category ||
               (documentType === "accident-report"
-                ? accidentCode === "" || pdfFiles.length !== 1
-                : !hasSentDeclaration ||
+                ? // Validation spécifique pour la déclaration d'accident
+                  !accidentDate ||
+                  !clubName ||
+                  !academy ||
+                  !phone ||
+                  !accidentDescription ||
+                  !category ||
+                  accidentCode === "" ||
+                  pdfFiles.length !== 1
+                : // Validation spécifique pour le certificat de guérison
+                  !hasSentDeclaration ||
                   healingCode === "" ||
                   !codeValid ||
                   pdfFiles.length === 0 ||
-                  pdfFiles.length > 2)
+                  pdfFiles.length > 3)
             }
             className="px-8 py-6 bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white rounded-lg button-transition text-base"
           >

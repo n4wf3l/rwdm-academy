@@ -61,11 +61,44 @@ router.post("/send-registration-email", async (req, res) => {
 
     // Remplacer les variables et préserver les sauts de ligne
     let htmlContent = template.body
+      // Variables existantes
       .replace(/{parentName}/g, formData.parent1FirstName || "")
       .replace(/{playerName}/g, `${formData.firstName} ${formData.lastName}`)
       .replace(/{academy}/g, formData.academy || "")
       .replace(/{season}/g, formData.season || "")
       .replace(/{requestId}/g, requestId)
+
+      // Nouvelles variables détaillées
+      .replace(/{firstName}/g, formData.firstName || "")
+      .replace(/{lastName}/g, formData.lastName || "")
+      .replace(
+        /{birthDate}/g,
+        formData.birthDate
+          ? new Date(formData.birthDate).toLocaleDateString("fr-FR")
+          : ""
+      )
+      .replace(/{birthPlace}/g, formData.birthPlace || "")
+      .replace(/{address}/g, formData.address || "")
+      .replace(/{postalCode}/g, formData.postalCode || "")
+      .replace(/{city}/g, formData.city || "")
+      .replace(/{category}/g, formData.category || "")
+      .replace(/{currentClub}/g, formData.currentClub || "")
+
+      // Informations du parent 1
+      .replace(/{parent1LastName}/g, formData.parent1LastName || "")
+      .replace(/{parent1FirstName}/g, formData.parent1FirstName || "")
+      .replace(/{parent1Phone}/g, formData.parent1Phone || "")
+      .replace(/{parent1Email}/g, formData.parent1Email || "")
+      .replace(/{parent1Address}/g, formData.parent1Address || "")
+      .replace(/{parent1PostalCode}/g, formData.parent1PostalCode || "")
+      .replace(/{parent1Gsm}/g, formData.parent1Gsm || "")
+
+      // Informations du parent 2 (si présentes)
+      .replace(/{parent2LastName}/g, formData.parent2LastName || "")
+      .replace(/{parent2FirstName}/g, formData.parent2FirstName || "")
+      .replace(/{parent2Phone}/g, formData.parent2Phone || "")
+      .replace(/{parent2Email}/g, formData.parent2Email || "")
+
       // Convertir les retours à la ligne en balises <br/>
       .replace(/\n/g, "<br/>");
 
@@ -420,6 +453,28 @@ router.post("/send-decision-email", async (req, res) => {
   }
 
   try {
+    console.log(
+      "📝 Données formData reçues:",
+      JSON.stringify(formData, null, 2)
+    );
+
+    // Vérifiez si les données sont stockées sous forme de chaîne JSON
+    let formDataObj = formData;
+    if (typeof formData === "string") {
+      try {
+        formDataObj = JSON.parse(formData);
+      } catch (e) {
+        console.error("❌ Erreur lors du parsing JSON de formData:", e);
+      }
+    }
+
+    // Extraction directe des propriétés critiques, avec logs pour le débogage
+    const contactEmail = formDataObj.email || "Non disponible";
+    const contactPhone = formDataObj.phone || "Non disponible";
+
+    console.log("📧 Email extrait:", contactEmail);
+    console.log("☎️ Téléphone extrait:", contactPhone);
+
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
@@ -430,7 +485,7 @@ router.post("/send-decision-email", async (req, res) => {
       },
     });
 
-    // Récupérer le template de confirmation
+    // Récupérer le template de confirmation/refus
     const [templates] = await db.execute(
       "SELECT * FROM emails WHERE type = ?",
       [template]
@@ -445,43 +500,150 @@ router.post("/send-decision-email", async (req, res) => {
 
     const emailTemplate = templates[0];
 
-    // Remplacer les variables dans le template
+    // Déterminer les destinataires selon le type d'email
+    let emailTo = contactEmail;
+    let emailCc = [];
+
+    // Pour les emails vers l'Union Belge, ajouter l'adresse de l'Union
+    if (template.includes("-notify")) {
+      // Récupérer l'adresse email de l'Union Belge depuis la base de données
+      const [unionEmails] = await db.execute(
+        "SELECT * FROM email_recipients WHERE type = 'union_belge'"
+      );
+
+      if (unionEmails.length > 0) {
+        emailCc.push(unionEmails[0].email);
+      }
+    }
+
+    // Formatter la date d'accident si présente
+    const formattedAccidentDate = formDataObj.accidentDate
+      ? new Date(formDataObj.accidentDate).toLocaleDateString("fr-FR")
+      : "";
+
+    // Faire une copie du contenu du template avant les remplacements
+    let originalContent = emailTemplate.body;
+
+    // Remplacer les variables dans le template, depuis l'objet formDataObj
     let htmlContent = emailTemplate.body
+      // Variables de base
       .replace(
         /{parentName}/g,
-        formData.parentFirstName || formData.parent1FirstName || ""
+        formDataObj.parentFirstName || formDataObj.parent1FirstName || ""
       )
       .replace(
         /{playerName}/g,
-        `${formData.firstName || formData.playerFirstName} ${
-          formData.lastName || formData.playerLastName
+        `${formDataObj.firstName || formDataObj.playerFirstName} ${
+          formDataObj.lastName || formDataObj.playerLastName
         }`
       )
-      .replace(/{category}/g, formData.category || formData.noyau || "")
-      .replace(/{codeDossier}/g, formData.codeDossier || "")
+      .replace(/{category}/g, formDataObj.category || formDataObj.noyau || "")
+      .replace(/{codeDossier}/g, formDataObj.codeDossier || "")
       .replace(/{requestId}/g, requestId)
-      .replace(/{academy}/g, formData.academy || "RWDM Academy")
-      .replace(/{season}/g, formData.season || "2023-2024")
+      .replace(/{academy}/g, formDataObj.academy || "RWDM Academy")
+      .replace(/{season}/g, formDataObj.season || "")
+
+      // Variables spécifiques pour les accidents et guérisons - remplacements DIRECTS
+      .replace(/{clubName}/g, formDataObj.clubName || "RWDM")
+      .replace(
+        /{playerFirstName}/g,
+        formDataObj.playerFirstName || formDataObj.firstName || ""
+      )
+      .replace(
+        /{playerLastName}/g,
+        formDataObj.playerLastName || formDataObj.lastName || ""
+      )
+      .replace(/{email}/g, contactEmail)
+      .replace(/{phone}/g, contactPhone)
+      .replace(/{accidentDate}/g, formattedAccidentDate)
+      .replace(/{description}/g, formDataObj.description || "Non spécifié")
+      .replace(/{documentLabel}/g, formDataObj.documentLabel || "")
+      .replace(/{adminName}/g, "Nawfel Ajari") // Ajoutez cette ligne
+
+      // Variables pour les décharges
+      .replace(/{currentClub}/g, formDataObj.currentClub || "")
+      .replace(
+        /{signatureDate}/g,
+        formDataObj.signatureDate
+          ? new Date(formDataObj.signatureDate).toLocaleDateString("fr-FR")
+          : ""
+      )
+
+      // Conversion des sauts de ligne
       .replace(/\n/g, "<br/>");
+
+    // Forcer un remplacement direct de certaines variables
+    console.log("📊 Remplacement forcé des variables critiques");
+    htmlContent = htmlContent
+      .replace(new RegExp("{email}", "g"), contactEmail)
+      .replace(new RegExp("{phone}", "g"), contactPhone)
+      .replace(new RegExp("{adminName}", "g"), "Nawfel Ajari");
+
+    // Vérification des variables non remplacées
+    const nonReplacedVars = htmlContent.match(/\{[a-zA-Z0-9_]+\}/g) || [];
+    if (nonReplacedVars.length > 0) {
+      console.warn("⚠️ Variables non remplacées:", nonReplacedVars);
+
+      // Force le remplacement des variables non remplacées
+      nonReplacedVars.forEach((variable) => {
+        const varName = variable.substring(1, variable.length - 1);
+        console.log(
+          `🔄 Remplacement forcé de ${variable} par sa valeur directe`
+        );
+        htmlContent = htmlContent.replace(
+          new RegExp(variable, "g"),
+          "Non disponible"
+        );
+      });
+    }
+
+    // Log avant/après pour vérification
+    console.log(
+      "📄 Contenu AVANT remplacement (extrait):",
+      originalContent.substring(0, 100)
+    );
+    console.log(
+      "📄 Contenu APRÈS remplacement (extrait):",
+      htmlContent.substring(0, 100)
+    );
 
     const mailOptions = {
       from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
-      to: formData.email || formData.parentEmail || formData.parent1Email,
-      subject: emailTemplate.subject.replace(/{requestId}/g, requestId),
+      to: emailTo,
+      cc: emailCc.length > 0 ? emailCc : undefined,
+      subject: emailTemplate.subject
+        .replace(/{requestId}/g, requestId)
+        .replace(/{codeDossier}/g, formDataObj.codeDossier || ""),
       html: htmlContent,
     };
+
+    // Ajout de pièces jointes pour les emails vers l'Union Belge
+    if (template.includes("-notify") && formDataObj.filePath) {
+      try {
+        const filePath = `.${formDataObj.filePath}`;
+        mailOptions.attachments = [
+          {
+            filename: formDataObj.documentLabel + ".pdf",
+            path: filePath,
+          },
+        ];
+      } catch (err) {
+        console.error("❌ Erreur lors de l'attachement du fichier:", err);
+      }
+    }
 
     console.log("📧 Envoi d'email de décision:", {
       template,
       decision,
       to: mailOptions.to,
+      cc: mailOptions.cc,
     });
 
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
     res.json({
-      message: "Email de confirmation envoyé avec succès",
+      message: "Email envoyé avec succès",
       messageId: info.messageId,
     });
   } catch (err) {
@@ -502,12 +664,12 @@ router.post("/send-appointment-confirmation", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST, // Changed from SMTP_HOST
-      port: process.env.EMAIL_PORT, // Changed from SMTP_PORT
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
       secure: false,
       auth: {
-        user: process.env.EMAIL_USER, // Changed from SMTP_USER
-        pass: process.env.EMAIL_PASS, // Changed from SMTP_PASS
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -526,6 +688,10 @@ router.post("/send-appointment-confirmation", async (req, res) => {
     // Replace variables in template
     let htmlContent = template.body
       .replace(/{parentName}/g, appointment.personName || "")
+      .replace(
+        /{playerName}/g,
+        appointment.playerName || appointment.personName || ""
+      ) // Ajoutez cette ligne
       .replace(
         /{appointmentDate}/g,
         format(new Date(appointment.date), "dd MMMM yyyy", { locale: fr })
@@ -591,6 +757,10 @@ router.post("/send-appointment-cancellation", async (req, res) => {
     // Replace variables in template
     let htmlContent = template.body
       .replace(/{parentName}/g, appointment.personName || "")
+      .replace(
+        /{playerName}/g,
+        appointment.playerName || appointment.personName || ""
+      ) // Ajoutez cette ligne
       .replace(
         /{appointmentDate}/g,
         format(new Date(appointment.date), "dd MMMM yyyy", { locale: fr })
@@ -718,12 +888,46 @@ router.post("/send-selection-tests-email", async (req, res) => {
 
     // Remplacer les variables et préserver les sauts de ligne
     let htmlContent = template.body
+      // Variables existantes
       .replace(/{parentName}/g, formData.parentFirstName || "")
       .replace(/{playerName}/g, `${formData.firstName} ${formData.lastName}`)
       .replace(/{category}/g, formData.noyau || "")
       .replace(/{position}/g, formData.position || "")
       .replace(/{academy}/g, formData.academy || "")
       .replace(/{requestId}/g, requestId)
+
+      // Nouvelles variables détaillées
+      .replace(/{firstName}/g, formData.firstName || "")
+      .replace(/{lastName}/g, formData.lastName || "")
+      .replace(
+        /{playerBirthDate}/g,
+        formData.playerBirthDate
+          ? new Date(formData.playerBirthDate).toLocaleDateString("fr-FR")
+          : ""
+      )
+      .replace(/{currentClub}/g, formData.currentClub || "")
+      .replace(/{previousClub}/g, formData.previousClub || "")
+      .replace(/{noyau}/g, formData.noyau || "")
+      .replace(
+        /{testStartDate}/g,
+        formData.testStartDate
+          ? new Date(formData.testStartDate).toLocaleDateString("fr-FR")
+          : ""
+      )
+      .replace(
+        /{testEndDate}/g,
+        formData.testEndDate
+          ? new Date(formData.testEndDate).toLocaleDateString("fr-FR")
+          : ""
+      )
+
+      // Informations du parent
+      .replace(/{parentEmail}/g, formData.parentEmail || "")
+      .replace(/{parentPhone}/g, formData.parentPhone || "")
+      .replace(/{parentLastName}/g, formData.parentLastName || "")
+      .replace(/{parentFirstName}/g, formData.parentFirstName || "")
+      .replace(/{parentRelation}/g, formData.parentRelation || "")
+
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
