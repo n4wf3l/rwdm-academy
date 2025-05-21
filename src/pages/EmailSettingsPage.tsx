@@ -16,6 +16,10 @@ import {
   AlignRight,
   Undo2,
   Redo2,
+  Check,
+  X,
+  Send,
+  Calendar,
 } from "lucide-react";
 import DOMPurify from "dompurify"; // Ajoutez cette import après npm install dompurify @types/dompurify
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -387,46 +391,46 @@ const EmailSettingsPage: React.FC = () => {
                 {activeTab === "registration" && (
                   <>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Prénom du joueur : {"{firstName}"}
+                      {t("firstName")} : {"{firstName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Nom du joueur : {"{lastName}"}
+                      {t("lastName")} : {"{lastName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Date de naissance : {"{birthDate}"}
+                      {t("birthDate")} : {"{birthDate}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Lieu de naissance : {"{birthPlace}"}
+                      {t("birthPlace")} : {"{birthPlace}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Adresse : {"{address}"}
+                      {t("address")} : {"{address}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Code postal : {"{postalCode}"}
+                      {t("postalCode")} : {"{postalCode}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Ville : {"{city}"}
+                      {t("city")} : {"{city}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Catégorie : {"{category}"}
+                      {t("category")} : {"{category}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Club actuel : {"{currentClub}"}
+                      {t("currentClub")} : {"{currentClub}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Saison : {"{season}"}
+                      {t("season")} : {"{season}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Nom parent 1 : {"{parent1LastName}"}
+                      {t("parent1LastName")} : {"{parent1LastName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Prénom parent 1 : {"{parent1FirstName}"}
+                      {t("parent1FirstName")} : {"{parent1FirstName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Téléphone parent 1 : {"{parent1Phone}"}
+                      {t("parent1Phone")} : {"{parent1Phone}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Email parent 1 : {"{parent1Email}"}
+                      {t("parent1Email")} : {"{parent1Email}"}
                     </code>
                   </>
                 )}
@@ -749,14 +753,28 @@ const EmailSettingsPage: React.FC = () => {
                 {activeTab === "accident-notify" && (
                   <>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Club : {"{clubName}"}
-                    </code>
-
-                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Date de l'accident : {"{accidentDate}"}
+                      {t("club")} : {"{clubName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Description : {"{description}"}
+                      {t("email")} : {"{email}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("phone")} : {"{phone}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("accidentDate")} : {"{accidentDate}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("description")} : {"{description}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("playerFirstName")} : {"{playerFirstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("playerLastName")} : {"{playerLastName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("codeDossier")} : {"{codeDossier}"}
                     </code>
                   </>
                 )}
@@ -765,17 +783,28 @@ const EmailSettingsPage: React.FC = () => {
                 {activeTab === "healing-notify" && (
                   <>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Club : {"{clubName}"}
-                    </code>
-
-                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Date de l'accident : {"{accidentDate}"}
+                      {t("club")} : {"{clubName}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Code dossier : {"{codeDossier}"}
+                      {t("email")} : {"{email}"}
                     </code>
                     <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
-                      Catégorie : {"{category}"}
+                      {t("phone")} : {"{phone}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("accidentDate")} : {"{accidentDate}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("codeDossier")} : {"{codeDossier}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("category")} : {"{category}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("playerFirstName")} : {"{playerFirstName}"}
+                    </code>
+                    <code className="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      {t("playerLastName")} : {"{playerLastName}"}
                     </code>
                   </>
                 )}
@@ -947,14 +976,19 @@ const EmailSettingsPage: React.FC = () => {
             <motion.div className="space-y-4">
               {/* Demandes */}
               <div>
-                <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
-                  {t("emails.type.requests")}
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xs uppercase font-medium text-gray-500">
+                    {t("emails.type.requests")}
+                  </h3>
+                  <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-md font-medium">
+                    NEW
+                  </span>
+                </div>
                 {emailTypes
                   .filter(
                     (type) =>
                       !type.key.includes("_") &&
-                      !type.key.includes("-") && // Ajoutez cette ligne pour exclure tous les types avec tiret
+                      !type.key.includes("-") &&
                       !type.key.includes("appointment")
                   )
                   .map(({ key }) => (
@@ -974,9 +1008,14 @@ const EmailSettingsPage: React.FC = () => {
 
               {/* Confirmations */}
               <div>
-                <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
-                  {t("emails.type.confirmations")}
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xs uppercase font-medium text-gray-500">
+                    {t("emails.type.confirmations")}
+                  </h3>
+                  <button className="py-0 px-1 h-5 border rounded-sm border-green-600 bg-transparent hover:bg-transparent cursor-default">
+                    <Check className="h-3 w-3 text-green-600" />
+                  </button>
+                </div>
                 {emailTypes
                   .filter((type) => type.key.includes("_confirmed"))
                   .map(({ key }) => (
@@ -996,9 +1035,14 @@ const EmailSettingsPage: React.FC = () => {
 
               {/* Refus */}
               <div>
-                <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
-                  REFUS
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xs uppercase font-medium text-gray-500">
+                    {t("rejection")}
+                  </h3>
+                  <button className="py-0 px-1 h-5 border rounded-sm border-red-600 bg-transparent hover:bg-transparent cursor-default">
+                    <X className="h-3 w-3 text-red-600" />
+                  </button>
+                </div>
                 {emailTypes
                   .filter((type) => type.key.includes("refus_"))
                   .map(({ key }) => (
@@ -1018,14 +1062,16 @@ const EmailSettingsPage: React.FC = () => {
 
               {/* Envois Union Belge */}
               <div>
-                <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
-                  {t("emails.type.union")}
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xs uppercase font-medium text-gray-500">
+                    {t("emails.type.union")}
+                  </h3>
+                  <button className="py-0 px-1 h-5 border rounded-sm border-yellow-600 bg-transparent hover:bg-transparent text-yellow-600 cursor-default">
+                    <Send className="h-3 w-3" />
+                  </button>
+                </div>
                 {emailTypes
-                  .filter((type) =>
-                    // Supprimer accident-report et healing-certificate, ne garder que les notifications
-                    type.key.includes("-notify")
-                  )
+                  .filter((type) => type.key.includes("-notify"))
                   .map(({ key }) => (
                     <button
                       key={key}
@@ -1043,9 +1089,14 @@ const EmailSettingsPage: React.FC = () => {
 
               {/* Rendez-vous */}
               <div>
-                <h3 className="text-xs uppercase font-medium text-gray-500 mb-2">
-                  {t("emails.type.appointments")}
-                </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xs uppercase font-medium text-gray-500">
+                    {t("emails.type.appointments")}
+                  </h3>
+                  <button className="py-0 px-1 h-5 w-5 border rounded border-blue-900 bg-blue-900 hover:bg-blue-900 cursor-default flex items-center justify-center">
+                    <Calendar className="h-3 w-3 text-white" />
+                  </button>
+                </div>
                 {emailTypes
                   .filter((type) => type.key.includes("appointment"))
                   .map(({ key }) => (
