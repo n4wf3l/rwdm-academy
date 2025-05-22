@@ -306,6 +306,9 @@ const Settings: React.FC = () => {
       };
       await axios.put("http://localhost:5000/api/settings", settingsPayload);
       toast.success(t("settings.saveSuccess"));
+
+      // Forcer le rechargement de la page pour actualiser les images
+      window.location.reload();
     } catch (err: any) {
       console.error(err);
       toast.error(

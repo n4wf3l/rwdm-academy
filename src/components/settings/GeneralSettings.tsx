@@ -79,9 +79,12 @@ const checkImageSize = (file: File): boolean => {
 const deleteOldImage = async (filePath: string) => {
   if (!filePath.startsWith("/uploads/")) return; // sécurité: on supprime que des vrais uploads
 
+  // Retirer le paramètre de cache-busting s'il existe
+  const cleanPath = filePath.split("?")[0];
+
   try {
     await axios.delete(`http://localhost:5000/api/upload/image`, {
-      data: { filePath }, // on envoie l'ancien chemin
+      data: { filePath: cleanPath }, // on envoie le chemin nettoyé
     });
     console.log("✅ Ancienne image supprimée");
   } catch (err) {
@@ -271,9 +274,17 @@ const GeneralSettings: React.FC<Props> = ({
                         e.target.value = "";
                         return;
                       }
+
+                      // Supprimer l'ancien logo s'il existe
+                      if (logo && logo.startsWith("/uploads/")) {
+                        await deleteOldImage(logo);
+                      }
+
                       const filePath = await uploadImageFile(file);
                       if (filePath) {
-                        setLogo(filePath);
+                        // Ajouter un paramètre de cache-busting pour forcer le rechargement de l'image
+                        const cacheBuster = `?v=${new Date().getTime()}`;
+                        setLogo(`${filePath}${cacheBuster}`);
                         toast.success(t("toasts.logoUploaded"));
                       }
                     }}

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const AboutSettings = ({
@@ -177,7 +177,7 @@ const AboutSettings = ({
     };
 
     return (
-      <motion.div
+      <m.div
         className="fixed inset-0 top-0 left-0 right-0 bottom-0 w-full h-full z-[9999] flex items-center justify-center"
         style={{
           backgroundColor: "rgba(0, 0, 0, 0.9)",
@@ -191,7 +191,7 @@ const AboutSettings = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <motion.img
+        <m.img
           src={src}
           alt={alt || "Image agrandie"}
           className="max-w-[90vw] max-h-[90vh] rounded shadow-lg"
@@ -203,34 +203,63 @@ const AboutSettings = ({
             e.stopPropagation();
           }}
         />
-      </motion.div>
+      </m.div>
     );
   };
 
+  // Fonction pour ajuster automatiquement la hauteur d'un textarea
+  const adjustTextareaHeight = (textarea) => {
+    if (!textarea) return;
+
+    // Réinitialiser la hauteur à auto pour obtenir la hauteur correcte
+    textarea.style.height = "auto";
+
+    // Définir la nouvelle hauteur en fonction du contenu
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
+  // Gestionnaire de changement pour les textareas
+  const handleTextareaChange = (e, currentValue, setter) => {
+    // Mettre à jour l'état
+    setter({
+      ...currentValue,
+      [language]: e.target.value,
+    });
+
+    // Ajuster la hauteur
+    adjustTextareaHeight(e.target);
+  };
+
+  // Ajuster la hauteur de tous les textareas après le rendu
+  useEffect(() => {
+    const textareas = document.querySelectorAll("textarea");
+    textareas.forEach(adjustTextareaHeight);
+  }, [language]); // Réajuster quand la langue change
+
   return (
-    <motion.div
+    <m.div
       className="space-y-6"
       initial="hidden"
       animate="show"
       variants={containerVariants}
     >
       {/* Statistiques du club */}
-      <motion.div variants={cardVariants}>
+      <m.div variants={cardVariants}>
         <Card>
           <CardHeader>
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <CardTitle>{t("clubStats.title")}</CardTitle>
-            </motion.div>
-            <motion.p
+            </m.div>
+            <m.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
               {t("clubStats.description")}
-            </motion.p>
+            </m.p>
           </CardHeader>
 
           <CardContent>
-            <motion.div
+            <m.div
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
               variants={containerVariants}
             >
@@ -256,7 +285,7 @@ const AboutSettings = ({
                   setter: setYoungTalents,
                 },
               ].map((stat, index) => (
-                <motion.div
+                <m.div
                   key={stat.label}
                   className="p-4 rounded-lg border bg-gray-50 dark:bg-gray-900"
                   variants={itemVariants}
@@ -272,32 +301,32 @@ const AboutSettings = ({
                     onChange={(e) => stat.setter(e.target.value)}
                     className="w-full text-4xl font-bold text-rwdm-blue dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none"
                   />
-                </motion.div>
+                </m.div>
               ))}
-            </motion.div>
+            </m.div>
           </CardContent>
         </Card>
-      </motion.div>
+      </m.div>
 
       {/* À propos du club */}
-      <motion.div variants={cardVariants}>
+      <m.div variants={cardVariants}>
         <Card>
           <CardHeader>
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <CardTitle>{t("clubAbout.title")}</CardTitle>
-            </motion.div>
-            <motion.p
+            </m.div>
+            <m.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
               {t("clubAbout.description")}
-            </motion.p>
+            </m.p>
           </CardHeader>
 
           <CardContent>
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Tabs defaultValue="history" className="w-full">
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -312,7 +341,7 @@ const AboutSettings = ({
                       {t("tabsApproach")}
                     </TabsTrigger>
                   </TabsList>
-                </motion.div>
+                </m.div>
 
                 {[
                   {
@@ -342,14 +371,14 @@ const AboutSettings = ({
                     value={tab.value}
                     className="space-y-6"
                   >
-                    <motion.div
+                    <m.div
                       className="flex flex-col md:flex-row gap-4 items-start"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.2 }}
                     >
                       {/* Texte */}
-                      <motion.div
+                      <m.div
                         className="w-full md:w-1/2"
                         whileHover={{ scale: 1.01 }}
                       >
@@ -357,20 +386,22 @@ const AboutSettings = ({
                           {t("labelDescription")} {tab.value} ({language})
                         </label>
                         <textarea
-                          rows={5}
-                          className="w-full border rounded p-2"
+                          className="w-full border rounded p-2 resize-none overflow-hidden"
                           value={tab.description[language]}
                           onChange={(e) =>
-                            tab.setDescription({
-                              ...tab.description,
-                              [language]: e.target.value,
-                            })
+                            handleTextareaChange(
+                              e,
+                              tab.description,
+                              tab.setDescription
+                            )
                           }
+                          onFocus={(e) => adjustTextareaHeight(e.target)}
+                          style={{ minHeight: "100px" }}
                         />
-                      </motion.div>
+                      </m.div>
 
                       {/* Image */}
-                      <motion.div
+                      <m.div
                         className="w-full md:w-1/2"
                         whileHover={{ scale: 1.01 }}
                       >
@@ -405,7 +436,7 @@ const AboutSettings = ({
                         />
                         {tab.photo && (
                           <>
-                            <motion.div
+                            <m.div
                               className="flex justify-center mt-2"
                               whileHover={{ scale: 1.05 }}
                             >
@@ -415,38 +446,38 @@ const AboutSettings = ({
                                 className="h-20 object-contain transition-all duration-200 rounded cursor-pointer"
                                 onClick={() => setEnlargedPhoto(tab.photo)}
                               />
-                            </motion.div>
+                            </m.div>
                           </>
                         )}
-                      </motion.div>
-                    </motion.div>
+                      </m.div>
+                    </m.div>
                   </TabsContent>
                 ))}
               </Tabs>
-            </motion.div>
+            </m.div>
           </CardContent>
         </Card>
-      </motion.div>
+      </m.div>
 
       {/* Nos académies */}
-      <motion.div variants={cardVariants}>
+      <m.div variants={cardVariants}>
         <Card>
           <CardHeader>
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <CardTitle>{t("academies.title")}</CardTitle>
-            </motion.div>
-            <motion.p
+            </m.div>
+            <m.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
               {t("academies.description")}
-            </motion.p>
+            </m.p>
           </CardHeader>
 
           <CardContent>
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <Tabs defaultValue="1" className="w-full">
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -455,7 +486,7 @@ const AboutSettings = ({
                     <TabsTrigger value="2">{t("academies.tab2")}</TabsTrigger>
                     <TabsTrigger value="3">{t("academies.tab3")}</TabsTrigger>
                   </TabsList>
-                </motion.div>
+                </m.div>
 
                 {[1, 2, 3].map((num) => {
                   const name =
@@ -501,14 +532,14 @@ const AboutSettings = ({
                       value={String(num)}
                       className="space-y-6"
                     >
-                      <motion.div
+                      <m.div
                         className="flex flex-col md:flex-row gap-4 items-start"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 * num }}
                       >
                         {/* Texte */}
-                        <motion.div
+                        <m.div
                           className="w-full md:w-1/2 space-y-4"
                           whileHover={{ scale: 1.01 }}
                         >
@@ -529,21 +560,23 @@ const AboutSettings = ({
                               {t("academiesDesc1")}
                             </label>
                             <textarea
-                              rows={5}
-                              className="w-full border rounded p-2"
+                              className="w-full border rounded p-2 resize-none overflow-hidden"
                               value={description[language]}
                               onChange={(e) =>
-                                setDescription({
-                                  ...description,
-                                  [language]: e.target.value,
-                                })
+                                handleTextareaChange(
+                                  e,
+                                  description,
+                                  setDescription
+                                )
                               }
+                              onFocus={(e) => adjustTextareaHeight(e.target)}
+                              style={{ minHeight: "100px" }}
                             />
                           </div>
-                        </motion.div>
+                        </m.div>
 
                         {/* Image */}
-                        <motion.div
+                        <m.div
                           className="w-full md:w-1/2"
                           whileHover={{ scale: 1.01 }}
                         >
@@ -568,139 +601,138 @@ const AboutSettings = ({
                               const filePath = await uploadImageFile(file);
                               if (filePath) {
                                 setPhoto(filePath);
-                                toast.success(t("academiesUploadSuccess1"));
+                                toast.success("Image chargée avec succès !");
                               }
+                              e.target.value = "";
                             }}
                           />
                           {photo && (
-                            <>
-                              <motion.div
-                                className="flex justify-center mt-2"
-                                whileHover={{ scale: 1.05 }}
-                              >
-                                <img
-                                  src={photo}
-                                  alt={t("academies.photoLabel")}
-                                  className="h-20 object-contain rounded cursor-pointer"
-                                  onClick={() => setEnlargedPhoto(photo)}
-                                />
-                              </motion.div>
-                            </>
+                            <m.div
+                              className="flex justify-center mt-2"
+                              whileHover={{ scale: 1.05 }}
+                            >
+                              <img
+                                src={photo}
+                                alt={t("academies.photoLabel")}
+                                className="h-20 object-contain rounded cursor-pointer"
+                                onClick={() => setEnlargedPhoto(photo)}
+                              />
+                            </m.div>
                           )}
-                        </motion.div>
-                      </motion.div>
+                        </m.div>
+                      </m.div>
                     </TabsContent>
                   );
                 })}
               </Tabs>
-            </motion.div>
+            </m.div>
           </CardContent>
         </Card>
-      </motion.div>
+      </m.div>
 
       {/* Nos valeurs */}
-      <motion.div variants={cardVariants}>
+      <m.div variants={cardVariants}>
         <Card>
           <CardHeader>
-            <motion.div variants={itemVariants}>
+            <m.div variants={itemVariants}>
               <CardTitle>{t("valuesTitle")}</CardTitle>
-            </motion.div>
-            <motion.p
+            </m.div>
+            <m.p
               className="text-sm text-gray-600 dark:text-gray-400 mt-1"
               variants={itemVariants}
             >
               {t("valuesDescription")}
-            </motion.p>
+            </m.p>
           </CardHeader>
 
-          <CardContent className="space-y-4">
-            <motion.div variants={containerVariants} className="space-y-4">
-              {[1, 2, 3].map((num) => {
-                const titleKey = VALUE_TITLE_KEYS[num];
-                const descKey = VALUE_DESC_KEYS[num];
-                const titlePlaceholderKey = VALUE_TITLE_PLACEHOLDERS[num];
-                const descPlaceholderKey = VALUE_DESC_PLACEHOLDERS[num];
-
-                const valueObj =
-                  num === 1
-                    ? { data: valueTitle1, setter: setValueTitle1 }
-                    : num === 2
-                    ? { data: valueTitle2, setter: setValueTitle2 }
-                    : { data: valueTitle3, setter: setValueTitle3 };
-
-                const descObj =
-                  num === 1
-                    ? { data: valueDesc1, setter: setValueDesc1 }
-                    : num === 2
-                    ? { data: valueDesc2, setter: setValueDesc2 }
-                    : { data: valueDesc3, setter: setValueDesc3 };
-
-                return (
-                  <motion.div
-                    key={num}
-                    className="border rounded-lg px-5 py-4 bg-white dark:bg-gray-900 shadow-sm"
-                    variants={itemVariants}
-                    whileHover={
-                      {
-                        /* … */
+          <CardContent>
+            <m.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              variants={containerVariants}
+            >
+              {[
+                {
+                  id: 1,
+                  title: valueTitle1,
+                  setTitle: setValueTitle1,
+                  data: valueDesc1,
+                  setter: setValueDesc1,
+                },
+                {
+                  id: 2,
+                  title: valueTitle2,
+                  setTitle: setValueTitle2,
+                  data: valueDesc2,
+                  setter: setValueDesc2,
+                },
+                {
+                  id: 3,
+                  title: valueTitle3,
+                  setTitle: setValueTitle3,
+                  data: valueDesc3,
+                  setter: setValueDesc3,
+                },
+              ].map((valueObj) => (
+                <m.div
+                  key={valueObj.id}
+                  className="p-4 rounded-lg border bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200"
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 10,
+                  }}
+                >
+                  <div className="mb-2">
+                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                      {t(VALUE_TITLE_KEYS[valueObj.id])}
+                    </label>
+                    <Input
+                      value={valueObj.title[language]}
+                      onChange={(e) =>
+                        valueObj.setTitle({
+                          ...valueObj.title,
+                          [language]: e.target.value,
+                        })
                       }
-                    }
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    {/* Titre */}
-                    <div className="mb-3">
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                        {t(titleKey)} ({language})
-                      </label>
-                      <Input
-                        value={valueObj.data[language]}
-                        onChange={(e) =>
-                          valueObj.setter({
-                            ...valueObj.data,
-                            [language]: e.target.value,
-                          })
-                        }
-                        className="mt-1 border rounded-md p-2 w-full"
-                        placeholder={t(titlePlaceholderKey)}
-                      />
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                        {t(descKey)} ({language})
-                      </label>
-                      <textarea
-                        rows={4}
-                        className="mt-1 border rounded-md p-2 w-full text-sm"
-                        value={descObj.data[language]}
-                        onChange={(e) =>
-                          descObj.setter({
-                            ...descObj.data,
-                            [language]: e.target.value,
-                          })
-                        }
-                        placeholder={t(descPlaceholderKey)}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+                      placeholder={t(VALUE_TITLE_PLACEHOLDERS[valueObj.id])}
+                      className="border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">
+                      {t(VALUE_DESC_KEYS[valueObj.id])}
+                    </label>
+                    <textarea
+                      className="mt-1 border rounded-md p-2 w-full text-sm resize-none overflow-hidden"
+                      value={valueObj.data[language]}
+                      onChange={(e) =>
+                        handleTextareaChange(e, valueObj.data, valueObj.setter)
+                      }
+                      onFocus={(e) => adjustTextareaHeight(e.target)}
+                      placeholder={t(VALUE_DESC_PLACEHOLDERS[valueObj.id])}
+                      style={{ minHeight: "80px" }}
+                    />
+                  </div>
+                </m.div>
+              ))}
+            </m.div>
           </CardContent>
         </Card>
-      </motion.div>
+      </m.div>
 
+      {/* Modal pour l'agrandissement des images */}
       <AnimatePresence>
         {enlargedPhoto && (
           <ImageModal
             src={enlargedPhoto}
-            alt={t("close")}
+            alt="Image agrandie"
             onClose={() => setEnlargedPhoto(null)}
           />
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 };
 
