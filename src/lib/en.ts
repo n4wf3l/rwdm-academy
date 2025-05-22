@@ -1583,7 +1583,7 @@ export const translationsEN = {
   rejection: "Rejection",
   "api.settings.title": "API Settings",
   "api.settings.description":
-    "Configure the API settings to connect to the RWDM API.",
+    "Change your Pro Soccer Data API connection details. You'll find the information you need in the Pro Soccer Data control panel, in the Club API menu.",
   "api.settings.baseUrl": "Base URL",
   "api.settings.clubKey": "Club Key",
   "api.settings.apiKey": "API Key",

@@ -1689,7 +1689,7 @@ export const translationsFR = {
   rejection: "Refus",
   "api.settings.title": "Paramètres API Pro Soccer Data",
   "api.settings.description":
-    "Modifiez les informations de connexion à l'API Pro Soccer Data.",
+    "Modifiez les informations de connexion à l'API Pro Soccer Data. Vous trouverez les informations nécessaires dans le panneau de contrôle de Pro Soccer Data, dans le menu Club API.",
   "api.settings.baseUrl": "URL de l'API",
   "api.settings.clubKey": "Clé du club",
   "api.settings.apiKey": "Clé API",

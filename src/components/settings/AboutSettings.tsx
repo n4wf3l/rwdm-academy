@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const AboutSettings = ({
@@ -147,6 +147,7 @@ const AboutSettings = ({
     show: { opacity: 1, x: 0 },
   };
 
+  // État pour stocker l'image agrandie
   const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
   const VALUE_TITLE_KEYS = {
     1: "value1Title",
@@ -168,6 +169,44 @@ const AboutSettings = ({
     2: "value2DescriptionPlaceholder",
     3: "value3DescriptionPlaceholder",
   } as const;
+
+  // Définition de la modal image améliorée
+  const ImageModal = ({ src, alt, onClose }) => {
+    const handleModalClick = () => {
+      onClose();
+    };
+
+    return (
+      <motion.div
+        className="fixed inset-0 top-0 left-0 right-0 bottom-0 w-full h-full z-[9999] flex items-center justify-center"
+        style={{
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          margin: 0,
+          padding: 0,
+          overflow: "hidden",
+          position: "fixed",
+        }}
+        onClick={handleModalClick}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.img
+          src={src}
+          alt={alt || "Image agrandie"}
+          className="max-w-[90vw] max-h-[90vh] rounded shadow-lg"
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0.9 }}
+          transition={{ type: "spring", damping: 15 }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        />
+      </motion.div>
+    );
+  };
+
   return (
     <motion.div
       className="space-y-6"
@@ -377,25 +416,6 @@ const AboutSettings = ({
                                 onClick={() => setEnlargedPhoto(tab.photo)}
                               />
                             </motion.div>
-
-                            {enlargedPhoto === tab.photo && (
-                              <motion.div
-                                className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 cursor-pointer"
-                                onClick={() => setEnlargedPhoto(null)}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                              >
-                                <motion.img
-                                  src={tab.photo}
-                                  alt="Agrandissement"
-                                  className="max-w-[90vw] max-h-[90vh] rounded shadow-lg"
-                                  initial={{ scale: 0.9 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{ type: "spring" }}
-                                />
-                              </motion.div>
-                            )}
                           </>
                         )}
                       </motion.div>
@@ -565,25 +585,6 @@ const AboutSettings = ({
                                   onClick={() => setEnlargedPhoto(photo)}
                                 />
                               </motion.div>
-
-                              {enlargedPhoto === photo && (
-                                <motion.div
-                                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 cursor-pointer"
-                                  onClick={() => setEnlargedPhoto(null)}
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                >
-                                  <motion.img
-                                    src={photo}
-                                    alt={t("academies.photoLabel")}
-                                    className="max-w-[90vw] max-h-[90vh] rounded shadow-lg"
-                                    initial={{ scale: 0.9 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ type: "spring" }}
-                                  />
-                                </motion.div>
-                              )}
                             </>
                           )}
                         </motion.div>
@@ -689,6 +690,16 @@ const AboutSettings = ({
           </CardContent>
         </Card>
       </motion.div>
+
+      <AnimatePresence>
+        {enlargedPhoto && (
+          <ImageModal
+            src={enlargedPhoto}
+            alt={t("close")}
+            onClose={() => setEnlargedPhoto(null)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
