@@ -1687,4 +1687,43 @@ export const translationsFR = {
   accident_notify: "Notification d'accident (Union)",
   healing_notify: "Notification de guérison (Union)",
   rejection: "Refus",
+  "api.settings.title": "Paramètres API Pro Soccer Data",
+  "api.settings.description":
+    "Modifiez les informations de connexion à l'API Pro Soccer Data.",
+  "api.settings.baseUrl": "URL de l'API",
+  "api.settings.clubKey": "Clé du club",
+  "api.settings.apiKey": "Clé API",
+  "api.settings.apiSecret": "Secret API (bearer token)",
+  "api.settings.secretNote":
+    "Laissez ce champ vide pour conserver le secret actuel.",
+  "api.settings.loadError": "Erreur de chargement",
+  "api.settings.loadErrorDetails": "Impossible de charger les paramètres API.",
+  "api.settings.saveSuccess": "Paramètres enregistrés",
+  "api.settings.saveError": "Erreur d'enregistrement",
+  "api.settings.saveErrorDetails":
+    "Impossible d'enregistrer les paramètres API.",
+  "api.settings.validationError": "Champs obligatoires",
+  "api.settings.requiredFields":
+    "Veuillez remplir tous les champs obligatoires.",
+  "api.settings.testConnection": "Tester la connexion",
+  "api.settings.testing": "Test en cours...",
+  "api.settings.testSuccess": "Connexion réussie",
+  "api.settings.testFailed": "Échec de connexion",
+  "api.settings.testError": "Erreur de test",
+  "api.settings.testErrorDetails": "Impossible de tester la connexion API.",
+  "api.success":
+    "Connexion réussie avec Pro Soccer Data! Vos paramètres API fonctionnent correctement.",
+  "contactForm.emailDisclaimer":
+    "L'email fourni est utilisé uniquement pour le rendu sur le site web, mais n'est en aucun cas l'email pour les envois automatiques.",
+  "auth.accessBlocked": "BLOCAGE DIRECT: Admin tente d'accéder à Settings",
+  "auth.tokenError": "Erreur token",
+  "maintenance.toggled": "Mode maintenance {{status}}.",
+  "maintenance.enabled": "activé",
+  "maintenance.disabled": "désactivé",
+  "maintenance.toggleError": "Impossible de changer le mode maintenance.",
+  "settings.saveSuccess": "Les paramètres ont été enregistrés !",
+  "settings.serverError": "Erreur serveur : {{error}}",
+  "common.unknown": "inconnue",
+  "logout.success": "Déconnexion réussie",
+  "logout.message": "Vous avez été déconnecté.",
 };

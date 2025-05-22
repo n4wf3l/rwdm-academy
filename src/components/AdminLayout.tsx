@@ -161,8 +161,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   const confirmLogout = () => {
     localStorage.removeItem("token");
     toast({
-      title: "Déconnexion réussie",
-      description: "Vous avez été déconnecté.",
+      title: t("logout.success"),
+      description: t("logout.message"),
     });
     setTimeout(() => {
       navigate("/");

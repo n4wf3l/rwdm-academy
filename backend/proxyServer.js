@@ -1,32 +1,51 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const db = require("./db"); // Assurez-vous d'avoir la configuration DB
 
 const app = express();
 const PORT = 5001; // Port du serveur proxy
 
-// Activer CORS pour autoriser toutes les origines
 app.use(cors());
+app.use(express.json());
 
-const BASE_API_URL = "https://clubapi.prosoccerdata.com";
-const CLUB_KEY = "ewlcdd1fdhooj8pm8qyzj98kvrrxh6hn";
-const API_KEY = "3UMU0HpTYjafC8lITNAt1812UJdx67Nq30pjbCtQ";
-const API_SECRET =
-  "bearer gngz3n0kvrchsqx1r7is3yjg2d1m0uuhqroagwcxhze6vhk7ddffelrevzgjjufq";
+// Fonction pour récupérer les paramètres API de la base de données
+async function getApiSettings() {
+  try {
+    const [rows] = await db.execute(
+      "SELECT * FROM api_settings ORDER BY id DESC LIMIT 1"
+    );
+    if (rows.length === 0) {
+      throw new Error("Paramètres API non trouvés");
+    }
+    return rows[0];
+  } catch (error) {
+    console.error("Erreur lors de la récupération des paramètres API:", error);
 
-async function fetchAllInvoices(teamIds) {
+    // Utiliser les valeurs hardcodées en fallback
+    return {
+      base_url: "https://clubapi.prosoccerdata.com",
+      club_key: "ewlcdd1fdhooj8pm8qyzj98kvrrxh6hn",
+      api_key: "3UMU0HpTYjafC8lITNAt1812UJdx67Nq30pjbCtQ",
+      api_secret:
+        "bearer gngz3n0kvrchsqx1r7is3yjg2d1m0uuhqroagwcxhze6vhk7ddffelrevzgjjufq",
+    };
+  }
+}
+
+async function fetchAllInvoices(baseUrl, clubKey, apiKey, apiSecret, teamIds) {
   let allInvoices = [];
   let currentPage = 1;
   let totalPages = 1;
 
   do {
     const response = await axios.get(
-      `${BASE_API_URL}/finances/overview/memberduesinvoices`,
+      `${baseUrl}/finances/overview/memberduesinvoices`,
       {
         headers: {
-          "x-api-club": CLUB_KEY,
-          "x-api-key": API_KEY,
-          Authorization: API_SECRET,
+          "x-api-club": clubKey,
+          "x-api-key": apiKey,
+          Authorization: apiSecret,
           "Content-Type": "application/json",
         },
         params: {
@@ -71,25 +90,34 @@ async function fetchAllInvoices(teamIds) {
 // Endpoint mis à jour pour renvoyer directement le tableau complet de factures
 app.get("/api/members-dues", async (req, res) => {
   try {
-    // Récupérer toutes les équipes pour obtenir leurs identifiants
-    const teamsResponse = await axios.get(`${BASE_API_URL}/teams/all`, {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    // Récupérer toutes les équipes
+    const teamsResponse = await axios.get(`${settings.base_url}/teams/all`, {
       headers: {
         "Accept-Language": "fr-FR",
-        "x-api-club": CLUB_KEY,
-        "x-api-key": API_KEY,
-        Authorization: API_SECRET,
+        "x-api-club": settings.club_key,
+        "x-api-key": settings.api_key,
+        Authorization: settings.api_secret,
         "Content-Type": "application/json",
       },
     });
 
-    // Extraction en tenant compte d'une éventuelle structure { items: [...] }
+    // Extraction des équipes
     const teamsData = teamsResponse.data.items || teamsResponse.data;
     const teamIds = Array.isArray(teamsData)
       ? teamsData.map((team) => team.id)
       : [];
 
     // Récupérer toutes les factures en parcourant toutes les pages
-    const allInvoices = await fetchAllInvoices(teamIds);
+    const allInvoices = await fetchAllInvoices(
+      settings.base_url,
+      settings.club_key,
+      settings.api_key,
+      settings.api_secret,
+      teamIds
+    );
 
     // Renvoi uniquement du tableau d'invoices (sans infos de pagination)
     res.json(allInvoices);
@@ -206,6 +234,10 @@ app.get("/api/teams/:id/members", async (req, res) => {
     res.status(500).json({ message: "Impossible de récupérer les membres" });
   }
 });
+
+// Ajouter le router des paramètres API
+const apiSettingsRouter = require("./routes/apiSettings");
+app.use("/api/api-settings", apiSettingsRouter);
 
 // Lancer le serveur proxy
 app.listen(PORT, () => {

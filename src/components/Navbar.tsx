@@ -157,8 +157,8 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
 
     // 2) On affiche le toast
     toast({
-      title: "Déconnexion réussie",
-      description: "Vous avez été déconnecté.",
+      title: t("logout.success"),
+      description: t("logout.message"),
     });
 
     // 3) On redirige

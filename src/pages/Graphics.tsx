@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronUp,
   Loader,
+  Settings,
 } from "lucide-react";
 import {
   BarChart,
@@ -40,6 +41,7 @@ import { motion } from "framer-motion";
 import ApiKeyModal from "@/components/ApiKeyModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import OverduePaymentsModal from "@/components/graphics/OverduePaymentsModal";
+import ApiSettingsModal from "@/components/graphics/ApiSettingsModal";
 
 // Normalise "Eagles ... Academy" → "BEFA …"
 function normalizeBEFA(raw: string): string {
@@ -266,6 +268,7 @@ const Graphics: React.FC = () => {
   // 1. Ajoutez ces états pour gérer la modal de retards
   const [overdueInvoices, setOverdueInvoices] = useState<any[]>([]);
   const [overdueModalOpen, setOverdueModalOpen] = useState(false);
+  const [apiSettingsModalOpen, setApiSettingsModalOpen] = useState(false);
 
   return (
     <AdminLayout newRequestsCount={newReqCount}>
@@ -307,15 +310,42 @@ const Graphics: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
+            <Button
+              variant="outline"
+              className={`flex items-center gap-2 font-medium transition-all ${
                 apiActive
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
+                  ? "bg-green-50 text-green-700 hover:bg-green-600 border-green-200"
+                  : "bg-red-50 text-red-700 hover:bg-red-600 border-red-200"
               }`}
+              onClick={() => setApiSettingsModalOpen(true)}
+              title={t("api.settings.title")}
             >
-              {apiActive ? t("apiActive") : t("apiUnavailable")}
-            </span>
+              {apiActive ? (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 12h14M12 5l7 7-7 7"
+                    />
+                  </svg>
+                  {t("apiActive")}
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="h-5 w-5" />
+                  {t("apiUnavailable")}
+                </>
+              )}
+              <Settings className="h-4 w-4 ml-1 opacity-70" />
+            </Button>
           </motion.div>
         </motion.div>
 
@@ -694,6 +724,29 @@ const Graphics: React.FC = () => {
           open={overdueModalOpen}
           onClose={() => setOverdueModalOpen(false)}
           overdueInvoices={overdueInvoices}
+        />
+        <ApiSettingsModal
+          open={apiSettingsModalOpen}
+          onClose={() => setApiSettingsModalOpen(false)}
+          onSave={() => {
+            setApiSettingsModalOpen(false);
+            // Recharger les données après mise à jour des paramètres API
+            setLoading(true);
+            fetch(API)
+              .then((r) => {
+                if (!r.ok) throw new Error(`Erreur ${r.status}`);
+                return r.json();
+              })
+              .then((data) => {
+                setApiActive(true);
+                setInvoices(Array.isArray(data) ? data : data.content || []);
+              })
+              .catch((err) => {
+                setApiActive(false);
+                console.error("Erreur API:", err);
+              })
+              .finally(() => setLoading(false));
+          }}
         />
       </motion.div>
     </AdminLayout>

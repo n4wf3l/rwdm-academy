@@ -236,11 +236,15 @@ const Settings: React.FC = () => {
       );
       setMaintenanceMode(res.data.maintenanceMode);
       toast.success(
-        `Mode maintenance ${res.data.maintenanceMode ? "activé" : "désactivé"}.`
+        `${t("maintenance.toggled")} ${t(
+          res.data.maintenanceMode
+            ? "maintenance.enabled"
+            : "maintenance.disabled"
+        )}`
       );
     } catch (err) {
       console.error(err);
-      toast.error("Impossible de changer le mode maintenance.");
+      toast.error(t("maintenance.toggleError"));
     } finally {
       setTogglingMaintenance(false);
     }
@@ -301,11 +305,13 @@ const Settings: React.FC = () => {
         formMaintenanceStates,
       };
       await axios.put("http://localhost:5000/api/settings", settingsPayload);
-      toast.success("Les paramètres ont été enregistrés !");
+      toast.success(t("settings.saveSuccess"));
     } catch (err: any) {
       console.error(err);
       toast.error(
-        `Erreur serveur : ${err.response?.data?.error || "inconnue"}`
+        `${t("settings.serverError")}: ${
+          err.response?.data?.error || t("common.unknown")
+        }`
       );
     }
   };

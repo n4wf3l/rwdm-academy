@@ -192,6 +192,8 @@ const EmailSettingsPage: React.FC = () => {
     const end = textarea.selectionEnd;
     const text = textarea.value;
     let newText = "";
+    let newSelectionStart = start;
+    let newSelectionEnd = end;
 
     switch (type) {
       case "bold":
@@ -201,6 +203,8 @@ const EmailSettingsPage: React.FC = () => {
           text.slice(start, end) +
           "</strong>" +
           text.slice(end);
+        newSelectionStart = start + 8; // <strong> length
+        newSelectionEnd = end + 8;
         break;
       case "italic":
         newText =
@@ -209,6 +213,8 @@ const EmailSettingsPage: React.FC = () => {
           text.slice(start, end) +
           "</em>" +
           text.slice(end);
+        newSelectionStart = start + 4; // <em> length
+        newSelectionEnd = end + 4;
         break;
       case "left":
         newText =
@@ -217,6 +223,8 @@ const EmailSettingsPage: React.FC = () => {
           text.slice(start, end) +
           "</div>" +
           text.slice(end);
+        newSelectionStart = start + 28; // <div style="text-align: left"> length
+        newSelectionEnd = end + 28;
         break;
       case "center":
         newText =
@@ -225,6 +233,8 @@ const EmailSettingsPage: React.FC = () => {
           text.slice(start, end) +
           "</div>" +
           text.slice(end);
+        newSelectionStart = start + 30; // <div style="text-align: center"> length
+        newSelectionEnd = end + 30;
         break;
       case "right":
         newText =
@@ -233,21 +243,68 @@ const EmailSettingsPage: React.FC = () => {
           text.slice(start, end) +
           "</div>" +
           text.slice(end);
+        newSelectionStart = start + 29; // <div style="text-align: right"> length
+        newSelectionEnd = end + 29;
         break;
       case "color":
         if (value) {
-          newText =
-            text.slice(0, start) +
-            `<span style="color: ${value}">` +
-            text.slice(start, end) +
-            "</span>" +
-            text.slice(end);
+          // Vérifier si le texte sélectionné est déjà dans une balise de couleur
+          const beforeSelection = text.slice(0, start);
+          const selectedText = text.slice(start, end);
+          const afterSelection = text.slice(end);
+
+          // Regex pour détecter une balise span de couleur qui englobe exactement la sélection
+          const colorSpanRegex =
+            /<span style="color: (#[0-9A-Fa-f]{6}|rgb\(\d+,\s*\d+,\s*\d+\))">([^<]+)<\/span>/g;
+
+          let match;
+          let found = false;
+          let lastMatchIndex = -1;
+
+          // Chercher dans le texte avant la sélection
+          while ((match = colorSpanRegex.exec(beforeSelection)) !== null) {
+            const matchEnd = match.index + match[0].length;
+            if (matchEnd === start && match[2] === selectedText) {
+              found = true;
+              lastMatchIndex = match.index;
+              break;
+            }
+          }
+
+          if (found) {
+            // Remplacer la couleur existante
+            const openTag = beforeSelection.slice(0, lastMatchIndex);
+            const closeTag = afterSelection;
+            newText = `${openTag}<span style="color: ${value}">${selectedText}</span>${closeTag}`;
+            newSelectionStart =
+              lastMatchIndex + `<span style="color: ${value}">`.length;
+            newSelectionEnd = newSelectionStart + selectedText.length;
+          } else {
+            // Ajouter une nouvelle balise de couleur
+            newText =
+              text.slice(0, start) +
+              `<span style="color: ${value}">` +
+              text.slice(start, end) +
+              "</span>" +
+              text.slice(end);
+            newSelectionStart = start + `<span style="color: ${value}>`.length;
+            newSelectionEnd = newSelectionStart + (end - start);
+          }
         }
         break;
     }
 
     if (newText) {
       handleChange(activeTab, "body", newText);
+
+      // Restaurer la sélection après le rendu
+      setTimeout(() => {
+        const newTextarea = document.querySelector("textarea");
+        if (newTextarea) {
+          newTextarea.focus();
+          newTextarea.setSelectionRange(newSelectionStart, newSelectionEnd);
+        }
+      }, 0);
     }
   };
 

@@ -677,6 +677,9 @@ const GeneralSettings: React.FC<Props> = ({
                 onChange={(e) => setEmail(e.target.value)}
                 className="rounded-md border p-2 transition-all duration-200"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {t("contactForm.emailDisclaimer")}
+              </p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 10 }}

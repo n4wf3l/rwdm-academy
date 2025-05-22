@@ -1581,4 +1581,43 @@ export const translationsEN = {
   accident_notify: "Accident Notification (Union)",
   healing_notify: "Recovery Notification (Union)",
   rejection: "Rejection",
+  "api.settings.title": "API Settings",
+  "api.settings.description":
+    "Configure the API settings to connect to the RWDM API.",
+  "api.settings.baseUrl": "Base URL",
+  "api.settings.clubKey": "Club Key",
+  "api.settings.apiKey": "API Key",
+  "api.settings.apiSecret": "API Secret",
+  "api.settings.secretNote":
+    "This is a secret key used to authenticate API requests.",
+  "api.settings.loadError": "Unable to load settings",
+  "api.settings.loadErrorDetails": "Unable to load API settings.",
+  "api.settings.saveSuccess": "Settings saved successfully",
+  "api.settings.saveError": "Unable to save settings",
+  "api.settings.saveErrorDetails":
+    "Unable to save API settings. Please check your input.",
+  "api.settings.validationError": "Invalid input",
+  "api.settings.requiredFields": "Please fill in all required fields.",
+  "api.settings.testConnection": "Test connection",
+  "api.settings.testing": "Testing…",
+  "api.settings.testSuccess": "Connection successful",
+  "api.settings.testFailed": "Connection failed",
+  "api.settings.testError": "Unable to test connection",
+  "api.settings.testErrorDetails":
+    "Unable to connect to the API. Please check your settings.",
+  "api.success":
+    "Successful connection with Pro Soccer Data! Your API settings are working correctly.",
+  "contactForm.emailDisclaimer":
+    "Please note that this email address is not monitored. For any inquiries, please use the contact form.",
+  "auth.accessBlocked": "Access blocked",
+  "auth.tokenError": "Token error",
+  "maintenance.toggled": "Maintenance mode changed",
+  "maintenance.enabled": "enabled",
+  "maintenance.disabled": "disabled",
+  "maintenance.toggleError": "Error toggling maintenance mode",
+  "settings.saveSuccess": "Settings saved successfully",
+  "settings.serverError": "Server error",
+  "common.unknown": "Unknown",
+  "logout.success": "Logout successful",
+  "logout.message": "You have been logged out.",
 };
