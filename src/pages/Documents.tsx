@@ -501,7 +501,10 @@ const Documents = () => {
 
     try {
       const zip = new JSZip();
-      const selectedDocs = filteredDocuments.filter((doc) =>
+
+      // CHANGEMENT ICI: utiliser documents au lieu de filteredDocuments
+      // Ainsi, on récupère tous les documents, même ceux des autres pages
+      const selectedDocs = documents.filter((doc) =>
         selectedDocuments.has(doc.id)
       );
 
