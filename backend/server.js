@@ -850,19 +850,23 @@ app.delete("/api/appointments/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const connection = await mysql.createConnection(dbConfig);
-    const [result] = await connection.execute(
-      "DELETE FROM appointments WHERE id = ?",
+    // Vérifier si le rendez-vous existe
+    const [appointment] = await connection.execute(
+      "SELECT * FROM appointments WHERE id = ?",
       [id]
     );
-    await connection.end();
-    if (result.affectedRows > 0) {
-      res.json({ message: "Rendez-vous annulé avec succès" });
-    } else {
-      res.status(404).json({ message: "Rendez-vous non trouvé" });
+
+    if (!appointment || appointment.length === 0) {
+      return res.status(404).json({ error: "Rendez-vous non trouvé" });
     }
+
+    // Suppression
+    await connection.execute("DELETE FROM appointments WHERE id = ?", [id]);
+
+    res.status(200).json({ message: "Rendez-vous supprimé avec succès" });
   } catch (error) {
-    console.error("Erreur lors de l'annulation du rendez-vous :", error);
-    res.status(500).json({ message: "Erreur serveur" });
+    console.error("Erreur lors de la suppression:", error);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 

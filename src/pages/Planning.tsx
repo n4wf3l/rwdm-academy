@@ -91,6 +91,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const Planning = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isArchiveMode, setIsArchiveMode] = useState(false);
   const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
@@ -114,7 +115,6 @@ const Planning = () => {
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [newRequestsCount, setNewRequestsCount] = useState(0);
   const [adminFilter, setAdminFilter] = useState<string>("all");
-  const [archiveMode, setArchiveMode] = useState(false);
   const location = useLocation();
   const { toast } = useToast();
 
@@ -476,6 +476,14 @@ const Planning = () => {
     }
   };
 
+  // Ajouter cette fonction pour gérer la suppression
+  const handleAppointmentsDeleted = (deletedIds: string[]) => {
+    // Filtrer les rendez-vous supprimés de l'état local
+    setAppointments((prevAppointments) =>
+      prevAppointments.filter((appt) => !deletedIds.includes(appt.id))
+    );
+  };
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <motion.div
@@ -517,18 +525,18 @@ const Planning = () => {
             transition={{ delay: 0.3 }}
           >
             <Button
-              variant={archiveMode ? "default" : "outline"}
-              className={archiveMode ? "bg-amber-600 hover:bg-amber-700" : ""}
-              onClick={() => setArchiveMode(!archiveMode)}
+              variant={isArchiveMode ? "default" : "outline"}
+              className={isArchiveMode ? "bg-amber-600 hover:bg-amber-700" : ""}
+              onClick={() => setIsArchiveMode(!isArchiveMode)}
             >
               <Archive className="mr-2 h-4 w-4" />
-              {archiveMode ? t("exitArchiveMode") : t("archiveMode")}
+              {isArchiveMode ? t("exitArchiveMode") : t("archiveMode")}
             </Button>
 
             <Button
               className="bg-rwdm-blue"
               onClick={() => setIsScheduleModalOpen(true)}
-              disabled={archiveMode}
+              disabled={isArchiveMode}
             >
               <Plus className="mr-2 h-4 w-4" />
               {t("add_appointment")}
@@ -537,7 +545,7 @@ const Planning = () => {
         </motion.div>
 
         {/* Remplacement conditionnel de la section Tabs par la liste des rendez-vous archivés */}
-        {archiveMode ? (
+        {isArchiveMode ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -546,8 +554,9 @@ const Planning = () => {
           >
             <ListOfAllAppointments
               appointments={appointments}
-              onExitArchiveMode={() => setArchiveMode(false)}
+              onExitArchiveMode={() => setIsArchiveMode(false)}
               getAppointmentBadge={getAppointmentBadge}
+              onAppointmentsDeleted={handleAppointmentsDeleted} // Ajouter ce prop
             />
           </motion.div>
         ) : (

@@ -23,6 +23,7 @@ interface ListOfAllAppointmentsProps {
   appointments: Appointment[];
   onExitArchiveMode: () => void;
   getAppointmentBadge: (type: string) => JSX.Element;
+  onAppointmentsDeleted?: (deletedIds: string[]) => void; // Ajout de cette prop
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -31,6 +32,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
   appointments,
   onExitArchiveMode,
   getAppointmentBadge,
+  onAppointmentsDeleted, // Nouveau callback
 }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -266,29 +268,78 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
       URL.revokeObjectURL(url);
 
       // Supprimer les rendez-vous archivés de la base de données
-      for (const apptId of selectedAppointments) {
+      try {
+        // Convertir tous les IDs en nombres si nécessaire
+        const deletedIds = Array.from(selectedAppointments);
+
         try {
-          await fetch(`http://localhost:5000/api/appointments/${apptId}`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
+          const deletionPromises = deletedIds.map(async (apptId) => {
+            const response = await fetch(
+              `http://localhost:5000/api/appointments/${apptId}`,
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `Échec de suppression du rendez-vous ${apptId}: ${response.statusText}`
+              );
+            }
+
+            return apptId;
+          });
+
+          // Attendre que toutes les suppressions soient terminées
+          await Promise.all(deletionPromises);
+
+          // Mettre à jour l'état local IMMÉDIATEMENT
+          // Filtrer directement les rendez-vous archivés de l'affichage
+          appointments = appointments.filter(
+            (appt) => !selectedAppointments.has(appt.id)
+          );
+
+          // Maintenant appeler le callback pour mettre à jour l'état du parent
+          if (onAppointmentsDeleted) {
+            onAppointmentsDeleted(deletedIds);
+          }
+
+          // Réinitialiser la sélection
+          setSelectedAppointments(new Set());
+
+          console.log(
+            `✅ ${deletedIds.length} rendez-vous supprimés avec succès`
+          );
+
+          toast({
+            title: "Archive créée avec succès",
+            description: `${deletedIds.length} rendez-vous ont été archivés et supprimés.`,
           });
         } catch (error) {
           console.error(
-            `Erreur lors de la suppression du rendez-vous ${apptId}:`,
+            "Erreur lors de la suppression des rendez-vous:",
             error
           );
+          toast({
+            title: "Attention",
+            description:
+              "Les rendez-vous ont été archivés mais certains n'ont pas pu être supprimés.",
+            variant: "destructive",
+          });
         }
+      } catch (error) {
+        console.error("Erreur lors de l'archivage :", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'archivage.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsArchiving(false);
       }
-
-      toast({
-        title: "Archive créée avec succès",
-        description: `${selectedAppointments.size} rendez-vous ont été archivés et supprimés.`,
-      });
-
-      // Réinitialiser la sélection
-      setSelectedAppointments(new Set());
     } catch (error) {
       console.error("Erreur lors de l'archivage :", error);
       toast({
