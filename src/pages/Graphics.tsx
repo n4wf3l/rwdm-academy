@@ -485,7 +485,10 @@ const Graphics: React.FC = () => {
                     color: "text-green-500",
                     value: filtered
                       .reduce((s, i) => s + parseFloat(i.totalAmount || "0"), 0)
-                      .toLocaleString(),
+                      .toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }),
                   },
                   {
                     title: t("stats.totalPaid"),
@@ -493,7 +496,10 @@ const Graphics: React.FC = () => {
                     color: "text-blue-500",
                     value: filtered
                       .reduce((s, i) => s + parseFloat(i.paidAmount || "0"), 0)
-                      .toLocaleString(),
+                      .toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }),
                   },
                   {
                     title: t("stats.unpaid"),
@@ -507,7 +513,10 @@ const Graphics: React.FC = () => {
                             parseFloat(i.paidAmount || "0")),
                         0
                       )
-                      .toLocaleString(),
+                      .toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }),
                   },
                   {
                     title: t("stats.overdue"),

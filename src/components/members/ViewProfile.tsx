@@ -141,69 +141,67 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
         </DialogHeader>
 
         {/* Changer mot de passe */}
-        {isSelf && (
-          <AnimatePresence mode="wait">
-            {!isChangingPassword ? (
-              <motion.div
-                key="show-button"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
+        <AnimatePresence mode="wait">
+          {!isChangingPassword ? (
+            <motion.div
+              key="show-button"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
+            >
+              <Button
+                variant="outline"
+                onClick={() => setIsChangingPassword(true)}
+                className="w-full"
               >
-                <Button
-                  variant="outline"
-                  onClick={() => setIsChangingPassword(true)}
-                  className="w-full"
-                >
-                  {t("change_password")}
+                {t("change_password")}
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="change-password"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
+            >
+              <p className="mb-3 text-sm text-gray-600">
+                {t("enter_new_password")}
+              </p>
+              <Input
+                type="password"
+                placeholder={t("new_password")}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mb-3"
+              />
+              <Input
+                type="password"
+                placeholder={t("confirm_password")}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mb-3"
+              />
+              <div className="flex gap-3">
+                <Button onClick={handlePasswordUpdate} className="flex-1">
+                  {t("update")}
                 </Button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="change-password"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
-              >
-                <p className="mb-3 text-sm text-gray-600">
-                  {t("enter_new_password")}
-                </p>
-                <Input
-                  type="password"
-                  placeholder={t("new_password")}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="mb-3"
-                />
-                <Input
-                  type="password"
-                  placeholder={t("confirm_password")}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mb-3"
-                />
-                <div className="flex gap-3">
-                  <Button onClick={handlePasswordUpdate} className="flex-1">
-                    {t("update")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setIsChangingPassword(false);
-                      setNewPassword("");
-                      setConfirmPassword("");
-                    }}
-                    className="flex-1"
-                  >
-                    {t("cancel")}
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsChangingPassword(false);
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className="flex-1"
+                >
+                  {t("cancel")}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Assignations */}
         <motion.div
