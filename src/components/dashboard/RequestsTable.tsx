@@ -187,22 +187,6 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   const { t, lang } = useTranslation();
   const [isConnected, setIsConnected] = useState(false); // Exemple d'indicateur de connexion
 
-  useEffect(() => {
-    const socket = io("http://localhost:5000");
-
-    socket.on("connect", () => {
-      setIsConnected(true);
-    });
-
-    socket.on("disconnect", () => {
-      setIsConnected(false);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
   const handleUpdateStatus = (requestId: string, newStatus: RequestStatus) => {
     // Rien ici pour "rejected", car la suppression est gérée dans Dashboard
 
