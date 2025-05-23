@@ -1009,15 +1009,16 @@ const EmailSettingsPage: React.FC = () => {
                   ref={textareaRef}
                   value={emailTemplates[activeTab]?.body || ""}
                   onChange={(e) => {
+                    // Mise à jour du contenu sans modifier automatiquement la hauteur
                     handleChange(activeTab, "body", e.target.value);
-                    // Ajustement automatique de la hauteur
-                    const textarea = e.target;
-                    textarea.style.height = "auto";
-                    textarea.style.height = `${textarea.scrollHeight}px`;
                   }}
                   placeholder={t("emails.body.placeholder")}
-                  rows={4} // Commencer avec moins de lignes
-                  className="w-full border-0 rounded-none p-4 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 overflow-hidden resize-none"
+                  rows={20} // Beaucoup plus de lignes par défaut
+                  className="w-full border-0 rounded-none p-4 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 overflow-auto resize-vertical"
+                  style={{
+                    minHeight: "400px", // Hauteur minimale fixe
+                    maxHeight: "60vh", // Hauteur maximale relative à la fenêtre
+                  }}
                 />
               )}
             </motion.div>
