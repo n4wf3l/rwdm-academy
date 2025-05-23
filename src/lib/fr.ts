@@ -1745,4 +1745,7 @@ export const translationsFR = {
   form: "Formulaire",
   "common.expand": "Agrandir",
   "common.collapse": "Réduire",
+  account_reactivated: "Compte réactivé avec succès",
+  account_not_found: "Compte non trouvé",
+  server_error: "Erreur serveur",
 };

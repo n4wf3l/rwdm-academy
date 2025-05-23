@@ -182,10 +182,10 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               type="text"
               placeholder={t("functionPlaceholder")}
               value={func}
-              maxLength={30}
+              maxLength={60}
               onChange={(e) => {
                 const value = e.target.value;
-                if (value.length <= 30) {
+                if (value.length <= 60) {
                   setFunc(value);
                 }
               }}

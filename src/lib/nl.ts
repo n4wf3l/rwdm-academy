@@ -1676,4 +1676,7 @@ export const translationsNL = {
   form: "Formulier",
   "common.expand": "Uitvouwen",
   "common.collapse": "Samenvouwen",
+  account_reactivated: "Account succesvol gereactiveerd",
+  account_not_found: "Account niet gevonden",
+  server_error: "Serverfout",
 };

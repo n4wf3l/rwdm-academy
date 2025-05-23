@@ -1638,4 +1638,7 @@ export const translationsEN = {
   form: "Form",
   "common.expand": "Expand",
   "common.collapse": "Collapse",
+  account_reactivated: "Account successfully reactivated",
+  account_not_found: "Account not found",
+  server_error: "Server error",
 };
