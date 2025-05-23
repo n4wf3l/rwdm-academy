@@ -129,51 +129,36 @@ app.get("/api/members-dues", async (req, res) => {
   }
 });
 
-app.get("/api/teams/all", async (req, res) => {
-  try {
-    const response = await axios.get(`${BASE_API_URL}/teams/all`, {
-      headers: {
-        "Accept-Language": "fr-FR",
-        "x-api-club": CLUB_KEY,
-        "x-api-key": API_KEY,
-        Authorization: API_SECRET,
-        "Content-Type": "application/json",
-      },
-    });
-    res.json(response.data);
-  } catch (error) {
-    console.error("Erreur lors de l'appel API (teams/all):", error);
-    res
-      .status(error.response?.status || 500)
-      .json({ message: "Erreur serveur lors de la récupération des équipes" });
-  }
-});
-
+// Remplacer l'endpoint player-counts actuel par celui-ci
 app.get("/api/teams/player-counts", async (req, res) => {
   try {
-    const teamsRes = await axios.get(`${BASE_API_URL}/teams/all`, {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    // Récupérer toutes les équipes
+    const teamsRes = await axios.get(`${settings.base_url}/teams/all`, {
       headers: {
         "Accept-Language": "fr-FR",
-        "x-api-club": CLUB_KEY,
-        "x-api-key": API_KEY,
-        Authorization: API_SECRET,
+        "x-api-club": settings.club_key,
+        "x-api-key": settings.api_key,
+        Authorization: settings.api_secret,
         "Content-Type": "application/json",
       },
     });
 
     const teams = teamsRes.data.items || teamsRes.data;
 
-    // Pour chaque équipe, on récupère les membres
+    // Pour chaque équipe, récupérer les membres
     const results = await Promise.all(
       teams.map(async (team) => {
         try {
           const membersRes = await axios.get(
-            `${BASE_API_URL}/teams/${team.id}/members`,
+            `${settings.base_url}/teams/${team.id}/members`,
             {
               headers: {
-                "x-api-club": CLUB_KEY,
-                "x-api-key": API_KEY,
-                Authorization: API_SECRET,
+                "x-api-club": settings.club_key,
+                "x-api-key": settings.api_key,
+                Authorization: settings.api_secret,
                 "Content-Type": "application/json",
               },
             }
@@ -188,7 +173,7 @@ app.get("/api/teams/player-counts", async (req, res) => {
             playerCount,
           };
         } catch (err) {
-          console.warn(`❌ Erreur pour l’équipe ID ${team.id}:`, err.message);
+          console.warn(`❌ Erreur pour l'équipe ID ${team.id}:`, err.message);
           return {
             teamId: team.id,
             teamName: team.name,
@@ -207,31 +192,61 @@ app.get("/api/teams/player-counts", async (req, res) => {
   }
 });
 
-// juste avant app.listen(...)
+// Corriger également l'endpoint teams/:id/members
 app.get("/api/teams/:id/members", async (req, res) => {
   const teamId = req.params.id;
   try {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
     const membersRes = await axios.get(
-      `${BASE_API_URL}/teams/${teamId}/members`,
+      `${settings.base_url}/teams/${teamId}/members`,
       {
         headers: {
-          "x-api-club": CLUB_KEY,
-          "x-api-key": API_KEY,
-          Authorization: API_SECRET,
+          "x-api-club": settings.club_key,
+          "x-api-key": settings.api_key,
+          Authorization: settings.api_secret,
           "Content-Type": "application/json",
         },
       }
     );
-    // la data peut être dans .content ou pas
+
+    // La data peut être dans .content ou pas
     const members = Array.isArray(membersRes.data.content)
       ? membersRes.data.content
       : Array.isArray(membersRes.data)
       ? membersRes.data
       : [];
+
     res.json(members);
   } catch (err) {
     console.error(`Erreur membres équipe ${teamId}:`, err);
     res.status(500).json({ message: "Impossible de récupérer les membres" });
+  }
+});
+
+// Corriger également l'endpoint /api/teams/all
+app.get("/api/teams/all", async (req, res) => {
+  try {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    const response = await axios.get(`${settings.base_url}/teams/all`, {
+      headers: {
+        "Accept-Language": "fr-FR",
+        "x-api-club": settings.club_key,
+        "x-api-key": settings.api_key,
+        Authorization: settings.api_secret,
+        "Content-Type": "application/json",
+      },
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Erreur lors de l'appel API (teams/all):", error);
+    res
+      .status(error.response?.status || 500)
+      .json({ message: "Erreur serveur lors de la récupération des équipes" });
   }
 });
 
