@@ -181,6 +181,54 @@ router.delete("/upload/image", (req, res) => {
   }
 });
 
+// Mettre à jour l'état de maintenance d'un formulaire
+router.put("/form-maintenance/:formType", async (req, res) => {
+  const { formType } = req.params;
+  const { is_maintenance, maintenance_message } = req.body;
+
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+
+    // Construction de la requête SQL dynamique selon les paramètres fournis
+    const updates = [];
+    const values = [];
+
+    if (is_maintenance !== undefined) {
+      updates.push("is_maintenance = ?");
+      values.push(is_maintenance ? 1 : 0);
+    }
+
+    if (maintenance_message !== undefined) {
+      // Convertir l'objet messages en JSON pour stockage
+      updates.push("maintenance_message_json = ?");
+      values.push(JSON.stringify(maintenance_message));
+    }
+
+    // S'assurer qu'il y a des mises à jour à effectuer
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "Aucune mise à jour fournie" });
+    }
+
+    const sql = `
+      UPDATE form_maintenance 
+      SET ${updates.join(", ")} 
+      WHERE form_type = ?
+    `;
+    values.push(formType);
+
+    await connection.execute(sql, values);
+    await connection.end();
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error(
+      "Erreur lors de la mise à jour de l'état de maintenance:",
+      error
+    );
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 // Obtenir tous les états de maintenance
 router.get("/form-maintenance", async (req, res) => {
   try {
@@ -188,7 +236,7 @@ router.get("/form-maintenance", async (req, res) => {
     const [rows] = await connection.execute("SELECT * FROM form_maintenance");
     await connection.end();
 
-    // Convertir en objet pour le frontend
+    // Convertir en objets pour le frontend
     const states = rows.reduce(
       (acc, curr) => ({
         ...acc,
@@ -197,33 +245,26 @@ router.get("/form-maintenance", async (req, res) => {
       {}
     );
 
-    res.json(states);
+    const messages = rows.reduce((acc, curr) => {
+      let parsedMessages;
+      try {
+        // Tenter de parser le JSON des messages
+        parsedMessages = JSON.parse(curr.maintenance_message_json || "{}");
+      } catch {
+        // En cas d'erreur de parsing, utiliser un objet vide
+        parsedMessages = { FR: "", NL: "", EN: "" };
+      }
+
+      return {
+        ...acc,
+        [curr.form_type]: parsedMessages,
+      };
+    }, {});
+
+    res.json({ states, messages });
   } catch (error) {
     console.error(
       "Erreur lors de la récupération des états de maintenance:",
-      error
-    );
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
-
-// Mettre à jour l'état de maintenance d'un formulaire
-router.put("/form-maintenance/:formType", async (req, res) => {
-  const { formType } = req.params;
-  const { is_maintenance } = req.body;
-
-  try {
-    const connection = await mysql.createConnection(dbConfig);
-    await connection.execute(
-      "UPDATE form_maintenance SET is_maintenance = ? WHERE form_type = ?",
-      [is_maintenance ? 1 : 0, formType]
-    );
-    await connection.end();
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error(
-      "Erreur lors de la mise à jour de l'état de maintenance:",
       error
     );
     res.status(500).json({ error: "Erreur serveur" });

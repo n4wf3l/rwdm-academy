@@ -716,9 +716,7 @@ export const translationsNL = {
   cookie_section2_li3: "Vermijden grootte‑/parsing‑beperkingen van cookies",
   maintenance_title: "Formulieren in onderhoud",
   maintenance_message:
-    "Onze formulieren zijn momenteel in onderhoud om uw ervaring te verbeteren. " +
-    "Voor dit formulier " +
-    "kunt u langs komen bij de directie binnen onze openingstijden.",
+    "Ons formulier is niet beschikbaar wegens onderhoud door ons team. U kunt ons nog steeds bereiken via ons contactformulier:",
   thanks_patience: "We zijn snel weer terug. Dank voor uw geduld!",
   account_button: "Mijn account",
   logout_title: "Uitloggen",
@@ -1660,4 +1658,22 @@ export const translationsNL = {
   "logout.success": "Succesvol uitgelogd",
   "logout.message": "U bent uitgelogd.",
   "button.exportExcel": "Exporteer naar CSV",
+  "forms.maintenance.message_label": "Aangepast onderhoudsbericht",
+  "forms.maintenance.message_placeholder":
+    "Voer hier uw aangepaste onderhoudsbericht in...",
+  "maintenance.default_message":
+    "Dit formulier is tijdelijk niet beschikbaar wegens onderhoud.",
+  "maintenance.default_message_registration":
+    "Het inschrijvingsformulier is tijdelijk niet beschikbaar wegens onderhoud.",
+  "maintenance.default_message_selection":
+    "Het formulier voor selectieproeven is tijdelijk niet beschikbaar wegens onderhoud.",
+  "maintenance.default_message_accident":
+    "Het formulier voor ongevalsaangifte is tijdelijk niet beschikbaar wegens onderhoud.",
+  "maintenance.default_message_waiver":
+    "Het aansprakelijkheidsformulier is tijdelijk niet beschikbaar wegens onderhoud.",
+  "maintenance.title": "Onderhoud bezig",
+  "maintenance.back_button": "Terug",
+  form: "Formulier",
+  "common.expand": "Uitvouwen",
+  "common.collapse": "Samenvouwen",
 };

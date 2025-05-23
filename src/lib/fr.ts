@@ -780,9 +780,7 @@ export const translationsFR = {
     "Évitons les contraintes de taille et de parsing des cookies",
   maintenance_title: "Formulaires en maintenance",
   maintenance_message:
-    "Nos formulaires sont actuellement en maintenance pour améliorer votre expérience. " +
-    "Pour ce type de formulaire" +
-    ", veuillez vous présenter à la direction dans nos horaires d'ouverture.",
+    "Notre formulaire est mis en indisponible par notre équipe. Vous pouvez toujours nous contacter par notre formulaire de contact :",
   thanks_patience: "Nous revenons très vite. Merci de votre patience !",
   account_button: "Mon compte",
   logout_title: "Déconnexion",
@@ -1729,4 +1727,22 @@ export const translationsFR = {
   "logout.success": "Déconnexion réussie",
   "logout.message": "Vous avez été déconnecté.",
   "button.exportExcel": "Exporter CSV",
+  "forms.maintenance.message_label": "Message personnalisé en maintenance",
+  "forms.maintenance.message_placeholder":
+    "Entrez votre message de maintenance personnalisé ici...",
+  "maintenance.default_message":
+    "Ce formulaire est temporairement indisponible pour maintenance.",
+  "maintenance.default_message_registration":
+    "Le formulaire d'inscription est temporairement indisponible pour maintenance.",
+  "maintenance.default_message_selection":
+    "Le formulaire de tests de sélection est temporairement indisponible pour maintenance.",
+  "maintenance.default_message_accident":
+    "Le formulaire de déclaration d'accident est temporairement indisponible pour maintenance.",
+  "maintenance.default_message_waiver":
+    "Le formulaire de décharge de responsabilité est temporairement indisponible pour maintenance.",
+  "maintenance.title": "Maintenance en cours",
+  "maintenance.back_button": "Retour",
+  form: "Formulaire",
+  "common.expand": "Agrandir",
+  "common.collapse": "Réduire",
 };

@@ -128,6 +128,14 @@ const Settings: React.FC = () => {
     waiver: false,
   });
 
+  // --- Messages de maintenance ---
+  const [formMaintenanceMessages, setFormMaintenanceMessages] = useState({
+    registration: { FR: "", NL: "", EN: "" },
+    selectionTests: { FR: "", NL: "", EN: "" },
+    accidentReport: { FR: "", NL: "", EN: "" },
+    waiver: { FR: "", NL: "", EN: "" },
+  });
+
   // --- Accident Forms ---
   const [accidentFormFR, setAccidentFormFR] = useState<string>(
     "/declaration_accident.pdf"
@@ -217,7 +225,8 @@ const Settings: React.FC = () => {
         setCompanyNumber(settingsData.contact.companyNumber);
         setAccountName(settingsData.contact.accountName);
         // form maintenance states
-        setFormMaintenanceStates(maintenanceData);
+        setFormMaintenanceStates(maintenanceData.states);
+        setFormMaintenanceMessages(maintenanceData.messages);
       } catch (err) {
         console.error("Erreur chargement settings:", err);
       }
@@ -303,8 +312,26 @@ const Settings: React.FC = () => {
           accountName,
         },
         formMaintenanceStates,
+        formMaintenanceMessages, // Ajoutez cette ligne pour inclure les messages
       };
+
       await axios.put("http://localhost:5000/api/settings", settingsPayload);
+
+      // Aussi envoyer les messages pour chaque type de formulaire
+      for (const formType of [
+        "registration",
+        "selectionTests",
+        "accidentReport",
+        "waiver",
+      ]) {
+        await axios.put(
+          `http://localhost:5000/api/form-maintenance/${formType}`,
+          {
+            maintenance_message: formMaintenanceMessages[formType],
+          }
+        );
+      }
+
       toast.success(t("settings.saveSuccess"));
 
       // Forcer le rechargement de la page pour actualiser les images
@@ -483,6 +510,8 @@ const Settings: React.FC = () => {
                 setInstagramUrl={setInstagramUrl}
                 formMaintenanceStates={formMaintenanceStates}
                 setFormMaintenanceStates={setFormMaintenanceStates}
+                formMaintenanceMessages={formMaintenanceMessages}
+                setFormMaintenanceMessages={setFormMaintenanceMessages}
                 accidentFormFR={accidentFormFR}
                 setAccidentFormFR={setAccidentFormFR}
                 accidentFormNL={accidentFormNL}

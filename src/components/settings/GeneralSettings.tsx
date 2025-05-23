@@ -46,12 +46,26 @@ interface Props {
     accidentReport: boolean;
     waiver: boolean;
   };
+  formMaintenanceMessages: {
+    registration: Record<Lang, string>;
+    selectionTests: Record<Lang, string>;
+    accidentReport: Record<Lang, string>;
+    waiver: Record<Lang, string>;
+  };
   setFormMaintenanceStates: React.Dispatch<
     React.SetStateAction<{
       registration: boolean;
       selectionTests: boolean;
       accidentReport: boolean;
       waiver: boolean;
+    }>
+  >;
+  setFormMaintenanceMessages: React.Dispatch<
+    React.SetStateAction<{
+      registration: Record<Lang, string>;
+      selectionTests: Record<Lang, string>;
+      accidentReport: Record<Lang, string>;
+      waiver: Record<Lang, string>;
     }>
   >;
   accidentFormFR: string;
@@ -138,13 +152,30 @@ const GeneralSettings: React.FC<Props> = ({
   setInstagramUrl,
   formMaintenanceStates,
   setFormMaintenanceStates,
+  formMaintenanceMessages,
+  setFormMaintenanceMessages,
   accidentFormFR,
   setAccidentFormFR,
   accidentFormNL,
   setAccidentFormNL,
 }) => {
   const [fileName, setFileName] = useState("");
+  const [expandedTextareas, setExpandedTextareas] = useState({
+    registration: false,
+    selectionTests: false,
+    accidentReport: false,
+    waiver: false,
+  });
+  const [expandedMessages, setExpandedMessages] = useState({
+    registration: false,
+    selectionTests: false,
+    accidentReport: false,
+    waiver: false,
+  });
   const { t } = useTranslation();
+
+  // Référence pour le debounce
+  const saveMessageTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Handles toggling maintenance state for each form
   const handleMaintenanceToggle = async (
@@ -186,6 +217,69 @@ const GeneralSettings: React.FC<Props> = ({
       );
       console.error("Erreur:", error);
     }
+  };
+
+  // Mise à jour du message de maintenance avec debounce
+  const handleMaintenanceMessageChange = async (
+    key: "registration" | "selectionTests" | "accidentReport" | "waiver",
+    lang: Lang,
+    message: string
+  ) => {
+    try {
+      // Mise à jour optimiste de l'UI
+      setFormMaintenanceMessages((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          [lang]: message,
+        },
+      }));
+
+      // Délai avant la sauvegarde pour éviter trop de requêtes
+      if (saveMessageTimeoutRef.current) {
+        clearTimeout(saveMessageTimeoutRef.current);
+      }
+
+      saveMessageTimeoutRef.current = setTimeout(async () => {
+        // Appel à l'API pour persister le changement
+        const response = await axios.put(
+          `http://localhost:5000/api/form-maintenance/${key}`,
+          {
+            maintenance_message: {
+              ...formMaintenanceMessages[key],
+              [lang]: message,
+            },
+          }
+        );
+
+        if (!response.data.success) {
+          throw new Error("Échec de la mise à jour");
+        }
+      }, 500);
+    } catch (error) {
+      toast.error(`Erreur lors de la mise à jour du message pour ${key}`);
+      console.error("Erreur:", error);
+    }
+  };
+
+  // Fonction pour gérer l'expansion/réduction des textareas
+  const toggleTextareaExpansion = (
+    key: "registration" | "selectionTests" | "accidentReport" | "waiver"
+  ) => {
+    setExpandedTextareas((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // Fonction pour gérer l'expansion/réduction des messages
+  const toggleMessageExpansion = (
+    key: "registration" | "selectionTests" | "accidentReport" | "waiver"
+  ) => {
+    setExpandedMessages((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   /* -------------------- RENDER -------------------- */
@@ -357,66 +451,368 @@ const GeneralSettings: React.FC<Props> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Toggle Inscription */}
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-              <div>
-                <p className="font-medium">{t("academy_registration")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("forms.maintenance.registration_desc")}
-                </p>
+            <div className="flex flex-col p-4 rounded-lg border bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => toggleMessageExpansion("registration")}
+                    className="mr-3 flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                    title={
+                      expandedMessages.registration
+                        ? t("common.collapse")
+                        : t("common.expand")
+                    }
+                  >
+                    {expandedMessages.registration ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  <div>
+                    <p className="font-medium">{t("academy_registration")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("forms.maintenance.registration_desc")}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formMaintenanceStates.registration}
+                  onCheckedChange={(checked) =>
+                    handleMaintenanceToggle("registration", checked)
+                  }
+                />
               </div>
-              <Switch
-                checked={formMaintenanceStates.registration}
-                onCheckedChange={(checked) =>
-                  handleMaintenanceToggle("registration", checked)
-                }
-              />
+
+              {/* Message section that expands/collapses when clicking the arrow button */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  expandedMessages.registration
+                    ? "max-h-96 opacity-100 mt-3 pt-3 border-t"
+                    : "max-h-0 opacity-0 mt-0 pt-0 border-none"
+                }`}
+              >
+                <label className="block text-sm font-medium mb-1">
+                  {t("forms.maintenance.message_label")} ({language})
+                </label>
+                <textarea
+                  value={formMaintenanceMessages.registration[language] || ""}
+                  onChange={(e) =>
+                    handleMaintenanceMessageChange(
+                      "registration",
+                      language,
+                      e.target.value
+                    )
+                  }
+                  className="w-full px-3 py-2 resize-none border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  style={{ height: "100px" }}
+                  placeholder={t("forms.maintenance.message_placeholder")}
+                />
+              </div>
             </div>
+
             {/* Toggle Tests de sélection */}
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-              <div>
-                <p className="font-medium">{t("selection_tests")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("forms.maintenance.selection_desc")}
-                </p>
+            <div className="flex flex-col p-4 rounded-lg border bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => toggleMessageExpansion("selectionTests")}
+                    className="mr-3 flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                    title={
+                      expandedMessages.selectionTests
+                        ? t("common.collapse")
+                        : t("common.expand")
+                    }
+                  >
+                    {expandedMessages.selectionTests ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  <div>
+                    <p className="font-medium">{t("selection_tests")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("forms.maintenance.selection_desc")}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formMaintenanceStates.selectionTests}
+                  onCheckedChange={(checked) =>
+                    handleMaintenanceToggle("selectionTests", checked)
+                  }
+                />
               </div>
-              <Switch
-                checked={formMaintenanceStates.selectionTests}
-                onCheckedChange={(checked) =>
-                  handleMaintenanceToggle("selectionTests", checked)
-                }
-              />
+
+              {/* Message section that expands/collapses when clicking the arrow button */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  expandedMessages.selectionTests
+                    ? "max-h-96 opacity-100 mt-3 pt-3 border-t"
+                    : "max-h-0 opacity-0 mt-0 pt-0 border-none"
+                }`}
+              >
+                <label className="block text-sm font-medium mb-1">
+                  {t("forms.maintenance.message_label")}
+                </label>
+                <textarea
+                  value={formMaintenanceMessages.selectionTests[language] || ""}
+                  onChange={(e) =>
+                    handleMaintenanceMessageChange(
+                      "selectionTests",
+                      language,
+                      e.target.value
+                    )
+                  }
+                  className="w-full h-24 px-3 py-2 resize-none border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={t("forms.maintenance.message_placeholder")}
+                  style={{
+                    maxHeight: expandedTextareas.selectionTests
+                      ? "200px"
+                      : "100px",
+                    overflowY: expandedTextareas.selectionTests
+                      ? "auto"
+                      : "hidden",
+                  }}
+                />
+              </div>
             </div>
 
             {/* Toggle Déclaration d'accident */}
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-              <div>
-                <p className="font-medium">{t("accident_report")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("forms.maintenance.accident_desc")}
-                </p>
+            <div className="flex flex-col p-4 rounded-lg border bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => toggleMessageExpansion("accidentReport")}
+                    className="mr-3 flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                    title={
+                      expandedMessages.accidentReport
+                        ? t("common.collapse")
+                        : t("common.expand")
+                    }
+                  >
+                    {expandedMessages.accidentReport ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  <div>
+                    <p className="font-medium">{t("accident_report")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("forms.maintenance.accident_desc")}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formMaintenanceStates.accidentReport}
+                  onCheckedChange={(checked) =>
+                    handleMaintenanceToggle("accidentReport", checked)
+                  }
+                />
               </div>
-              <Switch
-                checked={formMaintenanceStates.accidentReport}
-                onCheckedChange={(checked) =>
-                  handleMaintenanceToggle("accidentReport", checked)
-                }
-              />
+
+              {/* Message section that expands/collapses when clicking the arrow button */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  expandedMessages.accidentReport
+                    ? "max-h-96 opacity-100 mt-3 pt-3 border-t"
+                    : "max-h-0 opacity-0 mt-0 pt-0 border-none"
+                }`}
+              >
+                <label className="block text-sm font-medium mb-1">
+                  {t("forms.maintenance.message_label")}
+                </label>
+                <textarea
+                  value={formMaintenanceMessages.accidentReport[language] || ""}
+                  onChange={(e) =>
+                    handleMaintenanceMessageChange(
+                      "accidentReport",
+                      language,
+                      e.target.value
+                    )
+                  }
+                  className="w-full h-24 px-3 py-2 resize-none border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={t("forms.maintenance.message_placeholder")}
+                  style={{
+                    maxHeight: expandedTextareas.accidentReport
+                      ? "200px"
+                      : "100px",
+                    overflowY: expandedTextareas.accidentReport
+                      ? "auto"
+                      : "hidden",
+                  }}
+                />
+              </div>
             </div>
 
             {/* Toggle Décharge */}
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-              <div>
-                <p className="font-medium">{t("liability_waiver")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("forms.maintenance.waiver_desc")}
-                </p>
+            <div className="flex flex-col p-4 rounded-lg border bg-card">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => toggleMessageExpansion("waiver")}
+                    className="mr-3 flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                    title={
+                      expandedMessages.waiver
+                        ? t("common.collapse")
+                        : t("common.expand")
+                    }
+                  >
+                    {expandedMessages.waiver ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  <div>
+                    <p className="font-medium">{t("liability_waiver")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("forms.maintenance.waiver_desc")}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={formMaintenanceStates.waiver}
+                  onCheckedChange={(checked) =>
+                    handleMaintenanceToggle("waiver", checked)
+                  }
+                />
               </div>
-              <Switch
-                checked={formMaintenanceStates.waiver}
-                onCheckedChange={(checked) =>
-                  handleMaintenanceToggle("waiver", checked)
-                }
-              />
+
+              {/* Message section that expands/collapses when clicking the arrow button */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  expandedMessages.waiver
+                    ? "max-h-96 opacity-100 mt-3 pt-3 border-t"
+                    : "max-h-0 opacity-0 mt-0 pt-0 border-none"
+                }`}
+              >
+                <label className="block text-sm font-medium mb-1">
+                  {t("forms.maintenance.message_label")}
+                </label>
+                <textarea
+                  value={formMaintenanceMessages.waiver[language] || ""}
+                  onChange={(e) =>
+                    handleMaintenanceMessageChange(
+                      "waiver",
+                      language,
+                      e.target.value
+                    )
+                  }
+                  className="w-full h-24 px-3 py-2 resize-none border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={t("forms.maintenance.message_placeholder")}
+                  style={{
+                    maxHeight: expandedTextareas.waiver ? "200px" : "100px",
+                    overflowY: expandedTextareas.waiver ? "auto" : "hidden",
+                  }}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -44,7 +44,7 @@ const Index: React.FC = () => {
     fetch("http://localhost:5000/api/form-maintenance")
       .then((res) => res.json())
       .then((data) => {
-        setFormMaintenanceStates(data);
+        setFormMaintenanceStates(data.states);
       })
       .catch((error) => {
         console.error("Erreur chargement maintenance:", error);
@@ -213,6 +213,15 @@ const Index: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 {t("welcome")}
               </p>
+
+              {/* Note champ obligatoire */}
+              <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-2xl mx-auto space-y-1 text-center">
+                <p>{t("champ")}</p>
+                <div className="flex items-center justify-center space-x-1">
+                  <Info className="h-4 w-4 text-gray-500" />
+                  <p>{t("champ2")}</p>
+                </div>
+              </div>
             </AnimatedTransition>
 
             {/* Sélecteur de formulaire */}
@@ -228,15 +237,6 @@ const Index: React.FC = () => {
                 onSelectForm={handleFormChange}
               />
             </AnimatedTransition>
-
-            {/* Note champ obligatoire */}
-            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-2xl mx-auto space-y-1 text-center">
-              <p>{t("champ")}</p>
-              <div className="flex items-center justify-center space-x-1">
-                <Info className="h-4 w-4 text-gray-500" />
-                <p>{t("champ2")}</p>
-              </div>
-            </div>
 
             {/* Formulaire */}
             <div id="form-start">{renderForm()}</div>

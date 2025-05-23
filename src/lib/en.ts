@@ -690,9 +690,7 @@ export const translationsEN = {
   cookie_section2_li3: "Avoid size‑ and parsing‑limitations of cookies",
   maintenance_title: "Forms under maintenance",
   maintenance_message:
-    "Our forms are currently under maintenance to improve your experience. " +
-    "For this type of form, " +
-    "please contact management during our opening hours.",
+    "Our form is unavailable due to maintenance by our team. You can still contact us using our contact form:",
 
   thanks_patience: "We’ll be back soon. Thank you for your patience!",
   account_button: "My Account",
@@ -1622,4 +1620,22 @@ export const translationsEN = {
   "logout.success": "Logout successful",
   "logout.message": "You have been logged out.",
   "button.exportExcel": "Export CSV",
+  "forms.maintenance.message_label": "Custom maintenance message",
+  "forms.maintenance.message_placeholder":
+    "Enter your custom maintenance message here...",
+  "maintenance.default_message":
+    "This form is temporarily unavailable due to maintenance.",
+  "maintenance.default_message_registration":
+    "The registration form is temporarily unavailable due to maintenance.",
+  "maintenance.default_message_selection":
+    "The selection tests form is temporarily unavailable due to maintenance.",
+  "maintenance.default_message_accident":
+    "The accident report form is temporarily unavailable due to maintenance.",
+  "maintenance.default_message_waiver":
+    "The liability waiver form is temporarily unavailable due to maintenance.",
+  "maintenance.title": "Maintenance in progress",
+  "maintenance.back_button": "Back",
+  form: "Form",
+  "common.expand": "Expand",
+  "common.collapse": "Collapse",
 };
