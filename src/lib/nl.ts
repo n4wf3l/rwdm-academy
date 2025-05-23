@@ -1658,4 +1658,5 @@ export const translationsNL = {
   "common.unknown": "Onbekend",
   "logout.success": "Succesvol uitgelogd",
   "logout.message": "U bent uitgelogd.",
+  "button.exportExcel": "Exporteer naar CSV",
 };

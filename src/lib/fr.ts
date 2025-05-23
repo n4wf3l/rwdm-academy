@@ -1726,4 +1726,5 @@ export const translationsFR = {
   "common.unknown": "inconnue",
   "logout.success": "Déconnexion réussie",
   "logout.message": "Vous avez été déconnecté.",
+  "button.exportExcel": "Exporter CSV",
 };
