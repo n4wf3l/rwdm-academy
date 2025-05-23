@@ -19,9 +19,11 @@ export const translationsFR = {
   selection_tests_desc:
     "Demande d'inscription aux tests de sélection pour l'académie (U5-U21)",
   accident_report: "Déclaration d'accident",
-  accident_report_desc: "Formulaire pour déclarer un accident survenu",
+  accident_report_desc:
+    "Formulaire pour déclarer un accident au club ou certificat de guérison",
   liability_waiver: "Décharge de responsabilité",
-  liability_waiver_desc: "Formulaire de décharge de responsabilité",
+  liability_waiver_desc:
+    "Formulaire de décharge de responsabilité pour testes de sélection",
   admin_dashboard: "Tableau de bord",
   admin_documents: "Documents",
   admin_planning: "Planning",

@@ -19,9 +19,10 @@ export const translationsNL = {
   selection_tests_desc:
     "Inschrijving voor de selectietesten van de academie (U5-U21)",
   accident_report: "Ongevallenverklaring",
-  accident_report_desc: "Formulier om een ongeval te melden",
+  accident_report_desc:
+    "Formulier voor het melden van een clubgerelateerd ongeval of het indienen van een genezingsattest",
   liability_waiver: "Aansprakelijkheidsontheffing",
-  liability_waiver_desc: "Formulier voor aansprakelijkheidsontheffing",
+  liability_waiver_desc: "Aansprakelijkheidsformulier voor selectietesten",
   admin_dashboard: "Dashboard",
   admin_documents: "Documentbeheer",
   admin_planning: "Planning",

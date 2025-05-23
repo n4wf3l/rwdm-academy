@@ -19,9 +19,10 @@ export const translationsEN = {
   selection_tests_desc:
     "Form to register for the RWDM Academy's selection tests (U5-U21)",
   accident_report: "Accident Report",
-  accident_report_desc: "Form to report an accident that occurred",
+  accident_report_desc:
+    "Form to report a club-related accident or submit a recovery certificate",
   liability_waiver: "Responsability Waiver",
-  liability_waiver_desc: "Form to waive liability responsibility",
+  liability_waiver_desc: "Liability waiver form for selection tests",
   admin_dashboard: "Dashboard",
   admin_documents: "Documents",
   admin_planning: "Planning",
