@@ -1,3 +1,5 @@
+import React from "react";
+
 export type RequestType =
   | "accident-report"
   | "healing-certificate"
@@ -10,6 +12,7 @@ export interface Request {
   type: RequestType;
   status: string;
   name: string;
+  email: string; // Add this required property
   details: any;
   assignedTo?: string;
   sent_at?: string;
@@ -20,8 +23,5 @@ export interface RequestStatus {
   value: string;
 }
 
-const RequestDetailsModal = (props) => {
-  // Component logic here
-};
-
-export default RequestDetailsModal;
+// Don't export a default component from here
+// This file should be for types only

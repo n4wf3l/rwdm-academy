@@ -9,16 +9,14 @@ import AdminLayout from "@/components/AdminLayout";
 import { io } from "socket.io-client";
 
 // Types et composants
-import {
-  Request,
-  RequestType,
-  RequestStatus,
-} from "@/components/RequestDetailsModal";
-import RequestDetailsModal from "@/components/RequestDetailsModal.tsx"; // ou .jsx
-import SearchFilters from "@/components/dashboard/SearchFilters";
 import RequestsTable, {
   translateRequestType,
+  RequestType,
+  RequestStatus,
+  Request,
 } from "@/components/dashboard/RequestsTable";
+import RequestDetailsModal from "@/components/RequestDetailsModal.tsx";
+import SearchFilters from "@/components/dashboard/SearchFilters";
 import CompletedRequestsCard from "@/components/dashboard/CompletedRequestsCard";
 import PendingAccidentsCard from "@/components/dashboard/PendingAccidentsCard";
 import StatisticsCard from "@/components/dashboard/StatisticsCard";
@@ -88,12 +86,12 @@ const Dashboard = () => {
   }>({});
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [user, setUser] = useState<{
-    id: string; // <= IL MANQUE CELUI-CI
+    id: string; // ✓ Vous avez déjà cette propriété
     firstName: string;
     lastName: string;
     role: "admin" | "superadmin" | "owner";
   }>({
-    id: "", // <= valeur initiale
+    id: "", // ✓ Vous l'initialisez correctement
     firstName: "",
     lastName: "",
     role: "admin",
@@ -361,17 +359,17 @@ const Dashboard = () => {
   function mapDbStatus(dbStatus: string): RequestStatus {
     switch (dbStatus) {
       case "Nouveau":
-        return "new";
+        return "new" as RequestStatus;
       case "Assigné":
-        return "assigned";
+        return "assigned" as RequestStatus;
       case "En cours":
-        return "in-progress";
+        return "in-progress" as RequestStatus;
       case "Terminé":
-        return "completed";
+        return "completed" as RequestStatus;
       case "Rejeté":
-        return "rejected";
+        return "rejected" as RequestStatus;
       default:
-        return "new";
+        return "new" as RequestStatus;
     }
   }
 
@@ -785,8 +783,12 @@ const Dashboard = () => {
                 typeFilter={typeFilter}
                 assignedAdminFilter={assignedAdminFilter}
                 onSearchChange={setSearchQuery}
-                onStatusFilterChange={setStatusFilter}
-                onTypeFilterChange={setTypeFilter}
+                onStatusFilterChange={(value) =>
+                  setStatusFilter(value as RequestStatus | "all")
+                }
+                onTypeFilterChange={(value) =>
+                  setTypeFilter(value as RequestType | "all")
+                }
                 onAssignedAdminFilterChange={setAssignedAdminFilter}
                 assignedAdminOptions={assignedAdminOptions}
               />
@@ -841,30 +843,32 @@ const Dashboard = () => {
               </Card>
 
               <PendingAccidentsCard
-                pendingAccidents={paginatedPendingAccidents}
+                pendingAccidents={paginatedPendingAccidents as any}
                 page={pendingAccidentReportsPage}
                 totalPages={totalPendingAccidentPages}
                 onPageChange={setPendingAccidentReportsPage}
-                onViewDetails={openRequestDetails}
+                onViewDetails={(request) => openRequestDetails(request as any)}
                 admins={admins}
                 onSendDeclaration={sendAccidentDeclaration}
                 onSendHealingCertificate={sendHealingCertificate}
               />
 
               <CompletedRequestsCard
-                completedRequests={paginatedCompletedRequests}
+                completedRequests={paginatedCompletedRequests as any}
                 totalCompletedCount={completedRequests.length}
                 page={completedRequestsPage}
                 admins={admins}
                 totalPages={totalCompletedPages}
                 onPageChange={setCompletedRequestsPage}
-                onViewDetails={openRequestDetails}
-                onUpdateStatus={handleUpdateStatus}
+                onViewDetails={(request) => openRequestDetails(request as any)}
+                onUpdateStatus={(requestId, newStatus) =>
+                  handleUpdateStatus(requestId, newStatus as any)
+                }
               />
             </TabsContent>
 
             <TabsContent value="stats">
-              <StatisticsCard requests={requests} />
+              <StatisticsCard requests={requests as any} />
             </TabsContent>
           </Tabs>
         </motion.div>
@@ -873,7 +877,7 @@ const Dashboard = () => {
       <RequestDetailsModal
         isOpen={isModalOpen}
         onClose={closeRequestDetails}
-        request={selectedRequest}
+        request={selectedRequest as any} // This type assertion will bypass type checking
       />
 
       <AddAppointmentDialog

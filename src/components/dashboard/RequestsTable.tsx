@@ -53,9 +53,10 @@ export type RequestType =
   | "registration"
   | "selection-tests"
   | "accident-report"
-  | "responsibility-waiver";
+  | "responsibility-waiver"
+  | "healing-certificate"; // Add this if needed
 
-interface Request {
+export interface Request {
   id: string;
   type: RequestType;
   name: string;
@@ -65,7 +66,7 @@ interface Request {
   assignedTo?: string | null;
   rejectedAt?: Date;
   details?: any;
-  assignedAdminName?: string; // Added property
+  assignedAdminName?: string | null;
 }
 
 interface Admin {

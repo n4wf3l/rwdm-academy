@@ -9,18 +9,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
-import { RequestStatus, RequestType } from "@/components/RequestDetailsModal";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  RequestType,
+  RequestStatus,
+} from "@/components/dashboard/RequestsTable";
 
-interface SearchFiltersProps {
+export interface SearchFiltersProps {
   searchQuery: string;
-  statusFilter: RequestStatus | "all";
-  typeFilter: RequestType | "all";
+  statusFilter: RequestStatus | "all"; // Match this type with Dashboard
+  typeFilter: RequestType | "all"; // Match this type with Dashboard
+  assignedAdminFilter: string;
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: RequestStatus | "all") => void;
   onTypeFilterChange: (value: RequestType | "all") => void;
-  assignedAdminFilter: string;
   onAssignedAdminFilterChange: (value: string) => void;
   assignedAdminOptions: { id: string; name: string }[];
 }
