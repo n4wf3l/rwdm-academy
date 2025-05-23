@@ -259,9 +259,8 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
       const url = URL.createObjectURL(content);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `rendez-vous_archives_${
-        new Date().toISOString().split("T")[0]
-      }.zip`;
+      link.download = `rendez-vous_archives_${new Date().toISOString().split("T")[0]
+        }.zip`;
       link.click();
 
       // Nettoyer
@@ -502,11 +501,10 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
               paginatedAppointments.map((appointment, idx) => (
                 <motion.tr
                   key={appointment.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                    selectedAppointments.has(appointment.id)
+                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedAppointments.has(appointment.id)
                       ? "bg-amber-50 dark:bg-amber-900/20"
                       : ""
-                  }`}
+                    }`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.03 }}
@@ -524,7 +522,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
                       <Checkbox
                         checked={selectedAppointments.has(appointment.id)}
                         className="cursor-pointer"
-                        onCheckedChange={() => {}}
+                        onCheckedChange={() => { }}
                       />
                     </div>
                   </TableCell>
