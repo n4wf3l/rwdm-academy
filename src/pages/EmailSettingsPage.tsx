@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import AdminLayout from "@/components/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,6 +69,14 @@ const EmailSettingsPage: React.FC = () => {
   const [undoStack, setUndoStack] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // 1. Ajoutez une référence au textarea
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // 2. Ajoutez une référence pour la position de défilement
+  const scrollPositionRef = useRef<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
 
   // Charger les templates depuis l'API
   useEffect(() => {
@@ -164,12 +172,21 @@ const EmailSettingsPage: React.FC = () => {
     }
   };
 
+  // 3. Modifiez la fonction handleChange pour préserver la position de défilement
   const handleChange = (
     type: string,
     field: keyof EmailTemplate,
     value: string,
     shouldAddToHistory: boolean = true
   ) => {
+    // Stocker la position de défilement actuelle avant la mise à jour
+    if (field === "body") {
+      scrollPositionRef.current = {
+        top: window.scrollY,
+        left: window.scrollX,
+      };
+    }
+
     if (field === "body" && shouldAddToHistory) {
       setUndoStack((prev) => [...prev, emailTemplates[type]?.body || ""]);
       setRedoStack([]); // Clear redo stack on new changes
@@ -182,6 +199,16 @@ const EmailSettingsPage: React.FC = () => {
         [field]: value,
       },
     }));
+
+    // Pour le champ body, on utilise requestAnimationFrame pour restaurer la position après le rendu
+    if (field === "body") {
+      requestAnimationFrame(() => {
+        window.scrollTo(
+          scrollPositionRef.current.left,
+          scrollPositionRef.current.top
+        );
+      });
+    }
   };
 
   const handleFormatting = (type: string, value?: string) => {
@@ -979,6 +1006,7 @@ const EmailSettingsPage: React.FC = () => {
                 />
               ) : (
                 <textarea
+                  ref={textareaRef}
                   value={emailTemplates[activeTab]?.body || ""}
                   onChange={(e) => {
                     handleChange(activeTab, "body", e.target.value);
@@ -986,13 +1014,6 @@ const EmailSettingsPage: React.FC = () => {
                     const textarea = e.target;
                     textarea.style.height = "auto";
                     textarea.style.height = `${textarea.scrollHeight}px`;
-                  }}
-                  ref={(textareaRef) => {
-                    // Ajuster la hauteur initiale au chargement
-                    if (textareaRef) {
-                      textareaRef.style.height = "auto";
-                      textareaRef.style.height = `${textareaRef.scrollHeight}px`;
-                    }
                   }}
                   placeholder={t("emails.body.placeholder")}
                   rows={4} // Commencer avec moins de lignes
