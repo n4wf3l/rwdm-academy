@@ -93,14 +93,6 @@ export interface RequestsTableProps {
   searchQuery: string;
 }
 
-/* mapping route → endpoint */
-const emailEndpointByType: Record<RequestType, string> = {
-  registration: "send-registration-email",
-  "selection-tests": "send-selection-test-email",
-  "accident-report": "send-accident-report-email",
-  "responsibility-waiver": "send-waiver-email",
-};
-
 /**
  * Fonction utilitaire pour traduire le type de demande
  */

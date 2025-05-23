@@ -1620,4 +1620,5 @@ export const translationsEN = {
   "common.unknown": "Unknown",
   "logout.success": "Logout successful",
   "logout.message": "You have been logged out.",
+  "button.exportExcel": "Export CSV",
 };
