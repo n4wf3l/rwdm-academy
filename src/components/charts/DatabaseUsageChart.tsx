@@ -419,7 +419,7 @@ const DatabaseUsageChart = () => {
                       }`}
                     >
                       {section.name}: {section.mo.toFixed(1)}{" "}
-                      {t("database.megabytes")} ({section.count} {t("save")})
+                      {t("database.megabytes")} ({section.count} {t("items")})
                     </span>
                   </motion.div>
                 ))}

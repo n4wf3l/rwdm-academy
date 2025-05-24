@@ -1798,4 +1798,5 @@ export const translationsFR = {
   "database.settings_error": "Erreur de mise à jour",
   "database.settings_error_desc":
     "Impossible de mettre à jour les paramètres d'hébergement",
+  items: "données",
 };

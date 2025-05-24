@@ -1727,4 +1727,5 @@ export const translationsNL = {
   "database.allocated_storage": "Toegewezen opslagruimte",
   "database.settings_error": "Update fout",
   "database.settings_error_desc": "Kan de hostinginstellingen niet bijwerken",
+  items: "gegevens",
 };

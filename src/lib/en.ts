@@ -1688,4 +1688,5 @@ export const translationsEN = {
   "database.allocated_storage": "Allocated Storage",
   "database.settings_error": "Update error",
   "database.settings_error_desc": "Unable to update hosting settings",
+  items: "items",
 };
