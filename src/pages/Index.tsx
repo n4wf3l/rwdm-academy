@@ -11,7 +11,9 @@ import MaintenancePage from "../components/MaintenancePage";
 import MaintenancePage2 from "../components/MaintenancePage2";
 import { motion } from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
-import { Info } from "lucide-react";
+import { HelpCircle, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import UserGuideDialog from "@/components/dialogs/UserGuideDialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import RegistrationForm from "@/components/RegistrationForm";
 import SelectionTestsForm from "@/components/SelectionTestsForm";
@@ -19,6 +21,7 @@ import AccidentReportForm from "@/components/AccidentReportForm";
 import ResponsibilityWaiverForm from "@/components/ResponsibilityWaiverForm";
 
 const Index: React.FC = () => {
+  // États
   const [maintenanceMode, setMaintenanceMode] = useState<boolean | null>(null);
   const [showSplash, setShowSplash] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
@@ -35,10 +38,24 @@ const Index: React.FC = () => {
     accidentReport: false,
     waiver: false,
   });
+  const [guideModalOpen, setGuideModalOpen] = useState(false);
+  const [clubName, setClubName] = useState<{
+    FR: string;
+    NL: string;
+    EN: string;
+  }>({
+    FR: "",
+    NL: "",
+    EN: "",
+  });
 
+  // Translation hook
   const { t } = useTranslation();
 
-  // Déplacez tous les useEffect au début, juste après les useState
+  // Constante avant tous les useEffect
+  const currentLang = localStorage.getItem("language") || "fr";
+
+  // Tous les useEffects ensemble
   useEffect(() => {
     // Charger les états de maintenance
     fetch("http://localhost:5000/api/form-maintenance")
@@ -49,6 +66,21 @@ const Index: React.FC = () => {
       .catch((error) => {
         console.error("Erreur chargement maintenance:", error);
       });
+  }, []);
+
+  // Fetch club name
+  useEffect(() => {
+    const fetchClubName = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/settings");
+        const data = await res.json();
+        setClubName(data.general.clubName);
+      } catch (err) {
+        console.error("Erreur lors du chargement du nom du club :", err);
+      }
+    };
+
+    fetchClubName();
   }, []);
 
   // ─── 1) Charger le flag maintenance depuis l'API ─────────────────────────
@@ -78,6 +110,7 @@ const Index: React.FC = () => {
     }
   }, []);
 
+  // Handlers et autres fonctions
   const handleLanguageSelect = (lang: "fr" | "nl" | "en") => {
     localStorage.setItem("language", lang);
     window.dispatchEvent(new Event("language-changed"));
@@ -97,6 +130,7 @@ const Index: React.FC = () => {
       }, 200);
     }
   };
+
   const handleFormDataChange = (key: string, value: any) => {
     setFormData((prev) => {
       const next = { ...prev, [key]: value };
@@ -105,24 +139,7 @@ const Index: React.FC = () => {
     });
   };
 
-  // ─── 4) Tant que le flag n'est pas chargé, ne rien afficher ─────────────
-  if (maintenanceMode === null) return null;
-
-  // ─── 5) Si mode maintenance activé, on affiche uniquement MaintenancePage ─
-  if (maintenanceMode) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        {/* on centre verticalement ici */}
-        <main className="flex-grow flex items-center justify-center">
-          <MaintenancePage />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // ─── 6) Sinon, on affiche le flow normal ────────────────────────────────
+  // Rendu du formulaire
   const renderForm = () => {
     // Ajoutez un console.log pour débugger
     console.log("Current form:", currentForm);
@@ -179,6 +196,24 @@ const Index: React.FC = () => {
     }
   };
 
+  // ─── 4) Tant que le flag n'est pas chargé, ne rien afficher ─────────────
+  if (maintenanceMode === null) return null;
+
+  // ─── 5) Si mode maintenance activé, on affiche uniquement MaintenancePage ─
+  if (maintenanceMode) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        {/* on centre verticalement ici */}
+        <main className="flex-grow flex items-center justify-center">
+          <MaintenancePage />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Le reste du rendu reste inchangé
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
       <Helmet>
@@ -207,7 +242,8 @@ const Index: React.FC = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3 inline-block">
-                  RWDM Academy
+                  {clubName[currentLang?.toUpperCase() as "FR" | "NL" | "EN"] ||
+                    "RWDM Academy"}
                 </h1>
               </motion.div>
               <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -221,6 +257,19 @@ const Index: React.FC = () => {
                   <Info className="h-4 w-4 text-gray-500" />
                   <p>{t("champ2")}</p>
                 </div>
+              </div>
+
+              {/* Bouton Guide d'utilisation */}
+              <div className="mt-4 flex justify-center">
+                <Button
+                  onClick={() => setGuideModalOpen(true)}
+                  className="flex items-center gap-2 bg-white dark:bg-rwdm-darkblue/60 hover:bg-rwdm-blue/90 hover:text-white rounded shadow"
+                  variant="ghost"
+                  size="sm"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="font-medium">{t("user_guide")}</span>
+                </Button>
               </div>
             </AnimatedTransition>
 
@@ -244,6 +293,12 @@ const Index: React.FC = () => {
 
           <Footer />
           <Toaster />
+
+          {/* Modal du Guide d'utilisation */}
+          <UserGuideDialog
+            open={guideModalOpen}
+            onOpenChange={setGuideModalOpen}
+          />
         </>
       )}
     </div>

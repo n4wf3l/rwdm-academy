@@ -1,6 +1,6 @@
 export const translationsNL = {
   welcome:
-    "Welkom op de officiële RWDM Academy registratie platform. Selecteer het type formulier dat u wilt invullen.",
+    "Welkom op de officiële inschrijvingsplatform. Selecteer het type formulier dat u wilt invullen.",
   contact: "Contact",
   about: "Over ons",
   home: "Startpagina",
@@ -41,7 +41,7 @@ export const translationsNL = {
   all_rights_reserved: "Alle rechten voorbehouden.",
   footer_description:
     "De RWDM Academy is toegewijd aan de opleiding van jong Belgisch voetbaltalent. Wij engageren ons om een kwaliteitsvolle leeromgeving te bieden.",
-  about_title: "Over RWDM Academy",
+  about_title: "Over ons",
   about_subtitle:
     "Ontdek ons verhaal, onze missie en ons team dat zich inzet voor de ontwikkeling van jong talent.",
   players_trained: "Opgeleide profspelers",
@@ -1728,4 +1728,59 @@ export const translationsNL = {
   "database.settings_error": "Update fout",
   "database.settings_error_desc": "Kan de hostinginstellingen niet bijwerken",
   items: "gegevens",
+  user_guide: "Gebruikshandleiding",
+  "guide.client": "Klant",
+  "guide.client_intro": "Handleiding voor klanten",
+  "guide.client_desc":
+    "Deze handleiding helpt u bij het navigeren door de klantinterface en het effectief gebruiken van alle beschikbare functies.",
+  "guide.video_placeholder": "Instructievideo",
+  "guide.client_features": "Hoofdfuncties",
+  "guide.dashboard": "Dashboard",
+  "guide.dashboard_desc":
+    "Bekijk uw recente aanvragen, komende afspraken en belangrijke statistieken.",
+  "guide.requests": "Aanvragen",
+  "guide.requests_desc":
+    "Dien aanvragen in voor documenten en andere diensten en volg ze op.",
+  "guide.appointments": "Afspraken",
+  "guide.appointments_desc": "Plan, wijzig of annuleer uw afspraken online.",
+  "guide.admin_intro": "Handleiding voor beheerders",
+  "guide.admin_desc":
+    "Deze handleiding beschrijft de functies die beschikbaar zijn voor beheerders om aanvragen en afspraken te beheren.",
+  "guide.admin_video": "Beheerdertutorial",
+  "guide.admin_features": "Beheerdersfuncties",
+  "guide.request_management": "Aanvragenbeheer",
+  "guide.request_management_desc":
+    "Verwerk binnenkomende aanvragen, wijs ze toe en volg hun status.",
+  "guide.planning": "Planning",
+  "guide.planning_desc": "Beheer de afsprakenkalender en beschikbaarheid.",
+  "guide.documents": "Documenten",
+  "guide.documents_desc":
+    "Toegang tot de documentenbibliotheek en bestandsbeheer.",
+  "guide.superadmin_intro": "Handleiding voor superadministrators",
+  "guide.superadmin_desc":
+    "Deze handleiding behandelt de geavanceerde functies beschikbaar voor superadministrators.",
+  "guide.superadmin_video": "Superadministrator tutorial",
+  "guide.superadmin_features": "Superadministrator functies",
+  "guide.user_management": "Gebruikersbeheer",
+  "guide.user_management_desc":
+    "Maak, bewerk en beheer gebruikersaccounts en -rechten.",
+  "guide.settings": "Instellingen",
+  "guide.settings_desc":
+    "Configureer algemene applicatie-instellingen en geavanceerde opties.",
+  "guide.database": "Database",
+  "guide.database_desc": "Bekijk en beheer databasegebruiksstatistieken.",
+  "guide.owner_intro": "Handleiding voor de eigenaar",
+  "guide.owner_desc":
+    "Deze handleiding beschrijft de exclusieve functies beschikbaar voor de eigenaar van de applicatie.",
+  "guide.owner_video": "Eigenaarstutorial",
+  "guide.owner_features": "Eigenaarsfuncties",
+  "guide.analytics": "Analyses",
+  "guide.analytics_desc":
+    "Toegang tot gedetailleerde rapporten en analyses over het platformgebruik.",
+  "guide.branding": "Personalisatie",
+  "guide.branding_desc":
+    "Pas de weergave en visuele identiteit van de applicatie aan.",
+  "guide.integrations": "Integraties",
+  "guide.integrations_desc":
+    "Configureer integraties met andere diensten en applicaties.",
 };

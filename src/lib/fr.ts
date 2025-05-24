@@ -1,6 +1,6 @@
 export const translationsFR = {
   welcome:
-    "Bienvenue sur la plateforme officielle d'inscription de la RWDM Academy. Veuillez sélectionner le type de formulaire que vous souhaitez compléter.",
+    "Bienvenue sur la plateforme officielle d'inscription de l'académie. Veuillez sélectionner le type de formulaire que vous souhaitez compléter.",
   contact: "Contact",
   about: "À propos",
   home: "Accueil",
@@ -42,7 +42,7 @@ export const translationsFR = {
   all_rights_reserved: "Tous droits réservés.",
   footer_description:
     "La RWDM Academy est dédiée à la formation des jeunes talents du football belge. Nous nous engageons à offrir un environnement d'apprentissage de qualité.",
-  about_title: "À propos de RWDM Academy",
+  about_title: "À propos de nous",
   about_subtitle:
     "Découvrez notre histoire, notre mission et notre équipe dédiée au développement des jeunes talents.",
   players_trained: "Joueurs professionnels formés",
@@ -1799,4 +1799,62 @@ export const translationsFR = {
   "database.settings_error_desc":
     "Impossible de mettre à jour les paramètres d'hébergement",
   items: "données",
+  user_guide: "Guide d'utilisation",
+  "guide.client": "Client",
+  "guide.client_intro": "Guide pour les clients",
+  "guide.client_desc":
+    "Ce guide vous aidera à naviguer dans l'interface client et à utiliser efficacement toutes les fonctionnalités disponibles.",
+  "guide.video_placeholder": "Vidéo tutorielle",
+  "guide.client_features": "Fonctionnalités principales",
+  "guide.dashboard": "Tableau de bord",
+  "guide.dashboard_desc":
+    "Visualisez vos demandes récentes, rendez-vous à venir et statistiques importantes.",
+  "guide.requests": "Demandes",
+  "guide.requests_desc":
+    "Soumettez et suivez vos demandes de documents et autres services.",
+  "guide.appointments": "Rendez-vous",
+  "guide.appointments_desc":
+    "Planifiez, modifiez ou annulez vos rendez-vous en ligne.",
+  "guide.admin_intro": "Guide pour les administrateurs",
+  "guide.admin_desc":
+    "Ce guide présente les fonctionnalités accessibles aux administrateurs pour gérer les demandes et les rendez-vous.",
+  "guide.admin_video": "Tutoriel administrateur",
+  "guide.admin_features": "Fonctionnalités administrateur",
+  "guide.request_management": "Gestion des demandes",
+  "guide.request_management_desc":
+    "Traitez les demandes entrantes, assignez-les et suivez leur statut.",
+  "guide.planning": "Planification",
+  "guide.planning_desc":
+    "Gérez le calendrier des rendez-vous et les disponibilités.",
+  "guide.documents": "Documents",
+  "guide.documents_desc":
+    "Accédez à la bibliothèque de documents et gérez les fichiers.",
+  "guide.superadmin_intro": "Guide pour les super administrateurs",
+  "guide.superadmin_desc":
+    "Ce guide couvre les fonctionnalités avancées disponibles pour les super administrateurs.",
+  "guide.superadmin_video": "Tutoriel super administrateur",
+  "guide.superadmin_features": "Fonctionnalités super administrateur",
+  "guide.user_management": "Gestion des utilisateurs",
+  "guide.user_management_desc":
+    "Créez, modifiez et gérez les comptes et les permissions des utilisateurs.",
+  "guide.settings": "Paramètres",
+  "guide.settings_desc":
+    "Configurez les paramètres généraux de l'application et les options avancées.",
+  "guide.database": "Base de données",
+  "guide.database_desc":
+    "Visualisez et gérez les statistiques d'utilisation de la base de données.",
+  "guide.owner_intro": "Guide pour le propriétaire",
+  "guide.owner_desc":
+    "Ce guide détaille les fonctionnalités exclusives disponibles pour le propriétaire de l'application.",
+  "guide.owner_video": "Tutoriel propriétaire",
+  "guide.owner_features": "Fonctionnalités propriétaire",
+  "guide.analytics": "Analytiques",
+  "guide.analytics_desc":
+    "Accédez à des rapports détaillés et des analyses sur l'utilisation de la plateforme.",
+  "guide.branding": "Personnalisation",
+  "guide.branding_desc":
+    "Personnalisez l'apparence et l'identité visuelle de l'application.",
+  "guide.integrations": "Intégrations",
+  "guide.integrations_desc":
+    "Configurez les intégrations avec d'autres services et applications.",
 };

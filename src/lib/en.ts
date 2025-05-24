@@ -1,6 +1,6 @@
 export const translationsEN = {
   welcome:
-    "Welcome to the official RWDM Academy registration platform. Please select the type of form you wish to complete.",
+    "Welcome to the official registration platform. Please select the type of form you wish to complete.",
   contact: "Contact",
   about: "About",
   home: "Home",
@@ -13,11 +13,10 @@ export const translationsEN = {
   choose_language: "Choose your language",
   cancel: "Cancel",
   academy_registration: "Academy Registration Request",
-  academy_registration_desc:
-    "Form to register and join the RWDM Academy (U5-U9)",
+  academy_registration_desc: "Form to register and join the academy (U5-U9)",
   selection_tests: "Selection Tests",
   selection_tests_desc:
-    "Form to register for the RWDM Academy's selection tests (U5-U21)",
+    "Form to register for the Academy's selection tests (U5-U21)",
   accident_report: "Accident Report",
   accident_report_desc:
     "Form to report a club-related accident or submit a recovery certificate",
@@ -40,8 +39,8 @@ export const translationsEN = {
   legal_info: "Legal Information",
   all_rights_reserved: "All rights reserved.",
   footer_description:
-    "The RWDM Academy is dedicated to developing young Belgian football talents. We are committed to providing a high-quality learning environment.",
-  about_title: "About RWDM Academy",
+    "The Academy is dedicated to developing young Belgian football talents. We are committed to providing a high-quality learning environment.",
+  about_title: "About us",
   about_subtitle:
     "Discover our story, mission, and the team dedicated to developing young talents.",
   players_trained: "Professional players trained",
@@ -106,7 +105,7 @@ export const translationsEN = {
   auth_forgot_password: "Forgot password?",
   auth_login_button: "Log in",
   auth_logging_in: "Logging in...",
-  auth_admin_note: "This page is reserved for RWDM Academy administrators.",
+  auth_admin_note: "This page is reserved for administrators.",
   auth_login_success: "Login successful",
   auth_login_success_desc: "Welcome to the admin panel",
   auth_login_error: "Login error",
@@ -166,7 +165,7 @@ export const translationsEN = {
   signature: "Signature",
   signature_desc: "Please sign below",
   signature_reminder_html:
-    "<strong>Reminder:</strong> this form is a registration request to the RWDM Academy and does not constitute a definitive enrollment. You will receive a response within hours or days from management at the email address you provided.",
+    "<strong>Reminder:</strong> this form is a registration request to the Academy and does not constitute a definitive enrollment. You will receive a response within hours or days from management at the email address you provided.",
   label_date: "Date:",
 
   // Politique
@@ -278,7 +277,7 @@ export const translationsEN = {
   selection_signature_section_subtitle:
     "Please sign to confirm your registration for the selection tests",
   selection_signature_info:
-    "The RWDM Academy disclaims any liability for incidents, accidents, or thefts occurring on its premises or nearby. By signing this document, you acknowledge this information.",
+    "The Academy disclaims any liability for incidents, accidents, or thefts occurring on its premises or nearby. By signing this document, you acknowledge this information.",
   selection_signature_label:
     "Signature of the player or parents/legal guardian (for minors under 18)",
   selection_signature_placeholder:
@@ -1689,4 +1688,58 @@ export const translationsEN = {
   "database.settings_error": "Update error",
   "database.settings_error_desc": "Unable to update hosting settings",
   items: "items",
+  user_guide: "User Guide",
+  "guide.client": "Client",
+  "guide.client_intro": "Client Guide",
+  "guide.client_desc":
+    "This guide will help you navigate the client interface and effectively use all available features.",
+  "guide.video_placeholder": "Tutorial Video",
+  "guide.client_features": "Main Features",
+  "guide.dashboard": "Dashboard",
+  "guide.dashboard_desc":
+    "View your recent requests, upcoming appointments, and important statistics.",
+  "guide.requests": "Requests",
+  "guide.requests_desc": "Submit and track your document and service requests.",
+  "guide.appointments": "Appointments",
+  "guide.appointments_desc":
+    "Schedule, modify, or cancel your appointments online.",
+  "guide.admin_intro": "Administrator Guide",
+  "guide.admin_desc":
+    "This guide covers the features available to administrators for managing requests and appointments.",
+  "guide.admin_video": "Administrator Tutorial",
+  "guide.admin_features": "Administrator Features",
+  "guide.request_management": "Request Management",
+  "guide.request_management_desc":
+    "Process incoming requests, assign them, and track their status.",
+  "guide.planning": "Planning",
+  "guide.planning_desc": "Manage the appointment calendar and availability.",
+  "guide.documents": "Documents",
+  "guide.documents_desc": "Access the document library and manage files.",
+  "guide.superadmin_intro": "Super Administrator Guide",
+  "guide.superadmin_desc":
+    "This guide covers the advanced features available to super administrators.",
+  "guide.superadmin_video": "Super Administrator Tutorial",
+  "guide.superadmin_features": "Super Administrator Features",
+  "guide.user_management": "User Management",
+  "guide.user_management_desc":
+    "Create, edit, and manage user accounts and permissions.",
+  "guide.settings": "Settings",
+  "guide.settings_desc":
+    "Configure general application settings and advanced options.",
+  "guide.database": "Database",
+  "guide.database_desc": "View and manage database usage statistics.",
+  "guide.owner_intro": "Owner Guide",
+  "guide.owner_desc":
+    "This guide details the exclusive features available to the application owner.",
+  "guide.owner_video": "Owner Tutorial",
+  "guide.owner_features": "Owner Features",
+  "guide.analytics": "Analytics",
+  "guide.analytics_desc":
+    "Access detailed reports and analytics on platform usage.",
+  "guide.branding": "Branding",
+  "guide.branding_desc":
+    "Customize the appearance and visual identity of the application.",
+  "guide.integrations": "Integrations",
+  "guide.integrations_desc":
+    "Configure integrations with other services and applications.",
 };

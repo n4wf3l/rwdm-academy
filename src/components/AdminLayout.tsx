@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Calendar,
@@ -16,6 +15,7 @@ import {
   UserIcon,
   Mail,
   CalendarCheck,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -31,6 +31,8 @@ import { Badge } from "./ui/badge";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import ViewProfile from "@/components/members/ViewProfile"; // Nouvel import
 import { format } from "date-fns";
+import UserGuideDialog from "@/components/dialogs/UserGuideDialog";
+import { Button } from "./ui/button";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -63,6 +65,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false); // Nouvel état
   const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(0); // Ajouté pour le compteur de rendez-vous du jour
+  const [guideModalOpen, setGuideModalOpen] = useState(false); // État pour le modal du guide
   const location = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -172,15 +175,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40">
       {/* Bloc utilisateur fixe en haut à droite */}
-      <div className="fixed top-4 right-4 z-50 flex items-center space-x-2 bg-white dark:bg-rwdm-darkblue p-2 rounded shadow">
-        <span className="text-gray-800 dark:text-white font-medium">
-          {user.firstName} {user.lastName}
-        </span>
-        <div className="relative flex items-center justify-center">
-          <div className="absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75 animate-ping"></div>
-          <div className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></div>
-        </div>
-      </div>
+      <Button
+        onClick={() => setGuideModalOpen(true)}
+        className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-white dark:bg-rwdm-darkblue hover:bg-rwdm-blue/90 hover:text-white rounded shadow"
+        variant="ghost"
+      >
+        <HelpCircle className="h-5 w-5" />
+        <span className="font-medium">{t("user_guide")}</span>
+      </Button>
 
       {/* Sidebar */}
       <div
@@ -507,6 +509,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         title={t("logout_title")}
         message={t("logout_message")}
       />
+
+      {/* Modal du Guide d'utilisation */}
+      <UserGuideDialog open={guideModalOpen} onOpenChange={setGuideModalOpen} />
     </div>
   );
 };
