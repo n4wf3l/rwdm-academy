@@ -60,7 +60,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import DatabaseUsageChart from "@/components/charts/DatabaseUsageChart";
 // Import the new components we'll create
 import {
   AppointmentType,
@@ -115,6 +115,7 @@ const Planning = () => {
   const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [newRequestsCount, setNewRequestsCount] = useState(0);
   const [adminFilter, setAdminFilter] = useState<string>("all");
+  const [userRole, setUserRole] = useState<string>(""); // Ajouter un état pour stocker le rôle de l'utilisateur
   const location = useLocation();
   const { toast } = useToast();
 
@@ -484,6 +485,29 @@ const Planning = () => {
     );
   };
 
+  // Ajouter un useEffect pour récupérer le rôle de l'utilisateur
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!response.ok)
+          throw new Error("Impossible de récupérer l'utilisateur");
+
+        const userData = await response.json();
+        setUserRole(userData.role);
+      } catch (error) {
+        console.error("Erreur lors de la récupération du rôle:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+
   return (
     <AdminLayout newRequestsCount={newRequestsCount}>
       <motion.div
@@ -524,14 +548,18 @@ const Planning = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <Button
-              variant={isArchiveMode ? "default" : "outline"}
-              className={isArchiveMode ? "bg-amber-600 hover:bg-amber-700" : ""}
-              onClick={() => setIsArchiveMode(!isArchiveMode)}
-            >
-              <Archive className="mr-2 h-4 w-4" />
-              {isArchiveMode ? t("exitArchiveMode") : t("archiveMode")}
-            </Button>
+            {["owner", "superadmin"].includes(userRole) && (
+              <Button
+                variant={isArchiveMode ? "default" : "outline"}
+                className={
+                  isArchiveMode ? "bg-amber-600 hover:bg-amber-700" : ""
+                }
+                onClick={() => setIsArchiveMode(!isArchiveMode)}
+              >
+                <Archive className="mr-2 h-4 w-4" />
+                {isArchiveMode ? t("exitArchiveMode") : t("archiveMode")}
+              </Button>
+            )}
 
             <Button
               className="bg-rwdm-blue"
@@ -571,9 +599,16 @@ const Planning = () => {
               onValueChange={(value) => setCurrentView(value as "day" | "week")}
             >
               <div className="flex items-center justify-between mt-4">
-                <TabsList className="grid max-w-xs grid-cols-2">
+                <TabsList
+                  className={`w-full max-w-lg grid ${
+                    ["owner", "superadmin"].includes(userRole)
+                      ? "grid-cols-3"
+                      : "grid-cols-2"
+                  }`}
+                >
                   <TabsTrigger value="day">{t("view_day")}</TabsTrigger>
                   <TabsTrigger value="week">{t("view_week")}</TabsTrigger>
+                  <TabsTrigger value="database">{t("database")}</TabsTrigger>
                 </TabsList>
                 <Select
                   value={adminFilter}
@@ -625,6 +660,12 @@ const Planning = () => {
                   showAppointmentDetails={showAppointmentDetails}
                 />
               </TabsContent>
+
+              {["owner", "superadmin"].includes(userRole) && (
+                <TabsContent value="database" className="mt-4">
+                  <DatabaseUsageChart />
+                </TabsContent>
+              )}
             </Tabs>
           </motion.div>
         )}

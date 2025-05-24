@@ -69,6 +69,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import JSZip from "jszip";
 import { Checkbox } from "@/components/ui/checkbox";
+import DatabaseUsageChart from "@/components/charts/DatabaseUsageChart";
 
 // Types pour les documents
 type DocumentType =
@@ -134,7 +135,7 @@ const Documents = () => {
   );
   const [archiveProgress, setArchiveProgress] = useState(0);
   const [isArchiving, setIsArchiving] = useState(false);
-
+  const [userRole, setUserRole] = useState<string>("");
   function mapDbStatus(dbStatus: string): RequestStatus {
     switch (dbStatus) {
       case "Nouveau":
@@ -207,6 +208,28 @@ const Documents = () => {
         return type;
     }
   };
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!response.ok)
+          throw new Error("Impossible de récupérer l'utilisateur");
+
+        const userData = await response.json();
+        setUserRole(userData.role);
+      } catch (error) {
+        console.error("Erreur lors de la récupération du rôle:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const fetchCompletedDocuments = async () => {
     try {
@@ -1045,17 +1068,21 @@ const Documents = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button
-                variant={archiveMode ? "default" : "outline"}
-                className={archiveMode ? "bg-amber-600 hover:bg-amber-700" : ""}
-                onClick={() => {
-                  setArchiveMode(!archiveMode);
-                  setSelectedDocuments(new Set());
-                }}
-              >
-                <Archive className="mr-2 h-4 w-4" />
-                {archiveMode ? t("exitArchiveMode") : t("archiveMode")}
-              </Button>
+              {["owner", "superadmin"].includes(userRole) && (
+                <Button
+                  variant={archiveMode ? "default" : "outline"}
+                  className={
+                    archiveMode ? "bg-amber-600 hover:bg-amber-700" : ""
+                  }
+                  onClick={() => {
+                    setArchiveMode(!archiveMode);
+                    setSelectedDocuments(new Set());
+                  }}
+                >
+                  <Archive className="mr-2 h-4 w-4" />
+                  {archiveMode ? t("exitArchiveMode") : t("archiveMode")}
+                </Button>
+              )}
 
               <Button
                 className="bg-rwdm-blue"
@@ -1073,11 +1100,12 @@ const Documents = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <TabsList className="w-full max-w-md grid grid-cols-2">
+            <TabsList className="w-full max-w-lg grid grid-cols-3">
               <TabsTrigger value="completed">
                 {t("completedRequests")}
               </TabsTrigger>
               <TabsTrigger value="statistics">{t("statistics")}</TabsTrigger>
+              <TabsTrigger value="database">{t("database")}</TabsTrigger>
             </TabsList>
           </motion.div>
 
@@ -1266,6 +1294,17 @@ const Documents = () => {
                   assignedTo: doc.assignedAdmin,
                 }))}
               />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="database">
+            <motion.div
+              className="p-0 md:p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <DatabaseUsageChart />
             </motion.div>
           </TabsContent>
         </motion.div>

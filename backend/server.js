@@ -940,6 +940,123 @@ router.post("/login", async (req, res) => {
 
 module.exports = router;
 
+app.get("/api/storage-settings", async (req, res) => {
+  try {
+    const connection = await dbPool.getConnection();
+    const [rows] = await connection.query(
+      "SELECT * FROM storage_settings LIMIT 1"
+    );
+    connection.release();
+
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res
+        .status(404)
+        .json({ message: "Aucune configuration de stockage trouvée" });
+    }
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des paramètres de stockage:",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// Endpoint pour mettre à jour les paramètres de stockage
+app.put("/api/storage-settings", async (req, res) => {
+  const { total_capacity, provider_name } = req.body;
+
+  if (!total_capacity || !provider_name) {
+    return res
+      .status(400)
+      .json({ message: "Capacité totale et nom de l'hébergeur requis" });
+  }
+
+  try {
+    const connection = await dbPool.getConnection();
+    const [result] = await connection.query(
+      "UPDATE storage_settings SET total_capacity = ?, provider_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1",
+      [total_capacity, provider_name]
+    );
+    connection.release();
+
+    if (result.affectedRows > 0) {
+      res.json({ message: "Paramètres de stockage mis à jour avec succès" });
+    } else {
+      res
+        .status(404)
+        .json({ message: "Aucune configuration de stockage trouvée" });
+    }
+  } catch (error) {
+    console.error(
+      "Erreur lors de la mise à jour des paramètres de stockage:",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+app.get("/api/database-stats", async (req, res) => {
+  try {
+    const connection = await dbPool.getConnection();
+
+    // Récupérer le nombre de demandes terminées
+    const [completedRequests] = await connection.query(
+      "SELECT COUNT(*) as count FROM requests WHERE status = 'Terminé'"
+    );
+
+    // Récupérer le nombre de demandes non terminées
+    const [pendingRequests] = await connection.query(
+      "SELECT COUNT(*) as count FROM requests WHERE status != 'Terminé' OR status IS NULL"
+    );
+
+    // Récupérer le nombre de rendez-vous
+    const [appointments] = await connection.query(
+      "SELECT COUNT(*) as count FROM appointments"
+    );
+
+    connection.release();
+
+    // Estimation de la taille (en Mo) basée sur le nombre d'entrées
+    const completedSize = completedRequests[0].count * 0.05; // 50 Ko par demande terminée
+    const pendingSize = pendingRequests[0].count * 0.05; // 50 Ko par demande en cours
+    const appointmentsSize = appointments[0].count * 0.02; // 20 Ko par rendez-vous
+
+    // Calculer la somme totale utilisée
+    const totalUsedSize = completedSize + pendingSize + appointmentsSize;
+
+    res.json({
+      completed: {
+        count: completedRequests[0].count,
+        sizeInMo: completedSize,
+      },
+      pending: {
+        count: pendingRequests[0].count,
+        sizeInMo: pendingSize,
+      },
+      appointments: {
+        count: appointments[0].count,
+        sizeInMo: appointmentsSize,
+      },
+      total: {
+        count:
+          completedRequests[0].count +
+          pendingRequests[0].count +
+          appointments[0].count,
+        sizeInMo: totalUsedSize,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des statistiques de la base de données:",
+      error
+    );
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
 app.post("/api/forget-password", async (req, res) => {
   const { email } = req.body;
 
