@@ -1795,4 +1795,7 @@ export const translationsFR = {
   "database.hosting_details": "Détails de l'hébergement de base de données",
   "database.host_name": "Nom de l'hébergeur",
   "database.allocated_storage": "Espace alloué",
+  "database.settings_error": "Erreur de mise à jour",
+  "database.settings_error_desc":
+    "Impossible de mettre à jour les paramètres d'hébergement",
 };

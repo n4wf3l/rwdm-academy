@@ -12,9 +12,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Edit, Save, X } from "lucide-react";
 import axios from "axios"; // Assurez-vous d'installer axios si ce n'est pas déjà fait
+import { useToast } from "@/components/ui/use-toast";
 
 const DatabaseUsageChart = () => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
 
   // État pour les statistiques de la base de données
@@ -125,9 +127,23 @@ const DatabaseUsageChart = () => {
         storage: tempStorage,
       });
       setIsEditing(false);
+
+      // Afficher le message toast de succès
+      toast({
+        title: t("database.settings_updated"),
+        description: t("database.settings_updated_desc"),
+        variant: "default",
+      });
     } catch (error) {
       console.error("Erreur lors de la mise à jour:", error);
       setError("Échec de la mise à jour des informations d'hébergement");
+
+      // Toast d'erreur
+      toast({
+        title: t("database.settings_error"),
+        description: t("database.settings_error_desc"),
+        variant: "destructive",
+      });
     }
   };
 

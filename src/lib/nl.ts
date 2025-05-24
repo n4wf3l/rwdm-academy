@@ -1725,4 +1725,6 @@ export const translationsNL = {
   "database.hosting_details": "Details database hosting",
   "database.host_name": "Naam van de host",
   "database.allocated_storage": "Toegewezen opslagruimte",
+  "database.settings_error": "Update fout",
+  "database.settings_error_desc": "Kan de hostinginstellingen niet bijwerken",
 };

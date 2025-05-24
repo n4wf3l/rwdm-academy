@@ -1686,4 +1686,6 @@ export const translationsEN = {
   "database.hosting_details": "Database hosting details",
   "database.host_name": "Host Name",
   "database.allocated_storage": "Allocated Storage",
+  "database.settings_error": "Update error",
+  "database.settings_error_desc": "Unable to update hosting settings",
 };
