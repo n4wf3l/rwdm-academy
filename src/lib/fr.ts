@@ -1800,21 +1800,21 @@ export const translationsFR = {
     "Impossible de mettre à jour les paramètres d'hébergement",
   items: "données",
   user_guide: "Guide d'utilisation",
-  "guide.client": "Client",
-  "guide.client_intro": "Guide pour les clients",
+  "guide.client": "Visiteur",
+  "guide.client_intro": "Guide pour les visiteurs",
   "guide.client_desc":
-    "Ce guide vous aidera à naviguer dans l'interface client et à utiliser efficacement toutes les fonctionnalités disponibles.",
+    "Ce guide vous aide à comprendre comment utiliser la plateforme en tant que parent, joueur ou représentant, et à soumettre les différents formulaires disponibles.",
   "guide.video_placeholder": "Vidéo tutorielle",
   "guide.client_features": "Fonctionnalités principales",
-  "guide.dashboard": "Tableau de bord",
+  "guide.dashboard": "Accueil",
   "guide.dashboard_desc":
-    "Visualisez vos demandes récentes, rendez-vous à venir et statistiques importantes.",
-  "guide.requests": "Demandes",
+    "Accédez rapidement aux formulaires disponibles et aux informations utiles pour votre demande.",
+  "guide.requests": "Formulaires",
   "guide.requests_desc":
-    "Soumettez et suivez vos demandes de documents et autres services.",
-  "guide.appointments": "Rendez-vous",
+    "Soumettez une demande d’inscription, un test de sélection, une déclaration d’accident ou une décharge de responsabilité. Suivez l’état de vos demandes grâce aux notifications reçues par email.",
+  "guide.appointments": "Certificat de guérison",
   "guide.appointments_desc":
-    "Planifiez, modifiez ou annulez vos rendez-vous en ligne.",
+    "Transmettez votre certificat de guérison une fois la blessure soignée, à l’aide du code de dossier reçu par email.",
   "guide.admin_intro": "Guide pour les administrateurs",
   "guide.admin_desc":
     "Ce guide présente les fonctionnalités accessibles aux administrateurs pour gérer les demandes et les rendez-vous.",
@@ -1822,7 +1822,7 @@ export const translationsFR = {
   "guide.admin_features": "Fonctionnalités administrateur",
   "guide.request_management": "Gestion des demandes",
   "guide.request_management_desc":
-    "Traitez les demandes entrantes, assignez-les et suivez leur statut.",
+    "Traitez les demandes qui vous sont assignées et suivez leur statut.",
   "guide.planning": "Planification",
   "guide.planning_desc":
     "Gérez le calendrier des rendez-vous et les disponibilités.",
@@ -1848,13 +1848,37 @@ export const translationsFR = {
     "Ce guide détaille les fonctionnalités exclusives disponibles pour le propriétaire de l'application.",
   "guide.owner_video": "Tutoriel propriétaire",
   "guide.owner_features": "Fonctionnalités propriétaire",
-  "guide.analytics": "Analytiques",
+  "guide.analytics": "Données PSD",
   "guide.analytics_desc":
-    "Accédez à des rapports détaillés et des analyses sur l'utilisation de la plateforme.",
-  "guide.branding": "Personnalisation",
+    "Accédez à des rapports détaillés d'informations provenant de l'API de PSD.",
+  "guide.branding": "Accès complet",
   "guide.branding_desc":
-    "Personnalisez l'apparence et l'identité visuelle de l'application.",
-  "guide.integrations": "Intégrations",
+    "Ayez un accès complet à toutes les fonctionnalités de l'application, y compris la personnalisation de l'interface et des emails.",
+  "guide.integrations": "Initialisation d'API",
   "guide.integrations_desc":
-    "Configurez les intégrations avec d'autres services et applications.",
+    "Initialisez une authentification API provenant de PSD.",
+  "guide.rights_management": "Attribution des droits",
+  "guide.rights_management_desc":
+    "Attribuez des droits spécifiques aux admins et superadmins pour gérer les accès et les permissions.",
+  reset_user_password: "Réinitialiser le mot de passe de l'utilisateur",
+  enter_new_password_for_user:
+    "Entrez un nouveau mot de passe pour l'utilisateur",
+  "guide.request_assignment": "Gestion des demandes",
+  "guide.request_assignment_desc":
+    "Assignez une demande ou un rendez-vous à un administrateur",
+  "guide.archives": "Archives",
+  "guide.archives_desc":
+    "Gérez les archives de l'application et la structure des données enregistrées.",
+  "guide.email_management": "Gestion des emails",
+  "guide.email_management_desc":
+    "Personnalisez les emails automatiques envoyés aux utilisateurs.",
+  "guide.developer_access": "Accès pour développeur",
+  "guide.github_repo": "Repository GitHub",
+  "guide.github_repo_link": "Accéder au repository RWDM Academy",
+  "guide.tech_stack": "Stack technologique",
+  "guide.tech_stack_desc":
+    "L'application est développée avec les technologies suivantes :",
+  "guide.api_docs": "Documentation API",
+  "guide.api_docs_desc":
+    "La documentation complète de l'API est disponible pour les développeurs autorisés dans le dossier Readme du repository.",
 };

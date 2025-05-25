@@ -1729,20 +1729,21 @@ export const translationsNL = {
   "database.settings_error_desc": "Kan de hostinginstellingen niet bijwerken",
   items: "gegevens",
   user_guide: "Gebruikshandleiding",
-  "guide.client": "Klant",
-  "guide.client_intro": "Handleiding voor klanten",
+  "guide.client": "Bezoeker",
+  "guide.client_intro": "Gids voor bezoekers",
   "guide.client_desc":
-    "Deze handleiding helpt u bij het navigeren door de klantinterface en het effectief gebruiken van alle beschikbare functies.",
+    "Deze gids helpt u te begrijpen hoe u het platform als ouder, speler of vertegenwoordiger kunt gebruiken, en hoe u de verschillende beschikbare formulieren kunt indienen.",
   "guide.video_placeholder": "Instructievideo",
   "guide.client_features": "Hoofdfuncties",
-  "guide.dashboard": "Dashboard",
+  "guide.dashboard": "Startpagina",
   "guide.dashboard_desc":
-    "Bekijk uw recente aanvragen, komende afspraken en belangrijke statistieken.",
-  "guide.requests": "Aanvragen",
+    "Krijg snel toegang tot beschikbare formulieren en nuttige informatie voor uw aanvraag.",
+  "guide.requests": "Formulieren",
   "guide.requests_desc":
-    "Dien aanvragen in voor documenten en andere diensten en volg ze op.",
-  "guide.appointments": "Afspraken",
-  "guide.appointments_desc": "Plan, wijzig of annuleer uw afspraken online.",
+    "Dien een inschrijvingsaanvraag, selectietest, ongevalsaangifte of aansprakelijkheidsontheffing in. Volg de status van uw aanvragen via e-mailmeldingen.",
+  "guide.appointments": "Genezingscertificaat",
+  "guide.appointments_desc":
+    "Verstuur uw genezingscertificaat zodra de blessure is genezen, met behulp van de dossiercode die u per e-mail hebt ontvangen.",
   "guide.admin_intro": "Handleiding voor beheerders",
   "guide.admin_desc":
     "Deze handleiding beschrijft de functies die beschikbaar zijn voor beheerders om aanvragen en afspraken te beheren.",
@@ -1750,7 +1751,7 @@ export const translationsNL = {
   "guide.admin_features": "Beheerdersfuncties",
   "guide.request_management": "Aanvragenbeheer",
   "guide.request_management_desc":
-    "Verwerk binnenkomende aanvragen, wijs ze toe en volg hun status.",
+    "Behandel de verzoeken die aan jou zijn toegewezen en volg hun status op.",
   "guide.planning": "Planning",
   "guide.planning_desc": "Beheer de afsprakenkalender en beschikbaarheid.",
   "guide.documents": "Documenten",
@@ -1774,13 +1775,35 @@ export const translationsNL = {
     "Deze handleiding beschrijft de exclusieve functies beschikbaar voor de eigenaar van de applicatie.",
   "guide.owner_video": "Eigenaarstutorial",
   "guide.owner_features": "Eigenaarsfuncties",
-  "guide.analytics": "Analyses",
+  "guide.analytics": "PSD-gegevens",
   "guide.analytics_desc":
-    "Toegang tot gedetailleerde rapporten en analyses over het platformgebruik.",
-  "guide.branding": "Personalisatie",
+    "Toegang tot gedetailleerde rapporten en informatie van de PSD API.",
+  "guide.branding": "Volledige toegang",
   "guide.branding_desc":
-    "Pas de weergave en visuele identiteit van de applicatie aan.",
-  "guide.integrations": "Integraties",
-  "guide.integrations_desc":
-    "Configureer integraties met andere diensten en applicaties.",
+    "Krijg volledige toegang tot alle applicatiefuncties, inclusief interface- en e-mailaanpassing.",
+  "guide.integrations": "API-initialisatie",
+  "guide.integrations_desc": "Initialiseer API-authenticatie van PSD.",
+  "guide.rights_management": "Rechtenbeheer",
+  "guide.rights_management_desc":
+    "Ken specifieke rechten toe aan beheerders en superbeheerders om toegang en machtigingen te beheren.",
+  reset_user_password: "Gebruikerswachtwoord opnieuw instellen",
+  enter_new_password_for_user: "Voer een nieuw wachtwoord in voor de gebruiker",
+  "guide.request_assignment": "Aanvraagbeheer",
+  "guide.request_assignment_desc":
+    "Wijs aanvragen of afspraken toe aan een beheerder",
+  "guide.archives": "Archieven",
+  "guide.archives_desc":
+    "Beheer applicatiearchieven en opgeslagen datastructuur.",
+  "guide.email_management": "E-mailbeheer",
+  "guide.email_management_desc":
+    "Pas automatische e-mails aan die naar gebruikers worden verzonden.",
+  "guide.developer_access": "Toegang voor ontwikkelaars",
+  "guide.github_repo": "GitHub Repository",
+  "guide.github_repo_link": "Toegang tot RWDM Academy repository",
+  "guide.tech_stack": "Technologiestack",
+  "guide.tech_stack_desc":
+    "De applicatie is gebouwd met de volgende technologieën:",
+  "guide.api_docs": "API-documentatie",
+  "guide.api_docs_desc":
+    "Volledige API-documentatie is beschikbaar voor geautoriseerde ontwikkelaars in de Readme van de repository.",
 };

@@ -1689,20 +1689,21 @@ export const translationsEN = {
   "database.settings_error_desc": "Unable to update hosting settings",
   items: "items",
   user_guide: "User Guide",
-  "guide.client": "Client",
-  "guide.client_intro": "Client Guide",
+  "guide.client": "Visitor",
+  "guide.client_intro": "Visitor Guide",
   "guide.client_desc":
-    "This guide will help you navigate the client interface and effectively use all available features.",
+    "This guide helps you understand how to use the platform as a parent, player, or representative, and how to submit the various available forms.",
   "guide.video_placeholder": "Tutorial Video",
   "guide.client_features": "Main Features",
   "guide.dashboard": "Dashboard",
   "guide.dashboard_desc":
-    "View your recent requests, upcoming appointments, and important statistics.",
-  "guide.requests": "Requests",
-  "guide.requests_desc": "Submit and track your document and service requests.",
-  "guide.appointments": "Appointments",
+    "Quickly access available forms and useful information for your request.",
+  "guide.requests": "Forms",
+  "guide.requests_desc":
+    "Submit a registration request, selection test, accident report, or liability waiver. Track the status of your requests through email notifications.",
+  "guide.appointments": "Recovery Certificate",
   "guide.appointments_desc":
-    "Schedule, modify, or cancel your appointments online.",
+    "Submit your recovery certificate once your injury has healed, using the case code received by email.",
   "guide.admin_intro": "Administrator Guide",
   "guide.admin_desc":
     "This guide covers the features available to administrators for managing requests and appointments.",
@@ -1710,7 +1711,7 @@ export const translationsEN = {
   "guide.admin_features": "Administrator Features",
   "guide.request_management": "Request Management",
   "guide.request_management_desc":
-    "Process incoming requests, assign them, and track their status.",
+    "Handle the requests assigned to you and track their status.",
   "guide.planning": "Planning",
   "guide.planning_desc": "Manage the appointment calendar and availability.",
   "guide.documents": "Documents",
@@ -1733,13 +1734,34 @@ export const translationsEN = {
     "This guide details the exclusive features available to the application owner.",
   "guide.owner_video": "Owner Tutorial",
   "guide.owner_features": "Owner Features",
-  "guide.analytics": "Analytics",
+  "guide.analytics": "PSD Data",
   "guide.analytics_desc":
-    "Access detailed reports and analytics on platform usage.",
-  "guide.branding": "Branding",
+    "Access detailed reports and information from the PSD API.",
+  "guide.branding": "Full Access",
   "guide.branding_desc":
-    "Customize the appearance and visual identity of the application.",
-  "guide.integrations": "Integrations",
-  "guide.integrations_desc":
-    "Configure integrations with other services and applications.",
+    "Have full access to all application features, including interface and email customization.",
+  "guide.integrations": "API Initialization",
+  "guide.integrations_desc": "Initialize API authentication from PSD.",
+  "guide.rights_management": "Rights Management",
+  "guide.rights_management_desc":
+    "Assign specific rights to admins and superadmins to manage access and permissions.",
+  reset_user_password: "Reset user password",
+  enter_new_password_for_user: "Enter new password for user",
+  "guide.request_assignment": "Request Management",
+  "guide.request_assignment_desc":
+    "Assign requests or appointments to an administrator",
+  "guide.archives": "Archives",
+  "guide.archives_desc":
+    "Manage application archives and stored data structure.",
+  "guide.email_management": "Email Management",
+  "guide.email_management_desc": "Customize automated emails sent to users.",
+  "guide.developer_access": "Developer Access",
+  "guide.github_repo": "GitHub Repository",
+  "guide.github_repo_link": "Access RWDM Academy repository",
+  "guide.tech_stack": "Tech Stack",
+  "guide.tech_stack_desc":
+    "The application is built using the following technologies:",
+  "guide.api_docs": "API Documentation",
+  "guide.api_docs_desc":
+    "Complete API documentation is available for authorized developers in the Readme of the repository.",
 };

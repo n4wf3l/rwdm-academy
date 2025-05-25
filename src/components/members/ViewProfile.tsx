@@ -43,8 +43,50 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const currentUserId = localStorage.getItem("adminId");
   const isSelf = String(user.id) === currentUserId;
+
+  // Récupérer le rôle de l'utilisateur connecté
+  useEffect(() => {
+    const fetchCurrentUserRole = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch("http://localhost:5000/api/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw new Error("Erreur de récupération");
+
+        const data = await response.json();
+        setCurrentUserRole(data.role);
+      } catch (error) {
+        console.error("Erreur lors de la récupération du rôle:", error);
+      }
+    };
+
+    fetchCurrentUserRole();
+  }, []);
+
+  // Vérifier si l'utilisateur courant peut changer le mot de passe de l'utilisateur affiché
+  const canChangePassword = () => {
+    // Owner peut changer tous les mots de passe
+    if (currentUserRole === "owner") return true;
+
+    // Superadmin peut changer les mots de passe des admins, mais pas ceux des superadmins ou owners
+    if (currentUserRole === "superadmin") {
+      return user.role === "admin" || isSelf;
+    }
+
+    // Admin ne peut changer que son propre mot de passe
+    if (currentUserRole === "admin") {
+      return isSelf;
+    }
+
+    return false;
+  };
 
   const handlePasswordUpdate = async () => {
     if (newPassword !== confirmPassword) {
@@ -57,17 +99,18 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
     }
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/change-password",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ newPassword }),
-        }
-      );
+      const endpoint = isSelf
+        ? "http://localhost:5000/api/change-password"
+        : `http://localhost:5000/api/users/${user.id}/reset-password`;
+
+      const response = await fetch(endpoint, {
+        method: isSelf ? "PATCH" : "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ newPassword }),
+      });
       const data = await response.json();
 
       if (response.ok) {
@@ -116,9 +159,15 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
               animate={{ y: 0, opacity: 1 }}
             >
               <img
-                src={user.profilePicture || "https://via.placeholder.com/150"}
+                src={user.profilePicture || "/avatar.jpg"}
                 alt="Avatar"
                 className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  if (target.src !== window.location.origin + "/avatar.jpg") {
+                    target.src = "/avatar.jpg";
+                  }
+                }}
               />
               <div>
                 <div className="flex items-center gap-2">
@@ -140,68 +189,72 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Changer mot de passe */}
-        <AnimatePresence mode="wait">
-          {!isChangingPassword ? (
-            <motion.div
-              key="show-button"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
-            >
-              <Button
-                variant="outline"
-                onClick={() => setIsChangingPassword(true)}
-                className="w-full"
+        {/* Changer mot de passe - affiché uniquement si autorisé */}
+        {canChangePassword() && (
+          <AnimatePresence mode="wait">
+            {!isChangingPassword ? (
+              <motion.div
+                key="show-button"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
               >
-                {t("change_password")}
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="change-password"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
-            >
-              <p className="mb-3 text-sm text-gray-600">
-                {t("enter_new_password")}
-              </p>
-              <Input
-                type="password"
-                placeholder={t("new_password")}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="mb-3"
-              />
-              <Input
-                type="password"
-                placeholder={t("confirm_password")}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mb-3"
-              />
-              <div className="flex gap-3">
-                <Button onClick={handlePasswordUpdate} className="flex-1">
-                  {t("update")}
-                </Button>
                 <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setIsChangingPassword(false);
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                  className="flex-1"
+                  variant="outline"
+                  onClick={() => setIsChangingPassword(true)}
+                  className="w-full"
                 >
-                  {t("cancel")}
+                  {isSelf ? t("change_password") : t("reset_user_password")}
                 </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="change-password"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-6 p-4 bg-gray-50 rounded-lg shadow"
+              >
+                <p className="mb-3 text-sm text-gray-600">
+                  {isSelf
+                    ? t("enter_new_password")
+                    : t("enter_new_password_for_user")}
+                </p>
+                <Input
+                  type="password"
+                  placeholder={t("new_password")}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mb-3"
+                />
+                <Input
+                  type="password"
+                  placeholder={t("confirm_password")}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mb-3"
+                />
+                <div className="flex gap-3">
+                  <Button onClick={handlePasswordUpdate} className="flex-1">
+                    {t("update")}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setIsChangingPassword(false);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }}
+                    className="flex-1"
+                  >
+                    {t("cancel")}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Assignations */}
         <motion.div
