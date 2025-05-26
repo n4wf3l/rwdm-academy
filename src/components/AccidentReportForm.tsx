@@ -35,6 +35,14 @@ import {
 } from "@/components/ui/select"; // Assurez-vous que ce chemin est correct
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface FormSectionProps {
   title: string;

@@ -724,6 +724,28 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 });
                                 return;
                               }
+
+                              // Vérification améliorée avec conversion en string
+                              if (
+                                request.assignedTo &&
+                                String(request.assignedTo) !==
+                                  String(currentAdminId)
+                              ) {
+                                console.log(
+                                  "Debug - AssignedTo:",
+                                  request.assignedTo,
+                                  "CurrentAdminId:",
+                                  currentAdminId
+                                );
+                                toast({
+                                  title: t("error"),
+                                  description:
+                                    "Vous ne pouvez accepter que les demandes qui vous sont assignées.",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+
                               setPendingAction({ type: "accept", request });
                               setConfirmOpen(true);
                             }}
@@ -748,6 +770,22 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 });
                                 return;
                               }
+
+                              // Vérification améliorée avec conversion en string
+                              if (
+                                request.assignedTo &&
+                                String(request.assignedTo) !==
+                                  String(currentAdminId)
+                              ) {
+                                toast({
+                                  title: t("error"),
+                                  description:
+                                    "Vous ne pouvez rejeter que les demandes qui vous sont assignées.",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+
                               setPendingAction({ type: "reject", request });
                               setConfirmOpen(true);
                             }}
