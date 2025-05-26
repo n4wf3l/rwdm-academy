@@ -468,12 +468,52 @@ router.post("/send-decision-email", async (req, res) => {
       }
     }
 
-    // Extraction directe des propriétés critiques, avec logs pour le débogage
-    const contactEmail = formDataObj.email || "Non disponible";
+    // Ajout d'un log détaillé pour voir exactement ce qui est présent dans formDataObj
+    console.log(
+      "🔍 Structure complète de formDataObj:",
+      Object.keys(formDataObj)
+    );
+
+    // Extraction spécifique pour les inscriptions à l'académie
+    let contactEmail;
+
+    if (template === "registration_confirmed") {
+      // Pour les inscriptions à l'académie, chercher plus spécifiquement dans la structure
+      if (formDataObj.formData && formDataObj.formData.parent1Email) {
+        // Cas où les données sont imbriquées dans un sous-objet formData
+        contactEmail = formDataObj.formData.parent1Email;
+      } else if (formDataObj.parent1Email) {
+        // Cas standard
+        contactEmail = formDataObj.parent1Email;
+      } else {
+        // Recherche plus générique
+        contactEmail =
+          formDataObj.email || formDataObj.parentEmail || "Non disponible";
+      }
+    } else {
+      // Pour les autres types, utiliser la méthode existante
+      contactEmail =
+        formDataObj.email ||
+        formDataObj.parent1Email ||
+        formDataObj.parentEmail ||
+        "Non disponible";
+    }
+
     const contactPhone = formDataObj.phone || "Non disponible";
 
     console.log("📧 Email extrait:", contactEmail);
     console.log("☎️ Téléphone extrait:", contactPhone);
+
+    // Vérification critique de l'email
+    if (contactEmail === "Non disponible") {
+      console.error(
+        "❌ Aucun email valide trouvé dans les données :",
+        formDataObj
+      );
+      return res
+        .status(400)
+        .json({ error: "Adresse email du destinataire non trouvée" });
+    }
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
