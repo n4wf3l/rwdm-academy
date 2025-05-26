@@ -17,6 +17,7 @@ import ViewProfile from "@/components/members/ViewProfile";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface Member {
+  id: number; // Changed id to number for compatibility with ViewProfile
   firstName: string;
   lastName: string;
   email: string;
@@ -31,6 +32,7 @@ interface MemberListProps {
   onEdit: (member: Member) => void;
   onDelete: (member: Member) => void;
   currentUserRole: string;
+  currentUserId: string; // Ajouter cette prop
 }
 
 const MemberList: React.FC<MemberListProps> = ({
@@ -38,6 +40,7 @@ const MemberList: React.FC<MemberListProps> = ({
   onEdit,
   onDelete,
   currentUserRole,
+  currentUserId, // Ajoutez-le ici aussi
 }) => {
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
@@ -151,20 +154,40 @@ const MemberList: React.FC<MemberListProps> = ({
                           member.role !== "owner")) && (
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => onEdit(member)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => onDelete(member)}
-                            >
-                              <Trash className="w-4 h-4" />
-                            </Button>
+                            {/* Le bouton Edit est visible pour: 
+                                1. Les owners et superadmins (comme avant)
+                                2. Les admins sur leur propre profil */}
+                            {(currentUserRole === "owner" ||
+                              currentUserRole === "superadmin" ||
+                              (currentUserRole === "admin" &&
+                                String(member.id) ===
+                                  String(currentUserId))) && (
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => onEdit(member)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            )}
+
+                            {/* Le bouton Delete est visible uniquement pour: 
+                                1. Les owners (sur tous les profils sauf le leur)
+                                2. Les superadmins (uniquement sur les profils qui ne sont pas owner ni eux-mêmes) */}
+                            {((currentUserRole === "owner" &&
+                              String(member.id) !== String(currentUserId)) ||
+                              (currentUserRole === "superadmin" &&
+                                member.role !== "owner" &&
+                                String(member.id) !==
+                                  String(currentUserId))) && (
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => onDelete(member)}
+                              >
+                                <Trash className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       )}

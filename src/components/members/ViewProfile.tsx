@@ -45,7 +45,8 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
   const currentUserId = localStorage.getItem("adminId");
-  const isSelf = String(user.id) === currentUserId;
+  const isSelf =
+    user.id !== undefined && String(user.id) === String(currentUserId);
 
   // Récupérer le rôle de l'utilisateur connecté
   useEffect(() => {
@@ -72,19 +73,19 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
 
   // Vérifier si l'utilisateur courant peut changer le mot de passe de l'utilisateur affiché
   const canChangePassword = () => {
+    // Tout utilisateur peut toujours modifier son propre mot de passe
+    if (isSelf) return true;
+
+    // Pour les mots de passe des autres utilisateurs:
     // Owner peut changer tous les mots de passe
     if (currentUserRole === "owner") return true;
 
-    // Superadmin peut changer les mots de passe des admins, mais pas ceux des superadmins ou owners
+    // Superadmin peut changer les mots de passe des admins uniquement
     if (currentUserRole === "superadmin") {
-      return user.role === "admin" || isSelf;
+      return user.role === "admin";
     }
 
-    // Admin ne peut changer que son propre mot de passe
-    if (currentUserRole === "admin") {
-      return isSelf;
-    }
-
+    // Un admin ne peut pas changer le mot de passe d'un autre utilisateur
     return false;
   };
 
@@ -144,6 +145,17 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
       : user.role.toLowerCase() === "superadmin"
       ? "secondary"
       : "outline";
+
+  // Ajouter un log pour déboguer
+  useEffect(() => {
+    console.log("Debug - ViewProfile:", {
+      userId: user.id,
+      currentUserId,
+      isSelf,
+      userRole: user.role,
+      currentUserRole,
+    });
+  }, [user.id, currentUserId, isSelf, user.role, currentUserRole]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
