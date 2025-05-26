@@ -102,6 +102,29 @@ Faciliter la gestion et l'administration de la RWDM Academy en dématérialisant
   - Mentions légales
   - Politique Cookies (non utilisés, mais mentionnés)
 
+## 🔧 Côté technique
+
+### 🖥️ Stack utilisée
+
+- **Frontend** :  
+  - HTML5, CSS3 (Tailwind CSS)
+  - JavaScript ES6+
+  - Framework : React
+  - Multilingue via i18n
+  - WebSocket (notifications temps réel)
+
+- **Backend** :  
+  - Node.js
+  - API REST
+  - Authentification avec token sécurisé par rôle
+  - Gestion des rôles (admin, superadmin, owner)
+  - Intégration API externe : **Pro Soccer Data**
+
+- **Base de données** :  
+  - MariaDB
+  - Gestion des soft deletes et suppression définitive
+  - Seeders disponibles pour tests
+  - Calcul dynamique de l’espace occupé pour archivage
 ---
 
 ## 📬 Accès
