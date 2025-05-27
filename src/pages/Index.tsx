@@ -141,13 +141,8 @@ const Index: React.FC = () => {
 
   // Rendu du formulaire
   const renderForm = () => {
-    // Ajoutez un console.log pour débugger
-    console.log("Current form:", currentForm);
-    console.log("Maintenance states:", formMaintenanceStates);
-
     // Vérifier l'état de maintenance du formulaire actuel
     if (formMaintenanceStates[currentForm]) {
-      console.log("Form is in maintenance");
       return (
         <MaintenancePage2
           formType={

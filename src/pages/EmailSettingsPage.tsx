@@ -82,7 +82,6 @@ const EmailSettingsPage: React.FC = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        console.log("🔄 Tentative de récupération des templates...");
         const response = await fetch("http://localhost:5000/api/form-mail", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -100,16 +99,12 @@ const EmailSettingsPage: React.FC = () => {
         }
 
         const data = await response.json();
-        console.log("✅ Templates reçus:", data);
 
         // Vérification spécifique pour les templates qui nous intéressent
         const accidentTemplate = data.find((t) => t.type === "accident-report");
         const healingTemplate = data.find(
           (t) => t.type === "healing-certificate"
         );
-
-        console.log("Template accident:", accidentTemplate);
-        console.log("Template healing:", healingTemplate);
 
         const templatesMap = data.reduce((acc, template) => {
           // Assurez-vous que le type correspond exactement
@@ -121,7 +116,6 @@ const EmailSettingsPage: React.FC = () => {
           return acc;
         }, {});
 
-        console.log("📝 Templates formatés:", templatesMap);
         setEmailTemplates(templatesMap);
       } catch (error) {
         console.error("❌ Erreur détaillée:", error);

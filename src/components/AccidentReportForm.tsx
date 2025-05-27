@@ -61,9 +61,16 @@ const FormSection: React.FC<FormSectionProps> = ({
         <h3 className="text-lg font-medium text-rwdm-blue dark:text-white">
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-        )}
+        {subtitle &&
+          (typeof subtitle === "string" ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {subtitle}
+            </p>
+          ) : (
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {subtitle}
+            </div>
+          ))}
       </div>
       {children}
     </div>

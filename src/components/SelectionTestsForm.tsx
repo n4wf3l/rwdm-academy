@@ -202,7 +202,6 @@ const SelectionTestsForm: React.FC<FormProps> = ({
 
   useEffect(() => {
     // Ce log nous montre quand l'effet se déclenche
-    console.log("Effect triggered, noyau:", noyau);
 
     if (["U5", "U6", "U7", "U8", "U9"].includes(noyau)) {
       const defaultPos = t("selection_position_default");
@@ -607,7 +606,6 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   ) : (
                     <Select
                       onValueChange={(value) => {
-                        console.log("Selected position:", value); // Pour déboguer
                         setPosition(value);
                         onFormDataChange?.("position", value);
                       }}

@@ -313,7 +313,6 @@ const Dashboard = () => {
         throw new Error("Erreur lors de la récupération des administrateurs");
       }
       const data = await response.json();
-      console.log("✅ Admins récupérés :", data);
 
       const formattedAdmins: Admin[] = data.map((user: any) => ({
         id: user.id.toString(),

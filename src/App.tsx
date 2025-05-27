@@ -61,14 +61,7 @@ function App() {
     if (token) {
       try {
         const decoded = JSON.parse(atob(token.split(".")[1]));
-        console.log("===== DÉBOGAGE TOKEN =====");
-        console.log("Token décodé:", decoded);
-        console.log("Rôle utilisateur:", decoded.role);
-        console.log("Type de rôle:", typeof decoded.role);
-        console.log("=========================");
-      } catch (error) {
-        console.error("Erreur lors du décodage du token:", error);
-      }
+      } catch (error) {}
     }
   }, []);
 

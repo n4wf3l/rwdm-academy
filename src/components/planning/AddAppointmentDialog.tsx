@@ -115,7 +115,6 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
         }
 
         const data = await response.json();
-        console.log("✅ Admins récupérés :", data);
 
         const formattedAdmins = data.map((admin: any) => ({
           id: admin.id.toString(),

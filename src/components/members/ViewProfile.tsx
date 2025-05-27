@@ -147,15 +147,13 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
       : "outline";
 
   // Ajouter un log pour déboguer
-  useEffect(() => {
-    console.log("Debug - ViewProfile:", {
-      userId: user.id,
-      currentUserId,
-      isSelf,
-      userRole: user.role,
-      currentUserRole,
-    });
-  }, [user.id, currentUserId, isSelf, user.role, currentUserRole]);
+  useEffect(() => {}, [
+    user.id,
+    currentUserId,
+    isSelf,
+    user.role,
+    currentUserRole,
+  ]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

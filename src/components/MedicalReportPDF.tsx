@@ -33,9 +33,6 @@ const MedicalReportPDF = () => {
           "http://localhost:5000/api/accident-forms"
         );
 
-        // Afficher la réponse complète pour débogage
-        console.log("Réponse API accident-forms:", response.data);
-
         if (response.data?.forms) {
           const frForm = response.data.forms.find(
             (form: any) => form.language === "FR"
@@ -43,9 +40,6 @@ const MedicalReportPDF = () => {
           const nlForm = response.data.forms.find(
             (form: any) => form.language === "NL"
           );
-
-          console.log("Formulaire FR trouvé:", frForm);
-          console.log("Formulaire NL trouvé:", nlForm);
 
           setPdfAvailable({
             fr: !!frForm,

@@ -996,14 +996,13 @@ const RegistrationForm: React.FC<FormProps> = ({
           <CardContent className="pt-6">
             <FormSection title={t("signature")} subtitle={t("signature_desc")}>
               <div className="space-y-4">
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  <div
-                    className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: t("signature_reminder_html"),
-                    }}
-                  />
-                </p>
+                {/* Voici la correction: on ne peut pas avoir un div enfant d'un p */}
+                <div
+                  className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: t("signature_reminder_html"),
+                  }}
+                />
                 <SignaturePad onChange={setSignature} />
                 <p className="text-sm text-gray-500 mt-2">
                   {t("label_date")} {currentDate}
@@ -1032,14 +1031,14 @@ const RegistrationForm: React.FC<FormProps> = ({
             type="submit"
             disabled={isCooldown || !signature || !hasAcceptedPolicy}
             className={`
-     px-8 py-6 rounded-lg text-base
-     ${
-       isCooldown || !signature || !hasAcceptedPolicy
-         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-         : "bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white"
-     }
-     button-transition
-   `}
+              px-8 py-6 rounded-lg text-base
+              ${
+                isCooldown || !signature || !hasAcceptedPolicy
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-rwdm-blue hover:bg-rwdm-blue/90 dark:bg-rwdm-blue/80 dark:hover:bg-rwdm-blue text-white"
+              }
+              button-transition
+            `}
           >
             {isCooldown ? t("button_submit_loading") : t("button_submit")}
           </Button>

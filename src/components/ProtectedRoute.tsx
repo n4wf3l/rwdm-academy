@@ -12,10 +12,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const location = useLocation();
 
   // Utiliser useEffect pour afficher des logs à chaque tentative d'accès
-  useEffect(() => {
-    console.log("ProtectedRoute vérifie l'accès à:", location.pathname);
-    console.log("Rôles autorisés:", allowedRoles);
-  }, [location.pathname, allowedRoles]);
+  useEffect(() => {}, [location.pathname, allowedRoles]);
 
   if (!token) {
     console.log("Aucun token trouvé, redirection vers /auth");
@@ -31,8 +28,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     if (user && user.role) {
       user.role = user.role.toLowerCase();
     }
-
-    console.log("Rôle utilisateur détecté:", user.role);
   } catch (error) {
     console.error("Token JWT invalide:", error);
     localStorage.removeItem("token");
@@ -49,18 +44,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (allowedRoles && allowedRoles.length > 0) {
     const normalizedAllowedRoles = allowedRoles.map((role) =>
       role.toLowerCase()
-    );
-
-    // Afficher exactement ce qui est vérifié pour le débogage
-    console.log(
-      `Vérification: Est-ce que ${
-        user.role
-      } est dans [${normalizedAllowedRoles.join(", ")}]?`
-    );
-    console.log(
-      `Résultat: ${
-        normalizedAllowedRoles.includes(user.role) ? "Autorisé" : "Non autorisé"
-      }`
     );
 
     if (!normalizedAllowedRoles.includes(user.role)) {

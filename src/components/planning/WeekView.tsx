@@ -261,7 +261,6 @@ const WeekView: React.FC<WeekViewProps> = ({
         p-0.5 gap-0.5
         rounded-md text-xs cursor-pointer
         ${(() => {
-          console.log("Type de rendez-vous:", appt.type); // Pour déboguer
           const type = appt.type.toLowerCase();
 
           if (type.includes("registration") || type === "registration")

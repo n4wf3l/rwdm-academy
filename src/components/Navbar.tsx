@@ -93,7 +93,6 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log("Données utilisateur reçues :", data); // 👈
           setUser({ firstName: data.firstName, lastName: data.lastName });
           localStorage.setItem("adminId", data.id);
         })

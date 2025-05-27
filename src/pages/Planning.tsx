@@ -151,7 +151,6 @@ const Planning = () => {
         }
 
         const data = await response.json();
-        console.log("✅ Rendez-vous récupérés :", data); // Vérification
 
         setAppointments(
           data.map((appointment: any) => ({

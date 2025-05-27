@@ -158,11 +158,14 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
                   </p>
                 </div>
 
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                  <div className="text-center">
-                    <PlayCircle className="h-16 w-16 mx-auto text-rwdm-blue dark:text-blue-400" />
-                    <p className="mt-2 font-medium">{t("guide.admin_video")}</p>
-                  </div>
+                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md overflow-hidden">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/tfGLKgCK5Wg"
+                    title="Admin Tutorial Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
                 </div>
 
                 <div className="space-y-4">

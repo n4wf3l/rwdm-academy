@@ -23,7 +23,7 @@ export const translationsFR = {
     "Formulaire pour déclarer un accident au club ou certificat de guérison",
   liability_waiver: "Décharge de responsabilité",
   liability_waiver_desc:
-    "Formulaire de décharge de responsabilité pour testes de sélection",
+    "Formulaire de décharge de responsabilité pour tests de sélection",
   admin_dashboard: "Tableau de bord",
   admin_documents: "Documents",
   admin_planning: "Planning",
@@ -47,7 +47,7 @@ export const translationsFR = {
     "Découvrez notre histoire, notre mission et notre équipe dédiée au développement des jeunes talents.",
   players_trained: "Joueurs professionnels formés",
   years_experience: "Années d'expérience",
-  national_trophies: "Équipes engagées",
+  national_trophies: "Équipes inscrites",
   young_talents: "Jeunes talents",
   tab_history: "Histoire",
   tab_mission: "Mission",

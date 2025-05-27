@@ -475,7 +475,6 @@ app.get("/api/all-admins", authMiddleware, async (req, res) => {
 
 // Ajoute cette route dans ton backend (par exemple, à la fin de ton fichier)
 app.get("/api/me", authMiddleware, async (req, res) => {
-  console.log("User décodé:", req.user);
   const userId = req.user.id;
   try {
     const [rows] = await dbPool.execute(
@@ -486,7 +485,7 @@ app.get("/api/me", authMiddleware, async (req, res) => {
        WHERE id = ?`,
       [userId]
     );
-    console.log("Résultat DB:", rows);
+
     if (rows.length === 0) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
