@@ -22,6 +22,7 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
   const { t } = useTranslation();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdminVideoPlaying, setIsAdminVideoPlaying] = useState(false);
 
   // Récupérer le rôle de l'utilisateur au chargement du composant
   useEffect(() => {
@@ -158,14 +159,30 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
                   </p>
                 </div>
 
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md overflow-hidden">
-                  <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/tfGLKgCK5Wg"
-                    title="Admin Tutorial Video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  ></iframe>
+                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md overflow-hidden relative">
+                  {!isAdminVideoPlaying ? (
+                    <div
+                      className="w-full h-full cursor-pointer relative"
+                      onClick={() => setIsAdminVideoPlaying(true)}
+                    >
+                      <img
+                        src="/admin.jpg"
+                        alt="Admin tutorial preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-20 transition-all">
+                        <PlayCircle className="h-16 w-16 text-white" />
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      className="w-full h-full"
+                      src="https://drive.google.com/file/d/1L1RqSyVrEJvRnVOHUNWXZcm6IBsS-W5f/preview"
+                      title="Admin Tutorial Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    ></iframe>
+                  )}
                 </div>
 
                 <div className="space-y-4">

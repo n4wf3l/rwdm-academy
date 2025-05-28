@@ -834,8 +834,6 @@ app.get("/api/appointments", async (req, res) => {
       `);
     await connection.end();
 
-    console.log("📥 API a renvoyé :", rows); // Vérification
-    console.log("🚀 Données envoyées au frontend :", rows);
     res.json(rows);
   } catch (error) {
     console.error(
