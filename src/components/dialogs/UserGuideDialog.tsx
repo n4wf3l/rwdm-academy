@@ -23,7 +23,9 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdminVideoPlaying, setIsAdminVideoPlaying] = useState(false);
-
+  const [isOwnerVideoPlaying, setIsOwnerVideoPlaying] = useState(false);
+  const [isSuperadminVideoPlaying, setIsSuperadminVideoPlaying] =
+    useState(false);
   // Récupérer le rôle de l'utilisateur au chargement du composant
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -57,6 +59,21 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
 
     if (open) {
       fetchUserRole();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setIsAdminVideoPlaying(false);
+      setIsSuperadminVideoPlaying(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setIsAdminVideoPlaying(false);
+      setIsSuperadminVideoPlaying(false);
+      setIsOwnerVideoPlaying(false);
     }
   }, [open]);
 
@@ -225,13 +242,30 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
                   </p>
                 </div>
 
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                  <div className="text-center">
-                    <PlayCircle className="h-16 w-16 mx-auto text-rwdm-blue dark:text-blue-400" />
-                    <p className="mt-2 font-medium">
-                      {t("guide.superadmin_video")}
-                    </p>
-                  </div>
+                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md overflow-hidden relative">
+                  {!isSuperadminVideoPlaying ? (
+                    <div
+                      className="w-full h-full cursor-pointer relative"
+                      onClick={() => setIsSuperadminVideoPlaying(true)}
+                    >
+                      <img
+                        src="/superadmin.jpg"
+                        alt="Superadmin tutorial preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-20 transition-all">
+                        <PlayCircle className="h-16 w-16 text-white" />
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      className="w-full h-full"
+                      src="https://drive.google.com/file/d/13AGn7hIhKQg26wUwHjzwDIJQ8zJN63dL/preview"
+                      title="Superadmin Tutorial Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    ></iframe>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -296,11 +330,30 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
                   </p>
                 </div>
 
-                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md flex items-center justify-center">
-                  <div className="text-center">
-                    <PlayCircle className="h-16 w-16 mx-auto text-rwdm-blue dark:text-blue-400" />
-                    <p className="mt-2 font-medium">{t("guide.owner_video")}</p>
-                  </div>
+                <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-md overflow-hidden relative">
+                  {!isOwnerVideoPlaying ? (
+                    <div
+                      className="w-full h-full cursor-pointer relative"
+                      onClick={() => setIsOwnerVideoPlaying(true)}
+                    >
+                      <img
+                        src="/owner.jpg"
+                        alt="Owner tutorial preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-20 transition-all">
+                        <PlayCircle className="h-16 w-16 text-white" />
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      className="w-full h-full"
+                      src="https://drive.google.com/file/d/1NjqOBY6fYBcZSAOnt6LAPq4L_WoQ5LHc/preview"
+                      title="Owner Tutorial Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    ></iframe>
+                  )}
                 </div>
 
                 <div className="space-y-4">
