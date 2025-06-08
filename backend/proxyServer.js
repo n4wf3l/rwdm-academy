@@ -4,7 +4,7 @@ const axios = require("axios");
 const db = require("./db"); // Assurez-vous d'avoir la configuration DB
 
 const app = express();
-const PORT = 5001; // Port du serveur proxy
+const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
