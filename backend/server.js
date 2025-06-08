@@ -13,7 +13,6 @@ const cookieParser = require("cookie-parser");
 const { body, validationResult } = require("express-validator");
 const app = express();
 const PORT = process.env.PORT || 5000;
-const router = express.Router();
 const crypto = require("crypto");
 const fetch = require("node-fetch");
 const formMailRouter = require("./routes/formMail");
@@ -680,7 +679,7 @@ app.delete("/api/requests/:id", authMiddleware, async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+app.patch("/:id", async (req, res) => {
   const { id } = req.params;
   const { details } = req.body;
 
@@ -741,8 +740,6 @@ app.get("/api/check-accident-code", async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
-
-module.exports = router;
 
 // Vérifie si un code de dossier existe (utile avant d'envoyer un certificat de guérison)
 app.get("/api/check-code/:code", async (req, res) => {
@@ -868,7 +865,7 @@ app.delete("/api/appointments/:id", async (req, res) => {
   }
 });
 
-router.post("/appointments", async (req, res) => {
+app.post("/appointments", async (req, res) => {
   try {
     const { date, time, type, personName, email, adminId, notes } = req.body;
 
@@ -893,9 +890,7 @@ router.post("/appointments", async (req, res) => {
   }
 });
 
-module.exports = router;
-
-router.post("/login", async (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password, captcha } = req.body;
 
   if (!captcha) {
@@ -934,8 +929,6 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ message: "Erreur serveur captcha." });
   }
 });
-
-module.exports = router;
 
 app.get("/api/storage-settings", async (req, res) => {
   try {
