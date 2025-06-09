@@ -18,12 +18,20 @@ const fetch = require("node-fetch");
 const formMailRouter = require("./routes/formMail");
 const http = require("http");
 const { Server } = require("socket.io");
+const axios = require("axios"); // Ajout de axios pour les fonctionnalités du proxy
 
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CORS_ORIGIN || "*", credentials: true }));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 const uploadDir = path.resolve(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -1143,6 +1151,256 @@ app.use("/send-request", formMailRouter);
 const changeDataRoutes = require("./changeData");
 app.use("/api", changeDataRoutes);
 
+// =========================================================
+// INTÉGRATION DES FONCTIONNALITÉS DU SERVEUR PROXY
+// =========================================================
+
+// Fonction pour récupérer les paramètres API de la base de données
+async function getApiSettings() {
+  try {
+    const [rows] = await dbPool.execute(
+      "SELECT * FROM api_settings ORDER BY id DESC LIMIT 1"
+    );
+    if (rows.length === 0) {
+      throw new Error("Paramètres API non trouvés");
+    }
+    return rows[0];
+  } catch (error) {
+    console.error("Erreur lors de la récupération des paramètres API:", error);
+
+    // Utiliser les valeurs hardcodées en fallback
+    return {
+      base_url: "https://clubapi.prosoccerdata.com",
+      club_key: "ewlcdd1fdhooj8pm8qyzj98kvrrxh6hn",
+      api_key: "3UMU0HpTYjafC8lITNAt1812UJdx67Nq30pjbCtQ",
+      api_secret:
+        "bearer gngz3n0kvrchsqx1r7is3yjg2d1m0uuhqroagwcxhze6vhk7ddffelrevzgjjufq",
+    };
+  }
+}
+
+async function fetchAllInvoices(baseUrl, clubKey, apiKey, apiSecret, teamIds) {
+  let allInvoices = [];
+  let currentPage = 1;
+  let totalPages = 1;
+
+  do {
+    const response = await axios.get(
+      `${baseUrl}/finances/overview/memberduesinvoices`,
+      {
+        headers: {
+          "x-api-club": clubKey,
+          "x-api-key": apiKey,
+          Authorization: apiSecret,
+          "Content-Type": "application/json",
+        },
+        params: {
+          statuses: ["not_sent", "paid", "open", "too_late", "credited"],
+          teamIds: teamIds, // ou commentez cette ligne pour tester sans filtrage sur teamIds
+          page: currentPage,
+          size: 100,
+        },
+      }
+    );
+
+    const data = response.data;
+    let invoices = [];
+
+    // Extraction des factures selon le format de la réponse
+    if (data.content && Array.isArray(data.content)) {
+      invoices = data.content;
+    } else if (data.items && Array.isArray(data.items)) {
+      invoices = data.items;
+    } else if (Array.isArray(data)) {
+      invoices = data;
+    } else {
+      invoices = [data];
+    }
+
+    allInvoices = allInvoices.concat(invoices);
+
+    // Détermination du nombre total de pages
+    if (data.totalPages) {
+      totalPages = data.totalPages;
+    } else if (data.pageable && typeof data.pageable.pageNumber === "number") {
+      totalPages = data.pageable.pageNumber + 1; // Si pageNumber est 0-indexé
+    } else {
+      totalPages = currentPage; // Arrêter après la première page si non précisé
+    }
+    currentPage++;
+  } while (currentPage <= totalPages);
+
+  return allInvoices;
+}
+
+// Endpoint pour renvoyer directement le tableau complet de factures
+app.get("/api/members-dues", async (req, res) => {
+  try {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    // Récupérer toutes les équipes
+    const teamsResponse = await axios.get(`${settings.base_url}/teams/all`, {
+      headers: {
+        "Accept-Language": "fr-FR",
+        "x-api-club": settings.club_key,
+        "x-api-key": settings.api_key,
+        Authorization: settings.api_secret,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Extraction des équipes
+    const teamsData = teamsResponse.data.items || teamsResponse.data;
+    const teamIds = Array.isArray(teamsData)
+      ? teamsData.map((team) => team.id)
+      : [];
+
+    // Récupérer toutes les factures en parcourant toutes les pages
+    const allInvoices = await fetchAllInvoices(
+      settings.base_url,
+      settings.club_key,
+      settings.api_key,
+      settings.api_secret,
+      teamIds
+    );
+
+    // Renvoi uniquement du tableau d'invoices (sans infos de pagination)
+    res.json(allInvoices);
+  } catch (error) {
+    console.error("Erreur lors de l'appel API:", error);
+    res
+      .status(500)
+      .json({ message: "Erreur serveur lors de la récupération des données" });
+  }
+});
+
+// Endpoint pour le comptage des joueurs par équipe
+app.get("/api/teams/player-counts", async (req, res) => {
+  try {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    // Récupérer toutes les équipes
+    const teamsRes = await axios.get(`${settings.base_url}/teams/all`, {
+      headers: {
+        "Accept-Language": "fr-FR",
+        "x-api-club": settings.club_key,
+        "x-api-key": settings.api_key,
+        Authorization: settings.api_secret,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const teams = teamsRes.data.items || teamsRes.data;
+
+    // Pour chaque équipe, récupérer les membres
+    const results = await Promise.all(
+      teams.map(async (team) => {
+        try {
+          const membersRes = await axios.get(
+            `${settings.base_url}/teams/${team.id}/members`,
+            {
+              headers: {
+                "x-api-club": settings.club_key,
+                "x-api-key": settings.api_key,
+                Authorization: settings.api_secret,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const members = membersRes.data.content || membersRes.data || [];
+          const playerCount = members.filter((m) => m.player === true).length;
+
+          return {
+            teamId: team.id,
+            teamName: team.name,
+            playerCount,
+          };
+        } catch (err) {
+          console.warn(`❌ Erreur pour l'équipe ID ${team.id}:`, err.message);
+          return {
+            teamId: team.id,
+            teamName: team.name,
+            playerCount: 0,
+          };
+        }
+      })
+    );
+
+    res.json(results);
+  } catch (error) {
+    console.error("Erreur récupération des équipes/membres :", error);
+    res.status(500).json({
+      message: "Erreur serveur lors du comptage des joueurs par équipe",
+    });
+  }
+});
+
+// Endpoint pour récupérer les membres d'une équipe
+app.get("/api/teams/:id/members", async (req, res) => {
+  const teamId = req.params.id;
+  try {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    const membersRes = await axios.get(
+      `${settings.base_url}/teams/${teamId}/members`,
+      {
+        headers: {
+          "x-api-club": settings.club_key,
+          "x-api-key": settings.api_key,
+          Authorization: settings.api_secret,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // La data peut être dans .content ou pas
+    const members = Array.isArray(membersRes.data.content)
+      ? membersRes.data.content
+      : Array.isArray(membersRes.data)
+      ? membersRes.data
+      : [];
+
+    res.json(members);
+  } catch (err) {
+    console.error(`Erreur membres équipe ${teamId}:`, err);
+    res.status(500).json({ message: "Impossible de récupérer les membres" });
+  }
+});
+
+// Endpoint pour récupérer toutes les équipes
+app.get("/api/teams/all", async (req, res) => {
+  try {
+    // Récupérer les paramètres API
+    const settings = await getApiSettings();
+
+    const response = await axios.get(`${settings.base_url}/teams/all`, {
+      headers: {
+        "Accept-Language": "fr-FR",
+        "x-api-club": settings.club_key,
+        "x-api-key": settings.api_key,
+        Authorization: settings.api_secret,
+        "Content-Type": "application/json",
+      },
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Erreur lors de l'appel API (teams/all):", error);
+    res
+      .status(error.response?.status || 500)
+      .json({ message: "Erreur serveur lors de la récupération des équipes" });
+  }
+});
+
+// Ajouter le router des paramètres API
+const apiSettingsRouter = require("./routes/apiSettings");
+app.use("/api/api-settings", apiSettingsRouter);
+
+// Créer le serveur HTTP et Socket.io
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -1151,7 +1409,9 @@ const io = new Server(server, {
   },
 });
 
-// À la fin du fichier, remplacer app.listen par :
+// Démarrer le serveur
 server.listen(PORT, () => {
-  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+  console.log(
+    `🚀 Serveur unifié en cours d'exécution sur http://localhost:${PORT}`
+  );
 });
