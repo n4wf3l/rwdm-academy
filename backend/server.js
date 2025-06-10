@@ -1504,6 +1504,8 @@ app.post("/api/db-upload", upload.single("file"), async (req, res) => {
   }
 });
 
+// Vérifiez que cette route est bien présente dans votre code
+
 // Récupérer une image depuis la base de données
 app.get("/api/files/:id", async (req, res) => {
   try {
@@ -1514,8 +1516,9 @@ app.get("/api/files/:id", async (req, res) => {
 
     if (rows.length === 0) {
       console.log("❌ Fichier non trouvé:", req.params.id);
-      // Rediriger vers une image placeholder au lieu de retourner une erreur
-      return res.redirect("https://via.placeholder.com/150");
+      return res
+        .status(404)
+        .sendFile(path.join(__dirname, "public", "placeholder.png"));
     }
 
     const file = rows[0];
@@ -1527,8 +1530,7 @@ app.get("/api/files/:id", async (req, res) => {
     res.send(file.file_data);
   } catch (error) {
     console.error("❌ Erreur lors de la récupération du fichier:", error);
-    // Rediriger vers une image placeholder en cas d'erreur
-    res.redirect("https://via.placeholder.com/150");
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
@@ -1601,5 +1603,47 @@ app.get("/api/files/:id", async (req, res) => {
     console.error("❌ Erreur lors de la récupération du fichier:", error);
     // Rediriger vers une image placeholder en cas d'erreur
     res.redirect("https://via.placeholder.com/150");
+  }
+});
+
+// Ajouter après les autres routes d'API
+
+// Route pour uploader une image et la stocker en base de données
+app.post("/api/upload/image", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Aucun fichier fourni" });
+    }
+
+    console.log("📁 Fichier reçu:", req.file.originalname, req.file.mimetype);
+
+    // Lire le fichier depuis le système de fichiers temporaire
+    const fileData = fs.readFileSync(req.file.path);
+
+    // Insérer dans la base de données
+    const [result] = await dbPool.execute(
+      "INSERT INTO stored_files (file_name, file_type, file_data) VALUES (?, ?, ?)",
+      [req.file.originalname, req.file.mimetype, fileData]
+    );
+
+    // Supprimer le fichier temporaire
+    fs.unlinkSync(req.file.path);
+
+    console.log("✅ Fichier stocké en BDD avec ID:", result.insertId);
+
+    // Retourner l'URL pour accéder au fichier
+    const filePath = `/api/files/${result.insertId}`;
+
+    res.json({
+      success: true,
+      filePath: filePath,
+      fileName: req.file.originalname,
+    });
+  } catch (error) {
+    console.error("❌ Erreur lors de l'upload du fichier:", error);
+    res.status(500).json({
+      error: "Erreur lors du traitement du fichier",
+      message: error.message,
+    });
   }
 });
