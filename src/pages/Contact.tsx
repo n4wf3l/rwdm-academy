@@ -437,7 +437,7 @@ const Contact = () => {
 
                   <div className="flex justify-center">
                     <ReCAPTCHA
-                      sitekey="6LcYAzwrAAAAACa2lHRiUWnw-hIV5cVrz4EWzhGx"
+                      sitekey="6Ld_u1srAAAAAK05RnFiRpCGRTTVNQiMRHMWew9v"
                       onChange={handleCaptchaChange}
                       ref={recaptchaRef}
                     />

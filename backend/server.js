@@ -909,7 +909,7 @@ app.post("/login", async (req, res) => {
   const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
   const secretKey =
     process.env.RECAPTCHA_SECRET_KEY ||
-    "6LfbllsrAAAAAF26YqpMg6s5iItEAgMokred_jgq";
+    "6Ld_u1srAAAAAGSbA5jk2yE0Nwy5SDATJ-6kf8N0";
 
   try {
     const response = await fetch(verifyUrl, {

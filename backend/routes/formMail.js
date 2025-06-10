@@ -352,7 +352,7 @@ router.post("/send-contact-message", async (req, res) => {
     console.log("🔍 Vérification du captcha...");
     try {
       const verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
-      const secretKey = "6LcYAzwrAAAAADMKKeyv-KYy0_tg8-CFSUTrtKw1";
+      const secretKey = "6Ld_u1srAAAAAGSbA5jk2yE0Nwy5SDATJ-6kf8N0";
 
       const response = await fetch(verifyUrl, {
         method: "POST",
