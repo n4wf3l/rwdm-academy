@@ -109,56 +109,40 @@ const deleteOldImage = async (filePath: string) => {
   }
 };
 
+// Remplacer la fonction uploadImageFile
 const uploadImageFile = async (file: File) => {
   try {
     const formData = new FormData();
     formData.append("file", file);
 
-    // Utiliser une URL relative qui fonctionnera en dev et en prod
+    // Utiliser une méthode plus robuste pour déterminer l'URL de base
     const baseUrl = window.location.origin.includes("localhost")
       ? "http://localhost:5000"
-      : "";
+      : window.location.origin;
 
-    const response = await fetch(`${baseUrl}/api/db-upload`, {
-      method: "POST",
-      body: formData,
+    console.log("Tentative d'upload vers:", `${baseUrl}/api/upload/image`);
+
+    // Utiliser axios pour un meilleur contrôle des erreurs
+    const response = await axios.post(`${baseUrl}/api/upload/image`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
 
-    // Vérification plus robuste de la réponse
-    if (!response.ok) {
-      let errorText;
-      try {
-        const errorData = await response.json();
-        errorText = errorData.error || "Erreur serveur";
-      } catch {
-        errorText = `Erreur HTTP: ${response.status}`;
-      }
-      throw new Error(errorText);
+    console.log("Réponse upload:", response.data);
+
+    // Vérifier que la réponse contient le chemin du fichier
+    if (!response.data?.filePath) {
+      throw new Error("Réponse invalide du serveur");
     }
 
-    let data;
-    try {
-      data = await response.json();
-    } catch (e) {
-      console.error("Erreur de parsing JSON:", e);
-      throw new Error("Format de réponse invalide");
-    }
-
-    console.log("Réponse upload:", data);
-
-    if (!data || !data.url) {
-      throw new Error("Format de réponse invalide");
-    }
-
-    // Préfixer l'URL avec le baseUrl si nécessaire
-    const logoUrl = data.url.startsWith("/api")
-      ? `${baseUrl}${data.url}`
-      : data.url;
-
-    return logoUrl;
+    // Retourner le chemin complet
+    return response.data.filePath;
   } catch (error) {
     console.error("Erreur lors de l'upload:", error);
-    toast.error(`❌ Erreur: ${error.message || "Échec de l'upload"}`);
+    toast.error(
+      `❌ Erreur: ${error.response?.data?.message || "Échec de l'upload"}`
+    );
     return null;
   }
 };
@@ -476,12 +460,19 @@ const GeneralSettings: React.FC<Props> = ({
                     className="flex justify-center mt-4"
                   >
                     <img
-                      src={logo}
+                      src={
+                        logo.startsWith("/uploads/")
+                          ? `${window.location.origin}${logo}`
+                          : logo
+                      }
                       alt="Logo"
                       className="h-20 object-contain transition-all duration-200 rounded"
                       onError={(e) => {
                         console.error("Erreur de chargement du logo:", logo);
-                        e.currentTarget.src = "https://via.placeholder.com/150";
+                        // Utiliser une image locale au lieu d'une URL externe
+                        e.currentTarget.src = "/placeholder.png";
+                        // Empêcher les boucles infinies d'erreurs
+                        e.currentTarget.onerror = null;
                       }}
                     />
                   </motion.div>

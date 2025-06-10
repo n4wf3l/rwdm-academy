@@ -1554,3 +1554,24 @@ app.delete("/api/delete-file/:id", authMiddleware, async (req, res) => {
     });
   }
 });
+
+// Ajouter après les autres middlewares
+
+// Assurer que le dossier uploads existe
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Servir les fichiers statiques
+app.use(
+  "/uploads",
+  express.static(uploadsDir, {
+    maxAge: "1d",
+  })
+);
+
+// Route de fallback pour les uploads en cas d'erreur
+app.get("/uploads/*", (req, res) => {
+  res.status(404).sendFile(path.join(__dirname, "public", "placeholder.png"));
+});
