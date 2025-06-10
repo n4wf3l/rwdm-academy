@@ -461,7 +461,7 @@ const GeneralSettings: React.FC<Props> = ({
                   >
                     <img
                       src={
-                        logo.startsWith("/uploads/")
+                        logo && logo.startsWith("/api/files/")
                           ? `${window.location.origin}${logo}`
                           : logo
                       }

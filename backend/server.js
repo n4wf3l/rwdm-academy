@@ -1575,3 +1575,31 @@ app.use(
 app.get("/uploads/*", (req, res) => {
   res.status(404).sendFile(path.join(__dirname, "public", "placeholder.png"));
 });
+
+// Assurez-vous que cette route fonctionne correctement
+app.get("/api/files/:id", async (req, res) => {
+  try {
+    const [rows] = await dbPool.execute(
+      "SELECT file_type, file_data FROM stored_files WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      console.log("❌ Fichier non trouvé:", req.params.id);
+      // Rediriger vers une image placeholder au lieu de retourner une erreur
+      return res.redirect("https://via.placeholder.com/150");
+    }
+
+    const file = rows[0];
+    console.log("✅ Fichier trouvé:", req.params.id, file.file_type);
+
+    res.setHeader("Content-Type", file.file_type);
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "max-age=86400"); // 1 jour de cache
+    res.send(file.file_data);
+  } catch (error) {
+    console.error("❌ Erreur lors de la récupération du fichier:", error);
+    // Rediriger vers une image placeholder en cas d'erreur
+    res.redirect("https://via.placeholder.com/150");
+  }
+});
