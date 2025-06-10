@@ -114,29 +114,51 @@ const uploadImageFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    // Utiliser une URL relative pour que ça marche en dev et en prod
-    const response = await fetch("/api/db-upload", {
+    // Utiliser une URL relative qui fonctionnera en dev et en prod
+    const baseUrl = window.location.origin.includes("localhost")
+      ? "http://localhost:5000"
+      : "";
+
+    const response = await fetch(`${baseUrl}/api/db-upload`, {
       method: "POST",
       body: formData,
     });
 
+    // Vérification plus robuste de la réponse
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Erreur de réponse:", response.status, errorText);
-      throw new Error(`Erreur serveur: ${response.status}`);
+      let errorText;
+      try {
+        const errorData = await response.json();
+        errorText = errorData.error || "Erreur serveur";
+      } catch {
+        errorText = `Erreur HTTP: ${response.status}`;
+      }
+      throw new Error(errorText);
     }
 
-    const data = await response.json();
-    console.log("Réponse d'upload:", data);
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      console.error("Erreur de parsing JSON:", e);
+      throw new Error("Format de réponse invalide");
+    }
+
+    console.log("Réponse upload:", data);
 
     if (!data || !data.url) {
       throw new Error("Format de réponse invalide");
     }
 
-    return data.url;
+    // Préfixer l'URL avec le baseUrl si nécessaire
+    const logoUrl = data.url.startsWith("/api")
+      ? `${baseUrl}${data.url}`
+      : data.url;
+
+    return logoUrl;
   } catch (error) {
     console.error("Erreur lors de l'upload:", error);
-    toast.error("❌ Erreur lors de l'upload du logo");
+    toast.error(`❌ Erreur: ${error.message || "Échec de l'upload"}`);
     return null;
   }
 };
@@ -298,6 +320,47 @@ const GeneralSettings: React.FC<Props> = ({
     }));
   };
 
+  // Remplacer la fonction handleLogoChange
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      // 1. Télécharger la nouvelle image
+      const newLogoUrl = await uploadImageFile(e.target.files[0]);
+
+      if (!newLogoUrl) {
+        return; // L'upload a échoué, message d'erreur déjà affiché
+      }
+
+      // 2. Si une ancienne image existe et est stockée en BDD, essayer de la supprimer
+      // Ne pas bloquer le processus si la suppression échoue
+      try {
+        if (logo && logo.includes("/api/files/")) {
+          // Extraire l'ID de l'image
+          const imageId = logo.split("/api/files/")[1];
+          if (imageId) {
+            // URL de base selon l'environnement
+            const baseUrl = window.location.origin.includes("localhost")
+              ? "http://localhost:5000"
+              : "";
+
+            await fetch(`${baseUrl}/api/delete-file/${imageId}`, {
+              method: "DELETE",
+            });
+          }
+        }
+      } catch (err) {
+        console.error(
+          "❌ Erreur lors de la suppression de l'ancienne image :",
+          err
+        );
+        // Ne pas bloquer le processus principal
+      }
+
+      // 3. Mettre à jour l'interface
+      // Ajout d'un timestamp pour éviter les problèmes de cache
+      setLogo(`${newLogoUrl}?v=${Date.now()}`);
+    }
+  };
+
   /* -------------------- RENDER -------------------- */
   return (
     <motion.div
@@ -418,7 +481,7 @@ const GeneralSettings: React.FC<Props> = ({
                       className="h-20 object-contain transition-all duration-200 rounded"
                       onError={(e) => {
                         console.error("Erreur de chargement du logo:", logo);
-                        e.currentTarget.src = "/placeholder-logo.png"; // Image de secours
+                        e.currentTarget.src = "https://via.placeholder.com/150";
                       }}
                     />
                   </motion.div>

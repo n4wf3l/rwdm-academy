@@ -1418,22 +1418,38 @@ server.listen(PORT, () => {
   );
 });
 
-// Ajouter après les autres routes - Avant les routes de maintenance des formulaires
+// Remplacer la création de table par une simple vérification
 
-// Créer table stored_files si elle n'existe pas
-const createStoredFilesTableQuery = `
-CREATE TABLE IF NOT EXISTS stored_files (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  file_name VARCHAR(255) NOT NULL,
-  file_type VARCHAR(100) NOT NULL,
-  file_data MEDIUMBLOB NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)`;
+// Vérifier si la table existe au lieu d'essayer de la créer
+const checkStoredFilesTable = async () => {
+  try {
+    // Vérifier si la table existe avec une requête SELECT
+    const [rows] = await dbPool.execute("SELECT 1 FROM stored_files LIMIT 1");
+    console.log("✅ Table stored_files vérifiée et accessible");
+    return true;
+  } catch (err) {
+    // Si l'erreur est "Table doesn't exist" c'est différent d'un problème d'accès
+    if (err.code === "ER_NO_SUCH_TABLE") {
+      console.log("⚠️ Table stored_files n'existe pas");
+    } else {
+      console.error("❌ Erreur d'accès à la table stored_files:", err.message);
+    }
+    return false;
+  }
+};
 
-dbPool
-  .execute(createStoredFilesTableQuery)
-  .then(() => console.log("✅ Table stored_files vérifiée/créée"))
-  .catch((err) => console.error("❌ Erreur création table stored_files:", err));
+// Appeler la fonction de vérification au démarrage
+checkStoredFilesTable().then((exists) => {
+  if (exists) {
+    console.log("📊 Système de stockage d'images en base de données prêt");
+  } else {
+    console.log(
+      "⚠️ Le stockage d'images en base de données peut ne pas fonctionner"
+    );
+  }
+});
+
+// Ajouter après la vérification de la table stored_files
 
 // Upload d'une image vers la base de données
 app.post("/api/db-upload", upload.single("file"), async (req, res) => {
@@ -1444,29 +1460,47 @@ app.post("/api/db-upload", upload.single("file"), async (req, res) => {
 
     console.log("📁 Fichier reçu:", req.file.originalname, req.file.mimetype);
 
-    // Lire le fichier depuis le système de fichiers temporaire
-    const fileData = fs.readFileSync(req.file.path);
+    // Vérifier si la table existe avant d'essayer d'y accéder
+    const tableExists = await checkStoredFilesTable();
 
-    // Insérer dans la base de données
-    const [result] = await dbPool.execute(
-      "INSERT INTO stored_files (file_name, file_type, file_data) VALUES (?, ?, ?)",
-      [req.file.originalname, req.file.mimetype, fileData]
-    );
+    if (tableExists) {
+      // Lire le fichier depuis le système de fichiers temporaire
+      const fileData = fs.readFileSync(req.file.path);
 
-    // Supprimer le fichier temporaire
-    fs.unlinkSync(req.file.path);
+      // Insérer dans la base de données
+      const [result] = await dbPool.execute(
+        "INSERT INTO stored_files (file_name, file_type, file_data) VALUES (?, ?, ?)",
+        [req.file.originalname, req.file.mimetype, fileData]
+      );
 
-    console.log("✅ Fichier stocké en BDD avec ID:", result.insertId);
+      // Supprimer le fichier temporaire
+      fs.unlinkSync(req.file.path);
 
-    res.json({
-      success: true,
-      id: result.insertId,
-      url: `/api/files/${result.insertId}`,
-      name: req.file.originalname,
-    });
+      console.log("✅ Fichier stocké en BDD avec ID:", result.insertId);
+
+      res.json({
+        success: true,
+        id: result.insertId,
+        url: `/api/files/${result.insertId}`,
+        name: req.file.originalname,
+      });
+    } else {
+      // Si la table n'existe pas, utiliser le système de fichiers traditionnel
+      const filePath = `/uploads/${req.file.filename}`;
+      console.log("⚠️ Utilisation du système de fichiers:", filePath);
+      res.json({
+        success: true,
+        url: filePath,
+        name: req.file.originalname,
+      });
+    }
   } catch (error) {
     console.error("❌ Erreur lors de l'upload du fichier:", error);
-    res.status(500).json({ error: "Erreur lors du traitement du fichier" });
+    // Envoyer une réponse JSON valide même en cas d'erreur
+    res.status(500).json({
+      error: "Erreur lors du traitement du fichier",
+      message: error.message,
+    });
   }
 });
 
@@ -1480,7 +1514,8 @@ app.get("/api/files/:id", async (req, res) => {
 
     if (rows.length === 0) {
       console.log("❌ Fichier non trouvé:", req.params.id);
-      return res.status(404).json({ error: "Fichier non trouvé" });
+      // Rediriger vers une image placeholder au lieu de retourner une erreur
+      return res.redirect("https://via.placeholder.com/150");
     }
 
     const file = rows[0];
@@ -1492,38 +1527,30 @@ app.get("/api/files/:id", async (req, res) => {
     res.send(file.file_data);
   } catch (error) {
     console.error("❌ Erreur lors de la récupération du fichier:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    // Rediriger vers une image placeholder en cas d'erreur
+    res.redirect("https://via.placeholder.com/150");
   }
 });
 
-// Servir l'application React pour toutes les routes non-API en production
-if (process.env.NODE_ENV === "production") {
-  const buildPath = path.join(__dirname, "../build");
+// Supprimer une image de la base de données
+app.delete("/api/delete-file/:id", authMiddleware, async (req, res) => {
+  try {
+    const [result] = await dbPool.execute(
+      "DELETE FROM stored_files WHERE id = ?",
+      [req.params.id]
+    );
 
-  // Vérifier si le dossier build existe avant d'essayer de servir des fichiers statiques
-  if (fs.existsSync(buildPath)) {
-    console.log("📂 Dossier build trouvé, activation du mode SPA");
-    // Servir les fichiers statiques du build React
-    app.use(express.static(buildPath));
-
-    // Pour toute autre requête, renvoyer index.html
-    app.get("*", (req, res) => {
-      // Ne pas traiter les routes API
-      if (!req.path.startsWith("/api/")) {
-        res.sendFile(path.join(buildPath, "index.html"));
-      } else {
-        res.status(404).json({ error: "API endpoint not found" });
-      }
-    });
-  } else {
-    console.log("⚠️ Dossier build non trouvé, mode API uniquement");
-    // Gérer les routes inconnues
-    app.use((req, res, next) => {
-      if (req.path.startsWith("/api/")) {
-        next();
-      } else {
-        res.status(404).json({ error: "Not found" });
-      }
+    if (result.affectedRows > 0) {
+      res.json({ success: true, message: "Fichier supprimé avec succès" });
+    } else {
+      res.status(404).json({ success: false, message: "Fichier non trouvé" });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la suppression du fichier:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la suppression",
+      error: error.message,
     });
   }
-}
+});
