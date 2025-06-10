@@ -1472,14 +1472,32 @@ app.get("/api/files/:id", async (req, res) => {
 
 // Servir l'application React pour toutes les routes non-API en production
 if (process.env.NODE_ENV === "production") {
-  // Servir les fichiers statiques du build React
-  app.use(express.static(path.join(__dirname, "../build")));
+  const buildPath = path.join(__dirname, "../build");
 
-  // Pour toute autre requête, renvoyer index.html
-  app.get("*", (req, res) => {
-    // Ne pas traiter les routes API
-    if (!req.path.startsWith("/api/")) {
-      res.sendFile(path.join(__dirname, "../build", "index.html"));
-    }
-  });
+  // Vérifier si le dossier build existe avant d'essayer de servir des fichiers statiques
+  if (fs.existsSync(buildPath)) {
+    console.log("📂 Dossier build trouvé, activation du mode SPA");
+    // Servir les fichiers statiques du build React
+    app.use(express.static(buildPath));
+
+    // Pour toute autre requête, renvoyer index.html
+    app.get("*", (req, res) => {
+      // Ne pas traiter les routes API
+      if (!req.path.startsWith("/api/")) {
+        res.sendFile(path.join(buildPath, "index.html"));
+      } else {
+        res.status(404).json({ error: "API endpoint not found" });
+      }
+    });
+  } else {
+    console.log("⚠️ Dossier build non trouvé, mode API uniquement");
+    // Gérer les routes inconnues
+    app.use((req, res, next) => {
+      if (req.path.startsWith("/api/")) {
+        next();
+      } else {
+        res.status(404).json({ error: "Not found" });
+      }
+    });
+  }
 }
