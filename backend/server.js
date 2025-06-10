@@ -1418,7 +1418,22 @@ server.listen(PORT, () => {
   );
 });
 
-// Ajouter ces routes pour gérer l'upload et le téléchargement des images
+// Ajouter après les autres routes - Avant les routes de maintenance des formulaires
+
+// Créer table stored_files si elle n'existe pas
+const createStoredFilesTableQuery = `
+CREATE TABLE IF NOT EXISTS stored_files (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  file_name VARCHAR(255) NOT NULL,
+  file_type VARCHAR(100) NOT NULL,
+  file_data MEDIUMBLOB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`;
+
+dbPool
+  .execute(createStoredFilesTableQuery)
+  .then(() => console.log("✅ Table stored_files vérifiée/créée"))
+  .catch((err) => console.error("❌ Erreur création table stored_files:", err));
 
 // Upload d'une image vers la base de données
 app.post("/api/db-upload", upload.single("file"), async (req, res) => {
@@ -1427,7 +1442,12 @@ app.post("/api/db-upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "Aucun fichier fourni" });
     }
 
+    console.log("📁 Fichier reçu:", req.file.originalname, req.file.mimetype);
+
+    // Lire le fichier depuis le système de fichiers temporaire
     const fileData = fs.readFileSync(req.file.path);
+
+    // Insérer dans la base de données
     const [result] = await dbPool.execute(
       "INSERT INTO stored_files (file_name, file_type, file_data) VALUES (?, ?, ?)",
       [req.file.originalname, req.file.mimetype, fileData]
@@ -1436,13 +1456,16 @@ app.post("/api/db-upload", upload.single("file"), async (req, res) => {
     // Supprimer le fichier temporaire
     fs.unlinkSync(req.file.path);
 
+    console.log("✅ Fichier stocké en BDD avec ID:", result.insertId);
+
     res.json({
+      success: true,
       id: result.insertId,
       url: `/api/files/${result.insertId}`,
       name: req.file.originalname,
     });
   } catch (error) {
-    console.error("Erreur lors de l'upload du fichier:", error);
+    console.error("❌ Erreur lors de l'upload du fichier:", error);
     res.status(500).json({ error: "Erreur lors du traitement du fichier" });
   }
 });
@@ -1456,16 +1479,19 @@ app.get("/api/files/:id", async (req, res) => {
     );
 
     if (rows.length === 0) {
+      console.log("❌ Fichier non trouvé:", req.params.id);
       return res.status(404).json({ error: "Fichier non trouvé" });
     }
 
     const file = rows[0];
+    console.log("✅ Fichier trouvé:", req.params.id, file.file_type);
+
     res.setHeader("Content-Type", file.file_type);
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "max-age=86400"); // 1 jour de cache
     res.send(file.file_data);
   } catch (error) {
-    console.error("Erreur lors de la récupération du fichier:", error);
+    console.error("❌ Erreur lors de la récupération du fichier:", error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });

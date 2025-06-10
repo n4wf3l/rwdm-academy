@@ -114,24 +114,26 @@ const uploadImageFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    // Utilisez l'URL complète en production, ou localhost en développement
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? window.location.origin
-        : "http://localhost:5000";
-
-    const response = await fetch(`${baseUrl}/api/db-upload`, {
+    // Utiliser une URL relative pour que ça marche en dev et en prod
+    const response = await fetch("/api/db-upload", {
       method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error("Erreur lors de l'upload");
+      const errorText = await response.text();
+      console.error("Erreur de réponse:", response.status, errorText);
+      throw new Error(`Erreur serveur: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("URL de l'image uploadée:", data.url); // Debug
-    return data.url; // URL vers /api/files/{id}
+    console.log("Réponse d'upload:", data);
+
+    if (!data || !data.url) {
+      throw new Error("Format de réponse invalide");
+    }
+
+    return data.url;
   } catch (error) {
     console.error("Erreur lors de l'upload:", error);
     toast.error("❌ Erreur lors de l'upload du logo");
@@ -411,13 +413,7 @@ const GeneralSettings: React.FC<Props> = ({
                     className="flex justify-center mt-4"
                   >
                     <img
-                      src={
-                        logo.startsWith("http")
-                          ? logo
-                          : logo.startsWith("/api/files/")
-                          ? `http://localhost:5000${logo}`
-                          : logo
-                      }
+                      src={logo}
                       alt="Logo"
                       className="h-20 object-contain transition-all duration-200 rounded"
                       onError={(e) => {
