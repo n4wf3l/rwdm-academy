@@ -1461,9 +1461,25 @@ app.get("/api/files/:id", async (req, res) => {
 
     const file = rows[0];
     res.setHeader("Content-Type", file.file_type);
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "max-age=86400"); // 1 jour de cache
     res.send(file.file_data);
   } catch (error) {
     console.error("Erreur lors de la récupération du fichier:", error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
+// Servir l'application React pour toutes les routes non-API en production
+if (process.env.NODE_ENV === "production") {
+  // Servir les fichiers statiques du build React
+  app.use(express.static(path.join(__dirname, "../build")));
+
+  // Pour toute autre requête, renvoyer index.html
+  app.get("*", (req, res) => {
+    // Ne pas traiter les routes API
+    if (!req.path.startsWith("/api/")) {
+      res.sendFile(path.join(__dirname, "../build", "index.html"));
+    }
+  });
+}

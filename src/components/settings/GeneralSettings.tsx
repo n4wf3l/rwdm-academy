@@ -114,7 +114,13 @@ const uploadImageFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch("http://localhost:5000/api/db-upload", {
+    // Utilisez l'URL complète en production, ou localhost en développement
+    const baseUrl =
+      process.env.NODE_ENV === "production"
+        ? window.location.origin
+        : "http://localhost:5000";
+
+    const response = await fetch(`${baseUrl}/api/db-upload`, {
       method: "POST",
       body: formData,
     });
@@ -124,10 +130,11 @@ const uploadImageFile = async (file: File) => {
     }
 
     const data = await response.json();
+    console.log("URL de l'image uploadée:", data.url); // Debug
     return data.url; // URL vers /api/files/{id}
   } catch (error) {
     console.error("Erreur lors de l'upload:", error);
-    toast.error("❌ Erreur lors de l’upload du logo");
+    toast.error("❌ Erreur lors de l'upload du logo");
     return null;
   }
 };
@@ -404,9 +411,19 @@ const GeneralSettings: React.FC<Props> = ({
                     className="flex justify-center mt-4"
                   >
                     <img
-                      src={logo}
+                      src={
+                        logo.startsWith("http")
+                          ? logo
+                          : logo.startsWith("/api/files/")
+                          ? `http://localhost:5000${logo}`
+                          : logo
+                      }
                       alt="Logo"
                       className="h-20 object-contain transition-all duration-200 rounded"
+                      onError={(e) => {
+                        console.error("Erreur de chargement du logo:", logo);
+                        e.currentTarget.src = "/placeholder-logo.png"; // Image de secours
+                      }}
                     />
                   </motion.div>
                 )}
