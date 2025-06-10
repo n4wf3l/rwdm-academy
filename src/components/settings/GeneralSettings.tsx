@@ -307,46 +307,41 @@ const GeneralSettings: React.FC<Props> = ({
   // Remplacer la fonction handleLogoChange
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFileName(file.name);
+      // 1. Télécharger la nouvelle image
+      const newLogoUrl = await uploadImageFile(e.target.files[0]);
 
-      if (!checkImageSize(file)) {
-        e.target.value = "";
-        return;
+      if (!newLogoUrl) {
+        return; // L'upload a échoué, message d'erreur déjà affiché
       }
 
-      // Upload du fichier via la nouvelle API
-      const formData = new FormData();
-      formData.append("file", file);
-
+      // 2. Si une ancienne image existe et est stockée en BDD, essayer de la supprimer
+      // Ne pas bloquer le processus si la suppression échoue
       try {
-        // URL base selon l'environnement
-        const baseUrl = window.location.origin.includes("localhost")
-          ? "http://localhost:5000"
-          : "";
+        if (logo && logo.includes("/api/files/")) {
+          // Extraire l'ID de l'image
+          const imageId = logo.split("/api/files/")[1];
+          if (imageId) {
+            // URL de base selon l'environnement
+            const baseUrl = window.location.origin.includes("localhost")
+              ? "http://localhost:5000"
+              : "";
 
-        const response = await axios.post(
-          `${baseUrl}/api/upload/image`,
-          formData
-        );
-
-        console.log("Réponse upload:", response.data);
-
-        if (response.data?.filePath) {
-          // Mettre à jour le logo avec l'URL de l'API
-          const newLogo = `${baseUrl}${response.data.filePath}`;
-          setLogo(newLogo);
-          toast.success(t("toasts.logoUploaded"));
-        } else {
-          throw new Error("Format de réponse invalide");
+            await fetch(`${baseUrl}/api/delete-file/${imageId}`, {
+              method: "DELETE",
+            });
+          }
         }
-      } catch (error) {
-        console.error("Erreur lors de l'upload:", error);
-        toast.error(
-          `❌ Erreur: ${error.response?.data?.message || "Échec de l'upload"}`
+      } catch (err) {
+        console.error(
+          "❌ Erreur lors de la suppression de l'ancienne image :",
+          err
         );
-        e.target.value = "";
+        // Ne pas bloquer le processus principal
       }
+
+      // 3. Mettre à jour l'interface
+      // Ajout d'un timestamp pour éviter les problèmes de cache
+      setLogo(`${newLogoUrl}?v=${Date.now()}`);
     }
   };
 
