@@ -334,8 +334,9 @@ const Settings: React.FC = () => {
 
       toast.success(t("settings.saveSuccess"));
 
-      // Forcer le rechargement de la page pour actualiser les images
-      window.location.reload();
+      // Remplacer le rechargement complet par une navigation React Router
+      // Cela préserve le contexte SPA tout en "rafraîchissant" la page
+      navigate(0); // ou navigate("/settings")
     } catch (err: any) {
       console.error(err);
       toast.error(

@@ -1417,3 +1417,53 @@ server.listen(PORT, () => {
     `🚀 Serveur unifié en cours d'exécution sur http://localhost:${PORT}`
   );
 });
+
+// Ajouter ces routes pour gérer l'upload et le téléchargement des images
+
+// Upload d'une image vers la base de données
+app.post("/api/db-upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Aucun fichier fourni" });
+    }
+
+    const fileData = fs.readFileSync(req.file.path);
+    const [result] = await dbPool.execute(
+      "INSERT INTO stored_files (file_name, file_type, file_data) VALUES (?, ?, ?)",
+      [req.file.originalname, req.file.mimetype, fileData]
+    );
+
+    // Supprimer le fichier temporaire
+    fs.unlinkSync(req.file.path);
+
+    res.json({
+      id: result.insertId,
+      url: `/api/files/${result.insertId}`,
+      name: req.file.originalname,
+    });
+  } catch (error) {
+    console.error("Erreur lors de l'upload du fichier:", error);
+    res.status(500).json({ error: "Erreur lors du traitement du fichier" });
+  }
+});
+
+// Récupérer une image depuis la base de données
+app.get("/api/files/:id", async (req, res) => {
+  try {
+    const [rows] = await dbPool.execute(
+      "SELECT file_type, file_data FROM stored_files WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Fichier non trouvé" });
+    }
+
+    const file = rows[0];
+    res.setHeader("Content-Type", file.file_type);
+    res.send(file.file_data);
+  } catch (error) {
+    console.error("Erreur lors de la récupération du fichier:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});

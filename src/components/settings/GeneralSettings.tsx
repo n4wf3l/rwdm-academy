@@ -109,17 +109,24 @@ const deleteOldImage = async (filePath: string) => {
   }
 };
 
-const uploadImageFile = async (file: File): Promise<string | null> => {
-  const formData = new FormData();
-  formData.append("image", file);
-
+const uploadImageFile = async (file: File) => {
   try {
-    const { data } = await axios.post(
-      "http://localhost:5000/api/upload/image",
-      formData
-    ); // { filePath: "/uploads/xxxx.png" }
-    return data.filePath;
-  } catch (err) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("http://localhost:5000/api/db-upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de l'upload");
+    }
+
+    const data = await response.json();
+    return data.url; // URL vers /api/files/{id}
+  } catch (error) {
+    console.error("Erreur lors de l'upload:", error);
     toast.error("❌ Erreur lors de l’upload du logo");
     return null;
   }
