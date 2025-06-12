@@ -105,26 +105,27 @@ const dbConfig = {
   database: process.env.DB_NAME, // Exemple : "rwdm-academy"
 };
 
+// Définir le chemin d'uploads en fonction de l'environnement
+
+// Définition du dossier d'uploads
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// S'assurer que le dossier est accessible
+app.use("/uploads", express.static(uploadsDir));
+
+// Mettre à jour multer pour utiliser ce dossier
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
 });
-
-const allowedExtensions = [".pdf", ".jpeg", ".jpg", ".png"];
-
-const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (!allowedExtensions.includes(ext)) {
-    return cb(new Error("Type de fichier non autorisé"), false);
-  }
-  cb(null, true);
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB
-});
+const upload = multer({ storage: storage });
 
 // ---------------------
 // Endpoint de connexion
@@ -907,9 +908,7 @@ app.post("/login", async (req, res) => {
 
   // Valider le token reCAPTCHA avec Google
   const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
-  const secretKey =
-    process.env.RECAPTCHA_SECRET_KEY ||
-    "6Ld_u1srAAAAAGSbA5jk2yE0Nwy5SDATJ-6kf8N0";
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
   try {
     const response = await fetch(verifyUrl, {
@@ -926,13 +925,6 @@ app.post("/login", async (req, res) => {
       return res
         .status(403)
         .json({ message: "Échec de vérification du captcha." });
-    }
-
-    // TODO: Authentifie ton utilisateur ici avec email/password
-    if (email === "admin@example.com" && password === "motdepasse") {
-      return res.json({ token: "FAKE_JWT_TOKEN" });
-    } else {
-      return res.status(401).json({ message: "Identifiants invalides." });
     }
   } catch (error) {
     console.error("Erreur de vérification CAPTCHA :", error);
@@ -1090,7 +1082,7 @@ app.post("/api/forget-password", async (req, res) => {
     console.log("✅ Token stocké dans la BDD"); // ✅ Vérifier si le token est bien stocké
 
     // Construire le lien de réinitialisation
-    const resetLink = `http://localhost:5174/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     console.log("📨 Lien de réinitialisation:", resetLink); // ✅ Vérifier si le lien est bien généré
 
     // Envoyer l'email
@@ -1406,7 +1398,10 @@ app.use("/api/api-settings", apiSettingsRouter);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5174",
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://rwdm-academy.onrender.com"
+        : "http://localhost:5174",
     methods: ["GET", "POST"],
   },
 });
@@ -1418,188 +1413,20 @@ server.listen(PORT, () => {
   );
 });
 
-// Remplacer la création de table par une simple vérification
-
-// Vérifier si la table existe au lieu d'essayer de la créer
-const checkStoredFilesTable = async () => {
-  try {
-    // Vérifier si la table existe avec une requête SELECT
-    const [rows] = await dbPool.execute("SELECT 1 FROM stored_files LIMIT 1");
-    console.log("✅ Table stored_files vérifiée et accessible");
-    return true;
-  } catch (err) {
-    // Si l'erreur est "Table doesn't exist" c'est différent d'un problème d'accès
-    if (err.code === "ER_NO_SUCH_TABLE") {
-      console.log("⚠️ Table stored_files n'existe pas");
-    } else {
-      console.error("❌ Erreur d'accès à la table stored_files:", err.message);
-    }
-    return false;
-  }
-};
-
-// Appeler la fonction de vérification au démarrage
-checkStoredFilesTable().then((exists) => {
-  if (exists) {
-    console.log("📊 Système de stockage d'images en base de données prêt");
-  } else {
-    console.log(
-      "⚠️ Le stockage d'images en base de données peut ne pas fonctionner"
-    );
-  }
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Erreur serveur interne" });
 });
 
-// Ajouter après la vérification de la table stored_files
-
-// Upload d'une image vers la base de données
-app.post("/api/db-upload", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "Aucun fichier fourni" });
-    }
-
-    console.log("📁 Fichier reçu:", req.file.originalname, req.file.mimetype);
-
-    // Vérifier si la table existe avant d'essayer d'y accéder
-    const tableExists = await checkStoredFilesTable();
-
-    if (tableExists) {
-      // Lire le fichier depuis le système de fichiers temporaire
-      const fileData = fs.readFileSync(req.file.path);
-
-      // Insérer dans la base de données
-      const [result] = await dbPool.execute(
-        "INSERT INTO stored_files (file_name, file_type, file_data) VALUES (?, ?, ?)",
-        [req.file.originalname, req.file.mimetype, fileData]
-      );
-
-      // Supprimer le fichier temporaire
-      fs.unlinkSync(req.file.path);
-
-      console.log("✅ Fichier stocké en BDD avec ID:", result.insertId);
-
-      res.json({
-        success: true,
-        id: result.insertId,
-        url: `/api/files/${result.insertId}`,
-        name: req.file.originalname,
-      });
-    } else {
-      // Si la table n'existe pas, utiliser le système de fichiers traditionnel
-      const filePath = `/uploads/${req.file.filename}`;
-      console.log("⚠️ Utilisation du système de fichiers:", filePath);
-      res.json({
-        success: true,
-        url: filePath,
-        name: req.file.originalname,
-      });
-    }
-  } catch (error) {
-    console.error("❌ Erreur lors de l'upload du fichier:", error);
-    // Envoyer une réponse JSON valide même en cas d'erreur
-    res.status(500).json({
-      error: "Erreur lors du traitement du fichier",
-      message: error.message,
-    });
-  }
-});
-
-// Récupérer une image depuis la base de données
-app.get("/api/files/:id", async (req, res) => {
-  try {
-    const [rows] = await dbPool.execute(
-      "SELECT file_type, file_data FROM stored_files WHERE id = ?",
-      [req.params.id]
-    );
-
-    if (rows.length === 0) {
-      console.log("❌ Fichier non trouvé:", req.params.id);
-      // Rediriger vers une image placeholder au lieu de retourner une erreur
-      return res.redirect("https://via.placeholder.com/150");
-    }
-
-    const file = rows[0];
-    console.log("✅ Fichier trouvé:", req.params.id, file.file_type);
-
-    res.setHeader("Content-Type", file.file_type);
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "max-age=86400"); // 1 jour de cache
-    res.send(file.file_data);
-  } catch (error) {
-    console.error("❌ Erreur lors de la récupération du fichier:", error);
-    // Rediriger vers une image placeholder en cas d'erreur
-    res.redirect("https://via.placeholder.com/150");
-  }
-});
-
-// Supprimer une image de la base de données
-app.delete("/api/delete-file/:id", authMiddleware, async (req, res) => {
-  try {
-    const [result] = await dbPool.execute(
-      "DELETE FROM stored_files WHERE id = ?",
-      [req.params.id]
-    );
-
-    if (result.affectedRows > 0) {
-      res.json({ success: true, message: "Fichier supprimé avec succès" });
-    } else {
-      res.status(404).json({ success: false, message: "Fichier non trouvé" });
-    }
-  } catch (error) {
-    console.error("Erreur lors de la suppression du fichier:", error);
-    res.status(500).json({
-      success: false,
-      message: "Erreur lors de la suppression",
-      error: error.message,
-    });
-  }
-});
-
-// Ajouter après les autres middlewares
-
-// Assurer que le dossier uploads existe
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
 }
 
-// Servir les fichiers statiques
-app.use(
-  "/uploads",
-  express.static(uploadsDir, {
-    maxAge: "1d",
-  })
-);
-
-// Route de fallback pour les uploads en cas d'erreur
-app.get("/uploads/*", (req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "public", "placeholder.png"));
-});
-
-// Assurez-vous que cette route fonctionne correctement
-app.get("/api/files/:id", async (req, res) => {
-  try {
-    const [rows] = await dbPool.execute(
-      "SELECT file_type, file_data FROM stored_files WHERE id = ?",
-      [req.params.id]
-    );
-
-    if (rows.length === 0) {
-      console.log("❌ Fichier non trouvé:", req.params.id);
-      // Rediriger vers une image placeholder au lieu de retourner une erreur
-      return res.redirect("https://via.placeholder.com/150");
-    }
-
-    const file = rows[0];
-    console.log("✅ Fichier trouvé:", req.params.id, file.file_type);
-
-    res.setHeader("Content-Type", file.file_type);
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "max-age=86400"); // 1 jour de cache
-    res.send(file.file_data);
-  } catch (error) {
-    console.error("❌ Erreur lors de la récupération du fichier:", error);
-    // Rediriger vers une image placeholder en cas d'erreur
-    res.redirect("https://via.placeholder.com/150");
-  }
+// Route d'accueil
+app.get("/", (req, res) => {
+  res.json({
+    message: "RWDM Academy API",
+    status: "online",
+    version: "1.0",
+  });
 });

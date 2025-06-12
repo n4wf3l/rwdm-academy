@@ -109,40 +109,15 @@ const deleteOldImage = async (filePath: string) => {
   }
 };
 
-// Remplacer la fonction uploadImageFile
-const uploadImageFile = async (file: File) => {
+const uploadImageFile = async (file: File): Promise<string | null> => {
+  const formData = new FormData();
+  formData.append("image", file);
+
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    // Utiliser une méthode plus robuste pour déterminer l'URL de base
-    const baseUrl = window.location.origin.includes("localhost")
-      ? "http://localhost:5000"
-      : window.location.origin;
-
-    console.log("Tentative d'upload vers:", `${baseUrl}/api/upload/image`);
-
-    // Utiliser axios pour un meilleur contrôle des erreurs
-    const response = await axios.post(`${baseUrl}/api/upload/image`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    console.log("Réponse upload:", response.data);
-
-    // Vérifier que la réponse contient le chemin du fichier
-    if (!response.data?.filePath) {
-      throw new Error("Réponse invalide du serveur");
-    }
-
-    // Retourner le chemin complet
-    return response.data.filePath;
-  } catch (error) {
-    console.error("Erreur lors de l'upload:", error);
-    toast.error(
-      `❌ Erreur: ${error.response?.data?.message || "Échec de l'upload"}`
-    );
+    const { data } = await axios.post("/api/upload/image", formData); // { filePath: "/uploads/xxxx.png" }
+    return data.filePath;
+  } catch (err) {
+    toast.error("❌ Erreur lors de l’upload du logo");
     return null;
   }
 };
@@ -304,47 +279,6 @@ const GeneralSettings: React.FC<Props> = ({
     }));
   };
 
-  // Remplacer la fonction handleLogoChange
-  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      // 1. Télécharger la nouvelle image
-      const newLogoUrl = await uploadImageFile(e.target.files[0]);
-
-      if (!newLogoUrl) {
-        return; // L'upload a échoué, message d'erreur déjà affiché
-      }
-
-      // 2. Si une ancienne image existe et est stockée en BDD, essayer de la supprimer
-      // Ne pas bloquer le processus si la suppression échoue
-      try {
-        if (logo && logo.includes("/api/files/")) {
-          // Extraire l'ID de l'image
-          const imageId = logo.split("/api/files/")[1];
-          if (imageId) {
-            // URL de base selon l'environnement
-            const baseUrl = window.location.origin.includes("localhost")
-              ? "http://localhost:5000"
-              : "";
-
-            await fetch(`${baseUrl}/api/delete-file/${imageId}`, {
-              method: "DELETE",
-            });
-          }
-        }
-      } catch (err) {
-        console.error(
-          "❌ Erreur lors de la suppression de l'ancienne image :",
-          err
-        );
-        // Ne pas bloquer le processus principal
-      }
-
-      // 3. Mettre à jour l'interface
-      // Ajout d'un timestamp pour éviter les problèmes de cache
-      setLogo(`${newLogoUrl}?v=${Date.now()}`);
-    }
-  };
-
   /* -------------------- RENDER -------------------- */
   return (
     <motion.div
@@ -460,20 +394,9 @@ const GeneralSettings: React.FC<Props> = ({
                     className="flex justify-center mt-4"
                   >
                     <img
-                      src={
-                        logo && logo.startsWith("/api/files/")
-                          ? `${window.location.origin}${logo}`
-                          : logo
-                      }
+                      src={logo}
                       alt="Logo"
                       className="h-20 object-contain transition-all duration-200 rounded"
-                      onError={(e) => {
-                        console.error("Erreur de chargement du logo:", logo);
-                        // Utiliser une image locale au lieu d'une URL externe
-                        e.currentTarget.src = "/placeholder.png";
-                        // Empêcher les boucles infinies d'erreurs
-                        e.currentTarget.onerror = null;
-                      }}
                     />
                   </motion.div>
                 )}
