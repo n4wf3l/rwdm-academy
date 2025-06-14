@@ -20,7 +20,7 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ className }) => {
-  const [logo, setLogo] = useState("/logo.png");
+  const [logo, setLogo] = useState<string | null>("/logo.png");
   const [clubName, setClubName] = useState<{
     FR: string;
     NL: string;
@@ -49,6 +49,9 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   const { t } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const apiBase =
+    process.env.NODE_ENV === "development" ? "http://localhost:5000" : "";
+
   const getLocalizedValue = (
     field: { [key: string]: string } | undefined,
     lang: string
@@ -65,11 +68,28 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(`${apiBase}/api/settings`);
         const data = await res.json();
         const general = data.general || {};
 
-        setLogo(general.logo || "/logo.png");
+        // Traitement du logo similaire à celui du Navbar
+        if (general.logo) {
+          if (general.logo.startsWith("/uploads/")) {
+            setLogo(general.logo); // URL relative directement utilisable
+          } else if (general.logo.startsWith("/api/files/")) {
+            setLogo(general.logo); // URL de l'API pour les fichiers en DB
+          } else {
+            // Ajouter le préfixe de l'API si nécessaire
+            setLogo(
+              general.logo.startsWith("http")
+                ? general.logo
+                : `${apiBase}${general.logo}`
+            );
+          }
+        } else {
+          setLogo("/logo.png"); // Logo par défaut
+        }
+
         setClubName(general.clubName || { FR: "", NL: "", EN: "" });
         setClubAddress(general.clubAddress || { FR: "", NL: "", EN: "" });
         setPostalCode(general.postalCode || "");
@@ -84,6 +104,8 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         setIsLoaded(true);
       } catch (error) {
         console.error("Erreur chargement footer :", error);
+        setLogo("/logo.png"); // En cas d'erreur, utiliser le logo par défaut
+        setIsLoaded(true);
       }
     };
 
@@ -120,12 +142,16 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <img
-                    src={logo}
+                    src={logo || "/logo.png"}
                     alt={clubName[currentLang] || "Logo"}
                     className="h-10 w-10 object-contain"
                     loading="lazy"
                     width={40}
                     height={40}
+                    onError={(e) => {
+                      console.error("Erreur de chargement du logo");
+                      e.currentTarget.src = "/logo.png"; // Fallback en cas d'erreur
+                    }}
                   />
                   <h3 className="font-bold text-xl text-rwdm-blue dark:text-white">
                     {clubName[currentLang] || "RWDM Academy"}
