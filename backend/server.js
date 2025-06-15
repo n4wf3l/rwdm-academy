@@ -26,17 +26,13 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: process.env.CORS_ORIGIN || "*", // ❌ "*" est dangereux en production!
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-const uploadDir = path.resolve(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-app.use("/uploads", express.static(uploadDir));
+
 app.use(express.static(path.join(__dirname, "../public")));
 
 const loginLimiter = rateLimit({
@@ -108,12 +104,14 @@ const dbConfig = {
 // Définir le chemin d'uploads en fonction de l'environnement
 
 // Définition du dossier d'uploads
-const uploadsDir = path.join(__dirname, "uploads");
+const uploadsDir = path.join(
+  __dirname,
+  process.env.NODE_ENV === "production" ? "../uploads" : "uploads"
+);
+console.log("📁 Dossier uploads configuré:", uploadsDir);
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-
-// S'assurer que le dossier est accessible
 app.use("/uploads", express.static(uploadsDir));
 
 // Mettre à jour multer pour utiliser ce dossier
