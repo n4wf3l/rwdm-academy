@@ -113,25 +113,49 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   useEffect(() => {
     const fetchLogo = async () => {
       try {
+        // 1. Récupérer les paramètres généraux (dont le chemin du logo)
         const res = await fetch("http://localhost:5000/api/settings");
         const data = await res.json();
 
-        if (data.general.logo) {
-          if (data.general.logo.startsWith("/uploads/")) {
-            setLogoUrl(data.general.logo); // 👈 URL relative directement utilisable
-          } else if (data.general.logo.startsWith("/uploads/")) {
-            setLogoUrl(`http://localhost:5000${data.general.logo}`); // fichier uploadé
+        if (
+          data.general &&
+          data.general.logo &&
+          data.general.logo.startsWith("/uploads/")
+        ) {
+          console.log("✅ Logo trouvé dans les paramètres:", data.general.logo);
+
+          // 2. Récupérer l'image en Base64
+          const imageResponse = await fetch(
+            `http://localhost:5000/api/file-as-base64?path=${encodeURIComponent(
+              data.general.logo
+            )}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (imageResponse.ok) {
+            const base64Data = await imageResponse.text();
+            // 3. Définir l'URL avec le contenu Base64
+            setLogoUrl(`data:image/png;base64,${base64Data}`);
+            console.log("✅ Logo chargé avec succès en Base64");
           } else {
-            setLogoUrl(null);
+            console.error("❌ Erreur lors du chargement du logo en Base64");
+            setLogoUrl("/placeholder-logo.png");
           }
+        } else {
+          setLogoUrl("/placeholder-logo.png");
         }
       } catch (err) {
-        console.error("Erreur chargement logo :", err);
+        console.error("❌ Erreur chargement logo:", err);
+        setLogoUrl("/placeholder-logo.png");
       }
     };
 
     fetchLogo();
-  }, []);
+  }, []); // ✅ N'exécute qu'une seule fois au montage du composant
 
   useEffect(() => {
     const handleScroll = () => {

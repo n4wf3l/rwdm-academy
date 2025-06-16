@@ -72,19 +72,37 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         const data = await res.json();
         const general = data.general || {};
 
-        // Traitement du logo similaire à celui du Navbar
-        if (general.logo) {
-          if (general.logo.startsWith("/uploads/")) {
-            setLogo(general.logo); // URL relative directement utilisable
-          } else if (general.logo.startsWith("/api/files/")) {
-            setLogo(general.logo); // URL de l'API pour les fichiers en DB
-          } else {
-            // Ajouter le préfixe de l'API si nécessaire
-            setLogo(
-              general.logo.startsWith("http")
-                ? general.logo
-                : `${apiBase}${general.logo}`
+        // Logo: utiliser la méthode Base64 comme dans AdminLayout
+        if (general.logo && general.logo.startsWith("/uploads/")) {
+          try {
+            // Récupérer l'image en Base64
+            const imageResponse = await fetch(
+              `${apiBase}/api/file-as-base64?path=${encodeURIComponent(
+                general.logo
+              )}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
             );
+
+            if (imageResponse.ok) {
+              const base64Data = await imageResponse.text();
+              setLogo(`data:image/png;base64,${base64Data}`);
+              console.log("✅ Footer: Logo chargé avec succès en Base64");
+            } else {
+              console.error(
+                "❌ Footer: Erreur lors du chargement du logo en Base64"
+              );
+              setLogo("/logo.png");
+            }
+          } catch (err) {
+            console.error(
+              "❌ Footer: Erreur lors de la conversion Base64:",
+              err
+            );
+            setLogo("/logo.png");
           }
         } else {
           setLogo("/logo.png"); // Logo par défaut
@@ -104,7 +122,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         setIsLoaded(true);
       } catch (error) {
         console.error("Erreur chargement footer :", error);
-        setLogo("/logo.png"); // En cas d'erreur, utiliser le logo par défaut
+        setLogo("/logo.png");
         setIsLoaded(true);
       }
     };
@@ -141,16 +159,20 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <img
+                  <motion.img
+                    key={logo || "/logo.png"}
                     src={logo || "/logo.png"}
                     alt={clubName[currentLang] || "Logo"}
                     className="h-10 w-10 object-contain"
                     loading="lazy"
                     width={40}
                     height={40}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
                     onError={(e) => {
-                      console.error("Erreur de chargement du logo");
-                      e.currentTarget.src = "/logo.png"; // Fallback en cas d'erreur
+                      console.error("❌ Footer: Erreur d'affichage du logo");
+                      e.currentTarget.src = "/logo.png";
                     }}
                   />
                   <h3 className="font-bold text-xl text-rwdm-blue dark:text-white">

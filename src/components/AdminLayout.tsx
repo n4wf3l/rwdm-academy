@@ -82,19 +82,48 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   useEffect(() => {
     const fetchLogo = async () => {
       try {
+        // 1. Récupérer les paramètres généraux (dont le chemin du logo)
         const res = await fetch("http://localhost:5000/api/settings");
         const data = await res.json();
-        if (data.general.logo && data.general.logo.startsWith("/uploads/")) {
-          setLogoUrl(data.general.logo);
+
+        if (
+          data.general &&
+          data.general.logo &&
+          data.general.logo.startsWith("/uploads/")
+        ) {
+          console.log("✅ Logo trouvé dans les paramètres:", data.general.logo);
+
+          // 2. Récupérer l'image en Base64
+          const imageResponse = await fetch(
+            `http://localhost:5000/api/file-as-base64?path=${encodeURIComponent(
+              data.general.logo
+            )}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (imageResponse.ok) {
+            const base64Data = await imageResponse.text();
+            // 3. Définir l'URL avec le contenu Base64
+            setLogoUrl(`data:image/png;base64,${base64Data}`);
+            console.log("✅ Logo chargé avec succès en Base64");
+          } else {
+            console.error("❌ Erreur lors du chargement du logo en Base64");
+            setLogoUrl("/placeholder-logo.png");
+          }
         } else {
-          setLogoUrl(null);
+          setLogoUrl("/placeholder-logo.png");
         }
       } catch (err) {
-        console.error("Erreur chargement logo :", err);
+        console.error("❌ Erreur chargement logo:", err);
+        setLogoUrl("/placeholder-logo.png");
       }
     };
     fetchLogo();
-  }, []);
+  }, []); // ✅ N'exécute qu'une seule fois au montage du composant
 
   // Récupération des infos utilisateur
   useEffect(() => {
@@ -206,13 +235,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               >
                 <div className="h-10 w-10 overflow-hidden shadow-md border bg-white flex items-center justify-center">
                   <motion.img
-                    key={logoUrl || "/placeholder-logo.png"}
-                    src={logoUrl || "/placeholder-logo.png"}
+                    key={logoUrl} // n'ajoutez pas de fallback ici pour éviter de cacher les vraies erreurs
+                    src={logoUrl}
                     alt="Logo"
                     className="h-full w-full object-contain"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5 }}
+                    onError={(e) => {
+                      console.error(
+                        "❌ Erreur d'affichage du logo:",
+                        e.currentTarget.src
+                      );
+                      e.currentTarget.src = "/placeholder-logo.png";
+                    }}
                   />
                 </div>
                 <motion.span

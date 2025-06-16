@@ -112,7 +112,26 @@ console.log("📁 Dossier uploads configuré:", uploadsDir);
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-app.use("/uploads", express.static(uploadsDir));
+
+// CORRECTION: Assurez-vous que le middleware static est correctement configuré
+app.use("/uploads", (req, res, next) => {
+  console.log(`📂 Accès au fichier: ${req.url}`);
+  express.static(uploadsDir)(req, res, (err) => {
+    if (err) {
+      console.error(`❌ Erreur d'accès au fichier: ${req.url}`, err);
+      return res.status(404).send("Fichier non trouvé");
+    }
+    next();
+  });
+});
+
+// AJOUTEZ cette ligne pour déboguer les requêtes d'images
+app.use((req, res, next) => {
+  if (req.url.startsWith("/uploads")) {
+    console.log(`📄 Fichier demandé: ${req.url}`);
+  }
+  next();
+});
 
 // Mettre à jour multer pour utiliser ce dossier
 const storage = multer.diskStorage({
@@ -1426,5 +1445,82 @@ app.get("/", (req, res) => {
     message: "RWDM Academy API",
     status: "online",
     version: "1.0",
+  });
+});
+
+// Ajouter cette route pour tester directement l'accès aux fichiers
+app.get("/api/test-file", (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath) {
+    return res.status(400).send("Path parameter required");
+  }
+
+  const fullPath = path.join(uploadsDir, filePath.replace("/uploads/", ""));
+
+  fs.access(fullPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({
+        exists: false,
+        path: fullPath,
+        error: err.message,
+      });
+    }
+
+    res.json({
+      exists: true,
+      path: fullPath,
+      url: `http://localhost:5000/uploads/${filePath.replace("/uploads/", "")}`,
+    });
+  });
+});
+
+// Vérifie si un fichier existe dans le dossier uploads
+app.get("/api/test-file-exists", (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath) {
+    return res.status(400).json({ error: "Chemin de fichier manquant" });
+  }
+
+  // Sécurité: vérifier que le chemin est dans uploads
+  if (!filePath.startsWith("/uploads/")) {
+    return res.status(400).json({ error: "Chemin non autorisé" });
+  }
+
+  const fullPath = path.join(__dirname, filePath.substring(1)); // Enlève le / initial
+
+  fs.access(fullPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({
+        exists: false,
+        error: err.message,
+        requestedPath: filePath,
+        fullPath: fullPath,
+      });
+    }
+
+    res.json({
+      exists: true,
+      path: filePath,
+      fullPath: fullPath,
+    });
+  });
+});
+
+// Ajouter dans server.js
+app.get("/api/file-as-base64", (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath || !filePath.startsWith("/uploads/")) {
+    return res.status(400).send("Invalid file path");
+  }
+
+  const fullPath = path.join(__dirname, filePath.substring(1));
+
+  fs.readFile(fullPath, (err, data) => {
+    if (err) {
+      return res.status(404).send("File not found");
+    }
+
+    const base64 = data.toString("base64");
+    res.send(base64);
   });
 });
