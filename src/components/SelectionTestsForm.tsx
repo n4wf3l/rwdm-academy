@@ -124,7 +124,9 @@ const SelectionTestsForm: React.FC<FormProps> = ({
   const [email, setEmail] = useState<string>("");
   const [currentClub, setCurrentClub] = useState<string>("");
   const [previousClub, setPreviousClub] = useState<string>("");
-  const [position, setPosition] = useState<string>(formData.position || "");
+  const [position, setPosition] = useState<string | undefined>(
+    formData.position === undefined ? undefined : formData.position
+  );
 
   // États pour les informations du responsable légal
   const [parentLastName, setParentLastName] = useState<string>("");
@@ -208,10 +210,16 @@ const SelectionTestsForm: React.FC<FormProps> = ({
       console.log("Setting default position:", defaultPos);
       setPosition(defaultPos);
       onFormDataChange?.("position", defaultPos);
+    } else {
+      // IMPORTANT: Réinitialiser la position si ce n'est pas une catégorie U5-U9
+      // et si la position actuelle est celle par défaut des petites catégories
+      const defaultPos = t("selection_position_default");
+      if (position === defaultPos) {
+        setPosition(undefined);
+        onFormDataChange?.("position", undefined);
+      }
     }
-    // Ne pas réinitialiser si noyau change mais que ce n'est pas U5-U9
-    // Retirer le "else setPosition("")"
-  }, [noyau, t, onFormDataChange]);
+  }, [noyau, t, onFormDataChange, position]);
 
   useEffect(() => {
     if (!isCooldown) return;
@@ -606,16 +614,20 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   ) : (
                     <Select
                       onValueChange={(value) => {
-                        setPosition(value);
-                        onFormDataChange?.("position", value);
+                        setPosition(value || undefined); // Assurez-vous que les chaînes vides deviennent undefined
+                        onFormDataChange?.("position", value || undefined);
                       }}
-                      defaultValue={position}
-                      value={position}
+                      value={position} // Ne pas transformer ici, assurez-vous plutôt que position est toujours undefined ou valide
                     >
                       <SelectTrigger id="position" className="form-input-base">
-                        <SelectValue
-                          placeholder={t("selection_placeholder_position")}
-                        />
+                        {/* Approche directe pour forcer l'affichage du placeholder */}
+                        {position ? (
+                          <SelectValue>{position}</SelectValue>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t("selection_placeholder_position")}
+                          </span>
+                        )}
                       </SelectTrigger>
                       <SelectContent>
                         {POSITIONS.map((pos) => (
