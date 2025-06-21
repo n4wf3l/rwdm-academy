@@ -187,7 +187,7 @@ router.post("/send-request/:id", async (req, res) => {
     });
 
     const info = await transporter.sendMail({
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: recipient,
       subject: emailTemplate.subject.replace(/{requestId}/g, request.id),
       html: htmlContent,

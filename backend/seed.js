@@ -8,7 +8,7 @@ async function seedSuperadmin() {
     host: process.env.DB_HOST, // ex: "localhost"
     user: process.env.DB_USER, // ex: "root"
     password: process.env.DB_PASSWORD, // ex: "MonSuperMotDePasse"
-    database: process.env.DB_NAME, // ex: "rwdm-academy"
+    database: process.env.DB_NAME,
   };
 
   try {
@@ -25,13 +25,12 @@ async function seedSuperadmin() {
       await connection.end();
       return;
     }
-
-    // Définir les informations du superadmin
+    n;
     const firstName = "Nawfel";
     const lastName = "Ajari";
     const email = "nawfel@hotmail.com";
     const plainPassword = "nawnaw1030"; // mot de passe en clair
-    const role = "superadmin"; // Rôle à insérer
+    const role = "owner"; // Rôle à insérer
     const userFunction = "Fonction initiale";
 
     // Hacher le mot de passe avec bcrypt

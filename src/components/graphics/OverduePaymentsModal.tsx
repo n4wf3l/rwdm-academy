@@ -103,7 +103,7 @@ const OverduePaymentsModal: React.FC<OverduePaymentsModalProps> = ({
     printContent.innerHTML = `
       <html>
         <head>
-          <title>RWDM Academy - ${t("stats.overdue")}</title>
+          <title>Daring Brussels Academy - ${t("stats.overdue")}</title>
           <style>
             @media print {
               body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
@@ -166,7 +166,7 @@ const OverduePaymentsModal: React.FC<OverduePaymentsModalProps> = ({
         </head>
         <body>
           <div class="print-header">
-            <div class="print-logo">RWDM Academy</div>
+            <div class="print-logo">Daring Brussels Academy</div>
             <div class="print-title">${t("stats.overdue")} (${
       filteredInvoices.length
     })</div>

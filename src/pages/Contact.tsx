@@ -143,63 +143,66 @@ const Contact = () => {
         {/* SEO général */}
         <title>
           {lang === "fr"
-            ? "Contactez la RWDM Academy – Coordonnées et formulaire"
+            ? "Contactez la Daring Brussels Academy – Coordonnées et formulaire"
             : lang === "nl"
-            ? "Contacteer RWDM Academy – Contactgegevens en formulier"
-            : "Contact RWDM Academy – Contact form and details"}
+            ? "Contacteer Daring Brussels Academy – Contactgegevens en formulier"
+            : "Contact Daring Brussels Academy – Contact form and details"}
         </title>
         <meta
           name="description"
           content={
             lang === "fr"
-              ? "Contactez-nous pour toute question sur l'académie RWDM, les inscriptions, ou les événements."
+              ? "Contactez-nous pour toute question sur l'académie Daring Brussels, les inscriptions, ou les événements."
               : lang === "nl"
-              ? "Neem contact op met RWDM Academy voor vragen over inschrijvingen of evenementen."
-              : "Get in touch with RWDM Academy for any inquiries about registration or events."
+              ? "Neem contact op met Daring Brussels Academy voor vragen over inschrijvingen of evenementen."
+              : "Get in touch with Daring Brussels Academy for any inquiries about registration or events."
           }
         />
         <meta
           name="keywords"
           content={
             lang === "fr"
-              ? "RWDM, contact, académie, formulaire, football, inscription, test, Bruxelles"
+              ? "Daring Brussels, contact, académie, formulaire, football, inscription, test, Bruxelles"
               : lang === "nl"
-              ? "RWDM, contact, academie, formulier, voetbal, inschrijving, test, Brussel"
-              : "RWDM, contact, academy, form, football, registration, test, Brussels"
+              ? "Daring Brussels, contact, academie, formulier, voetbal, inschrijving, test, Brussel"
+              : "Daring Brussels, contact, academy, form, football, registration, test, Brussels"
           }
         />
-        <meta name="author" content="RWDM Academy" />
+        <meta name="author" content="Daring Brussels Academy" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://rwdmacademy.be/contact" />
+        <link rel="canonical" href="https://daringbrusselsacademy.be/contact" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rwdmacademy.be/contact" />
+        <meta
+          property="og:url"
+          content="https://daringbrusselsacademy.be/contact"
+        />
         <meta
           property="og:title"
           content={
             lang === "fr"
-              ? "Contactez la RWDM Academy"
+              ? "Contactez la Daring Brussels Academy"
               : lang === "nl"
-              ? "Contacteer de RWDM Academy"
-              : "Contact RWDM Academy"
+              ? "Contacteer de Daring Brussels Academy"
+              : "Contact Daring Brussels Academy"
           }
         />
         <meta
           property="og:description"
           content={
             lang === "fr"
-              ? "Formulaire de contact et coordonnées officielles de l'académie RWDM."
+              ? "Formulaire de contact et coordonnées officielles de l'académie Daring Brussels."
               : lang === "nl"
-              ? "Contactformulier en officiële gegevens van RWDM Academy."
-              : "Official contact form and details of RWDM Academy."
+              ? "Contactformulier en officiële gegevens van Daring Brussels Academy."
+              : "Official contact form and details of Daring Brussels Academy."
           }
         />
         <meta
           property="og:image"
-          content="https://rwdmacademy.be/images/og-image.jpg"
+          content="https://daringbrusselsacademy.be/images/og-image.jpg"
         />
-        <meta property="og:site_name" content="RWDM Academy" />
+        <meta property="og:site_name" content="Daring Brussels Academy" />
         <meta
           property="og:locale"
           content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"}
@@ -238,7 +241,7 @@ const Contact = () => {
             />
           </h1>
 
-          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
             {t("contact_description")}
           </p>
         </motion.div>

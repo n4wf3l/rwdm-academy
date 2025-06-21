@@ -14,7 +14,7 @@ export const translationsFR = {
   cancel: "Annuler",
   academy_registration: "Demande d'inscription à l'académie",
   academy_registration_desc:
-    "Formulaire d'inscription pour rejoindre l'académie RWDM (U5-U9)",
+    "Formulaire d'inscription pour rejoindre l'académie Daring Brussels (U5-U9)",
   selection_tests: "Demande de test de sélection",
   selection_tests_desc:
     "Demande d'inscription aux tests de sélection pour l'académie (U5-U21)",
@@ -32,7 +32,7 @@ export const translationsFR = {
   admin_settings: "Paramètres",
   admin_logout: "Déconnexion",
   admin_panel: "Panneau d'administration",
-  admin_rwdm: "Admin RWDM",
+  admin_rwdm: "Admin Daring Brussels",
   privacy_policy: "Politique de confidentialité",
   terms_and_conditions: "Conditions générales d'utilisation",
   legal_notice: "Mentions légales",
@@ -41,7 +41,7 @@ export const translationsFR = {
   legal_info: "Informations légales",
   all_rights_reserved: "Tous droits réservés.",
   footer_description:
-    "La RWDM Academy est dédiée à la formation des jeunes talents du football belge. Nous nous engageons à offrir un environnement d'apprentissage de qualité.",
+    "La Daring Brussels Academy est dédiée à la formation des jeunes talents du football belge. Nous nous engageons à offrir un environnement d'apprentissage de qualité.",
   about_title: "À propos de nous",
   about_subtitle:
     "Découvrez notre histoire, notre mission et notre équipe dédiée au développement des jeunes talents.",
@@ -56,9 +56,9 @@ export const translationsFR = {
   mission_title: "Notre mission",
   approach_title: "Notre approche",
   academies_title: "Nos académies",
-  rwdm_academy: "RWDM Aca.",
-  bef_academy: "BEF Aca.",
-  rfe_academy: "RFE Aca.",
+  rwdm_academy: "DB Aca.",
+  bef_academy: "EBF Aca.",
+  rfe_academy: "DBF Aca.",
   values_title: "Nos valeurs",
   team_title: "Notre équipe",
   no_team_members:
@@ -102,13 +102,13 @@ export const translationsFR = {
   auth_title: "Authentification",
   auth_subtitle: "Accès réservé au personnel autorisé",
   auth_email_label: "Email",
-  auth_email_placeholder: "votre.email@rwdm.be",
+  auth_email_placeholder: "votre.email@daringbrussels.be",
   auth_password_label: "Mot de passe",
   auth_forgot_password: "Mot de passe oublié ?",
   auth_login_button: "Se connecter",
   auth_logging_in: "Connexion en cours...",
   auth_admin_note:
-    "Cette page est réservée aux administrateurs de l'Académie RWDM.",
+    "Cette page est réservée aux administrateurs de l'Académie Daring Brussels.",
   auth_login_success: "Connexion réussie",
   auth_login_success_desc: "Bienvenue sur le panneau d'administration",
   auth_login_error: "Erreur de connexion",
@@ -170,7 +170,7 @@ export const translationsFR = {
   signature: "Signature",
   signature_desc: "Veuillez signer ci-dessous",
   signature_reminder_html:
-    "<strong>Pour rappel :</strong> ce formulaire concerne une <u>demande d'inscription</u> à la RWDM Academy et ne constitue en aucun cas une inscription définitive. Vous recevrez une réponse dans les prochaines heures ou jours de la part de la direction, via l'adresse email que vous avez fournie.",
+    "<strong>Pour rappel :</strong> ce formulaire concerne une <u>demande d'inscription</u> à la Daring Brussels Academy et ne constitue en aucun cas une inscription définitive. Vous recevrez une réponse dans les prochaines heures ou jours de la part de la direction, via l'adresse email que vous avez fournie.",
   label_date: "Date :",
 
   // FR
@@ -305,7 +305,7 @@ export const translationsFR = {
   selection_signature_section_subtitle:
     "Veuillez signer pour confirmer votre inscription aux tests de sélection",
   selection_signature_info:
-    "La RWDM Academy décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords. En signant ce document, vous reconnaissez avoir pris connaissance de cette information.",
+    "La Daring Brussels Academy décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords. En signant ce document, vous reconnaissez avoir pris connaissance de cette information.",
   selection_signature_label:
     "Signature du joueur ou des parents/tuteur légal (pour les enfants de moins de 18 ans)",
   selection_signature_placeholder:
@@ -347,11 +347,11 @@ export const translationsFR = {
   category_U12: "U12",
   category_U13: "U13",
   category_U14: "U14",
-  category_U15_full: "U15 (disponible à la RFE Academy)",
+  category_U15_full: "U15 (disponible à la DB ForEver Academy)",
   category_U16: "U16",
-  category_U17_full: "U17 (disponible à la RFE Academy)",
+  category_U17_full: "U17 (disponible à la DB ForEver Academy)",
   category_U18: "U18",
-  category_U19_full: "U19 (disponible à la RFE Academy)",
+  category_U19_full: "U19 (disponible à la DB ForEver Academy)",
   category_U21: "U21",
 
   position_goalkeeper: "Gardien",
@@ -364,8 +364,8 @@ export const translationsFR = {
   position_right_wing: "Ailier droit",
   position_left_wing: "Ailier gauche",
   position_striker: "Attaquant pointe",
-  academy_RWDM_elite: "RWDM Academy (Elite)",
-  academy_RFE_provincial: "RWDM ForEver Academy (Provinciaux)",
+  academy_RWDM_elite: "Daring Brussels Academy (Elite)",
+  academy_RFE_provincial: "DB ForEver Academy (Provinciaux)",
 
   selection_error_date_past_title: "Erreur",
   selection_error_date_past_desc: "La date ne peut pas être dans le passé.",
@@ -569,7 +569,7 @@ export const translationsFR = {
   toast_error_upload_signature: "Erreur lors de l’upload de la signature.",
   toast_error_api: "Erreur API.",
   waiver_text_template:
-    "Je soussigné(e), {{parentFirstName}} {{parentLastName}}, représentant légal du joueur {{playerFirstName}} {{playerLastName}}, né le {{playerBirthDate}}, et affilié au club {{currentClub}}, décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.",
+    "Je soussigné(e), {{parentFirstName}} {{parentLastName}}, représentant légal du joueur {{playerFirstName}} {{playerLastName}}, né le {{playerBirthDate}}, et affilié au club {{currentClub}}, décharge la Daring Brussels Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur pourrait participer à partir de ce jour.",
   tab_confidentiality: "Confidentialité",
   tab_terms: "CGU",
   tab_legal: "Mentions Légales",
@@ -580,7 +580,7 @@ export const translationsFR = {
   confidentiality_last_updated: "Dernière mise à jour :",
   confidentiality_section1_title: "1. Introduction",
   confidentiality_section1_text:
-    "Bienvenue sur la plateforme RWDM Academy. Nous nous engageons à protéger la vie privée et les données personnelles des utilisateurs de notre service. Cette politique de confidentialité explique comment nous recueillons, utilisons, partageons et protégeons vos informations personnelles.",
+    "Bienvenue sur la plateforme Daring Brussels Academy. Nous nous engageons à protéger la vie privée et les données personnelles des utilisateurs de notre service. Cette politique de confidentialité explique comment nous recueillons, utilisons, partageons et protégeons vos informations personnelles.",
   confidentiality_section2_title: "2. Données collectées",
   confidentiality_section2_intro:
     "Nous collectons les données suivantes lors de votre utilisation :",
@@ -643,11 +643,11 @@ export const translationsFR = {
   cgu_title: "Conditions Générales d’Utilisation",
   cgu_section1_title: "1. Acceptation des conditions",
   cgu_section1_text:
-    "En envoyant des demandes via la plateforme RWDM Academy, vous acceptez d’être lié par les présentes Conditions Générales d’Utilisation. Si vous n’acceptez pas ces conditions, veuillez ne pas utiliser notre service.",
+    "En envoyant des demandes via la plateforme Daring Brussels Academy, vous acceptez d’être lié par les présentes Conditions Générales d’Utilisation. Si vous n’acceptez pas ces conditions, veuillez ne pas utiliser notre service.",
   cgu_section2_title: "2. Description du service",
   cgu_section2_text1:
-    "La plateforme RWDM Academy permet d’envoyer des demandes pour :",
-  cgu_section2_li1: "demande d’inscription à l’académie RWDM",
+    "La plateforme Daring Brussels Academy permet d’envoyer des demandes pour :",
+  cgu_section2_li1: "demande d’inscription à l’académie Daring Brussels",
   cgu_section2_li2: "demande de test de sélection",
   cgu_section2_li3: "déclaration d’accident",
   cgu_section2_li4: "signature d’une décharge de responsabilité",
@@ -687,10 +687,10 @@ export const translationsFR = {
     "Ces conditions sont régies par le droit belge. Tout litige sera soumis aux tribunaux de Bruxelles.",
   cgu_section11_title: "11. Contact",
   cgu_section11_text:
-    "Pour toute question, contactez : RWDM Academy, Rue Charles Malis 61, 1080 Molenbeek‑Saint‑Jean, {{email}}",
+    "Pour toute question, contactez : Daring Brussels Academy, Rue Charles Malis 61, 1080 Molenbeek‑Saint‑Jean, {{email}}",
   cgu_section2_intro:
-    "La plateforme RWDM Academy permet d’envoyer des demandes pour :",
-  cgu_section2_item1: "demande d’inscription à l’académie RWDM",
+    "La plateforme Daring Brussels Academy permet d’envoyer des demandes pour :",
+  cgu_section2_item1: "demande d’inscription à l’académie Daring Brussels",
   cgu_section2_item2: "demande de test de sélection",
   cgu_section2_item3: "déclaration d’accident",
   cgu_section2_item4: "signature d’une décharge de responsabilité",
@@ -736,7 +736,7 @@ export const translationsFR = {
   // Section 4
   legal_section4_title: "4. Propriété intellectuelle",
   legal_section4_text:
-    "Tout le contenu (textes, images, logos, etc.) est la propriété exclusive de RWDM Academy ou de ses partenaires. Toute reproduction ou adaptation sans autorisation écrite préalable est interdite.",
+    "Tout le contenu (textes, images, logos, etc.) est la propriété exclusive de Daring Brussels Academy ou de ses partenaires. Toute reproduction ou adaptation sans autorisation écrite préalable est interdite.",
 
   // Section 5
   legal_section5_title: "5. Liens hypertextes",
@@ -1377,7 +1377,7 @@ export const translationsFR = {
   "auth.resetPasswordDescription":
     "Saisissez votre email pour recevoir un lien de réinitialisation",
   "passwordReset.emailLabel": "Email",
-  "passwordReset.emailPlaceholder": "votre.email@rwdm.be",
+  "passwordReset.emailPlaceholder": "votre.email@daringbrussels.be",
   "passwordReset.sending": "Envoi en cours…",
   "passwordReset.send": "Envoyer",
   "passwordReset.headerTitle": "Réinitialisation du mot de passe",
@@ -1652,7 +1652,7 @@ export const translationsFR = {
   "waiver.currentClub": "Club actuel",
   "waiver.waiver_title": "Décharge de responsabilité",
   "waiver.waiver_text":
-    "Je soussigné(e), {parentFirstName} {parentLastName}, représentant légal du joueur {playerFirstName} {playerLastName}, né(e) le {playerBirthDate}, et affilié(e) au club {currentClub} décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.",
+    "Je soussigné(e), {parentFirstName} {parentLastName}, représentant légal du joueur {playerFirstName} {playerLastName}, né(e) le {playerBirthDate}, et affilié(e) au club {currentClub} décharge la Daring Brussels Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.",
   "waiver.date_confirmation": "Date et confirmation",
   "waiver.signatureDate": "Date de signature",
   "waiver.approvalText": "Mention",
@@ -1664,7 +1664,7 @@ export const translationsFR = {
   "waiver.waiver_text_part3": "né(e) le",
   "waiver.waiver_text_part4": "et affilié(e) au club",
   "waiver.waiver_text_part5":
-    "décharge la RWDM Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.",
+    "décharge la Daring Brussels Academy de toute responsabilité en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux.",
   "email.type.refus_registration": "Refus d'inscription",
   "email.type.refus_selection": "Refus de test",
   "email.type.refus_accident": "Refus d'accident",
@@ -1874,11 +1874,33 @@ export const translationsFR = {
     "Personnalisez les emails automatiques envoyés aux utilisateurs.",
   "guide.developer_access": "Accès pour développeur",
   "guide.github_repo": "Repository GitHub",
-  "guide.github_repo_link": "Accéder au repository RWDM Academy",
+  "guide.github_repo_link": "Accéder au repository Daring Brussels Academy",
   "guide.tech_stack": "Stack technologique",
   "guide.tech_stack_desc":
     "L'application est développée avec les technologies suivantes :",
   "guide.api_docs": "Documentation API",
   "guide.api_docs_desc":
     "La documentation complète de l'API est disponible pour les développeurs autorisés dans le dossier Readme du repository.",
+  "category.daring_brussels_academy": "Daring Brussels Academy",
+  "category.daring_brussels_academy_sub": "Anciennement ELITE/RWDM Academy",
+  "category.db_forever": "DB ForEver",
+  "category.db_forever_sub": "Anciennement RF/RWDM ForEver",
+  "category.ebfa": "EBFA",
+  "category.ebfa_sub": "Eagles Brussels Football Academy",
+  "noElements.category": 'Aucun élément de "',
+  "noElements.found": '" trouvé',
+  "noElements.forSeason": "pour la saison",
+  "noElements.noInvoices": "Aucune facture trouvée",
+  "noElements.tryChangingFilters":
+    "Essayez de modifier vos filtres ou de sélectionner une autre catégorie/saison.",
+  teams: "équipes",
+  players: "joueurs",
+  teamSingular: "Équipe",
+  teamsPlural: "Équipes",
+  "pdf.export": "Exporter en PDF",
+  "pdf.generationError": "Erreur lors de la génération du PDF",
+  "pdf.generating": "Génération...",
+  tagline: "Rejoignez l'élite du football belge",
+  meta_description:
+    "Accédez aux formulaires officiels de l'académie Daring Brussels : inscription, tests de sélection, décharge de responsabilité, déclaration d'accident et certificat de guérison.",
 };

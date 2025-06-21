@@ -245,12 +245,13 @@ const Index: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
       <Helmet>
-        <title>RWDM Academy – Rejoignez l'élite du football belge</title>
-        <meta
-          name="description"
-          content="Accédez aux formulaires officiels de l'académie RWDM : inscription, tests de sélection, décharge de responsabilité, déclaration d'accident et certificat de guérison."
-        />
-        {/* Préconnexion pour réduire la latence de connexion au backend */}
+        <title>
+          {status.clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
+            "Daring Brussels Academy"}{" "}
+          – {t("tagline")}
+        </title>
+        <meta name="description" content={t("meta_description")} />
+        {/* Préconnexion inchangée */}
         <link rel="preconnect" href={API_BASE} />
       </Helmet>
 
@@ -272,7 +273,7 @@ const Index: React.FC = () => {
               >
                 <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3 inline-block relative">
                   {status.clubName[currentLang as "FR" | "NL" | "EN"] ||
-                    "RWDM Academy"}
+                    "Daring Brussels Academy"}
                   <motion.div
                     className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
                     style={{
@@ -285,10 +286,10 @@ const Index: React.FC = () => {
                   />
                 </h1>
               </motion.div>
-              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+
+              <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
                 {t("welcome")}
               </p>
-
               {/* Note champ obligatoire */}
               <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-2xl mx-auto space-y-1 text-center">
                 <p>{t("champ")}</p>

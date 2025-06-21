@@ -367,7 +367,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     onChange={(e) =>
                       setCurrentClub(alphaNumeric(e.target.value))
                     }
-                    placeholder="RWDM"
+                    placeholder="Daring Brussels"
                     required
                   />
                 </div>

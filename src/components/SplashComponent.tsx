@@ -9,6 +9,7 @@ style.innerHTML = `
   @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
 `;
 document.head.appendChild(style);
+
 interface SplashComponentProps {
   onLanguageSelect: (language: "fr" | "nl" | "en") => void;
 }
@@ -17,14 +18,79 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
   onLanguageSelect,
 }) => {
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [clubName, setClubName] = useState<Record<string, string>>({
+    FR: "Daring Brussels Academy", // Valeur par défaut
+    NL: "Daring Brussels Academy",
+    EN: "Daring Brussels Academy",
+  });
+  const [logoUrl, setLogoUrl] = useState<string>("/logo.png"); // Valeur par défaut
+  const currentLang = localStorage.getItem("language")?.toUpperCase() || "FR";
+
+  // Récupérer le logo et le nom du club dès le chargement du composant
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const apiBase =
+          process.env.NODE_ENV === "development" ? "http://localhost:5000" : "";
+
+        // 1. Récupérer les paramètres (logo + nom du club)
+        const res = await fetch(`${apiBase}/api/settings`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        const data = await res.json();
+
+        // 2. Mettre à jour le nom du club
+        if (data.general?.clubName) {
+          setClubName(data.general.clubName);
+        }
+
+        // 3. Récupérer le logo en Base64
+        if (data.general?.logo && data.general.logo.startsWith("/uploads/")) {
+          try {
+            const imageResponse = await fetch(
+              `${apiBase}/api/file-as-base64?path=${encodeURIComponent(
+                data.general.logo
+              )}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            if (imageResponse.ok) {
+              const base64Data = await imageResponse.text();
+              setLogoUrl(`data:image/png;base64,${base64Data}`);
+              console.log(
+                "✅ SplashComponent: Logo chargé avec succès en Base64"
+              );
+            }
+          } catch (err) {
+            console.error(
+              "❌ Erreur lors du chargement du logo en Base64:",
+              err
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des paramètres:", error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   // Show language selector after initial animation
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimationComplete(true);
-    }, 2500); // délai augmenté à 4000 ms
+    }, 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Nom du club à afficher (avec fallback)
+  const displayedClubName =
+    clubName[currentLang as "FR" | "NL" | "EN"] || "Daring Brussels Academy";
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-4">
@@ -37,7 +103,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
         >
-          {/* Logo Animation */}
+          {/* Logo Animation - Utilise logoUrl récupéré depuis la BD */}
           <motion.div
             className="h-40 w-40 rounded-full flex items-center justify-center mb-8 mx-auto shadow-lg"
             initial={{ opacity: 0 }}
@@ -45,10 +111,19 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
           >
-            <img src="/logo.png" alt="RWDM Academy Logo" width="80px" />
+            <motion.img
+              key={logoUrl} // Pour refresh l'animation si le logo change
+              src={logoUrl}
+              alt={`${displayedClubName} Logo`}
+              width="80px"
+              className="h-full w-auto object-contain"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            />
           </motion.div>
 
-          {/* Texte Animation */}
+          {/* Texte Animation avec nom du club dynamique */}
           <motion.h1
             className="text-4xl font-bold text-rwdm-blue mb-2"
             initial={{ y: 20, opacity: 0 }}
@@ -56,7 +131,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
             exit={{ opacity: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            RWDM Academy
+            {displayedClubName}
           </motion.h1>
 
           <motion.p
@@ -71,7 +146,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
 
           {/* "A legend never dies" uniquement dans le splashscreen */}
           <motion.p
-            className="text-gray-600 text-5xl mt-4" // taille augmentée et margin top ajouté
+            className="text-gray-600 text-5xl mt-4"
             style={{ fontFamily: "'Dancing Script', cursive" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -82,7 +157,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
           </motion.p>
         </motion.div>
       ) : (
-        // Language selector (Fade-in effect)
+        // Language selector - Utilise également logoUrl récupéré depuis la BD
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -91,16 +166,23 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
         >
           <Card className="bg-white shadow-xl border-gray-100">
             <div className="p-5 flex justify-center">
-              <div className="p-5 flex justify-center">
-                <motion.div
-                  className="h-24 w-24 rounded-full flex items-center justify-center"
+              <motion.div
+                className="h-24 w-24 rounded-full flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+              >
+                <motion.img
+                  key={`select-${logoUrl}`} // Clé unique pour éviter les problèmes de rendu
+                  src={logoUrl}
+                  alt={`${displayedClubName} Logo`}
+                  width="55"
+                  className="h-full w-auto object-contain"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 1 }}
-                >
-                  <img src="/logo.png" alt="RWDM Academy Logo" width="55" />
-                </motion.div>
-              </div>
+                  transition={{ duration: 0.5 }}
+                />
+              </motion.div>
             </div>
 
             <CardContent className="p-6 pt-0">
@@ -117,7 +199,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
                 <p className="text-xl text-gray-600">Select your language</p>
               </motion.div>
 
-              {/* Boutons de sélection de langue */}
+              {/* Pas de changement dans les boutons de sélection de langue */}
               <motion.div
                 className="grid grid-cols-1 gap-3"
                 initial={{ opacity: 0, y: 20 }}

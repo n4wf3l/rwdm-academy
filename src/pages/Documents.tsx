@@ -611,7 +611,7 @@ const Documents = () => {
                   }, 
                   et affilié au club ${
                     waiverData.currentClub || ""
-                  }, décharge la RWDM Academy de toute responsabilité 
+                  }, décharge la Daring Brussels Academy de toute responsabilité 
                   en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur 
                   pourrait participer à partir de ce jour.
                 </p>
@@ -895,12 +895,12 @@ const Documents = () => {
             </style>
             
             <!-- Watermark -->
-            <img class="rwdm-logo" src="/logo.png" alt="RWDM" />
+            <img class="rwdm-logo" src="/logo.png" alt="Daring Brussels" />
             
             <!-- Header -->
             <div class="header">
               <div>
-                <img class="header-logo" src="/logo.png" alt="RWDM Academy" />
+                <img class="header-logo" src="/logo.png" alt="Daring Brussels Academy" />
               </div>
               <div class="document-id">
                 <strong>Référence:</strong> ${formatRequestId(doc.id)}<br>
@@ -928,7 +928,7 @@ const Documents = () => {
             
             <!-- Footer -->
             <div class="footer">
-              <p>Document généré automatiquement par la plateforme RWDM Academy — ${new Date().toLocaleDateString(
+              <p>Document généré automatiquement par la plateforme Daring Brussels Academy — ${new Date().toLocaleDateString(
                 "fr-FR"
               )}</p>
             </div>

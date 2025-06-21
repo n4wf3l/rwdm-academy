@@ -176,7 +176,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                     }}
                   />
                   <h3 className="font-bold text-xl text-rwdm-blue dark:text-white">
-                    {clubName[currentLang] || "RWDM Academy"}
+                    {clubName[currentLang] || "Daring Brussels Academy"}
                   </h3>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">

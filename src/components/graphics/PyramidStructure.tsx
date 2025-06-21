@@ -1,5 +1,5 @@
 // components/graphics/PyramidStructure.tsx
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import ModalPlayers from "./ModalPlayers";
@@ -41,9 +41,13 @@ const PyramidStructure: React.FC = () => {
   );
   const [modalTitle, setModalTitle] = useState("");
 
+  // Ajouter cette référence
+  const pyramidRef = useRef<HTMLDivElement>(null);
+  const pyramidStructureRef = useRef<HTMLDivElement>(null); // Nouvelle référence
+
   useEffect(() => {
     axios
-      .get<TeamRaw[]>("http://localhost:5001/api/teams/player-counts")
+      .get<TeamRaw[]>("http://localhost:5000/api/teams/player-counts")
       .then((res) =>
         setTeams(res.data.filter((t) => typeof t.teamName === "string"))
       )
@@ -70,8 +74,8 @@ const PyramidStructure: React.FC = () => {
         ageGroups: [],
         teams: 0,
         players: 0,
-        // Uniquement U20 à U23
-        match: (n) => /\b(U2[0-3])\b/i.test(n),
+        // Nouveau: Détecte juste le nombre 20-23 au lieu de U20-U23
+        match: (n) => /\b(2[0-3])\b/i.test(n),
       },
       {
         name: "Middle Youth",
@@ -79,8 +83,8 @@ const PyramidStructure: React.FC = () => {
         ageGroups: [],
         teams: 0,
         players: 0,
-        // U13 à U19 (incluant U18-U19 qui étaient dans Senior Youth)
-        match: (n) => /\b(U1[3-9])\b/i.test(n),
+        // Nouveau: Détecte juste les nombres 13-19
+        match: (n) => /\b(1[3-9])\b/i.test(n),
       },
       {
         name: "Junior Youth",
@@ -88,8 +92,8 @@ const PyramidStructure: React.FC = () => {
         ageGroups: [],
         teams: 0,
         players: 0,
-        // Uniquement U10 à U12 (pas U9)
-        match: (n) => /\b(U1[0-2])\b/i.test(n),
+        // Nouveau: Détecte juste les nombres 10-12
+        match: (n) => /\b(1[0-2])\b/i.test(n),
       },
       {
         name: "Foundation",
@@ -97,26 +101,61 @@ const PyramidStructure: React.FC = () => {
         ageGroups: [],
         teams: 0,
         players: 0,
-        // U5 à U9 uniquement
-        match: (n) => /\bU[5-9]\b/i.test(n) && !/\bU1[0-9]\b/i.test(n),
+        // Version améliorée: détecte mieux U5-U9 et les nombres simples 5-9
+        match: (n) =>
+          /\b([U]?[5-9])\b/i.test(n) || /\b(Under-[5-9])\b/i.test(n),
       },
     ];
 
+    // Mettre à jour la classification des équipes
     teams.forEach((t) => {
       const name = t.teamName,
         cnt = t.playerCount,
         low = name.toLowerCase();
-      if (/(befa|eagles)/i.test(low)) {
+
+      // Détecte l'équipe A (regarde pour A-team)
+      if (/(DARING BRUSSELS|Daring Brussels).+A-team/i.test(name)) {
+        top = { id: t.teamId, name, players: cnt };
+      }
+      // Sépare clairement DBF et DARING BRUSSELS
+      else if (/^DBF\s/i.test(name)) {
+        // Uniquement les équipes commençant par DBF dans la sidebox
+        rw.push({ id: t.teamId, name, players: cnt });
+      }
+      // Condition plus tolérante pour RWDM
+      else if (/RWDM\s*U?\d/i.test(name)) {
+        // Le \s* permet zéro ou plusieurs espaces, U? rend le U optionnel
+        const lvl = levels.find((l) => l.match(name));
+        if (lvl) {
+          lvl.teams++;
+          lvl.players += cnt;
+          lvl.ageGroups.push({
+            id: t.teamId,
+            name: name.replace(/RWDM/i, "DARING BRUSSELS"),
+            players: cnt,
+          });
+        }
+      } else if (/(DARING BRUSSELS|Daring Brussels)/i.test(name)) {
+        // Ne pas ajouter équipes DARING BRUSSELS dans la sidebox
+
+        // Mais les ajouter quand même à la pyramide au milieu
+        const lvl = levels.find((l) => l.match(name));
+        if (lvl) {
+          lvl.teams++;
+          lvl.players += cnt;
+          lvl.ageGroups.push({ id: t.teamId, name, players: cnt });
+        }
+      }
+      // Détection Eagles Brussels Football Academy
+      else if (/(eagles|football academy)/i.test(low)) {
         befa.push({
           id: t.teamId,
-          name: name.replace(/Eagles Brussels Football Academy/i, "BEFA"),
+          name: name,
           players: cnt,
         });
-      } else if (/rf/i.test(low)) {
-        rw.push({ id: t.teamId, name, players: cnt });
-      } else if (/RWDM/i.test(name) && /\bA[- ]?team\b/i.test(name)) {
-        top = { id: t.teamId, name, players: cnt };
-      } else {
+      }
+      // Autres équipes (détection par niveau d'âge)
+      else {
         const lvl = levels.find((l) => l.match(name));
         if (lvl) {
           lvl.teams++;
@@ -159,14 +198,14 @@ const PyramidStructure: React.FC = () => {
       let res;
       try {
         res = await axios.get<any>(
-          `http://localhost:5001/api/teams/${team.id}/members`
+          `http://localhost:5000/api/teams/${team.id}/members`
         );
       } catch (err: any) {
         if (err.response?.status === 429) {
           await new Promise((r) => setTimeout(r, 1000));
           try {
             res = await axios.get<any>(
-              `http://localhost:5001/api/teams/${team.id}/members`
+              `http://localhost:5000/api/teams/${team.id}/members`
             );
           } catch {
             console.warn(`Échec définitif pour ${team.name}`);
@@ -187,9 +226,9 @@ const PyramidStructure: React.FC = () => {
       let cat: string | null = null;
 
       // Gestion spéciale pour BEFA
-      if (title === "BEFA") {
+      if (title === "EBFA") {
         // Utiliser le nom de l'équipe comme catégorie ou "BEFA" par défaut
-        cat = team.name.replace(/Eagles Brussels Football Academy/i, "BEFA");
+        cat = team.name.replace(/Eagles Brussels Football Academy/i, "EBFA");
       } else if (title === "A" || /\bA[- ]?team\b/i.test(team.name)) {
         cat = "A";
       } else {
@@ -219,69 +258,50 @@ const PyramidStructure: React.FC = () => {
 
   return (
     <div className="relative">
-      {/* Header */}
-      <CategoryCounts teams={teams} loading={loading} />
+      {/* Passer la référence de la pyramide au composant CategoryCounts */}
+      <CategoryCounts teams={teams} loading={loading} pyramidRef={pyramidRef} />
 
-      {/* Total Players Card */}
-      {!loading && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
-        >
-          <Card className="bg-gradient-to-r from-black to-red-600 text-white">
-            <CardContent className="flex flex-col items-center py-4">
-              <h2 className="text-2xl font-bold mb-2">
-                {t("totalPlayersAcademy")}
-              </h2>
-              <div className="flex items-center gap-8">
-                <div className="text-center">
-                  <div className="text-4xl font-bold mb-1">{uniquePlayers}</div>
-                  <p className="text-xs opacity-80">{t("withoutDuplicates")}</p>
-                </div>
-                <div className="text-center opacity-70">
-                  <div className="text-2xl font-semibold mb-1">
-                    {totalPlayers}
-                  </div>
-                  <p className="text-xs opacity-80">{t("withDuplicates")}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Grille */}
-      <div className="flex justify-center items-start gap-8 border border-gray-200 rounded-lg p-6">
-        {/* RWDM - après chargement, entrant depuis la gauche */}
+      {/* Ajouter la référence à la div contenant la structure de la pyramide */}
+      <div ref={pyramidRef}>
+        {/* Total Players Card - reste inclus dans pyramidRef */}
         {!loading && (
           <motion.div
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            whileHover={{ scale: 1.05 }}
-            className="hidden md:flex flex-col items-center mt-40"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
           >
-            <SideBox
-              title="RWDM ForEver"
-              items={rwTeams}
-              onClick={() => handleLevelClick("RWDM ForEver", rwTeams)}
-            />
+            <Card className="bg-gradient-to-r from-black to-red-600 text-white">
+              <CardContent className="flex flex-col items-center py-4">
+                <h2 className="text-2xl font-bold mb-2">
+                  {t("totalPlayersAcademy")}
+                </h2>
+                <div className="flex items-center gap-8">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold mb-1">
+                      {uniquePlayers}
+                    </div>
+                    <p className="text-xs opacity-80">
+                      {t("withoutDuplicates")}
+                    </p>
+                  </div>
+                  <div className="text-center opacity-70">
+                    <div className="text-2xl font-semibold mb-1">
+                      {totalPlayers}
+                    </div>
+                    <p className="text-xs opacity-80">{t("withDuplicates")}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
-        {/* Pyramide - apparaît toujours (loading ou non) */}
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 100,
-            damping: 20,
-            delay: 0.2,
-          }}
-          className="flex flex-col items-center mx-4 md:mx-8 max-w-4xl"
+        {/* Structure de la pyramide proprement dite */}
+        <div
+          ref={pyramidStructureRef}
+          className="relative"
+          data-pyramid-structure="true"
         >
           {loading ? (
             <div className="flex justify-center py-20">
@@ -289,51 +309,54 @@ const PyramidStructure: React.FC = () => {
             </div>
           ) : (
             <>
+              {/* Top team */}
               {topTeam && (
-                <PyramidLevel
-                  level={{
-                    name: "A",
-                    displayName: "A",
-                    ageGroups: [topTeam],
-                    teams: 1,
-                    players: topTeam.players,
-                  }}
-                  onClick={() => handleLevelClick("A", [topTeam])}
-                />
+                <div className="flex justify-center">
+                  <PyramidLevel
+                    level={{
+                      name: "A",
+                      ageGroups: [topTeam],
+                      teams: 1,
+                      players: topTeam.players,
+                    }}
+                    onClick={() => handleLevelClick("A-team", [topTeam])}
+                  />
+                </div>
               )}
-              {pyramidLevels.map((lvl, i) => (
-                <PyramidLevel
-                  key={i}
-                  level={{
-                    name: lvl.name,
-                    displayName: lvl.displayName,
-                    ageGroups: lvl.ageGroups,
-                    teams: lvl.teams,
-                    players: lvl.players,
-                  }}
-                  onClick={() => handleLevelClick(lvl.name, lvl.ageGroups)}
-                />
+
+              {/* Rest of the pyramid structure */}
+              {pyramidLevels.map((level) => (
+                <div key={level.name} className="flex justify-center">
+                  <PyramidLevel
+                    level={level}
+                    onClick={() =>
+                      handleLevelClick(
+                        level.displayName || level.name,
+                        level.ageGroups
+                      )
+                    }
+                  />
+                </div>
               ))}
+
+              {/* Side boxes */}
+              <div className="absolute left-0 top-1/3 transform -translate-x-12">
+                <SideBox
+                  title="DB ForEver"
+                  items={rwTeams}
+                  onClick={() => handleLevelClick("DB ForEver", rwTeams)}
+                />
+              </div>
+              <div className="absolute right-0 top-1/3 transform translate-x-12">
+                <SideBox
+                  title="EBFA"
+                  items={befaTeams}
+                  onClick={() => handleLevelClick("EBFA", befaTeams)}
+                />
+              </div>
             </>
           )}
-        </motion.div>
-
-        {/* BEFA - après chargement, entrant depuis la droite */}
-        {!loading && (
-          <motion.div
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            whileHover={{ scale: 1.05 }}
-            className="hidden md:flex flex-col items-center mt-40"
-          >
-            <SideBox
-              title="BEFA"
-              items={befaTeams}
-              onClick={() => handleLevelClick("BEFA", befaTeams)}
-            />
-          </motion.div>
-        )}
+        </div>
       </div>
 
       {/* Modal */}
@@ -357,6 +380,19 @@ const SideBox: React.FC<{
   onClick: () => void;
 }> = ({ title, items, onClick }) => {
   const total = items.reduce((sum, t) => sum + t.players, 0);
+  const { t } = useTranslation(); // Ajouter cette ligne pour accéder aux traductions
+
+  // Fonction pour formater les noms d'équipes - inchangée
+  const formatTeamName = (name: string) => {
+    if (/Eagles Brussels Football Academy/i.test(name)) {
+      const match = name.match(/Eagles Brussels Football Academy (U\d+\s+.*)/i);
+      if (match && match[1]) {
+        return `EBFA ${match[1]}`;
+      }
+    }
+    return name;
+  };
+
   return (
     <div
       onClick={onClick}
@@ -364,11 +400,11 @@ const SideBox: React.FC<{
     >
       <h4 className="font-bold mb-1">{title}</h4>
       <p className="text-xs text-blue-100 mb-2">
-        {items.length} équipes – {total} joueurs
+        {items.length} {t("teams")} – {total} {t("players")}
       </p>
       {items.map((i) => (
         <p key={i.id} className="text-xs text-blue-100 truncate">
-          {i.name}
+          {formatTeamName(i.name)}
         </p>
       ))}
     </div>
@@ -378,13 +414,14 @@ const SideBox: React.FC<{
 const PyramidLevel: React.FC<{
   level: {
     name: string;
-    displayName?: string; // Champ optionnel pour l'affichage
+    displayName?: string;
     ageGroups: TeamInfo[];
     teams: number;
     players: number;
   };
   onClick: () => void;
 }> = ({ level, onClick }) => {
+  const { t } = useTranslation();
   const widths = ["w-64", "w-80", "w-96", "w-[30rem]", "w-[36rem]"];
   const colors = [
     "bg-red-700",
@@ -394,7 +431,6 @@ const PyramidLevel: React.FC<{
     "bg-red-300",
     "bg-red-200",
   ];
-  // Utiliser le nom original pour l'index
   const idx = [
     "A",
     "Senior Youth",
@@ -422,10 +458,11 @@ const PyramidLevel: React.FC<{
           </h3>
           <div className="flex gap-2">
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
-              {level.teams} {level.teams > 1 ? "Équipes" : "Équipe"}
+              {level.teams}{" "}
+              {level.teams > 1 ? t("teamsPlural") : t("teamSingular")}
             </span>
             <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
-              {level.players} Joueurs
+              {level.players} {t("players")}
             </span>
           </div>
         </div>

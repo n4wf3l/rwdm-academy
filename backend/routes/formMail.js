@@ -103,7 +103,7 @@ router.post("/send-registration-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parent1Email,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,
@@ -175,19 +175,19 @@ router.post("/send-selection-test-email", async (req, res) => {
   
 <br/>
 <p>Cordialement,</p>
-<p><strong>RWDM Academy</strong><br/>Cellule détection</p>
+<p><strong>Daring Brussels Academy</strong><br/>Cellule détection</p>
 
 <!-- Clause de non‑responsabilité -->
 <p style="font-size:0.85em; color:#555; margin-top:1.5em;">
-  La RWDM Academy décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords.  
+  La Daring Brussels décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords.  
   En signant ce document, vous reconnaissez avoir pris connaissance de cette information.
 </p>
   `;
 
     await transporter.sendMail({
-      from: '"RWDM Academy" <info@nainnovations.be>',
+      from: '"Daring Brussels Academy" <info@nainnovations.be>',
       to: formData.parentEmail,
-      subject: `Demande de test reçue – RWDM Academy (ref #${requestId})`,
+      subject: `Demande de test reçue – Daring Brussels Academy (ref #${requestId})`,
       html,
     });
 
@@ -249,7 +249,7 @@ router.post("/send-accident-report-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: formData.email,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,
@@ -314,7 +314,7 @@ router.post("/send-waiver-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parentEmail,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,
@@ -580,11 +580,11 @@ router.post("/send-decision-email", async (req, res) => {
       .replace(/{category}/g, formDataObj.category || formDataObj.noyau || "")
       .replace(/{codeDossier}/g, formDataObj.codeDossier || "")
       .replace(/{requestId}/g, requestId)
-      .replace(/{academy}/g, formDataObj.academy || "RWDM Academy")
+      .replace(/{academy}/g, formDataObj.academy || "Daring Brussels Academy")
       .replace(/{season}/g, formDataObj.season || "")
 
       // Variables spécifiques pour les accidents et guérisons - remplacements DIRECTS
-      .replace(/{clubName}/g, formDataObj.clubName || "RWDM")
+      .replace(/{clubName}/g, formDataObj.clubName || "Daring Brussels")
       .replace(
         /{playerFirstName}/g,
         formDataObj.playerFirstName || formDataObj.firstName || ""
@@ -648,7 +648,7 @@ router.post("/send-decision-email", async (req, res) => {
     );
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: emailTo,
       cc: emailCc.length > 0 ? emailCc : undefined,
       subject: emailTemplate.subject
@@ -743,7 +743,7 @@ router.post("/send-appointment-confirmation", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: appointment.email,
       subject: template.subject,
       html: htmlContent,
@@ -812,7 +812,7 @@ router.post("/send-appointment-cancellation", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: appointment.email,
       subject: template.subject,
       html: htmlContent,
@@ -971,7 +971,7 @@ router.post("/send-selection-tests-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parentEmail,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,

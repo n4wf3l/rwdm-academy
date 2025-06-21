@@ -19,7 +19,7 @@ const CookiesPolicy: React.FC = () => {
     fetchSettings();
   }, []);
 
-  const displayEmail = emailClub || "privacy@rwdm-academy.be";
+  const displayEmail = emailClub || "privacy@daringbrussels-academy.be";
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">

@@ -467,12 +467,14 @@ const RegistrationForm: React.FC<FormProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Brussels Eagles Football Academy">
-                      Brussels Eagles Football Academy
+                      Eagles Brussels Football Academy
                     </SelectItem>
                     <SelectItem value="Red For Ever Academy">
-                      RWDM ForEver Academy
+                      DB ForEver Academy
                     </SelectItem>
-                    <SelectItem value="RWDM Academy">RWDM Academy</SelectItem>
+                    <SelectItem value="Daring Brussels Academy">
+                      Daring Brussels Academy
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -594,7 +596,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                     onChange={(e) =>
                       setCurrentClub(alphaNumeric(e.target.value))
                     }
-                    placeholder="RWDM"
+                    placeholder="Daring Brussels"
                   />
                 </div>
                 <div className="space-y-2">

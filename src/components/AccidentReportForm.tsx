@@ -130,7 +130,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
 
-  const [clubName, setClubName] = useState<string>("RWDM"); // Met RWDM par défaut
+  const [clubName, setClubName] = useState<string>("Daring Brussels");
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -146,7 +146,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [hasSentDeclaration, setHasSentDeclaration] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
-  const [academy, setAcademy] = useState<string>("RWDM Academy");
+  const [academy, setAcademy] = useState<string>("Daring Brussels Academy");
   const [documentType, setDocumentType] = useState<
     "accident-report" | "healing-certificate"
   >("accident-report");
@@ -790,8 +790,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
                           <SelectValue placeholder={t("academy")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="RWDM Academy">
-                            RWDM Academy
+                          <SelectItem value="Daring Brussels Academy">
+                            Daring Brussels Academy
                           </SelectItem>
                         </SelectContent>
                       </Select>

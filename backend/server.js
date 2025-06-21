@@ -98,7 +98,7 @@ const dbConfig = {
   host: process.env.DB_HOST, // Exemple : "localhost"
   user: process.env.DB_USER, // Exemple : "root"
   password: process.env.DB_PASSWORD, // Exemple : "MonSuperMotDePasse"
-  database: process.env.DB_NAME, // Exemple : "rwdm-academy"
+  database: process.env.DB_NAME,
 };
 
 // Définir le chemin d'uploads en fonction de l'environnement
@@ -1417,7 +1417,7 @@ const io = new Server(server, {
   cors: {
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://rwdm-academy.onrender.com"
+        ? "https://daringbrusselsacademy.be"
         : "http://localhost:5174",
     methods: ["GET", "POST"],
   },
@@ -1442,7 +1442,7 @@ if (process.env.NODE_ENV === "production") {
 // Route d'accueil
 app.get("/", (req, res) => {
   res.json({
-    message: "RWDM Academy API",
+    message: "Daring Brussels Academy API",
     status: "online",
     version: "1.0",
   });

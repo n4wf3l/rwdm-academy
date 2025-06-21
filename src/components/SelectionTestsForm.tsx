@@ -454,7 +454,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     <SelectContent>
                       {(["U15", "U17", "U19"].some((p) => noyau.startsWith(p))
                         ? ACADEMIES
-                        : ["RWDM Academy"]
+                        : ["Daring Brussels Academy"]
                       ).map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
@@ -562,7 +562,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     onChange={(e) =>
                       setCurrentClub(alphaNumeric(e.target.value))
                     }
-                    placeholder="RWDM"
+                    placeholder="Daring Brussels"
                   />
                 </div>
 
@@ -613,9 +613,9 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                       value={position}
                     >
                       <SelectTrigger id="position" className="form-input-base">
-                        <SelectValue>
-                          {position || t("selection_placeholder_position")}
-                        </SelectValue>
+                        <SelectValue
+                          placeholder={t("selection_placeholder_position")}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {POSITIONS.map((pos) => (

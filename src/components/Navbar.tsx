@@ -239,7 +239,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 )}
               >
                 {clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
-                  "RWDM Academy"}
+                  "Daring Brussels Academy"}
               </span>
 
               {isMobile ? (

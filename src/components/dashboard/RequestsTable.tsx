@@ -661,7 +661,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 e.stopPropagation();
                                 const mailtoLink = `mailto:${
                                   request.email
-                                }?subject=RWDM Academy - ${translateRequestType(
+                                }?subject=Daring Brussels Academy - ${translateRequestType(
                                   request.type,
                                   t
                                 )}`;

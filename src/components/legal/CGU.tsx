@@ -16,7 +16,7 @@ const Cgu: React.FC = () => {
       .catch((err) => console.error("Erreur fetch email :", err));
   }, []);
 
-  const displayEmail = emailClub || "contact@rwdm-academy.be";
+  const displayEmail = emailClub || "contact@daringbrusselsacademy.be";
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">
@@ -129,7 +129,7 @@ const Cgu: React.FC = () => {
         <p>
           {t("cgu_section11_contact_intro")}
           <br />
-          RWDM Academy
+          Daring Brussels Academy
           <br />
           Rue Charles Malis 61
           <br />

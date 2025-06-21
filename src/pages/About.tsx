@@ -30,7 +30,7 @@ const About = () => {
   const { toast } = useToast();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const searchParams = new URLSearchParams(window.location.search);
-  const initialTab = searchParams.get("tab") || "histoire"; // fallback = RWDM Academy
+  const initialTab = searchParams.get("tab") || "histoire";
   const [tabValue, setTabValue] = useState(initialTab);
   const { t, lang } = useTranslation();
   const currentLang = lang.toUpperCase();
@@ -159,46 +159,46 @@ const About = () => {
         {/* SEO général */}
         <title>
           {lang === "fr"
-            ? "RWDM Academy – Notre mission, histoire et valeurs"
+            ? "Daring Brussels Academy – Notre mission, histoire et valeurs"
             : lang === "nl"
-            ? "RWDM Academy – Onze missie, geschiedenis en waarden"
-            : "RWDM Academy – Our Mission, History & Values"}
+            ? "Daring Brussels Academy – Onze missie, geschiedenis en waarden"
+            : "Daring Brussels Academy – Our Mission, History & Values"}
         </title>
         <meta
           name="description"
           content={
             lang === "fr"
-              ? "Apprenez-en plus sur l'identité, les valeurs, les académies et l'équipe derrière la RWDM Academy."
+              ? "Apprenez-en plus sur l'identité, les valeurs, les académies et l'équipe derrière la Daring Brussels Academy."
               : lang === "nl"
-              ? "Ontdek het verhaal, de waarden, de academies en het team achter RWDM Academy."
-              : "Learn more about the identity, values, academies and team behind RWDM Academy."
+              ? "Ontdek het verhaal, de waarden, de academies en het team achter Daring Brussels Academy."
+              : "Learn more about the identity, values, academies and team behind Daring Brussels Academy."
           }
         />
         <meta
           name="keywords"
           content={
             lang === "fr"
-              ? "RWDM, football, académie, mission, histoire, valeurs, équipe, Bruxelles, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
+              ? "Daring Brussels, football, académie, mission, histoire, valeurs, équipe, Bruxelles, Daring Brussels ForEver, Red ForEver, Brussels Eagles Football Academy"
               : lang === "nl"
-              ? "RWDM, voetbal, academie, missie, geschiedenis, waarden, team, Brussel, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
-              : "RWDM, football, academy, mission, history, values, team, Brussels, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
+              ? "Daring Brussels, voetbal, academie, missie, geschiedenis, waarden, team, Brussel, Daring Brussels ForEver, Red ForEver, Brussels Eagles Football Academy"
+              : "Daring Brussels, football, academy, mission, history, values, team, Brussels, Daring Brussels ForEver, Red ForEver, Brussels Eagles Football Academy"
           }
         />
-        <meta name="author" content="RWDM Academy" />
+        <meta name="author" content="Daring Brussels Academy" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://rwdmacademy.be/about" />
+        <link rel="canonical" href="https://daringbrussels.be/about" />
 
         {/* Open Graph (Facebook / Instagram / LinkedIn) */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://rwdmacademy.be/about" />
+        <meta property="og:url" content="https://daringbrussels.be/about" />
         <meta
           property="og:title"
           content={
             lang === "fr"
-              ? "RWDM Academy – Qui sommes-nous ?"
+              ? "Daring Brussels Academy – Qui sommes-nous ?"
               : lang === "nl"
-              ? "RWDM Academy – Wie zijn we?"
-              : "RWDM Academy – Who we are"
+              ? "Daring Brussels Academy – Wie zijn we?"
+              : "Daring Brussels Academy – Who we are"
           }
         />
         <meta
@@ -213,9 +213,9 @@ const About = () => {
         />
         <meta
           property="og:image"
-          content="https://rwdmacademy.be/images/og-image.jpg"
+          content="https://daringbrusselsacademy.be/images/og-image.jpg"
         />
-        <meta property="og:site_name" content="RWDM Academy" />
+        <meta property="og:site_name" content="Daring Brussels Academy" />
         <meta
           property="og:locale"
           content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"}
@@ -414,7 +414,7 @@ const About = () => {
                   {tab === "histoire" && (
                     <>
                       <Book className="inline-block mr-2 h-4 w-4" />
-                      RWDM
+                      DB Aca.
                     </>
                   )}
                   {tab === "mission" && (

@@ -110,14 +110,14 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
         // Titre du document avec style professionnel
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(16);
-        pdf.setTextColor(0, 59, 112); // Couleur RWDM bleue pour le titre uniquement
-        pdf.text("RWDM ACADEMY", 105, 15, { align: "center" });
+        pdf.setTextColor(0, 59, 112);
+        pdf.text("DARING BRUSSELS ACADEMY", 105, 15, { align: "center" });
 
         pdf.setFontSize(14);
         pdf.text("CONFIRMATION DE RENDEZ-VOUS", 105, 23, { align: "center" });
 
         // Ligne horizontale séparatrice
-        pdf.setDrawColor(0, 59, 112); // Couleur RWDM bleue
+        pdf.setDrawColor(0, 59, 112);
         pdf.setLineWidth(0.5);
         pdf.line(10, 30, 200, 30);
 
@@ -215,7 +215,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
         pdf.setFontSize(8);
         pdf.setTextColor(100, 100, 100);
         pdf.text(
-          "RWDM Academy - Rue Charles Malis 61, 1080 Molenbeek-Saint-Jean",
+          "Daring Brussels Academy - Rue Charles Malis 61, 1080 Molenbeek-Saint-Jean",
           105,
           275,
           { align: "center" }
@@ -226,7 +226,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
           280,
           { align: "center" }
         );
-        pdf.text("www.rwdmacademy.be", 105, 285, { align: "center" });
+        pdf.text("www.daringbrusselsacademy.be", 105, 285, { align: "center" });
 
         // Format de nom de fichier: NOM_PRENOM_DATE.pdf
         // Extraire le nom et prénom
@@ -259,8 +259,9 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
       const url = URL.createObjectURL(content);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `rendez-vous_archives_${new Date().toISOString().split("T")[0]
-        }.zip`;
+      link.download = `rendez-vous_archives_${
+        new Date().toISOString().split("T")[0]
+      }.zip`;
       link.click();
 
       // Nettoyer
@@ -501,10 +502,11 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
               paginatedAppointments.map((appointment, idx) => (
                 <motion.tr
                   key={appointment.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedAppointments.has(appointment.id)
+                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                    selectedAppointments.has(appointment.id)
                       ? "bg-amber-50 dark:bg-amber-900/20"
                       : ""
-                    }`}
+                  }`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.03 }}
@@ -522,7 +524,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
                       <Checkbox
                         checked={selectedAppointments.has(appointment.id)}
                         className="cursor-pointer"
-                        onCheckedChange={() => { }}
+                        onCheckedChange={() => {}}
                       />
                     </div>
                   </TableCell>
