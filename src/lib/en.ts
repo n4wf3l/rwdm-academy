@@ -55,8 +55,8 @@ export const translationsEN = {
   approach_title: "Our approach",
   academies_title: "Our academies",
   rwdm_academy: "Daring Brussels Aca.",
-  bef_academy: "BEF Aca.",
-  rfe_academy: "RFE Aca.",
+  bef_academy: "EBF Aca.",
+  rfe_academy: "DBF Aca.",
   values_title: "Our values",
   team_title: "Our team",
   no_team_members:

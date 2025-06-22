@@ -494,13 +494,13 @@ const About = () => {
                       {tab === "mission" && (
                         <>
                           <Lightbulb className="inline-block mr-2 h-4 w-4" />
-                          BEF Aca.
+                          EBF Aca.
                         </>
                       )}
                       {tab === "approche" && (
                         <>
                           <Trophy className="inline-block mr-2 h-4 w-4" />
-                          RFE Aca.
+                          DBF Aca.
                         </>
                       )}
                     </button>
