@@ -129,7 +129,9 @@ const About = () => {
     const fetchSettings = async () => {
       try {
         setLoading(true); // Début du chargement
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         const data = await res.json();
         setAboutData(data.about);
       } catch (err) {
@@ -152,10 +154,13 @@ const About = () => {
     // Combinons le chargement des membres d'équipe avec les autres données
     async function fetchTeamMembers() {
       try {
-        const response = await fetch("http://localhost:5000/api/team-members", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/team-members",
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
         const data = await response.json();
         if (response.ok) {
           // Filtrer les membres soft deleted (supposant que deleted vaut 1 pour un membre inactif)

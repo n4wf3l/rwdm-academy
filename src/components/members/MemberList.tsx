@@ -32,7 +32,7 @@ interface MemberListProps {
   onEdit: (member: Member) => void;
   onDelete: (member: Member) => void;
   currentUserRole: string;
-  currentUserId: string; // Ajouter cette prop
+  currentUserId?: string; // Rendez optionnel en ajoutant ?
 }
 
 const MemberList: React.FC<MemberListProps> = ({

@@ -44,7 +44,9 @@ const LoadingSkeleton = () => (
 
 // URL de base de l'API
 const API_BASE =
-  process.env.NODE_ENV === "development" ? "http://localhost:5000" : "";
+  process.env.NODE_ENV === "production"
+    ? "" // En production, utilisez des chemins relatifs
+    : "http://localhost:5000"; // En développement
 
 const Index: React.FC = () => {
   // États
@@ -139,6 +141,51 @@ const Index: React.FC = () => {
     }
   }, []); // Exécuté une seule fois au chargement
 
+  // Function to refresh maintenance status
+  const refreshMaintenanceStatus = async () => {
+    try {
+      const [maintenanceRes, formMaintenanceRes] = await Promise.all([
+        fetch(`${API_BASE}/api/settings`), // AJOUTER LE SLASH
+        fetch(`${API_BASE}/api/form-maintenance?_t=${Date.now()}`), // AJOUTER LE SLASH
+      ]);
+
+      // Add response checks before parsing
+      if (!maintenanceRes.ok || !formMaintenanceRes.ok) {
+        console.error("API request failed:", {
+          settings: maintenanceRes.status,
+          maintenance: formMaintenanceRes.status,
+        });
+        return; // Don't try to parse invalid responses
+      }
+
+      const maintenanceData = await maintenanceRes.json();
+      const formMaintenanceData = await formMaintenanceRes.json();
+
+      // Debug the shape of the data
+      console.log("Raw maintenance data:", formMaintenanceData);
+
+      // Map database form_type keys to frontend keys if needed
+      const formMaintenance = formMaintenanceData.states || {};
+
+      setStatus((prev) => ({
+        ...prev,
+        maintenanceMode: Boolean(maintenanceData.maintenanceMode),
+        formMaintenance: formMaintenance,
+      }));
+    } catch (error) {
+      console.error("Error refreshing maintenance status:", error);
+    }
+  };
+
+  // Ajouter cet useEffect pour charger les données au démarrage
+  useEffect(() => {
+    refreshMaintenanceStatus();
+
+    // Si vous voulez une actualisation périodique:
+    const interval = setInterval(refreshMaintenanceStatus, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Handlers
   const handleLanguageSelect = (lang: "fr" | "nl" | "en") => {
     localStorage.setItem("language", lang);
@@ -169,6 +216,13 @@ const Index: React.FC = () => {
 
   // Rendu du formulaire avec Suspense pour le lazy loading
   const renderForm = () => {
+    // Ajouter ces logs au début
+    console.log("Current form maintenance states:", status.formMaintenance);
+    console.log(
+      `Should ${currentForm} be in maintenance?`,
+      status.formMaintenance[currentForm]
+    );
+
     // Vérifier l'état de maintenance du formulaire actuel
     if (status.formMaintenance[currentForm]) {
       return (

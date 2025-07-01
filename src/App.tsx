@@ -12,6 +12,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import SplashComponent from "@/components/SplashComponent"; // 👈 Ajoute ton Splash ici
+import axios from "axios";
+import MaintenancePage from "./components/MaintenancePage";
 
 // Pages
 import Index from "./pages/Index";
@@ -55,6 +57,8 @@ function App() {
   const [language, setLanguage] = useState<string | null>(() =>
     localStorage.getItem("language")
   );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGlobalMaintenance, setIsGlobalMaintenance] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -116,7 +120,7 @@ function App() {
           const dashboardUrl =
             window.location.hostname === "localhost"
               ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
-              : "https://admin.example.com/dashboard";
+              : "https://daringbrusselsacademy.be/node/dashboard";
 
           window.location.href = dashboardUrl;
         }
@@ -137,6 +141,30 @@ function App() {
       window.removeEventListener("language-changed", handleLanguageChange);
     };
   }, []);
+
+  useEffect(() => {
+    const checkMaintenanceStatus = async () => {
+      try {
+        const response = await axios.get("/api/settings");
+        setIsGlobalMaintenance(Boolean(response.data.maintenanceMode));
+      } catch (error) {
+        console.error("Erreur lors de la vérification du mode maintenance:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkMaintenanceStatus();
+  }, []);
+
+  if (isLoading) {
+    return <div>Chargement...</div>; // Ou votre composant de chargement
+  }
+
+  // Si le site est en mode maintenance globale et l'utilisateur n'est pas connecté en tant qu'admin
+  if (isGlobalMaintenance && !localStorage.getItem("token")) {
+    return <MaintenancePage />;
+  }
 
   if (!language) {
     return (

@@ -10,8 +10,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronLeft, Eye, RotateCcw, File } from "lucide-react";
-import { Request, RequestStatus } from "@/components/RequestDetailsModal";
-import { translateRequestType, getStatusBadge } from "./RequestsTable";
+import { Request } from "@/components/RequestDetailsModal";
+import {
+  translateRequestType,
+  getStatusBadge,
+  RequestType,
+  RequestStatus,
+} from "./RequestsTable";
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -48,7 +53,7 @@ const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/requests/${requestId}`,
+      `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
       {
         method: "PATCH",
         headers: {
@@ -132,7 +137,10 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                       </TableCell>
 
                       <TableCell>
-                        {translateRequestType(request.type, t)}
+                        {translateRequestType(
+                          request.type as unknown as RequestType,
+                          t
+                        )}
                         {request.type === "accident-report" &&
                           request.details?.documentLabel ===
                             "Déclaration d'accident" &&
@@ -152,12 +160,16 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                         </div>
                       </TableCell>
 
-                      <TableCell>{getStatusBadge(request.status, t)}</TableCell>
+                      {/* Pour l'erreur de status - faire un cast explicite */}
+                      <TableCell>
+                        {getStatusBadge(request.status as RequestStatus, t)}
+                      </TableCell>
 
                       <TableCell>{assignedName}</TableCell>
 
+                      {/* Pour l'erreur de date - simplifier la logique */}
                       <TableCell>
-                        {request.date.toLocaleDateString("fr-BE")}
+                        {new Date(request.date).toLocaleDateString("fr-BE")}
                       </TableCell>
 
                       <TableCell>
@@ -177,7 +189,10 @@ const CompletedRequestsCard: React.FC<CompletedRequestsCardProps> = ({
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onUpdateStatus(request.id, "in-progress");
+                              onUpdateStatus(
+                                request.id,
+                                "in-progress" as RequestStatus
+                              );
                             }}
                             disabled={request.status === "in-progress"}
                           >

@@ -122,11 +122,14 @@ const Planning = () => {
   useEffect(() => {
     const fetchNewRequestsCount = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/requests", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await response.json();
 
         const count = data.filter((r: any) => r.status === "Nouveau").length;
@@ -142,9 +145,14 @@ const Planning = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/appointments", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/appointments",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des rendez-vous");
@@ -391,7 +399,7 @@ const Planning = () => {
     try {
       // 1. Supprimer en base
       const response = await fetch(
-        `http://localhost:5000/api/appointments/${appointmentId}`,
+        `https://daringbrusselsacademy.be/node/api/appointments/${appointmentId}`,
         {
           method: "DELETE",
           headers: {
@@ -406,7 +414,7 @@ const Planning = () => {
       // 2. Envoi email si demandé
       if (sendEmail && appointmentToCancel) {
         const emailRes = await fetch(
-          "http://localhost:5000/api/form-mail/send-appointment-cancellation",
+          "https://daringbrusselsacademy.be/node/api/form-mail/send-appointment-cancellation",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -488,11 +496,14 @@ const Planning = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok)
           throw new Error("Impossible de récupérer l'utilisateur");

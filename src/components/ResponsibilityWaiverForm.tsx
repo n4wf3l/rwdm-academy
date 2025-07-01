@@ -140,10 +140,13 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
         const blob = await fetch(signature).then((res) => res.blob());
         signatureFormData.append("pdfFiles", blob, "signature.png");
 
-        const uploadResponse = await fetch("http://localhost:5000/api/upload", {
-          method: "POST",
-          body: signatureFormData,
-        });
+        const uploadResponse = await fetch(
+          "https://daringbrusselsacademy.be/node/api/upload",
+          {
+            method: "POST",
+            body: signatureFormData,
+          }
+        );
         if (!uploadResponse.ok) {
           toast({
             title: t("toast_error_title"),
@@ -179,11 +182,14 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
       };
 
       // 4️⃣ Enregistrement en base
-      const response = await fetch("http://localhost:5000/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/requests",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestData),
+        }
+      );
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.error || t("toast_error_api"));
@@ -192,7 +198,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
 
       // 5️⃣ Envoi de l’email de confirmation
       const emailResponse = await fetch(
-        "http://localhost:5000/api/form-mail/send-waiver-email",
+        "https://daringbrusselsacademy.be/node/api/form-mail/send-waiver-email",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

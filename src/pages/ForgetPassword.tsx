@@ -27,7 +27,7 @@ const ForgetPassword = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/forget-password", // ✅ Bonne URL
+        "https://daringbrusselsacademy.be/node/api/forget-password", // ✅ Bonne URL
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

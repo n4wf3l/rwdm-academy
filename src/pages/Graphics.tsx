@@ -128,7 +128,8 @@ const Graphics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"stats" | "categories">("stats");
   const [newReqCount, setNewReqCount] = useState(0);
   const { t } = useTranslation();
-  const BASE = localStorage.getItem("apikey") || "http://localhost:5000";
+  const BASE =
+    localStorage.getItem("apikey") || "https://daringbrusselsacademy.be/node/";
   const API = `${BASE}/api/members-dues`;
 
   useEffect(() => {

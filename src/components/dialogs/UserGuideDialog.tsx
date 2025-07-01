@@ -39,9 +39,12 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (response.ok) {
           const userData = await response.json();

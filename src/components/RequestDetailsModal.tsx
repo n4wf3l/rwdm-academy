@@ -640,7 +640,7 @@ const renderAccidentReportContent = (
               {d.filePaths.map((file: string, index: number) => (
                 <a
                   key={index}
-                  href={`http://localhost:5000${file}`}
+                  href={`https://daringbrusselsacademy.be/node${file}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center p-3 bg-gray-50 dark:bg-gray-800
@@ -660,7 +660,7 @@ const renderAccidentReportContent = (
         <div data-ignore-pdf>
           <Section title={t("accident.supporting_document")}>
             <a
-              href={`http://localhost:5000${d.filePath}`}
+              href={`https://daringbrusselsacademy.be/node${d.filePath}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-3 bg-gray-50 dark:bg-gray-800

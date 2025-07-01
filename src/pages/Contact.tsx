@@ -86,7 +86,9 @@ const Contact = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/settings");
+        const { data } = await axios.get(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         updateFromGeneral(data.general);
         updateFromContact(data.contact); // ✅ ajoute ceci
       } catch (err) {
@@ -302,7 +304,7 @@ const Contact = () => {
                     try {
                       setIsSending(true);
                       const res = await fetch(
-                        "http://localhost:5000/api/form-mail/send-contact-message",
+                        "https://daringbrusselsacademy.be/node/api/form-mail/send-contact-message",
                         {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },

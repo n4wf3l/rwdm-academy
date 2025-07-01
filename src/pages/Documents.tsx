@@ -156,9 +156,14 @@ const Documents = () => {
   useEffect(() => {
     const fetchNewRequestsCount = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/requests", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await response.json();
 
         const filtered = data.filter(
@@ -212,11 +217,14 @@ const Documents = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok)
           throw new Error("Impossible de récupérer l'utilisateur");
@@ -234,7 +242,7 @@ const Documents = () => {
   const fetchCompletedDocuments = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/requests?status=completed",
+        "https://daringbrusselsacademy.be/node/api/requests?status=completed",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -326,14 +334,17 @@ const Documents = () => {
   const handleRevertStatus = async (id: string) => {
     try {
       // Appel à l'API pour mettre à jour le statut
-      const response = await fetch(`http://localhost:5000/api/requests/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ status: "En cours" }), // ou "in-progress" selon le mapping
-      });
+      const response = await fetch(
+        `https://daringbrusselsacademy.be/node/api/requests/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ status: "En cours" }), // ou "in-progress" selon le mapping
+        }
+      );
       if (!response.ok) {
         throw new Error("Erreur lors de la mise à jour du statut");
       }
@@ -992,12 +1003,15 @@ const Documents = () => {
 
       // Delete documents from database
       for (const docId of selectedDocuments) {
-        await fetch(`http://localhost:5000/api/requests/${docId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        await fetch(
+          `https://daringbrusselsacademy.be/node/api/requests/${docId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
       }
 
       // Reset selection and refresh

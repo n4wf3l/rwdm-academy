@@ -85,14 +85,17 @@ const MemberForm: React.FC<MemberFormProps> = ({
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch("http://localhost:5000/api/admins", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newMember),
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/admins",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(newMember),
+        }
+      );
       const data = await response.json();
 
       if (response.ok) {

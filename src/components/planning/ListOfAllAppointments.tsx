@@ -275,7 +275,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
         try {
           const deletionPromises = deletedIds.map(async (apptId) => {
             const response = await fetch(
-              `http://localhost:5000/api/appointments/${apptId}`,
+              `https://daringbrusselsacademy.be/node/api/appointments/${apptId}`,
               {
                 method: "DELETE",
                 headers: {

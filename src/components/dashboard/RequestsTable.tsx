@@ -367,7 +367,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
       console.log("📧 Type de template utilisé:", template);
 
       const response = await fetch(
-        "http://localhost:5000/api/form-mail/send-decision-email",
+        "https://daringbrusselsacademy.be/node/api/form-mail/send-decision-email",
         {
           method: "POST",
           headers: {

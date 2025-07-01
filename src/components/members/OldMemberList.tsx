@@ -47,12 +47,15 @@ const OldMemberList: React.FC = () => {
   const fetchOldMembers = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:5000/api/deleted-admins", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/deleted-admins",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await response.json();
       if (response.ok) {
         setOldMembers(data);
@@ -91,7 +94,7 @@ const OldMemberList: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admins/restore/${id}`,
+        `https://daringbrusselsacademy.be/node/api/admins/restore/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -119,7 +122,7 @@ const OldMemberList: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admins/permanent/${id}`,
+        `https://daringbrusselsacademy.be/node/api/admins/permanent/${id}`,
         {
           method: "DELETE",
           headers: {

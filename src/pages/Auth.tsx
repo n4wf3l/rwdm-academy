@@ -45,13 +45,16 @@ const Auth = () => {
         setIsLoading(false);
         return;
       }
-      const response = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, captcha: captchaToken }),
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password, captcha: captchaToken }),
+        }
+      );
 
       const data = await response.json();
 

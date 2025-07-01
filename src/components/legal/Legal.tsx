@@ -11,7 +11,9 @@ const LegalInfo: React.FC = () => {
   useEffect(() => {
     const fetchGeneral = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/settings");
+        const { data } = await axios.get(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         setGeneral(data.general);
       } catch (err) {
         console.error("Erreur fetch settings general:", err);

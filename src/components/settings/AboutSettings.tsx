@@ -109,7 +109,7 @@ const AboutSettings = ({
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/upload/image",
+        "https://daringbrusselsacademy.be/node/api/upload/image",
         formData
       );
       return response.data.filePath; // ex: "/uploads/1685678923-monimage.png"

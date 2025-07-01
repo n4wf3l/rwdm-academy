@@ -53,7 +53,7 @@ const DatabaseUsageChart = () => {
 
         // Récupérer les paramètres de stockage
         const storageResponse = await fetch(
-          "http://localhost:5000/api/storage-settings",
+          "https://daringbrusselsacademy.be/node/api/storage-settings",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -75,7 +75,7 @@ const DatabaseUsageChart = () => {
 
         // Récupérer les statistiques de la base de données
         const statsResponse = await fetch(
-          "http://localhost:5000/api/database-stats",
+          "https://daringbrusselsacademy.be/node/api/database-stats",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -104,7 +104,7 @@ const DatabaseUsageChart = () => {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/storage-settings",
+        "https://daringbrusselsacademy.be/node/api/storage-settings",
         {
           method: "PUT",
           headers: {
@@ -150,11 +150,14 @@ const DatabaseUsageChart = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok)
           throw new Error("Impossible de récupérer l'utilisateur");

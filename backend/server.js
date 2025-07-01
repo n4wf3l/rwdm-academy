@@ -19,6 +19,7 @@ const formMailRouter = require("./routes/formMail");
 const http = require("http");
 const { Server } = require("socket.io");
 const axios = require("axios"); // Ajout de axios pour les fonctionnalités du proxy
+const db = require("./db"); // Ajout du module db manquant
 
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
@@ -26,7 +27,10 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*", // ❌ "*" est dangereux en production!
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://daringbrusselsacademy.be"
+        : "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -95,7 +99,7 @@ const ownerOrSuperAdmin = (req, res, next) => {
 
 // Configuration de la BDD MySQL à partir des variables d'environnement
 const dbConfig = {
-  host: process.env.DB_HOST, // Exemple : "localhost"
+  host: process.env.DB_HOST,
   user: process.env.DB_USER, // Exemple : "root"
   password: process.env.DB_PASSWORD, // Exemple : "MonSuperMotDePasse"
   database: process.env.DB_NAME,
@@ -1418,7 +1422,7 @@ const io = new Server(server, {
     origin:
       process.env.NODE_ENV === "production"
         ? "https://daringbrusselsacademy.be"
-        : "http://localhost:5174",
+        : "https://daringbrusselsacademy.be/node/",
     methods: ["GET", "POST"],
   },
 });
@@ -1426,7 +1430,7 @@ const io = new Server(server, {
 // Démarrer le serveur
 server.listen(PORT, () => {
   console.log(
-    `🚀 Serveur unifié en cours d'exécution sur http://localhost:${PORT}`
+    `🚀 Serveur unifié en cours d'exécution sur https://daringbrusselsacademy.be/node${PORT}`
   );
 });
 
@@ -1469,7 +1473,10 @@ app.get("/api/test-file", (req, res) => {
     res.json({
       exists: true,
       path: fullPath,
-      url: `http://localhost:5000/uploads/${filePath.replace("/uploads/", "")}`,
+      url: `https://daringbrusselsacademy.be/node/uploads/${filePath.replace(
+        "/uploads/",
+        ""
+      )}`,
     });
   });
 });
@@ -1481,7 +1488,7 @@ app.get("/api/test-file-exists", (req, res) => {
     return res.status(400).json({ error: "Chemin de fichier manquant" });
   }
 
-  // Sécurité: vérifier que le chemin est dans uploads
+  // Vérification que le chemin commence par /uploads/ pour la sécurité
   if (!filePath.startsWith("/uploads/")) {
     return res.status(400).json({ error: "Chemin non autorisé" });
   }

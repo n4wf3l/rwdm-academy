@@ -100,7 +100,7 @@ const deleteOldImage = async (filePath: string) => {
   if (!filePath.startsWith("/uploads/")) return;
   const cleanPath = filePath.split("?")[0];
   try {
-    await axios.delete(`http://localhost:5000/api/upload/image`, {
+    await axios.delete(`https://daringbrusselsacademy.be/node//api/upload/image`, {
       data: { filePath: cleanPath },
     });
     console.log("✅ Ancienne image supprimée");
@@ -115,10 +115,13 @@ const uploadImageFile = async (file: File): Promise<string | null> => {
   formData.append("pdfFiles", file); // ✅ Changer "image" à "pdfFiles" pour correspondre à l'API
 
   try {
-    const response = await fetch("http://localhost:5000/api/upload", {
-      method: "POST",
-      body: formData,
-    });
+    const response = await fetch(
+      "https://daringbrusselsacademy.be/node/api/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Erreur lors de l'upload");
@@ -135,6 +138,11 @@ const uploadImageFile = async (file: File): Promise<string | null> => {
   }
 };
 /* -------------------------------------------------------- */
+
+const API_BASE =
+  process.env.NODE_ENV === "development"
+    ? "https://daringbrusselsacademy.be/node/"
+    : "/"; // Add a slash here
 
 const GeneralSettings: React.FC<Props> = ({
   language,
@@ -198,7 +206,7 @@ const GeneralSettings: React.FC<Props> = ({
     if (url && url.startsWith("/uploads/")) {
       // Corriger l'URL en ajoutant le préfixe du backend en développement
       const isLocalhost = window.location.hostname === "localhost";
-      return isLocalhost ? `http://localhost:5000${url}` : url;
+      return isLocalhost ? `https://daringbrusselsacademy.be/node${url}` : url;
     }
 
     // Si c'est déjà une URL complète ou autre cas
@@ -211,39 +219,56 @@ const GeneralSettings: React.FC<Props> = ({
     checked: boolean
   ) => {
     try {
-      // Mise à jour optimiste de l'UI
-      setFormMaintenanceStates((prev) => ({
-        ...prev,
-        [key]: checked,
-      }));
+      // Optimistic UI update
+      setFormMaintenanceStates((prev) => ({ ...prev, [key]: checked }));
 
-      // Appel à l'API pour persister le changement
-      const response = await axios.put(
-        `http://localhost:5000/api/form-maintenance/${key}`,
-        {
-          is_maintenance: checked,
+      // Try multiple HTTP methods with fallback strategy
+      let response;
+      let success = false;
+      let error;
+
+      // First try: POST method (most likely to work)
+      try {
+        const postUrl =
+          process.env.NODE_ENV === "development"
+            ? `${API_BASE}api/form-maintenance/${key}`
+            : `/api/form-maintenance/${key}`;
+
+        console.log(`Trying POST request to: ${postUrl}`);
+        response = await axios.post(postUrl, { is_maintenance: checked });
+        success = true;
+      } catch (err) {
+        console.log("POST failed, trying GET method:", err);
+        error = err;
+
+        // Second try: GET method as fallback (less likely to be blocked)
+        try {
+          const getUrl =
+            process.env.NODE_ENV === "development"
+              ? `${API_BASE}api/form-maintenance/${key}/toggle?enabled=${checked}`
+              : `/api/form-maintenance/${key}/toggle?enabled=${checked}`;
+
+          console.log(`Trying GET fallback: ${getUrl}`);
+          response = await axios.get(getUrl);
+          success = true;
+        } catch (getErr) {
+          console.error("Both POST and GET attempts failed:", getErr);
+          error = getErr;
         }
-      );
-
-      if (!response.data.success) {
-        throw new Error("Échec de la mise à jour");
       }
 
-      // Notification de succès
+      if (!success || !response?.data?.success) {
+        throw error || new Error("Failed to update maintenance status");
+      }
+
       toast.success(
-        `État de maintenance ${checked ? "activé" : "désactivé"} pour ${key}`
+        `Maintenance mode ${checked ? "enabled" : "disabled"} for ${key}`
       );
     } catch (error) {
-      // En cas d'erreur, on revient à l'état précédent
-      setFormMaintenanceStates((prev) => ({
-        ...prev,
-        [key]: !checked,
-      }));
-      // Notification d'erreur
-      toast.error(
-        `Erreur lors de la mise à jour de l'état de maintenance pour ${key}`
-      );
-      console.error("Erreur:", error);
+      // Revert UI state on error
+      setFormMaintenanceStates((prev) => ({ ...prev, [key]: !checked }));
+      toast.error(`Error updating maintenance status for ${key}`);
+      console.error("Error:", error);
     }
   };
 
@@ -254,7 +279,7 @@ const GeneralSettings: React.FC<Props> = ({
     message: string
   ) => {
     try {
-      // Mise à jour optimiste de l'UI
+      // Update UI optimistically
       setFormMaintenanceMessages((prev) => ({
         ...prev,
         [key]: {
@@ -263,30 +288,55 @@ const GeneralSettings: React.FC<Props> = ({
         },
       }));
 
-      // Délai avant la sauvegarde pour éviter trop de requêtes
       if (saveMessageTimeoutRef.current) {
         clearTimeout(saveMessageTimeoutRef.current);
       }
 
-      saveMessageTimeoutRef.current = setTimeout(async () => {
-        // Appel à l'API pour persister le changement
-        const response = await axios.put(
-          `http://localhost:5000/api/form-maintenance/${key}`,
-          {
-            maintenance_message: {
-              ...formMaintenanceMessages[key],
-              [lang]: message,
-            },
-          }
-        );
+      // Also update the handleMaintenanceMessageChange function with fallback strategy
 
-        if (!response.data.success) {
-          throw new Error("Échec de la mise à jour");
+      saveMessageTimeoutRef.current = setTimeout(async () => {
+        try {
+          // Try POST first
+          const postUrl =
+            process.env.NODE_ENV === "development"
+              ? `${API_BASE}api/form-maintenance/${key}`
+              : `/api/form-maintenance/${key}`;
+
+          try {
+            const response = await axios.post(postUrl, {
+              maintenance_message: {
+                ...formMaintenanceMessages[key],
+                [lang]: message,
+              },
+            });
+
+            if (response.data.success) return;
+          } catch (err) {
+            console.log("POST message update failed, trying GET fallback");
+
+            // GET fallback for message update
+            const encodedMessage = encodeURIComponent(
+              JSON.stringify({
+                ...formMaintenanceMessages[key],
+                [lang]: message,
+              })
+            );
+
+            const getUrl =
+              process.env.NODE_ENV === "development"
+                ? `${API_BASE}api/form-maintenance/${key}/message?content=${encodedMessage}`
+                : `/api/form-maintenance/${key}/message?content=${encodedMessage}`;
+
+            await axios.get(getUrl);
+          }
+        } catch (error) {
+          console.error("Error updating message:", error);
+          toast.error(`Error updating message for ${key}`);
         }
       }, 500);
     } catch (error) {
-      toast.error(`Erreur lors de la mise à jour du message pour ${key}`);
-      console.error("Erreur:", error);
+      toast.error(`Error updating message for ${key}`);
+      console.error("Error:", error);
     }
   };
 
@@ -315,12 +365,14 @@ const GeneralSettings: React.FC<Props> = ({
     // Cette fonction s'assure que le logo est chargé en base64 dès le début
     const fetchLogo = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         const data = await res.json();
 
         if (data.general?.logo?.startsWith("/uploads/")) {
           const imageResponse = await fetch(
-            `http://localhost:5000/api/file-as-base64?path=${encodeURIComponent(
+            `https://daringbrusselsacademy.be/node/api/file-as-base64?path=${encodeURIComponent(
               data.general.logo
             )}`,
             {
@@ -349,11 +401,14 @@ const GeneralSettings: React.FC<Props> = ({
       console.log("💾 Sauvegarde du logo dans la base de données:", logoPath);
 
       // Utiliser l'endpoint API correct qui existe dans settingsRouter
-      const response = await axios.put("http://localhost:5000/api/settings", {
-        category: "general",
-        key: "logo",
-        value: logoPath,
-      });
+      const response = await axios.put(
+        "https://daringbrusselsacademy.be/node/api/settings",
+        {
+          category: "general",
+          key: "logo",
+          value: logoPath,
+        }
+      );
 
       console.log("✅ Réponse de la sauvegarde:", response.data);
       return true;
@@ -367,33 +422,6 @@ const GeneralSettings: React.FC<Props> = ({
       return true;
     }
   };
-
-  // Force un rafraîchissement du logo quand il change en DB
-  /*useEffect(() => {
-    const refreshLogo = async () => {
-      if (logo && logo.startsWith("/uploads/")) {
-        const isLocalhost = window.location.hostname === "localhost";
-        const baseUrl = isLocalhost ? `http://localhost:5000${logo}` : logo;
-        const logoPath = `${baseUrl}?v=${Date.now()}`;
-
-        // Précharger l'image pour vérifier qu'elle existe
-        const img = new Image();
-        img.onload = () => {
-          console.log("⚡ Logo préchargé avec succès:", logoPath);
-          setLogoUrlNormalized(logoPath);
-        };
-        img.onerror = () => {
-          console.error("⚠️ Erreur lors du préchargement du logo");
-          // Essayer sans cache-busting
-          const altPath = isLocalhost ? `http://localhost:5000${logo}` : logo;
-          setLogoUrlNormalized(altPath);
-        };
-        img.src = logoPath;
-      }
-    };
-
-    refreshLogo();
-  }, [logo]); // Se déclenche quand logo change*/
 
   /* -------------------- RENDER -------------------- */
   return (
@@ -499,7 +527,7 @@ const GeneralSettings: React.FC<Props> = ({
                         const isLocalhost =
                           window.location.hostname === "localhost";
                         const logoPath = isLocalhost
-                          ? `http://localhost:5000${filePath}?v=${Date.now()}`
+                          ? `https://daringbrusselsacademy.be/node${filePath}?v=${Date.now()}`
                           : `${filePath}?v=${Date.now()}`;
 
                         setLogoUrlNormalized(logoPath);
@@ -1039,7 +1067,7 @@ const GeneralSettings: React.FC<Props> = ({
                           formData.append("language", "FR");
 
                           const response = await axios.post(
-                            "http://localhost:5000/api/accident-forms/upload",
+                            "https://daringbrusselsacademy.be/node/api/accident-forms/upload",
                             formData
                           );
 
@@ -1104,7 +1132,7 @@ const GeneralSettings: React.FC<Props> = ({
                           formData.append("language", "NL");
 
                           const response = await axios.post(
-                            "http://localhost:5000/api/accident-forms/upload",
+                            "https://daringbrusselsacademy.be/node/api/accident-forms/upload",
                             formData
                           );
 

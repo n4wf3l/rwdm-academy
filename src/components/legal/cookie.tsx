@@ -10,7 +10,9 @@ const CookiesPolicy: React.FC = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/settings");
+        const { data } = await axios.get(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         setEmailClub(data.general.email || "");
       } catch (err) {
         console.error("Erreur fetch email settings:", err);

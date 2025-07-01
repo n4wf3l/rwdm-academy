@@ -87,7 +87,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
     const fetchEmail = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/email-recipients/accident-report"
+          "https://daringbrusselsacademy.be/node/api/email-recipients/accident-report"
         );
         setRecipientEmail(response.data.email);
         setNewEmail(response.data.email);
@@ -154,7 +154,7 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                   onClick={async () => {
                     try {
                       await axios.put(
-                        "http://localhost:5000/api/email-recipients/accident-report",
+                        "https://daringbrusselsacademy.be/node/api/email-recipients/accident-report",
                         { email: newEmail }
                       );
                       setRecipientEmail(newEmail);

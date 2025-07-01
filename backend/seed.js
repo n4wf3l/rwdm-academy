@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 async function seedSuperadmin() {
   // Configuration de la BDD depuis le .env
   const dbConfig = {
-    host: process.env.DB_HOST, // ex: "localhost"
+    host: process.env.DB_HOST,
     user: process.env.DB_USER, // ex: "root"
     password: process.env.DB_PASSWORD, // ex: "MonSuperMotDePasse"
     database: process.env.DB_NAME,
