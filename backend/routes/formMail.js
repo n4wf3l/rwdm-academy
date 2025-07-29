@@ -40,11 +40,15 @@ router.post("/send-registration-email", async (req, res) => {
     // Ajouter la configuration du transporter ici
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
+      port: +process.env.EMAIL_PORT,
       secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -139,11 +143,15 @@ router.post("/send-selection-test-email", async (req, res) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
+      port: +process.env.SMTP_PORT,
       secure: false,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -213,11 +221,15 @@ router.post("/send-accident-report-email", async (req, res) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST, // Changé de SMTP_HOST
-      port: process.env.EMAIL_PORT, // Changé de SMTP_PORT
+      port: +process.env.EMAIL_PORT, // Changé de SMTP_PORT
       secure: false,
       auth: {
         user: process.env.EMAIL_USER, // Changé de SMTP_USER
         pass: process.env.EMAIL_PASS, // Changé de SMTP_PASS
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -283,11 +295,15 @@ router.post("/send-waiver-email", async (req, res) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST, // Changé de SMTP_HOST
-      port: process.env.EMAIL_PORT, // Changé de SMTP_PORT
+      port: +process.env.EMAIL_PORT, // Changé de SMTP_PORT
       secure: false,
       auth: {
         user: process.env.EMAIL_USER, // Changé de SMTP_USER
         pass: process.env.EMAIL_PASS, // Changé de SMTP_PASS
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -376,11 +392,15 @@ router.post("/send-contact-message", async (req, res) => {
     // AJOUTER CETTE PARTIE - Définir le transporter
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
+      port: +process.env.EMAIL_PORT,
       secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -517,11 +537,15 @@ router.post("/send-decision-email", async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
+      port: +process.env.EMAIL_PORT,
       secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -705,11 +729,15 @@ router.post("/send-appointment-confirmation", async (req, res) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
+      port: +process.env.EMAIL_PORT,
       secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 

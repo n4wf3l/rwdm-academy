@@ -53,11 +53,16 @@ app.use("/api/settings", settingsRouter);
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
+  host: process.env.EMAIL_HOST, // rwdmacademy-be01b.mail.protection.outlook.com
+  port: +process.env.EMAIL_PORT, // 587 pour STARTTLS
+  secure: false, // ne pas forcer la TLS dès la connexion
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
+  },
+  requireTLS: true, // réclamer le STARTTLS
+  tls: {
+    rejectUnauthorized: false, // accepte les certificats auto-signés si besoin
   },
 });
 

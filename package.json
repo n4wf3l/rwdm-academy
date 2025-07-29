@@ -50,6 +50,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
+    "dns": "^0.2.2",
     "dompurify": "^3.2.5",
     "dotenv": "^16.4.7",
     "embla-carousel-react": "^8.3.0",
