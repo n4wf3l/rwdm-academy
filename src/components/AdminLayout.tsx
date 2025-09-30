@@ -83,7 +83,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
     const fetchLogo = async () => {
       try {
         // 1. Récupérer les paramètres généraux (dont le chemin du logo)
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         const data = await res.json();
 
         if (
@@ -95,7 +97,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
 
           // 2. Récupérer l'image en Base64
           const imageResponse = await fetch(
-            `http://localhost:5000/api/file-as-base64?path=${encodeURIComponent(
+            `https://daringbrusselsacademy.be/node/api/file-as-base64?path=${encodeURIComponent(
               data.general.logo
             )}`,
             {
@@ -129,7 +131,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    fetch("http://localhost:5000/api/me", {
+    fetch("https://daringbrusselsacademy.be/node/api/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -137,7 +139,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         // Si l'URL de la photo est relative, le modifier
         let profilePictureUrl = data.profilePicture;
         if (profilePictureUrl && profilePictureUrl.startsWith("/uploads/")) {
-          profilePictureUrl = `http://localhost:5000${profilePictureUrl}`;
+          profilePictureUrl = `https://daringbrusselsacademy.be/node${profilePictureUrl}`;
         }
         setUser({
           firstName: data.firstName,
@@ -159,9 +161,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   useEffect(() => {
     const fetchTodayAppointments = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/appointments", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/appointments",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok) throw new Error("Erreur récupération rendez-vous");
 

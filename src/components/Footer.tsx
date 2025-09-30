@@ -50,7 +50,9 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const apiBase =
-    process.env.NODE_ENV === "development" ? "http://localhost:5000" : "";
+    process.env.NODE_ENV === "development"
+      ? "https://daringbrusselsacademy.be/node"
+      : "/node"; // Modifié: ajoute "/node" en production
 
   const getLocalizedValue = (
     field: { [key: string]: string } | undefined,
@@ -176,7 +178,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                     }}
                   />
                   <h3 className="font-bold text-xl text-rwdm-blue dark:text-white">
-                    {clubName[currentLang] || "RWDM Academy"}
+                    {clubName[currentLang] || "Daring Brussels Academy"}
                   </h3>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">

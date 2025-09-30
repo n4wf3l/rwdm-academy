@@ -180,7 +180,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
       const detailsToUpdate = { ...details };
 
       const res = await fetch(
-        `http://localhost:5000/api/requests/${request.id}`,
+        `https://daringbrusselsacademy.be/node/api/requests/${request.id}`,
         {
           method: "PATCH",
           headers: {

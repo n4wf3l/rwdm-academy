@@ -130,7 +130,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
   const [signature, setSignature] = useState<string | null>(null);
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
 
-  const [clubName, setClubName] = useState<string>("RWDM"); // Met RWDM par défaut
+  const [clubName, setClubName] = useState<string>("Daring Brussels");
   const [playerLastName, setPlayerLastName] = useState<string>("");
   const [playerFirstName, setPlayerFirstName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -146,7 +146,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [hasSentDeclaration, setHasSentDeclaration] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
-  const [academy, setAcademy] = useState<string>("RWDM Academy");
+  const [academy, setAcademy] = useState<string>("Daring Brussels Academy");
   const [documentType, setDocumentType] = useState<
     "accident-report" | "healing-certificate"
   >("accident-report");
@@ -237,7 +237,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/check-accident-code?code=${code}&email=${emailToMatch}`
+        `https://daringbrusselsacademy.be/node/api/check-accident-code?code=${code}&email=${emailToMatch}`
       );
 
       if (!response.ok) {
@@ -284,10 +284,13 @@ const AccidentReportForm: React.FC<FormProps> = ({
       const formData = new FormData();
       pdfFiles.forEach((file) => formData.append("pdfFiles", file));
 
-      const response = await fetch("http://localhost:5000/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error("upload_error");
@@ -333,7 +336,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
 
       // Envoi du formulaire
       const requestResponse = await fetch(
-        "http://localhost:5000/api/requests",
+        "https://daringbrusselsacademy.be/node/api/requests",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -348,7 +351,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
 
       // Envoi de l'email de confirmation
       await fetch(
-        "http://localhost:5000/api/form-mail/send-accident-report-email",
+        "https://daringbrusselsacademy.be/node/api/form-mail/send-accident-report-email",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -790,8 +793,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
                           <SelectValue placeholder={t("academy")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="RWDM Academy">
-                            RWDM Academy
+                          <SelectItem value="Daring Brussels Academy">
+                            Daring Brussels Academy
                           </SelectItem>
                         </SelectContent>
                       </Select>

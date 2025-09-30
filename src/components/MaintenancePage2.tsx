@@ -15,9 +15,14 @@ const MaintenancePage2: React.FC<MaintenancePage2Props> = ({ formType }) => {
     Record<string, Record<string, string>>
   >({});
 
+  const API_BASE =
+    process.env.NODE_ENV === "development"
+      ? "https://daringbrusselsacademy.be/node"
+      : "";
+
   useEffect(() => {
     // Récupérer les messages de maintenance du serveur
-    fetch("http://localhost:5000/api/form-maintenance")
+    fetch(`${API_BASE}/api/form-maintenance?_t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.messages) {

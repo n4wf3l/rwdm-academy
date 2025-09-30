@@ -39,10 +39,12 @@ const Members: React.FC = () => {
     firstName: string;
     lastName: string;
     role: string;
+    id: number | string; // Ajoutez l'ID ici
   }>({
     firstName: "",
     lastName: "",
     role: "",
+    id: "", // Valeur par défaut
   });
   // États de chargement distincts pour la création et la suppression
   const [isCreationLoading, setIsCreationLoading] = useState(false);
@@ -61,11 +63,14 @@ const Members: React.FC = () => {
   useEffect(() => {
     const fetchNewRequestsCount = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/requests", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await response.json();
         const count = data.filter((r: any) => r.status === "Nouveau").length;
         setNewRequestsCount(count);
@@ -103,13 +108,16 @@ const Members: React.FC = () => {
     async function fetchMembers() {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/admins", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/admins",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await response.json();
         if (response.ok) {
           setMembers(data);
@@ -137,7 +145,7 @@ const Members: React.FC = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:5000/api/me", {
+    fetch("https://daringbrusselsacademy.be/node/api/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -148,6 +156,7 @@ const Members: React.FC = () => {
           firstName: data.firstName,
           lastName: data.lastName,
           role: data.role,
+          id: data.id, // Stockez l'ID récupéré de l'API
         });
       })
       .catch((err) =>
@@ -168,7 +177,9 @@ const Members: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admins/${encodeURIComponent(member.email)}`,
+        `https://daringbrusselsacademy.be/node/api/admins/${encodeURIComponent(
+          member.email
+        )}`,
         {
           method: "DELETE",
           headers: {
@@ -212,7 +223,7 @@ const Members: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `http://localhost:5000/api/admins/${updatedMember.id}`,
+        `https://daringbrusselsacademy.be/node/api/admins/${updatedMember.id}`,
         {
           method: "PUT",
           headers: {
@@ -382,6 +393,7 @@ const Members: React.FC = () => {
                   onEdit={openEditModal}
                   onDelete={openDeleteModal}
                   currentUserRole={user.role}
+                  currentUserId={String(user.id)} // Conversion explicite en string
                 />
               </motion.div>
             </TabsContent>

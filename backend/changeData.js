@@ -187,45 +187,105 @@ router.put("/form-maintenance/:formType", async (req, res) => {
   const { is_maintenance, maintenance_message } = req.body;
 
   try {
+    console.log(
+      `Form maintenance toggle (PUT): ${formType} = ${is_maintenance}`
+    );
+
     const connection = await mysql.createConnection(dbConfig);
 
-    // Construction de la requête SQL dynamique selon les paramètres fournis
-    const updates = [];
-    const values = [];
+    // Use form_type to match the DB column
+    const [existingRecord] = await connection.execute(
+      "SELECT * FROM form_maintenance WHERE form_type = ?",
+      [formType]
+    );
 
     if (is_maintenance !== undefined) {
-      updates.push("is_maintenance = ?");
-      values.push(is_maintenance ? 1 : 0);
+      if (existingRecord.length === 0) {
+        await connection.execute(
+          "INSERT INTO form_maintenance (form_type, is_maintenance) VALUES (?, ?)",
+          [formType, is_maintenance ? 1 : 0]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE form_maintenance SET is_maintenance = ? WHERE form_type = ?",
+          [is_maintenance ? 1 : 0, formType]
+        );
+      }
     }
 
-    if (maintenance_message !== undefined) {
-      // Convertir l'objet messages en JSON pour stockage
-      updates.push("maintenance_message_json = ?");
-      values.push(JSON.stringify(maintenance_message));
+    // Handle maintenance message if provided
+    if (maintenance_message) {
+      if (existingRecord.length === 0) {
+        await connection.execute(
+          "INSERT INTO form_maintenance (form_type, maintenance_message_json) VALUES (?, ?)",
+          [formType, JSON.stringify(maintenance_message)]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE form_maintenance SET maintenance_message_json = ? WHERE form_type = ?",
+          [JSON.stringify(maintenance_message), formType]
+        );
+      }
     }
 
-    // S'assurer qu'il y a des mises à jour à effectuer
-    if (updates.length === 0) {
-      return res.status(400).json({ error: "Aucune mise à jour fournie" });
-    }
-
-    const sql = `
-      UPDATE form_maintenance 
-      SET ${updates.join(", ")} 
-      WHERE form_type = ?
-    `;
-    values.push(formType);
-
-    await connection.execute(sql, values);
     await connection.end();
-
     res.json({ success: true });
   } catch (error) {
-    console.error(
-      "Erreur lors de la mise à jour de l'état de maintenance:",
-      error
+    console.error("Error updating maintenance status:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Handle POST requests the same way as PUT
+router.post("/form-maintenance/:formType", async (req, res) => {
+  const { formType } = req.params;
+  const { is_maintenance, maintenance_message } = req.body;
+
+  try {
+    console.log(
+      `Form maintenance toggle (POST): ${formType} = ${is_maintenance}`
     );
-    res.status(500).json({ error: "Erreur serveur" });
+
+    const connection = await mysql.createConnection(dbConfig);
+    const [existingRecord] = await connection.execute(
+      "SELECT * FROM form_maintenance WHERE form_type = ?", // Changed from form_key
+      [formType]
+    );
+
+    if (is_maintenance !== undefined) {
+      if (existingRecord.length === 0) {
+        await connection.execute(
+          "INSERT INTO form_maintenance (form_type, is_maintenance) VALUES (?, ?)", // Changed from form_key
+          [formType, is_maintenance ? 1 : 0]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE form_maintenance SET is_maintenance = ? WHERE form_type = ?", // Changed from form_key
+          [is_maintenance ? 1 : 0, formType]
+        );
+      }
+    }
+
+    // Handle maintenance message
+    if (maintenance_message) {
+      if (existingRecord.length === 0) {
+        await connection.execute(
+          "INSERT INTO form_maintenance (form_type, maintenance_message_json) VALUES (?, ?)", // Changed from form_key
+          [formType, JSON.stringify(maintenance_message)]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE form_maintenance SET maintenance_message_json = ? WHERE form_type = ?", // Changed from form_key
+          [JSON.stringify(maintenance_message), formType]
+        );
+      }
+    }
+
+    await connection.end();
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating maintenance status:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -236,7 +296,8 @@ router.get("/form-maintenance", async (req, res) => {
     const [rows] = await connection.execute("SELECT * FROM form_maintenance");
     await connection.end();
 
-    // Convertir en objets pour le frontend
+    console.log("Form maintenance raw data:", rows);
+
     const states = rows.reduce(
       (acc, curr) => ({
         ...acc,
@@ -245,29 +306,26 @@ router.get("/form-maintenance", async (req, res) => {
       {}
     );
 
+    console.log("Sending maintenance states:", states);
+
     const messages = rows.reduce((acc, curr) => {
       let parsedMessages;
       try {
-        // Tenter de parser le JSON des messages
         parsedMessages = JSON.parse(curr.maintenance_message_json || "{}");
       } catch {
-        // En cas d'erreur de parsing, utiliser un objet vide
         parsedMessages = { FR: "", NL: "", EN: "" };
       }
 
       return {
         ...acc,
-        [curr.form_type]: parsedMessages,
+        [curr.form_type]: parsedMessages, // Match with form_type
       };
     }, {});
 
     res.json({ states, messages });
   } catch (error) {
-    console.error(
-      "Erreur lors de la récupération des états de maintenance:",
-      error
-    );
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error("Error fetching maintenance states:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -437,6 +495,89 @@ router.get("/accident-forms/download/:language", async (req, res) => {
   } catch (error) {
     console.error("Erreur lors du téléchargement du formulaire:", error);
     res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// COMPATIBILITY ROUTE - Using GET method to avoid proxying issues
+router.get("/form-maintenance/:formType/toggle", async (req, res) => {
+  const { formType } = req.params;
+  const is_maintenance = req.query.enabled === "true";
+
+  try {
+    console.log(
+      `Form maintenance toggle (GET): ${formType} = ${is_maintenance}`
+    );
+
+    const connection = await mysql.createConnection(dbConfig);
+
+    // Check if record exists
+    const [existingRecord] = await connection.execute(
+      "SELECT * FROM form_maintenance WHERE form_type = ?",
+      [formType]
+    );
+
+    if (existingRecord.length === 0) {
+      // Insert new record
+      await connection.execute(
+        "INSERT INTO form_maintenance (form_type, is_maintenance) VALUES (?, ?)",
+        [formType, is_maintenance ? 1 : 0]
+      );
+    } else {
+      // Update existing record
+      await connection.execute(
+        "UPDATE form_maintenance SET is_maintenance = ? WHERE form_type = ?",
+        [is_maintenance ? 1 : 0, formType]
+      );
+    }
+
+    await connection.end();
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating maintenance status:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// COMPATIBILITY ROUTE - For message updates via GET
+router.get("/form-maintenance/:formType/message", async (req, res) => {
+  const { formType } = req.params;
+  let maintenance_message;
+
+  try {
+    if (req.query.content) {
+      maintenance_message = JSON.parse(decodeURIComponent(req.query.content));
+    }
+
+    if (!maintenance_message) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing message content",
+      });
+    }
+
+    const connection = await mysql.createConnection(dbConfig);
+    const [existingRecord] = await connection.execute(
+      "SELECT * FROM form_maintenance WHERE form_type = ?",
+      [formType]
+    );
+
+    if (existingRecord.length === 0) {
+      await connection.execute(
+        "INSERT INTO form_maintenance (form_type, maintenance_message_json) VALUES (?, ?)",
+        [formType, JSON.stringify(maintenance_message)]
+      );
+    } else {
+      await connection.execute(
+        "UPDATE form_maintenance SET maintenance_message_json = ? WHERE form_type = ?",
+        [JSON.stringify(maintenance_message), formType]
+      );
+    }
+
+    await connection.end();
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating maintenance message:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

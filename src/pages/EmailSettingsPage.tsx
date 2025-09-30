@@ -82,12 +82,15 @@ const EmailSettingsPage: React.FC = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/form-mail", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/form-mail",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           console.error(
@@ -134,7 +137,7 @@ const EmailSettingsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/form-mail/${type}`,
+        `https://daringbrusselsacademy.be/node/api/form-mail/${type}`,
         {
           method: "PATCH",
           headers: {

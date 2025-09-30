@@ -55,9 +55,12 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (!response.ok) throw new Error("Erreur de récupération");
 
@@ -101,8 +104,8 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
     try {
       const token = localStorage.getItem("token");
       const endpoint = isSelf
-        ? "http://localhost:5000/api/change-password"
-        : `http://localhost:5000/api/users/${user.id}/reset-password`;
+        ? "https://daringbrusselsacademy.be/node/api/change-password"
+        : `https://daringbrusselsacademy.be/node/api/users/${user.id}/reset-password`;
 
       const response = await fetch(endpoint, {
         method: isSelf ? "PATCH" : "PUT",

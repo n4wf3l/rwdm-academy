@@ -13,7 +13,9 @@ const DesktopOnlyWrapper: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const fetchLogo = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         const data = await res.json();
         if (data.general.logo && data.general.logo.startsWith("/uploads/")) {
           setLogoUrl(data.general.logo);

@@ -70,7 +70,9 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   useEffect(() => {
     const fetchClubName = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         const data = await res.json();
         setClubName(data.general.clubName);
       } catch (err) {
@@ -86,7 +88,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     setIsLoggedIn(!!token);
 
     if (token) {
-      fetch("http://localhost:5000/api/me", {
+      fetch("https://daringbrusselsacademy.be/node/api/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -114,7 +116,9 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     const fetchLogo = async () => {
       try {
         // 1. Récupérer les paramètres généraux (dont le chemin du logo)
-        const res = await fetch("http://localhost:5000/api/settings");
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/settings"
+        );
         const data = await res.json();
 
         if (
@@ -126,7 +130,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
 
           // 2. Récupérer l'image en Base64
           const imageResponse = await fetch(
-            `http://localhost:5000/api/file-as-base64?path=${encodeURIComponent(
+            `https://daringbrusselsacademy.be/node/api/file-as-base64?path=${encodeURIComponent(
               data.general.logo
             )}`,
             {
@@ -221,7 +225,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
               {logoUrl && (
                 <motion.img
                   key={logoUrl} // Pour réinitialiser l'animation si le logo change
-                  src={logoUrl} // Pas besoin de forcer "http://localhost:5000"
+                  src={logoUrl}
                   alt="Logo"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -239,7 +243,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 )}
               >
                 {clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
-                  "RWDM Academy"}
+                  "Daring Brussels Academy"}
               </span>
 
               {isMobile ? (

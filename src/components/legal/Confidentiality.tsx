@@ -9,12 +9,12 @@ const Confidentiality: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/settings")
+      .get("https://daringbrusselsacademy.be/node/api/settings")
       .then(({ data }) => setEmailClub(data.general.email || ""))
       .catch((err) => console.error("Erreur fetch email :", err));
   }, []);
 
-  const displayEmail = emailClub || "privacy@rwdm-academy.be";
+  const displayEmail = emailClub || "privacy@daringbrussels-academy.be";
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">

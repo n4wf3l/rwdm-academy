@@ -99,9 +99,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchAppointments = async () => {
-      const response = await fetch("http://localhost:5000/api/appointments", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/appointments",
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
       const data = await response.json();
       const formattedAppointments = data.map((appointment: any) => ({
         ...appointment,
@@ -127,7 +130,7 @@ const Dashboard = () => {
     const timeout = setTimeout(async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/requests/${requestId}`,
+          `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
           {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
@@ -171,9 +174,12 @@ const Dashboard = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch("http://localhost:5000/api/requests", {
-        headers,
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/requests",
+        {
+          headers,
+        }
+      );
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des demandes");
       }
@@ -250,7 +256,7 @@ const Dashboard = () => {
             const timeout = setTimeout(async () => {
               try {
                 const res = await fetch(
-                  `http://localhost:5000/api/requests/${req.id}`,
+                  `https://daringbrusselsacademy.be/node/api/requests/${req.id}`,
                   {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
@@ -273,10 +279,13 @@ const Dashboard = () => {
             setPendingDeletion((prev) => ({ ...prev, [req.id]: timeout }));
           } else {
             // 24h déjà passées, suppression immédiate
-            fetch(`http://localhost:5000/api/requests/${req.id}`, {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            }).then((res) => {
+            fetch(
+              `https://daringbrusselsacademy.be/node/api/requests/${req.id}`,
+              {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            ).then((res) => {
               if (res.ok) {
                 setRequests((prev) => prev.filter((r) => r.id !== req.id));
                 toast({
@@ -306,9 +315,12 @@ const Dashboard = () => {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const response = await fetch("http://localhost:5000/api/all-admins", {
-        headers,
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/all-admins",
+        {
+          headers,
+        }
+      );
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des administrateurs");
       }
@@ -336,9 +348,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (!response.ok)
           throw new Error("Impossible de récupérer l'utilisateur");
@@ -465,7 +480,7 @@ const Dashboard = () => {
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
       const response = await fetch(
-        `http://localhost:5000/api/requests/${requestId}`,
+        `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
         {
           method: "PATCH",
           headers,
@@ -522,7 +537,7 @@ const Dashboard = () => {
       // ✅ On attend que la réponse PATCH soit terminée
 
       const response = await fetch(
-        `http://localhost:5000/api/requests/${requestId}`,
+        `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
         {
           method: "PATCH",
           headers,
@@ -561,7 +576,7 @@ const Dashboard = () => {
     try {
       // 1. Appel backend pour envoyer l'email
       const response = await axios.post(
-        `http://localhost:5000/api/email-recipients/send-request/${requestId}`
+        `https://daringbrusselsacademy.be/node/api/email-recipients/send-request/${requestId}`
       );
 
       console.log("✅ Email envoyé:", response.data);
@@ -589,7 +604,7 @@ const Dashboard = () => {
   const sendAccidentDeclaration = async (requestId: string) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/email-recipients/send-request/${requestId}`
+        `https://daringbrusselsacademy.be/node/api/email-recipients/send-request/${requestId}`
       );
       toast({
         title: t("toast_accident_sent_title"),
@@ -610,7 +625,7 @@ const Dashboard = () => {
     try {
       // Envoyer le documentLabel et le type avec la requête
       await axios.post(
-        `http://localhost:5000/api/email-recipients/send-request/${requestId}`,
+        `https://daringbrusselsacademy.be/node/api/email-recipients/send-request/${requestId}`,
         {
           documentLabel: "Certificat de guérison",
           type: "healing-notify",
@@ -692,7 +707,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Créer la connexion WebSocket
-    const socket = io("http://localhost:5000");
+    const socket = io("https://daringbrusselsacademy.be/node/");
 
     socket.on("connect", () => {
       console.log("Connecté au serveur WebSocket");

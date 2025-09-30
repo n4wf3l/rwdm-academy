@@ -1,10 +1,9 @@
 // src/pages/Index.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Helmet } from "react-helmet";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import FormSelector, { FormType } from "../components/FormSelector";
-import FormWrapper from "../components/FormWrapper";
 import AnimatedTransition from "../components/AnimatedTransition";
 import SplashComponent from "../components/SplashComponent";
 import MaintenancePage from "../components/MaintenancePage";
@@ -15,14 +14,59 @@ import { HelpCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UserGuideDialog from "@/components/dialogs/UserGuideDialog";
 import { useTranslation } from "@/hooks/useTranslation";
-import RegistrationForm from "@/components/RegistrationForm";
-import SelectionTestsForm from "@/components/SelectionTestsForm";
-import AccidentReportForm from "@/components/AccidentReportForm";
-import ResponsibilityWaiverForm from "@/components/ResponsibilityWaiverForm";
+
+// Lazy load des formulaires volumineux
+const RegistrationForm = lazy(() => import("@/components/RegistrationForm"));
+const SelectionTestsForm = lazy(
+  () => import("@/components/SelectionTestsForm")
+);
+const AccidentReportForm = lazy(
+  () => import("@/components/AccidentReportForm")
+);
+const ResponsibilityWaiverForm = lazy(
+  () => import("@/components/ResponsibilityWaiverForm")
+);
+
+// Squelette de chargement
+const LoadingSkeleton = () => (
+  <div className="animate-pulse space-y-8 w-full max-w-4xl mx-auto">
+    <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto"></div>
+    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto"></div>
+    <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    </div>
+    <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
+  </div>
+);
+
+// URL de base de l'API
+const API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "" // En production, utilisez des chemins relatifs
+    : "http://localhost:5000"; // En développement
 
 const Index: React.FC = () => {
   // États
-  const [maintenanceMode, setMaintenanceMode] = useState<boolean | null>(null);
+  const [status, setStatus] = useState<{
+    loading: boolean;
+    maintenanceMode: boolean | null;
+    formMaintenance: Record<string, boolean>;
+    clubName: Record<string, string>;
+  }>({
+    loading: true,
+    maintenanceMode: null,
+    formMaintenance: {
+      registration: false,
+      selectionTests: false,
+      accidentReport: false,
+      waiver: false,
+    },
+    clubName: { FR: "", NL: "", EN: "" },
+  });
+
   const [showSplash, setShowSplash] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [currentForm, setCurrentForm] = useState<FormType>(
@@ -32,85 +76,117 @@ const Index: React.FC = () => {
     const saved = localStorage.getItem("formData");
     return saved ? JSON.parse(saved) : {};
   });
-  const [formMaintenanceStates, setFormMaintenanceStates] = useState({
-    registration: false,
-    selectionTests: false,
-    accidentReport: false,
-    waiver: false,
-  });
   const [guideModalOpen, setGuideModalOpen] = useState(false);
-  const [clubName, setClubName] = useState<{
-    FR: string;
-    NL: string;
-    EN: string;
-  }>({
-    FR: "",
-    NL: "",
-    EN: "",
-  });
 
   // Translation hook
   const { t } = useTranslation();
+  const currentLang = localStorage.getItem("language")?.toUpperCase() || "FR";
 
-  // Constante avant tous les useEffect
-  const currentLang = localStorage.getItem("language") || "fr";
-
-  // Tous les useEffects ensemble
+  // Charger les données initiales en parallèle
   useEffect(() => {
-    // Charger les états de maintenance
-    fetch("http://localhost:5000/api/form-maintenance")
-      .then((res) => res.json())
-      .then((data) => {
-        setFormMaintenanceStates(data.states);
-      })
-      .catch((error) => {
-        console.error("Erreur chargement maintenance:", error);
-      });
-  }, []);
-
-  // Fetch club name
-  useEffect(() => {
-    const fetchClubName = async () => {
+    const loadInitialData = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/settings");
-        const data = await res.json();
-        setClubName(data.general.clubName);
-      } catch (err) {
-        console.error("Erreur lors du chargement du nom du club :", err);
+        // Précharger toutes les données en parallèle
+        const [maintenanceRes, formMaintenanceRes, settingsRes] =
+          await Promise.all([
+            fetch(`${API_BASE}/api/settings`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }),
+            fetch(`${API_BASE}/api/form-maintenance`),
+            fetch(`${API_BASE}/api/settings`),
+          ]);
+
+        // Traiter toutes les réponses
+        const maintenanceData = await maintenanceRes.json();
+        const formMaintenanceData = await formMaintenanceRes.json();
+        const settingsData = await settingsRes.json();
+
+        // Mettre à jour l'état en une seule opération
+        setStatus({
+          loading: false,
+          maintenanceMode: Boolean(maintenanceData.maintenanceMode),
+          formMaintenance: formMaintenanceData.states || {
+            registration: false,
+            selectionTests: false,
+            accidentReport: false,
+            waiver: false,
+          },
+          clubName: settingsData.general?.clubName || {
+            FR: "",
+            NL: "",
+            EN: "",
+          },
+        });
+      } catch (error) {
+        console.error("Erreur de chargement des données:", error);
+        // En cas d'erreur, ne pas bloquer l'UI
+        setStatus((prev) => ({
+          ...prev,
+          loading: false,
+          maintenanceMode: false,
+        }));
       }
     };
 
-    fetchClubName();
-  }, []);
+    loadInitialData();
 
-  // ─── 1) Charger le flag maintenance depuis l'API ─────────────────────────
-  useEffect(() => {
-    fetch("http://localhost:5000/api/settings", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .then((data) => {
-        setMaintenanceMode(Boolean(data.maintenanceMode));
-      })
-      .catch(() => {
-        setMaintenanceMode(false);
-      });
-  }, []);
-
-  // ─── 2) Gérer le Splash / chargement de la langue ────────────────────────
-  useEffect(() => {
+    // Vérifier si la langue est déjà définie
     const hasLang = localStorage.getItem("language");
     if (!hasLang) {
       setShowSplash(true);
     } else {
       setPageLoaded(true);
     }
+  }, []); // Exécuté une seule fois au chargement
+
+  // Function to refresh maintenance status
+  const refreshMaintenanceStatus = async () => {
+    try {
+      const [maintenanceRes, formMaintenanceRes] = await Promise.all([
+        fetch(`${API_BASE}/api/settings`), // AJOUTER LE SLASH
+        fetch(`${API_BASE}/api/form-maintenance?_t=${Date.now()}`), // AJOUTER LE SLASH
+      ]);
+
+      // Add response checks before parsing
+      if (!maintenanceRes.ok || !formMaintenanceRes.ok) {
+        console.error("API request failed:", {
+          settings: maintenanceRes.status,
+          maintenance: formMaintenanceRes.status,
+        });
+        return; // Don't try to parse invalid responses
+      }
+
+      const maintenanceData = await maintenanceRes.json();
+      const formMaintenanceData = await formMaintenanceRes.json();
+
+      // Debug the shape of the data
+      console.log("Raw maintenance data:", formMaintenanceData);
+
+      // Map database form_type keys to frontend keys if needed
+      const formMaintenance = formMaintenanceData.states || {};
+
+      setStatus((prev) => ({
+        ...prev,
+        maintenanceMode: Boolean(maintenanceData.maintenanceMode),
+        formMaintenance: formMaintenance,
+      }));
+    } catch (error) {
+      console.error("Error refreshing maintenance status:", error);
+    }
+  };
+
+  // Ajouter cet useEffect pour charger les données au démarrage
+  useEffect(() => {
+    refreshMaintenanceStatus();
+
+    // Si vous voulez une actualisation périodique:
+    const interval = setInterval(refreshMaintenanceStatus, 60000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Handlers et autres fonctions
+  // Handlers
   const handleLanguageSelect = (lang: "fr" | "nl" | "en") => {
     localStorage.setItem("language", lang);
     window.dispatchEvent(new Event("language-changed"));
@@ -118,7 +194,6 @@ const Index: React.FC = () => {
     setTimeout(() => setPageLoaded(true), 100);
   };
 
-  // ─── 3) Handlers Formulaire ─────────────────────────────────────────────
   const handleFormChange = (form: FormType) => {
     setCurrentForm(form);
     localStorage.setItem("currentForm", form);
@@ -139,10 +214,17 @@ const Index: React.FC = () => {
     });
   };
 
-  // Rendu du formulaire
+  // Rendu du formulaire avec Suspense pour le lazy loading
   const renderForm = () => {
+    // Ajouter ces logs au début
+    console.log("Current form maintenance states:", status.formMaintenance);
+    console.log(
+      `Should ${currentForm} be in maintenance?`,
+      status.formMaintenance[currentForm]
+    );
+
     // Vérifier l'état de maintenance du formulaire actuel
-    if (formMaintenanceStates[currentForm]) {
+    if (status.formMaintenance[currentForm]) {
       return (
         <MaintenancePage2
           formType={
@@ -156,50 +238,55 @@ const Index: React.FC = () => {
       );
     }
 
-    // Si pas en maintenance, afficher le formulaire approprié
-    switch (currentForm) {
-      case "registration":
-        return (
+    // Utilisation de Suspense pour tous les formulaires en lazy loading
+    return (
+      <Suspense fallback={<LoadingSkeleton />}>
+        {currentForm === "registration" && (
           <RegistrationForm
             formData={formData}
             onFormDataChange={handleFormDataChange}
           />
-        );
-      case "selectionTests":
-        return (
+        )}
+        {currentForm === "selectionTests" && (
           <SelectionTestsForm
             formData={formData}
             onFormDataChange={handleFormDataChange}
           />
-        );
-      case "accidentReport":
-        return (
+        )}
+        {currentForm === "accidentReport" && (
           <AccidentReportForm
             formData={formData}
             onFormDataChange={handleFormDataChange}
           />
-        );
-      case "waiver":
-        return (
+        )}
+        {currentForm === "waiver" && (
           <ResponsibilityWaiverForm
             formData={formData}
             onFormDataChange={handleFormDataChange}
           />
-        );
-      default:
-        return null;
-    }
+        )}
+      </Suspense>
+    );
   };
 
-  // ─── 4) Tant que le flag n'est pas chargé, ne rien afficher ─────────────
-  if (maintenanceMode === null) return null;
+  // Interface de chargement au lieu de retourner null
+  if (status.loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
+        <Navbar />
+        <main className="container mx-auto px-4 pt-28 pb-20 flex-grow">
+          <LoadingSkeleton />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
-  // ─── 5) Si mode maintenance activé, on affiche uniquement MaintenancePage ─
-  if (maintenanceMode) {
+  // Mode maintenance global
+  if (status.maintenanceMode) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        {/* on centre verticalement ici */}
         <main className="flex-grow flex items-center justify-center">
           <MaintenancePage />
         </main>
@@ -208,16 +295,18 @@ const Index: React.FC = () => {
     );
   }
 
-  // Le reste du rendu reste inchangé
+  // Le reste du rendu reste similaire
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:to-rwdm-blue/40 flex flex-col">
       <Helmet>
-        <title>RWDM Academy – Rejoignez l'élite du football belge</title>
-        <meta
-          name="description"
-          content="Accédez aux formulaires officiels de l'académie RWDM : inscription, tests de sélection, décharge de responsabilité, déclaration d'accident et certificat de guérison."
-        />
-        {/* ... autres balises meta OG ... */}
+        <title>
+          {status.clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
+            "Daring Brussels Academy"}{" "}
+          – {t("tagline")}
+        </title>
+        <meta name="description" content={t("meta_description")} />
+        {/* Préconnexion inchangée */}
+        <link rel="preconnect" href={API_BASE} />
       </Helmet>
 
       {showSplash && (
@@ -237,8 +326,8 @@ const Index: React.FC = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3 inline-block relative">
-                  {clubName[currentLang?.toUpperCase() as "FR" | "NL" | "EN"] ||
-                    "RWDM Academy"}
+                  {status.clubName[currentLang as "FR" | "NL" | "EN"] ||
+                    "Daring Brussels Academy"}
                   <motion.div
                     className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
                     style={{
@@ -251,10 +340,10 @@ const Index: React.FC = () => {
                   />
                 </h1>
               </motion.div>
-              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+
+              <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
                 {t("welcome")}
               </p>
-
               {/* Note champ obligatoire */}
               <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 max-w-2xl mx-auto space-y-1 text-center">
                 <p>{t("champ")}</p>

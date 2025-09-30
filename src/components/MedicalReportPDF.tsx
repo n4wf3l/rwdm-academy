@@ -30,7 +30,7 @@ const MedicalReportPDF = () => {
     const checkPdfAvailability = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/accident-forms"
+          "https://daringbrusselsacademy.be/node/api/accident-forms"
         );
 
         if (response.data?.forms) {
@@ -58,7 +58,7 @@ const MedicalReportPDF = () => {
   const handleDownload = async (lang: "fr" | "nl") => {
     try {
       const response = await axios({
-        url: `http://localhost:5000/api/accident-forms/download/${lang.toUpperCase()}`,
+        url: `https://daringbrusselsacademy.be/node/api/accident-forms/download/${lang.toUpperCase()}`,
         method: "GET",
         responseType: "blob",
       });

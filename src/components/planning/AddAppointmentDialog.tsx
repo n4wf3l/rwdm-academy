@@ -106,9 +106,14 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   useEffect(() => {
     const fetchAdmins = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/admins", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/admins",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des administrateurs");
@@ -158,11 +163,14 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
       if (!token) return;
 
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération de l'utilisateur");
@@ -192,7 +200,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   const sendAppointmentEmail = async (appointmentData) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/form-mail/send-appointment-confirmation", // Changed from send-appointment-email
+        "https://daringbrusselsacademy.be/node/api/form-mail/send-appointment-confirmation", // Changed from send-appointment-email
         {
           method: "POST",
           headers: {
@@ -250,14 +258,17 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
       };
 
       /* ───────── 3) Enregistrement en DB ───────── */
-      const response = await fetch("http://localhost:5000/api/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(appointmentData),
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/appointments",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(appointmentData),
+        }
+      );
 
       if (!response.ok)
         throw new Error("Erreur lors de l'enregistrement du rendez‑vous");

@@ -148,9 +148,14 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/requests", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const res = await fetch(
+          "https://daringbrusselsacademy.be/node/api/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await res.json();
         setNewRequestsCount(
           data.filter((r: any) => r.status === "Nouveau").length
@@ -168,13 +173,13 @@ const Settings: React.FC = () => {
       try {
         // Chargement des settings généraux
         const settingsRes = await axios.get(
-          "http://localhost:5000/api/settings"
+          "https://daringbrusselsacademy.be/node/api/settings"
         );
         const settingsData = settingsRes.data;
 
         // Chargement des états de maintenance
         const maintenanceRes = await axios.get(
-          "http://localhost:5000/api/form-maintenance"
+          "https://daringbrusselsacademy.be/node/api/form-maintenance"
         );
         const maintenanceData = maintenanceRes.data;
 
@@ -238,7 +243,7 @@ const Settings: React.FC = () => {
     setTogglingMaintenance(true);
     try {
       const res = await axios.put(
-        "http://localhost:5000/api/settings/maintenance",
+        "https://daringbrusselsacademy.be/node/api/settings/maintenance",
         {
           maintenanceMode: !maintenanceMode,
         }
@@ -315,7 +320,10 @@ const Settings: React.FC = () => {
         formMaintenanceMessages, // Ajoutez cette ligne pour inclure les messages
       };
 
-      await axios.put("http://localhost:5000/api/settings", settingsPayload);
+      await axios.put(
+        "https://daringbrusselsacademy.be/node/api/settings",
+        settingsPayload
+      );
 
       // Aussi envoyer les messages pour chaque type de formulaire
       for (const formType of [
@@ -325,7 +333,7 @@ const Settings: React.FC = () => {
         "waiver",
       ]) {
         await axios.put(
-          `http://localhost:5000/api/form-maintenance/${formType}`,
+          `https://daringbrusselsacademy.be/node/api/form-maintenance/${formType}`,
           {
             maintenance_message: formMaintenanceMessages[formType],
           }
@@ -352,7 +360,7 @@ const Settings: React.FC = () => {
     const fetchAccidentForms = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/accident-forms"
+          "https://daringbrusselsacademy.be/node/api/accident-forms"
         );
         if (response.data?.forms) {
           const frForm = response.data.forms.find(

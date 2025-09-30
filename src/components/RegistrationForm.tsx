@@ -236,13 +236,16 @@ const RegistrationForm: React.FC<FormProps> = ({
 
     try {
       // 1. Envoi de la demande vers la DB
-      const response = await fetch("http://localhost:5000/api/requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        "https://daringbrusselsacademy.be/node/api/requests",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Erreur lors de l'envoi du formulaire");
@@ -252,7 +255,7 @@ const RegistrationForm: React.FC<FormProps> = ({
 
       // 2. Envoi de l'email directement avec le template
       await fetch(
-        "http://localhost:5000/api/form-mail/send-registration-email",
+        "https://daringbrusselsacademy.be/node/api/form-mail/send-registration-email",
         {
           method: "POST",
           headers: {
@@ -467,12 +470,14 @@ const RegistrationForm: React.FC<FormProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Brussels Eagles Football Academy">
-                      Brussels Eagles Football Academy
+                      Eagles Brussels Football Academy
                     </SelectItem>
                     <SelectItem value="Red For Ever Academy">
-                      RWDM ForEver Academy
+                      DB ForEver Academy
                     </SelectItem>
-                    <SelectItem value="RWDM Academy">RWDM Academy</SelectItem>
+                    <SelectItem value="Daring Brussels Academy">
+                      Daring Brussels Academy
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -594,7 +599,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                     onChange={(e) =>
                       setCurrentClub(alphaNumeric(e.target.value))
                     }
-                    placeholder="RWDM"
+                    placeholder="Daring Brussels"
                   />
                 </div>
                 <div className="space-y-2">

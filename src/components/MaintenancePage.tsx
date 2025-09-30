@@ -41,7 +41,7 @@ export default function MaintenancePage() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/settings")
+      .get("https://daringbrusselsacademy.be/node/api/settings")
       .then((res) => {
         const { general, contact } = res.data;
         setOpeningHours(contact.openingHours || {});

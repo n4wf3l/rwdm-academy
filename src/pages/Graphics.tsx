@@ -42,13 +42,40 @@ import ApiKeyModal from "@/components/ApiKeyModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import OverduePaymentsModal from "@/components/graphics/OverduePaymentsModal";
 import ApiSettingsModal from "@/components/graphics/ApiSettingsModal";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-// Normalise "Eagles ... Academy" → "BEFA …"
+// Modifier la fonction de normalisation pour refléter les nouveaux noms
+// Ancienne fonction:
 function normalizeBEFA(raw: string): string {
   const m = raw.match(/^(.*?Eagles.*?Academy)\s*(.*)$/i);
   if (!m) return raw;
   const suffix = m[2].trim();
   return suffix ? `BEFA ${suffix}` : "BEFA";
+}
+
+// Nouvelle fonction qui normalise tous les types d'équipes:
+function normalizeTeamName(raw: string): string {
+  // Eagles Brussels Football Academy -> EBFA
+  const ebfaMatch = raw.match(/^(.*?Eagles.*?Academy)\s*(.*)$/i);
+  if (ebfaMatch) {
+    const suffix = ebfaMatch[2].trim();
+    return suffix ? `EBFA ${suffix}` : "EBFA";
+  }
+
+  // RWDM ou BEFA -> nouveaux noms
+  raw = raw.replace(/\bBEFA\b/gi, "EBFA");
+  raw = raw.replace(/\bRWDM\b/gi, "Daring Brussels");
+  raw = raw.replace(/\bELITE\b/gi, "Daring Brussels Academy");
+  raw = raw.replace(/\bRF ForEver\b/gi, "DB ForEver");
+
+  return raw;
 }
 
 function CollapsibleCard({
@@ -101,7 +128,8 @@ const Graphics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"stats" | "categories">("stats");
   const [newReqCount, setNewReqCount] = useState(0);
   const { t } = useTranslation();
-  const BASE = localStorage.getItem("apikey") || "http://localhost:5000";
+  const BASE =
+    localStorage.getItem("apikey") || "https://daringbrusselsacademy.be/node/";
   const API = `${BASE}/api/members-dues`;
 
   useEffect(() => {
@@ -269,6 +297,10 @@ const Graphics: React.FC = () => {
   const [overdueInvoices, setOverdueInvoices] = useState<any[]>([]);
   const [overdueModalOpen, setOverdueModalOpen] = useState(false);
   const [apiSettingsModalOpen, setApiSettingsModalOpen] = useState(false);
+
+  // Ajouter ces états au début du composant Graphics
+  const [teams, setTeams] = useState<any[]>([]);
+  const [teamsLoading, setTeamsLoading] = useState(false);
 
   return (
     <AdminLayout newRequestsCount={newReqCount}>
@@ -569,82 +601,137 @@ const Graphics: React.FC = () => {
                     <CardTitle>{t("invoices.byCategoryTitle")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-8">
-                    {[
-                      {
-                        title: "ELITE",
-                        sub: "RWDM Academy",
-                        filter: (cat: string) => cat.startsWith("ELITE"),
-                        barColor: "#FF0000",
-                      },
-                      {
-                        title: "RF ForEver",
-                        sub: "RWDM ForEver",
-                        filter: (cat: string) =>
-                          cat.toLowerCase().startsWith("rf for ever") ||
-                          cat.toLowerCase().startsWith("r f for ever"),
-                        barColor: "#FCA5A5",
-                      },
-                      {
-                        title: "BEFA",
-                        sub: "Brussels Eagles Football Academy",
-                        filter: (cat: string) => cat.startsWith("BEFA"),
-                        barColor: "#1E3A8A",
-                      },
-                    ].map(({ title, sub, filter, barColor }) => {
-                      const entries = Object.entries(groups)
-                        .filter(([cat]) => filter(cat))
-                        .sort(([a], [b]) => {
-                          const numA = parseInt(
-                            (a.match(/U(\d+)/) || [])[1] || "0",
-                            10
-                          );
-                          const numB = parseInt(
-                            (b.match(/U(\d+)/) || [])[1] || "0",
-                            10
-                          );
-                          return numA - numB;
-                        });
-                      if (!entries.length) return null;
-                      return (
+                    {/* Vérifier si des éléments correspondent aux filtres actuels */}
+                    {Object.keys(groups).length === 0 ? (
+                      <div className="py-12 text-center">
                         <motion.div
-                          key={title}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          transition={{ delay: 0.2 }}
+                          className="text-gray-500"
                         >
-                          <h3 className="text-lg font-semibold text-gray-600 mb-4">
-                            {title}{" "}
-                            <span className="text-sm text-gray-500">
-                              ({sub})
-                            </span>
-                          </h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            {entries.map(([cat, invs]) => (
-                              <motion.div
-                                key={cat}
-                                className="p-4 bg-white rounded shadow border border-gray-200 cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-md"
-                                onClick={() => {
-                                  setSelCatName(cat);
-                                  setSelCatInvs(invs);
-                                  setModalOpen(true);
-                                }}
-                              >
-                                <h4 className="mb-1 font-semibold">{cat}</h4>
-                                <div className="text-3xl font-bold text-center">
-                                  {invs.length}
-                                </div>
-                                <div
-                                  className="h-2 rounded-full mt-2"
-                                  style={{
-                                    backgroundColor: barColor,
-                                  }}
-                                />
-                              </motion.div>
-                            ))}
-                          </div>
+                          <AlertCircle className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                          <p className="text-lg font-medium">
+                            {selectedCategory !== "all" ? (
+                              <>
+                                {t("noElements.category")}
+                                <strong>{selectedCategory}</strong>{" "}
+                                {t("noElements.found")}
+                                {selectedSeason !== "all" && (
+                                  <>
+                                    {" "}
+                                    {t("noElements.forSeason")}{" "}
+                                    <strong>{selectedSeason}</strong>
+                                  </>
+                                )}
+                                .
+                              </>
+                            ) : (
+                              <>
+                                {t("noElements.noInvoices")}
+                                {selectedSeason !== "all" && (
+                                  <>
+                                    {" "}
+                                    {t("noElements.forSeason")}{" "}
+                                    <strong>{selectedSeason}</strong>
+                                  </>
+                                )}
+                                .
+                              </>
+                            )}
+                          </p>
+                          <p className="mt-2">
+                            {t("noElements.tryChangingFilters")}
+                          </p>
                         </motion.div>
-                      );
-                    })}
+                      </div>
+                    ) : (
+                      [
+                        {
+                          title: t("category.daring_brussels_academy"),
+                          sub: t("category.daring_brussels_academy_sub"),
+                          filter: (cat: string) =>
+                            cat.startsWith("ELITE") ||
+                            cat.startsWith("Daring Brussels Academy") ||
+                            cat.includes("RWDM Academy") ||
+                            cat.includes("Cotisation Academy"),
+                          barColor: "#FF0000",
+                        },
+                        {
+                          title: t("category.db_forever"),
+                          sub: t("category.db_forever_sub"),
+                          filter: (cat: string) =>
+                            cat.toLowerCase().includes("for ever") ||
+                            cat.toLowerCase().startsWith("dbf") ||
+                            cat.toLowerCase().includes("daring brussels for") ||
+                            cat.includes("FOREVERS"),
+                          barColor: "#FCA5A5",
+                        },
+                        {
+                          title: t("category.ebfa"),
+                          sub: t("category.ebfa_sub"),
+                          filter: (cat: string) =>
+                            cat.startsWith("BEFA") ||
+                            cat.startsWith("EBFA") ||
+                            cat.includes("Eagles") ||
+                            cat.includes("Football Academy"),
+                          barColor: "#1E3A8A",
+                        },
+                      ].map(({ title, sub, filter, barColor }) => {
+                        const entries = Object.entries(groups)
+                          .filter(([cat]) => filter(cat))
+                          .sort(([a], [b]) => {
+                            const numA = parseInt(
+                              (a.match(/U(\d+)/) || [])[1] || "0",
+                              10
+                            );
+                            const numB = parseInt(
+                              (b.match(/U(\d+)/) || [])[1] || "0",
+                              10
+                            );
+                            return numA - numB;
+                          });
+                        if (!entries.length) return null;
+                        return (
+                          <motion.div
+                            key={title}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            <h3 className="text-lg font-semibold text-gray-600 mb-4">
+                              {title}{" "}
+                              <span className="text-sm text-gray-500">
+                                ({sub})
+                              </span>
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                              {entries.map(([cat, invs]) => (
+                                <motion.div
+                                  key={cat}
+                                  className="p-4 bg-white rounded shadow border border-gray-200 cursor-pointer transform transition-transform duration-200 hover:scale-105 hover:shadow-md"
+                                  onClick={() => {
+                                    setSelCatName(cat);
+                                    setSelCatInvs(invs);
+                                    setModalOpen(true);
+                                  }}
+                                >
+                                  <h4 className="mb-1 font-semibold">{cat}</h4>
+                                  <div className="text-3xl font-bold text-center">
+                                    {invs.length}
+                                  </div>
+                                  <div
+                                    className="h-2 rounded-full mt-2"
+                                    style={{
+                                      backgroundColor: barColor,
+                                    }}
+                                  />
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        );
+                      })
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>

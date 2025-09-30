@@ -156,9 +156,14 @@ const Documents = () => {
   useEffect(() => {
     const fetchNewRequestsCount = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/requests", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await response.json();
 
         const filtered = data.filter(
@@ -212,11 +217,14 @@ const Documents = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "https://daringbrusselsacademy.be/node/api/me",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok)
           throw new Error("Impossible de récupérer l'utilisateur");
@@ -234,7 +242,7 @@ const Documents = () => {
   const fetchCompletedDocuments = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/requests?status=completed",
+        "https://daringbrusselsacademy.be/node/api/requests?status=completed",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -326,14 +334,17 @@ const Documents = () => {
   const handleRevertStatus = async (id: string) => {
     try {
       // Appel à l'API pour mettre à jour le statut
-      const response = await fetch(`http://localhost:5000/api/requests/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ status: "En cours" }), // ou "in-progress" selon le mapping
-      });
+      const response = await fetch(
+        `https://daringbrusselsacademy.be/node/api/requests/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ status: "En cours" }), // ou "in-progress" selon le mapping
+        }
+      );
       if (!response.ok) {
         throw new Error("Erreur lors de la mise à jour du statut");
       }
@@ -611,7 +622,7 @@ const Documents = () => {
                   }, 
                   et affilié au club ${
                     waiverData.currentClub || ""
-                  }, décharge la RWDM Academy de toute responsabilité 
+                  }, décharge la Daring Brussels Academy de toute responsabilité 
                   en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur 
                   pourrait participer à partir de ce jour.
                 </p>
@@ -895,12 +906,12 @@ const Documents = () => {
             </style>
             
             <!-- Watermark -->
-            <img class="rwdm-logo" src="/logo.png" alt="RWDM" />
+            <img class="rwdm-logo" src="/logo.png" alt="Daring Brussels" />
             
             <!-- Header -->
             <div class="header">
               <div>
-                <img class="header-logo" src="/logo.png" alt="RWDM Academy" />
+                <img class="header-logo" src="/logo.png" alt="Daring Brussels Academy" />
               </div>
               <div class="document-id">
                 <strong>Référence:</strong> ${formatRequestId(doc.id)}<br>
@@ -928,7 +939,7 @@ const Documents = () => {
             
             <!-- Footer -->
             <div class="footer">
-              <p>Document généré automatiquement par la plateforme RWDM Academy — ${new Date().toLocaleDateString(
+              <p>Document généré automatiquement par la plateforme Daring Brussels Academy — ${new Date().toLocaleDateString(
                 "fr-FR"
               )}</p>
             </div>
@@ -992,12 +1003,15 @@ const Documents = () => {
 
       // Delete documents from database
       for (const docId of selectedDocuments) {
-        await fetch(`http://localhost:5000/api/requests/${docId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        await fetch(
+          `https://daringbrusselsacademy.be/node/api/requests/${docId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
       }
 
       // Reset selection and refresh
