@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ interface SpellCheckModalProps {
   onConfirm: () => void;
   fields: SpellCheckField[];
   title?: string;
+  loading?: boolean; // 👈 Ajoute cette ligne
 }
 
 const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
@@ -31,6 +32,7 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
   onConfirm,
   fields,
   title,
+  loading,
 }) => {
   const { t } = useTranslation();
   const [checked, setChecked] = useState<boolean[]>(
@@ -99,15 +101,13 @@ const SpellCheckModal: React.FC<SpellCheckModalProps> = ({
             {t("spellcheck_modify")}
           </Button>
           <Button
-            disabled={!allChecked}
             onClick={onConfirm}
-            className={`gap-1 ${
-              allChecked
-                ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            disabled={loading || !allChecked}
+            className="w-full"
           >
-            <Check className="h-4 w-4" />
+            {loading ? (
+              <Loader2 className="animate-spin w-5 h-5 mr-2 inline" />
+            ) : null}
             {t("spellcheck_confirm_submit")}
           </Button>
         </DialogFooter>

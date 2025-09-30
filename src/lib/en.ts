@@ -16,7 +16,7 @@ export const translationsEN = {
   academy_registration_desc: "Form to register and join the academy (U5-U9)",
   selection_tests: "Selection Tests",
   selection_tests_desc:
-    "Form to register for the Academy's selection tests (U5-U21)",
+    "Form to register for the Academy's selection tests (U10-U21)",
   accident_report: "Accident Report",
   accident_report_desc:
     "Form to report a club-related accident or submit a recovery certificate",
@@ -1764,4 +1764,22 @@ export const translationsEN = {
   "guide.api_docs": "API Documentation",
   "guide.api_docs_desc":
     "Complete API documentation is available for authorized developers in the Readme of the repository.",
+  teamSingular: "team",
+  teamsPlural: "teams",
+  players: "players",
+  "pdf.generationError": "An error occurred while generating the PDF.",
+  "pdf.generating": "Generating PDF…",
+  "pdf.export": "Export PDF",
+  "category.ebfa": "EBFA",
+  "category.db_forever": "RWDM ForEver",
+  "category.daring_brussels_academy": "RWDM Brussels Academy",
+  "noElements.tryChangingFilters":
+    "Try changing the filters to see more results.",
+  "noElements.forSeason": "for season",
+  "noElements.noInvoices": "No invoices found",
+  "noElements.found": "found.",
+  "noElements.category": "No invoices found for category ",
+  "category.rwdm_brussels_academy_sub": "Elite teams and RWDM Brussels Academy",
+  "category.rwdm_forever_sub": "RWDM ForEver teams",
+  "category.ebfa_sub": "Eagles Brussels Football Academy",
 };
