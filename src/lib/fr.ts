@@ -1882,7 +1882,6 @@ export const translationsFR = {
   "guide.api_docs": "Documentation API",
   "guide.api_docs_desc":
     "La documentation complète de l'API est disponible pour les développeurs autorisés dans le dossier Readme du repository.",
-<<<<<<< HEAD
   teamSingular: "équipe",
   teamsPlural: "équipes",
   players: "joueurs",
@@ -1903,27 +1902,10 @@ export const translationsFR = {
     "Équipes élite et RWDM Brussels Academy",
   "category.rwdm_forever_sub": "Équipes RWDM ForEver",
   "category.ebfa_sub": "Eagles Brussels Football Academy",
-=======
-  "category.daring_brussels_academy": "Daring Brussels Academy",
   "category.daring_brussels_academy_sub": "Anciennement ELITE/RWDM Academy",
-  "category.db_forever": "RWDM ForEver",
   "category.db_forever_sub": "Anciennement RF/RWDM ForEver",
-  "category.ebfa": "EBFA",
-  "category.ebfa_sub": "Eagles Brussels Football Academy",
-  "noElements.category": 'Aucun élément de "',
-  "noElements.found": '" trouvé',
-  "noElements.forSeason": "pour la saison",
-  "noElements.noInvoices": "Aucune facture trouvée",
-  "noElements.tryChangingFilters":
-    "Essayez de modifier vos filtres ou de sélectionner une autre catégorie/saison.",
   teams: "équipes",
-  players: "joueurs",
-  teamSingular: "Équipe",
-  teamsPlural: "Équipes",
-  "pdf.export": "Exporter en PDF",
-  "pdf.generationError": "Erreur lors de la génération du PDF",
-  "pdf.generating": "Génération...",
   tagline: "Rejoignez l'élite du football belge",
   meta_description:
     "Accédez aux formulaires officiels de l'académie RWDM Brussels : inscription, tests de sélection, décharge de responsabilité, déclaration d'accident et certificat de guérison.",
-};
+}

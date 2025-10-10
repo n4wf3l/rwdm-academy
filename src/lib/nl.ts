@@ -1807,7 +1807,6 @@ export const translationsNL = {
   "guide.api_docs": "API-documentatie",
   "guide.api_docs_desc":
     "Volledige API-documentatie is beschikbaar voor geautoriseerde ontwikkelaars in de Readme van de repository.",
-<<<<<<< HEAD
   teamSingular: "team",
   teamsPlural: "teams",
   players: "spelers",
@@ -1827,25 +1826,9 @@ export const translationsNL = {
   "category.rwdm_brussels_academy_sub": "Elite teams en RWDM Brussels Academy",
   "category.rwdm_forever_sub": "RWDM ForEver teams",
   "category.ebfa_sub": "Eagles Brussels Football Academy",
-  "category.daring_brussels_academy": "Daring Brussels Academy",
   "category.daring_brussels_academy_sub": "Voorheen ELITE/RWDM Academy",
-  "category.db_forever": "RWDM ForEver",
   "category.db_forever_sub": "Voorheen RF/RWDM ForEver",
-  "category.ebfa": "EBFA",
-  "category.ebfa_sub": "Eagles Brussels Football Academy",
-  "noElements.category": 'Geen elementen van "',
-  "noElements.found": '" gevonden',
-  "noElements.forSeason": "voor het seizoen",
-  "noElements.noInvoices": "Geen facturen gevonden",
-  "noElements.tryChangingFilters":
-    "Probeer uw filters te wijzigen of een andere categorie/seizoen te selecteren.",
   teams: "teams",
-  players: "spelers",
-  teamSingular: "Team",
-  teamsPlural: "Teams",
-  "pdf.export": "Exporteren als PDF", // NL
-  "pdf.generationError": "Fout bij het genereren van de PDF",
-  "pdf.generating": "Genereren...",
   tagline: "Word lid van de Belgische voetbalelite",
   meta_description:
     "Krijg toegang tot de officiële formulieren van de RWDM Brussels Academy: registratie, selectietesten, vrijwaringsverklaring, ongevalaangifte en genezingscertificaat.",
