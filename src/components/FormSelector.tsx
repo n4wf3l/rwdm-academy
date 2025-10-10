@@ -5,12 +5,14 @@ import {
   ClipboardList,
   AlertTriangle,
   FileText,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type FormType =
   | "registration"
+  | "befa-registration"
   | "selectionTests"
   | "accidentReport"
   | "waiver";

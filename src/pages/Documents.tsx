@@ -70,6 +70,7 @@ import { Progress } from "@/components/ui/progress";
 import JSZip from "jszip";
 import { Checkbox } from "@/components/ui/checkbox";
 import DatabaseUsageChart from "@/components/charts/DatabaseUsageChart";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 // Types pour les documents
 type DocumentType =
@@ -157,9 +158,11 @@ const Documents = () => {
     const fetchNewRequestsCount = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/requests",
+          `${API_BASE}/api/requests`,
           {
+            ...fetchConfig,
             headers: {
+              ...fetchConfig.headers,
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
@@ -218,9 +221,11 @@ const Documents = () => {
     const fetchUserRole = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
+            ...fetchConfig,
             headers: {
+              ...fetchConfig.headers,
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
@@ -242,9 +247,13 @@ const Documents = () => {
   const fetchCompletedDocuments = async () => {
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/requests?status=completed",
+        `${API_BASE}/api/requests?status=completed`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
@@ -335,11 +344,12 @@ const Documents = () => {
     try {
       // Appel à l'API pour mettre à jour le statut
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/requests/${id}`,
+        `${API_BASE}/api/requests/${id}`,
         {
+          ...fetchConfig,
           method: "PATCH",
           headers: {
-            "Content-Type": "application/json",
+            ...fetchConfig.headers,
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ status: "En cours" }), // ou "in-progress" selon le mapping
@@ -622,7 +632,7 @@ const Documents = () => {
                   }, 
                   et affilié au club ${
                     waiverData.currentClub || ""
-                  }, décharge la Daring Brussels Academy de toute responsabilité 
+                  }, décharge RWDM Academy de toute responsabilité 
                   en cas d'accident pouvant survenir au cours des entraînements et/ou matchs amicaux auxquels le joueur 
                   pourrait participer à partir de ce jour.
                 </p>
@@ -906,12 +916,12 @@ const Documents = () => {
             </style>
             
             <!-- Watermark -->
-            <img class="rwdm-logo" src="/logo.png" alt="Daring Brussels" />
+            <img class="rwdm-logo" src="/logo.png" alt="RWDM" />
             
             <!-- Header -->
             <div class="header">
               <div>
-                <img class="header-logo" src="/logo.png" alt="Daring Brussels Academy" />
+                <img class="header-logo" src="/logo.png" alt="RWDM Academy" />
               </div>
               <div class="document-id">
                 <strong>Référence:</strong> ${formatRequestId(doc.id)}<br>
@@ -939,7 +949,7 @@ const Documents = () => {
             
             <!-- Footer -->
             <div class="footer">
-              <p>Document généré automatiquement par la plateforme Daring Brussels Academy — ${new Date().toLocaleDateString(
+              <p>Document généré automatiquement par la plateforme RWDM Academy — ${new Date().toLocaleDateString(
                 "fr-FR"
               )}</p>
             </div>
@@ -1004,10 +1014,12 @@ const Documents = () => {
       // Delete documents from database
       for (const docId of selectedDocuments) {
         await fetch(
-          `https://daringbrusselsacademy.be/node/api/requests/${docId}`,
+          `${API_BASE}/api/requests/${docId}`,
           {
+            ...fetchConfig,
             method: "DELETE",
             headers: {
+              ...fetchConfig.headers,
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }

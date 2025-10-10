@@ -38,12 +38,12 @@ const Legal: React.FC = () => {
       <Helmet>
         <title>
           {activeTab === "privacy"
-            ? "Politique de confidentialité – Daring Brussels Academy"
+            ? "Politique de confidentialité – RWDM Academy"
             : activeTab === "terms"
-            ? "Conditions d'utilisation – Daring Brussels Academy"
+            ? "Conditions d'utilisation – RWDM Academy"
             : activeTab === "legal"
-            ? "Mentions légales – Daring Brussels Academy"
-            : "Politique de cookies – Daring Brussels Academy"}
+            ? "Mentions légales – RWDM Academy"
+            : "Politique de cookies – RWDM Academy"}
         </title>
 
         <meta
@@ -52,40 +52,40 @@ const Legal: React.FC = () => {
             activeTab === "privacy"
               ? "Consultez notre politique de confidentialité concernant la protection des données personnelles."
               : activeTab === "terms"
-              ? "Lisez les conditions générales d'utilisation de Daring Brussels Academy."
+              ? "Lisez les conditions générales d'utilisation de RWDM Academy."
               : activeTab === "legal"
-              ? "Toutes les informations légales concernant Daring Brussels Academy."
+              ? "Toutes les informations légales concernant RWDM Academy."
               : "Découvrez notre politique d'utilisation des cookies."
           }
         />
 
         <meta
           name="keywords"
-          content="Daring Brussels, RGPD, cookies, mentions légales, CGU, confidentialité, politique de données, protection, académies"
+          content="RWDM, RGPD, cookies, mentions légales, CGU, confidentialité, politique de données, protection, académies"
         />
-        <meta name="author" content="Daring Brussels Academy" />
+        <meta name="author" content="RWDM Academy" />
         <meta name="robots" content="index, follow" />
         <link
           rel="canonical"
-          href={`https://daringbrusselsacademy.be/legal?tab=${activeTab}`}
+          href={`https://rwdmacademy.be/legal?tab=${activeTab}`}
         />
 
         {/* Open Graph (Facebook, Instagram, LinkedIn) */}
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content={`https://daringbrusselsacademy.be/legal?tab=${activeTab}`}
+          content={`https://rwdmacademy.be/legal?tab=${activeTab}`}
         />
         <meta
           property="og:title"
           content={
             activeTab === "privacy"
-              ? "Politique de confidentialité – Daring Brussels Academy"
+              ? "Politique de confidentialité – RWDM Academy"
               : activeTab === "terms"
-              ? "Conditions d'utilisation – Daring Brussels Academy"
+              ? "Conditions d'utilisation – RWDM Academy"
               : activeTab === "legal"
-              ? "Mentions légales – Daring Brussels Academy"
-              : "Politique de cookies – Daring Brussels Academy"
+              ? "Mentions légales – RWDM Academy"
+              : "Politique de cookies – RWDM Academy"
           }
         />
         <meta
@@ -94,17 +94,17 @@ const Legal: React.FC = () => {
             activeTab === "privacy"
               ? "Consultez notre politique de confidentialité concernant la protection des données personnelles."
               : activeTab === "terms"
-              ? "Lisez les conditions générales d'utilisation de Daring Brussels Academy."
+              ? "Lisez les conditions générales d'utilisation de RWDM Academy."
               : activeTab === "legal"
-              ? "Toutes les informations légales concernant Daring Brussels Academy."
+              ? "Toutes les informations légales concernant RWDM Academy."
               : "Découvrez notre politique d'utilisation des cookies."
           }
         />
         <meta
           property="og:image"
-          content="https://daringbrusselsacademy.be/images/og-image.jpg"
+          content="https://rwdmacademy.be/images/og-image.jpg"
         />
-        <meta property="og:site_name" content="Daring Brussels Academy" />
+        <meta property="og:site_name" content="RWDM Academy" />
         <meta property="og:locale" content="fr_BE" />
         <meta
           property="article:publisher"

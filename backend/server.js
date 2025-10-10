@@ -21,21 +21,40 @@ const { Server } = require("socket.io");
 const axios = require("axios"); // Ajout de axios pour les fonctionnalités du proxy
 const db = require("./db"); // Ajout du module db manquant
 
+// Configuration CORS et environnement
+const allowedOrigins = [
+  "https://rwdmacademy.be",
+  "https://daringbrusselsacademy.be"
+];
+const isLocal = (origin) => /^http:\/\/(localhost|127\.0\.0\.1):\d+$/i.test(origin || "");
+const isProd = process.env.NODE_ENV === "production";
+
+// Trust proxy en production pour les cookies sécurisés
+if (isProd) {
+  app.set("trust proxy", 1);
+}
+
 // Middleware pour gérer CORS et le JSON
 app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://daringbrusselsacademy.be"
-        : "http://localhost:3000",
+    origin(origin, cb) {
+      if (!origin) return cb(null, true); // Permettre les requêtes sans origin (ex: Postman)
+      if (isProd) {
+        return allowedOrigins.includes(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS"));
+      }
+      return isLocal(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Gérer explicitement les requêtes preflight OPTIONS
+app.options("*", cors());
 
 app.use(express.static(path.join(__dirname, "../public")));
 
@@ -123,15 +142,34 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // CORRECTION: Assurez-vous que le middleware static est correctement configuré
+// Endpoint API pour servir les images avec CORS approprié
+app.get("/api/image/*", (req, res) => {
+  const imagePath = req.params[0];
+  const fullPath = path.join(uploadsDir, imagePath);
+  
+  console.log(`📂 API Image request: ${imagePath}`);
+  
+  // Vérifier que le fichier existe
+  if (!fs.existsSync(fullPath)) {
+    return res.status(404).json({ error: "Image non trouvée" });
+  }
+  
+  // Headers CORS appropriés
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  
+  // Servir l'image
+  res.sendFile(fullPath);
+});
+
+// Fallback pour les anciennes URLs /uploads/
 app.use("/uploads", (req, res, next) => {
   console.log(`📂 Accès au fichier: ${req.url}`);
-  express.static(uploadsDir)(req, res, (err) => {
-    if (err) {
-      console.error(`❌ Erreur d'accès au fichier: ${req.url}`, err);
-      return res.status(404).send("Fichier non trouvé");
-    }
-    next();
-  });
+  
+  // Rediriger vers l'endpoint API
+  const imagePath = req.url.startsWith('/') ? req.url.slice(1) : req.url;
+  res.redirect(`/api/image/${imagePath}`);
 });
 
 // AJOUTEZ cette ligne pour déboguer les requêtes d'images
@@ -215,8 +253,9 @@ app.post(
 
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // secure en prod, false en dev
-        sameSite: "Strict",
+        secure: isProd,
+        sameSite: isProd ? "None" : "Lax",
+        // domain: isProd ? "rwdmacademy.be" : undefined, // Optionnel
       });
 
       res.json({ message: "Authentification réussie", token });
@@ -523,7 +562,16 @@ app.get("/api/me", authMiddleware, async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json(rows[0]);
+
+    const user = rows[0];
+    
+    // Formatage de l'URL de la photo de profil
+    if (user.profilePicture && user.profilePicture.startsWith("/uploads/")) {
+      const imageName = user.profilePicture.replace("/uploads/", "");
+      user.profilePicture = `http://localhost:${PORT}/api/image/${imageName}`;
+    }
+    
+    res.json(user);
   } catch (error) {
     console.error("Erreur lors de la récupération de l'utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -1289,9 +1337,16 @@ app.get("/api/members-dues", async (req, res) => {
     res.json(allInvoices);
   } catch (error) {
     console.error("Erreur lors de l'appel API:", error);
-    res
-      .status(500)
-      .json({ message: "Erreur serveur lors de la récupération des données" });
+    
+    // Si c'est un problème de rate limiting (429), retourner un tableau vide
+    if (error.status === 429 || error.response?.status === 429) {
+      console.log("⚠️ Rate limiting détecté, retour d'un tableau vide");
+      res.json([]);
+    } else {
+      res
+        .status(500)
+        .json({ message: "Erreur serveur lors de la récupération des données" });
+    }
   }
 });
 
@@ -1352,9 +1407,16 @@ app.get("/api/teams/player-counts", async (req, res) => {
     res.json(results);
   } catch (error) {
     console.error("Erreur récupération des équipes/membres :", error);
-    res.status(500).json({
-      message: "Erreur serveur lors du comptage des joueurs par équipe",
-    });
+    
+    // Si c'est un problème de rate limiting (429), retourner un tableau vide
+    if (error.status === 429 || error.response?.status === 429) {
+      console.log("⚠️ Rate limiting détecté pour les équipes, retour d'un tableau vide");
+      res.json([]);
+    } else {
+      res.status(500).json({
+        message: "Erreur serveur lors du comptage des joueurs par équipe",
+      });
+    }
   }
 });
 
@@ -1387,7 +1449,14 @@ app.get("/api/teams/:id/members", async (req, res) => {
     res.json(members);
   } catch (err) {
     console.error(`Erreur membres équipe ${teamId}:`, err);
-    res.status(500).json({ message: "Impossible de récupérer les membres" });
+    
+    // Si c'est un problème de rate limiting (429), retourner un tableau vide
+    if (err.status === 429 || err.response?.status === 429) {
+      console.log(`⚠️ Rate limiting détecté pour l'équipe ${teamId}, retour d'un tableau vide`);
+      res.json([]);
+    } else {
+      res.status(500).json({ message: "Impossible de récupérer les membres" });
+    }
   }
 });
 
@@ -1424,10 +1493,10 @@ app.use("/api/api-settings", apiSettingsRouter);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://daringbrusselsacademy.be"
-        : "https://daringbrusselsacademy.be/node/",
+    origin: isProd 
+      ? allowedOrigins 
+      : [/^http:\/\/(localhost|127\.0\.0\.1):\d+$/i],
+    credentials: true,
     methods: ["GET", "POST"],
   },
 });
@@ -1435,7 +1504,7 @@ const io = new Server(server, {
 // Démarrer le serveur
 server.listen(PORT, () => {
   console.log(
-    `🚀 Serveur unifié en cours d'exécution sur https://daringbrusselsacademy.be/node${PORT}`
+    `🚀 Serveur unifié en cours d'exécution sur ${isProd ? 'https://rwdmacademy.be/node' : `http://localhost:${PORT}`}`
   );
 });
 
@@ -1451,10 +1520,20 @@ if (process.env.NODE_ENV === "production") {
 // Route d'accueil
 app.get("/", (req, res) => {
   res.json({
-    message: "Daring Brussels Academy API",
+    message: "RWDM Academy API",
     status: "online",
     version: "1.0",
   });
+});
+
+// Route catch-all pour servir index.html (SPA)
+app.get('*', (req, res) => {
+  // Ne pas interférer avec les routes API
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
 // Ajouter cette route pour tester directement l'accès aux fichiers

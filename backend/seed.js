@@ -25,7 +25,8 @@ async function seedSuperadmin() {
       await connection.end();
       return;
     }
-    n;
+
+    // Informations du superadmin à créer
     const firstName = "Nawfel";
     const lastName = "Ajari";
     const email = "nawfel@hotmail.com";

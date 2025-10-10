@@ -27,6 +27,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import React, { useRef, forwardRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE } from "@/lib/api-config";
 
 /* ======================= TYPES ======================= */
 
@@ -640,7 +641,7 @@ const renderAccidentReportContent = (
               {d.filePaths.map((file: string, index: number) => (
                 <a
                   key={index}
-                  href={`https://daringbrusselsacademy.be/node${file}`}
+                  href={`${API_BASE}${file}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center p-3 bg-gray-50 dark:bg-gray-800
@@ -660,7 +661,7 @@ const renderAccidentReportContent = (
         <div data-ignore-pdf>
           <Section title={t("accident.supporting_document")}>
             <a
-              href={`https://daringbrusselsacademy.be/node${d.filePath}`}
+              href={`${API_BASE}${d.filePath}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-3 bg-gray-50 dark:bg-gray-800

@@ -14,6 +14,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import { fr } from "date-fns/locale";
 import JSZip from "jszip";
 import { jsPDF } from "jspdf";
@@ -111,7 +112,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(16);
         pdf.setTextColor(0, 59, 112);
-        pdf.text("DARING BRUSSELS ACADEMY", 105, 15, { align: "center" });
+        pdf.text("RWDM ACADEMY", 105, 15, { align: "center" });
 
         pdf.setFontSize(14);
         pdf.text("CONFIRMATION DE RENDEZ-VOUS", 105, 23, { align: "center" });
@@ -215,7 +216,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
         pdf.setFontSize(8);
         pdf.setTextColor(100, 100, 100);
         pdf.text(
-          "Daring Brussels Academy - Rue Charles Malis 61, 1080 Molenbeek-Saint-Jean",
+          "RWDM Academy - Rue Charles Malis 61, 1080 Molenbeek-Saint-Jean",
           105,
           275,
           { align: "center" }
@@ -226,7 +227,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
           280,
           { align: "center" }
         );
-        pdf.text("www.daringbrusselsacademy.be", 105, 285, { align: "center" });
+        pdf.text("www.rwdmacademy.be", 105, 285, { align: "center" });
 
         // Format de nom de fichier: NOM_PRENOM_DATE.pdf
         // Extraire le nom et prénom
@@ -275,7 +276,7 @@ const ListOfAllAppointments: React.FC<ListOfAllAppointmentsProps> = ({
         try {
           const deletionPromises = deletedIds.map(async (apptId) => {
             const response = await fetch(
-              `https://daringbrusselsacademy.be/node/api/appointments/${apptId}`,
+              `${API_BASE}/api/appointments/${apptId}`,
               {
                 method: "DELETE",
                 headers: {

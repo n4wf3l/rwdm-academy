@@ -15,6 +15,7 @@ import Navbar from "@/components/Navbar"; // Navbar ajoutée ici
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Eye, EyeOff } from "lucide-react";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -32,7 +33,7 @@ const ResetPassword = () => {
 
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/reset-password",
+        `${API_BASE}/api/reset-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

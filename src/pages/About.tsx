@@ -3,81 +3,85 @@ import { Helmet } from "react-helmet";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AnimatePresence, motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Award,
-  Book,
-  Handshake,
-  Heart,
-  Lightbulb,
-  ShieldCheck,
-  Trophy,
-  Users,
-  Loader2,
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Book, Lightbulb, Trophy, Handshake, Users, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, resolveMediaUrl, fetchConfig } from "@/lib/api-config";
 
-// Définition de l'interface TeamMember
+/* --------------------------------- TYPES --------------------------------- */
 interface TeamMember {
   id: number;
   deleted?: number | boolean;
-  // Autres champs selon votre API
 }
 
-// Ajout du composant LoadingSkeleton
+type I18nTriplet = { FR: string; NL: string; EN: string };
+
+interface AboutPayload {
+  playersCount: string;
+  experienceYears: string;
+  nationalTrophies: string;
+  youngTalents: string;
+  historyDescription: I18nTriplet;
+  historyPhoto: string;
+  missionDescription: I18nTriplet;
+  missionPhoto: string;
+  approachDescription: I18nTriplet;
+  approachPhoto: string;
+  valueTitle1: I18nTriplet;
+  valueDesc1: I18nTriplet;
+  valueTitle2: I18nTriplet;
+  valueDesc2: I18nTriplet;
+  valueTitle3: I18nTriplet;
+  valueDesc3: I18nTriplet;
+  academyNames1: I18nTriplet;
+  academyDescriptions1: I18nTriplet;
+  academyPhotos1: string;
+  academyNames2: I18nTriplet;
+  academyDescriptions2: I18nTriplet;
+  academyPhotos2: string;
+  academyNames3: I18nTriplet;
+  academyDescriptions3: I18nTriplet;
+  academyPhotos3: string;
+}
+
+/* ------------------------------ SQUELETTE UI ----------------------------- */
 const LoadingSkeleton = () => (
   <div className="animate-pulse space-y-16">
-    {/* Titre et sous-titre */}
     <div className="text-center mb-12">
-      <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-1/3 mx-auto mb-4"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full w-2/3 mx-auto"></div>
+      <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-1/3 mx-auto mb-4" />
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full w-2/3 mx-auto" />
     </div>
-
-    {/* Section Stats */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16">
       {[1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="bg-gray-200 dark:bg-gray-700 rounded-lg h-28"
-        ></div>
+        <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-lg h-28" />
       ))}
     </div>
-
-    {/* Tabs Section */}
     <div className="mb-16">
       <div className="flex justify-center mb-8">
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-1/2 mx-auto"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-1/2 mx-auto" />
       </div>
-      <div className="bg-gray-200 dark:bg-gray-700 rounded-lg h-64"></div>
+      <div className="bg-gray-200 dark:bg-gray-700 rounded-lg h-64" />
     </div>
-
-    {/* Académies Section */}
     <div className="mb-16">
-      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-full w-1/4 mx-auto mb-8"></div>
+      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-full w-1/4 mx-auto mb-8" />
       <div className="flex justify-center mb-8">
-        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-1/2 mx-auto"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-1/2 mx-auto" />
       </div>
-      <div className="bg-gray-200 dark:bg-gray-700 rounded-lg h-64"></div>
+      <div className="bg-gray-200 dark:bg-gray-700 rounded-lg h-64" />
     </div>
-
-    {/* Valeurs Section */}
     <div>
-      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-full w-1/4 mx-auto mb-8"></div>
+      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-full w-1/4 mx-auto mb-8" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-gray-200 dark:bg-gray-700 rounded-lg h-48"
-          ></div>
+          <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-lg h-48" />
         ))}
       </div>
     </div>
   </div>
 );
 
-// Reste du code...
+/* --------------------------------- PAGE ---------------------------------- */
 const About = () => {
   const { toast } = useToast();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -85,12 +89,11 @@ const About = () => {
   const initialTab = searchParams.get("tab") || "histoire";
   const [tabValue, setTabValue] = useState(initialTab);
   const { t, lang } = useTranslation();
-  const currentLang = lang.toUpperCase();
+  const currentLang = lang.toUpperCase() as keyof I18nTriplet;
 
-  // Ajout d'un état de chargement
   const [loading, setLoading] = useState(true);
 
-  const [aboutData, setAboutData] = useState({
+  const [aboutData, setAboutData] = useState<AboutPayload>({
     playersCount: "",
     experienceYears: "",
     nationalTrophies: "",
@@ -119,157 +122,139 @@ const About = () => {
   });
 
   const achievements = [
-    { value: "+" + aboutData.playersCount, label: t("players_trained") },
-    { value: aboutData.experienceYears, label: t("years_experience") },
-    { value: aboutData.nationalTrophies, label: t("national_trophies") },
-    { value: "+" + aboutData.youngTalents, label: t("young_talents") },
+    { value: "+" + (aboutData.playersCount || "0"), label: t("players_trained") },
+    { value: aboutData.experienceYears || "0", label: t("years_experience") },
+    { value: aboutData.nationalTrophies || "0", label: t("national_trophies") },
+    { value: "+" + (aboutData.youngTalents || "0"), label: t("young_talents") },
   ];
 
+  /* --------------------------- FETCH: SETTINGS (LOCAL) --------------------------- */
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        setLoading(true); // Début du chargement
-        const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/settings"
-        );
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/api/settings`, fetchConfig);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setAboutData(data.about);
+        setAboutData(data.about || aboutData);
       } catch (err) {
         console.error("Erreur fetch settings:", err);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les informations de la page",
+          description: "Impossible de charger les informations de la page (local).",
           variant: "destructive",
         });
       } finally {
-        // Une petite temporisation pour éviter un flash du squelette
         setTimeout(() => setLoading(false), 300);
       }
     };
-
     fetchSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ------------------------ FETCH: TEAM MEMBERS (LOCAL) ------------------------ */
   useEffect(() => {
-    // Combinons le chargement des membres d'équipe avec les autres données
-    async function fetchTeamMembers() {
+    const fetchTeamMembers = async () => {
       try {
-        const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/team-members",
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        const response = await fetch(`${API_BASE}/api/team-members`, {
+          method: "GET",
+          ...fetchConfig,
+        });
         const data = await response.json();
         if (response.ok) {
-          // Filtrer les membres soft deleted (supposant que deleted vaut 1 pour un membre inactif)
-          const activeMembers = data.filter(
-            (member: any) => !member.deleted || member.deleted !== 1
+          const active = (data || []).filter(
+            (m: TeamMember & { deleted?: any }) => !m.deleted || m.deleted !== 1
           );
-          setTeamMembers(activeMembers);
+          setTeamMembers(active);
         } else {
           toast({
             title: "Erreur",
             description:
-              data.message ||
-              "Erreur lors de la récupération des membres d'équipe.",
+              data?.message || "Erreur lors de la récupération des membres (local).",
             variant: "destructive",
           });
         }
       } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des membres d'équipe:",
-          error
-        );
+        console.error("Erreur lors de la récupération des membres d'équipe:", error);
         toast({
           title: "Erreur",
           description: "Erreur lors de la récupération des membres d'équipe.",
           variant: "destructive",
         });
       }
-    }
+    };
     fetchTeamMembers();
   }, [toast]);
 
+  /* ------------------------------ GESTION TAB URL ------------------------------ */
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const tab = searchParams.get("tab");
-
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
     if (tab === "histoire" || tab === "mission" || tab === "approche") {
       setTabValue(tab);
-
-      // Ajout du scroll vers l’ancre après avoir défini l’onglet
       setTimeout(() => {
         const anchor = document.getElementById("academies");
-        if (anchor) {
-          anchor.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100); // Petit délai pour que les animations aient le temps de s’installer
+        if (anchor) anchor.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     }
   }, []);
 
   const tabs = ["histoire", "mission", "approche"] as const;
-
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("histoire");
   const [prevTab, setPrevTab] = useState<(typeof tabs)[number]>("histoire");
-
   const direction = tabs.indexOf(activeTab) > tabs.indexOf(prevTab) ? 1 : -1;
-  const tabs2 = ["histoire", "mission", "approche"] as const;
-  const [activeTab2, setActiveTab2] =
-    useState<(typeof tabs2)[number]>("histoire");
-  const [prevTab2, setPrevTab2] = useState<(typeof tabs2)[number]>("histoire");
 
-  const direction2 = useMemo(() => {
-    return tabs2.indexOf(activeTab2) > tabs2.indexOf(prevTab2) ? 1 : -1;
-  }, [activeTab2, prevTab2]);
+  const tabs2 = ["histoire", "mission", "approche"] as const;
+  const [activeTab2, setActiveTab2] = useState<(typeof tabs2)[number]>("histoire");
+  const [prevTab2, setPrevTab2] = useState<(typeof tabs2)[number]>("histoire");
+  const direction2 = useMemo(
+    () => (tabs2.indexOf(activeTab2) > tabs2.indexOf(prevTab2) ? 1 : -1),
+    [activeTab2, prevTab2]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rwdm-lightblue/10 to-rwdm-lightblue/30 dark:from-rwdm-darkblue dark:via-rwdm-blue/10 dark:to-rwdm-blue/40">
       <Helmet>
-        {/* SEO général */}
         <title>
           {lang === "fr"
-            ? "Daring Brussels Academy – Notre mission, histoire et valeurs"
+            ? "RWDM Academy – Notre mission, histoire et valeurs"
             : lang === "nl"
-            ? "Daring Brussels Academy – Onze missie, geschiedenis en waarden"
-            : "Daring Brussels Academy – Our Mission, History & Values"}
+            ? "RWDM Academy – Onze missie, geschiedenis en waarden"
+            : "RWDM Academy – Our Mission, History & Values"}
         </title>
         <meta
           name="description"
           content={
             lang === "fr"
-              ? "Apprenez-en plus sur l'identité, les valeurs, les académies et l'équipe derrière la Daring Brussels Academy."
+              ? "Apprenez-en plus sur l'identité, les valeurs, les académies et l'équipe derrière RWDM Academy."
               : lang === "nl"
-              ? "Ontdek het verhaal, de waarden, de academies en het team achter Daring Brussels Academy."
-              : "Learn more about the identity, values, academies and team behind Daring Brussels Academy."
+              ? "Ontdek het verhaal, de waarden, de academies en het team achter RWDM Academy."
+              : "Learn more about the identity, values, academies and team behind RWDM Academy."
           }
         />
         <meta
           name="keywords"
           content={
             lang === "fr"
-              ? "Daring Brussels, football, académie, mission, histoire, valeurs, équipe, Bruxelles, Daring Brussels ForEver, Red ForEver, Brussels Eagles Football Academy"
+              ? "RWDM, football, académie, mission, histoire, valeurs, équipe, Bruxelles, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
               : lang === "nl"
-              ? "Daring Brussels, voetbal, academie, missie, geschiedenis, waarden, team, Brussel, Daring Brussels ForEver, Red ForEver, Brussels Eagles Football Academy"
-              : "Daring Brussels, football, academy, mission, history, values, team, Brussels, Daring Brussels ForEver, Red ForEver, Brussels Eagles Football Academy"
+              ? "RWDM, voetbal, academie, missie, geschiedenis, waarden, team, Brussel, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
+              : "RWDM, football, academy, mission, history, values, team, Brussels, RWDM ForEver, Red ForEver, Brussels Eagles Football Academy"
           }
         />
-        <meta name="author" content="Daring Brussels Academy" />
+        <meta name="author" content="RWDM Academy" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://daringbrussels.be/about" />
-
-        {/* Open Graph (Facebook / Instagram / LinkedIn) */}
+        <link rel="canonical" href="https://rwdmacademy.be/about" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://daringbrussels.be/about" />
+        <meta property="og:url" content="https://rwdmacademy.be/about" />
         <meta
           property="og:title"
           content={
             lang === "fr"
-              ? "Daring Brussels Academy – Qui sommes-nous ?"
+              ? "RWDM Academy – Qui sommes-nous ?"
               : lang === "nl"
-              ? "Daring Brussels Academy – Wie zijn we?"
-              : "Daring Brussels Academy – Who we are"
+              ? "RWDM Academy – Wie zijn we?"
+              : "RWDM Academy – Who we are"
           }
         />
         <meta
@@ -282,34 +267,20 @@ const About = () => {
               : "Discover our values, our team, and our academies."
           }
         />
-        <meta
-          property="og:image"
-          content="https://daringbrusselsacademy.be/images/og-image.jpg"
-        />
-        <meta property="og:site_name" content="Daring Brussels Academy" />
-        <meta
-          property="og:locale"
-          content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"}
-        />
-        <meta
-          property="article:publisher"
-          content="https://www.facebook.com/RWDMAcademy/"
-        />
-        <meta
-          property="article:author"
-          content="https://www.instagram.com/rwdm_academy/"
-        />
+        <meta property="og:image" content="https://rwdmacademy.be/images/og-image.jpg" />
+        <meta property="og:site_name" content="RWDM Academy" />
+        <meta property="og:locale" content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"} />
+        <meta property="article:publisher" content="https://www.facebook.com/RWDMAcademy/" />
+        <meta property="article:author" content="https://www.instagram.com/rwdm_academy/" />
       </Helmet>
 
       <Navbar />
       <main className="container mx-auto px-4 pt-28 pb-20">
         {loading ? (
-          // Affichage du squelette pendant le chargement
           <LoadingSkeleton />
         ) : (
-          // Contenu normal quand les données sont chargées
           <>
-            {/* Titre et description */}
+            {/* Titre */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -322,9 +293,7 @@ const About = () => {
                   className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
                   style={{
                     background:
-                      "linear-gradient(to right, \
-          black 0%, black 50%, \
-          red 50%, red 100%)",
+                      "linear-gradient(to right, black 0%, black 50%, red 50%, red 100%)",
                   }}
                   initial={{ width: 0 }}
                   animate={{ width: "60%" }}
@@ -336,7 +305,7 @@ const About = () => {
               </p>
             </motion.div>
 
-            {/* Stats Section */}
+            {/* Stats */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -353,22 +322,19 @@ const About = () => {
                     <h3 className="text-3xl md:text-4xl font-bold text-rwdm-red mb-2">
                       {item.value}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {item.label}
-                    </p>
+                    <p className="text-gray-600 dark:text-gray-300">{item.label}</p>
                   </CardContent>
                 </Card>
               ))}
             </motion.div>
 
-            {/* Tabs Section */}
+            {/* Tabs 1 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mb-16"
             >
-              {/* Onglets custom */}
               <div className="flex justify-center mb-8">
                 <div className="grid grid-cols-3 md:w-auto w-full bg-white/70 dark:bg-rwdm-darkblue/70 p-1 rounded-lg overflow-hidden">
                   {["histoire", "mission", "approche"].map((tab) => (
@@ -379,11 +345,11 @@ const About = () => {
                         setActiveTab(tab as typeof activeTab);
                       }}
                       className={`px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-md
-                 ${
-                   activeTab === tab
-                     ? "bg-rwdm-red text-white"
-                     : "text-gray-600 dark:text-gray-300 hover:text-rwdm-red"
-                 }`}
+                        ${
+                          activeTab === tab
+                            ? "bg-rwdm-red text-white"
+                            : "text-gray-600 dark:text-gray-300 hover:text-rwdm-red"
+                        }`}
                     >
                       {tab === "histoire" && (
                         <>
@@ -408,7 +374,6 @@ const About = () => {
                 </div>
               </div>
 
-              {/* Contenu animé */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -424,10 +389,10 @@ const About = () => {
                           <img
                             src={
                               activeTab === "histoire"
-                                ? aboutData.historyPhoto
+                                ? resolveMediaUrl(aboutData.historyPhoto)
                                 : activeTab === "mission"
-                                ? aboutData.missionPhoto
-                                : aboutData.approachPhoto || "/fallback.png"
+                                ? resolveMediaUrl(aboutData.missionPhoto)
+                                : resolveMediaUrl(aboutData.approachPhoto)
                             }
                             alt="Visuel"
                             className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
@@ -456,7 +421,7 @@ const About = () => {
               </AnimatePresence>
             </motion.div>
 
-            {/* Tabs Section 2 */}
+            {/* Tabs 2 (Académies) */}
             <motion.div
               id="academies"
               initial={{ opacity: 0, y: 30 }}
@@ -484,11 +449,11 @@ const About = () => {
                         setActiveTab2(tab);
                       }}
                       className={`px-4 py-2 text-sm font-medium transition-colors duration-300 rounded-md
-            ${
-              activeTab2 === tab
-                ? "bg-rwdm-red text-white"
-                : "text-gray-600 dark:text-gray-300 hover:text-rwdm-red"
-            }`}
+                        ${
+                          activeTab2 === tab
+                            ? "bg-rwdm-red text-white"
+                            : "text-gray-600 dark:text-gray-300 hover:text-rwdm-red"
+                        }`}
                     >
                       {tab === "histoire" && (
                         <>
@@ -528,10 +493,10 @@ const About = () => {
                           <img
                             src={
                               activeTab2 === "histoire"
-                                ? aboutData.academyPhotos1
+                                ? resolveMediaUrl(aboutData.academyPhotos1)
                                 : activeTab2 === "mission"
-                                ? aboutData.academyPhotos2
-                                : aboutData.academyPhotos3 || "/fallback.png"
+                                ? resolveMediaUrl(aboutData.academyPhotos2)
+                                : resolveMediaUrl(aboutData.academyPhotos3)
                             }
                             alt={`Académie ${activeTab2}`}
                             className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500"
@@ -560,7 +525,7 @@ const About = () => {
               </AnimatePresence>
             </motion.div>
 
-            {/* Nos valeurs */}
+            {/* Valeurs */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -590,6 +555,7 @@ const About = () => {
                     </p>
                   </CardContent>
                 </Card>
+
                 <Card className="glass-panel border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                   <CardContent className="p-6 flex flex-col items-center text-center">
                     <div className="w-16 h-16 flex items-center justify-center bg-rwdm-red/10 rounded-full mb-4">
@@ -603,6 +569,7 @@ const About = () => {
                     </p>
                   </CardContent>
                 </Card>
+
                 <Card className="glass-panel border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                   <CardContent className="p-6 flex flex-col items-center text-center">
                     <div className="w-16 h-16 flex items-center justify-center bg-rwdm-red/10 rounded-full mb-4">

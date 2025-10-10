@@ -27,13 +27,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
+import { FormProps } from "@/types/form";
 
-interface FormSection {
+interface FormSectionProps {
   title: string;
   subtitle?: string;
+  children: React.ReactNode;
 }
 
-const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
+const FormSection: React.FC<FormSectionProps> = ({
   title,
   subtitle,
   children,
@@ -52,11 +55,6 @@ const FormSection: React.FC<FormSection & { children: React.ReactNode }> = ({
     </div>
   );
 };
-
-interface FormProps {
-  formData: Record<string, any>;
-  onFormDataChange: (key: string, value: any) => void;
-}
 
 const ResponsibilityWaiverForm: React.FC<FormProps> = ({
   formData,
@@ -141,8 +139,9 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
         signatureFormData.append("pdfFiles", blob, "signature.png");
 
         const uploadResponse = await fetch(
-          "https://daringbrusselsacademy.be/node/api/upload",
+          `${API_BASE}/api/upload`,
           {
+            ...fetchConfig,
             method: "POST",
             body: signatureFormData,
           }
@@ -183,10 +182,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
 
       // 4️⃣ Enregistrement en base
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/requests",
+        `${API_BASE}/api/requests`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestData),
         }
       );
@@ -198,10 +197,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
 
       // 5️⃣ Envoi de l’email de confirmation
       const emailResponse = await fetch(
-        "https://daringbrusselsacademy.be/node/api/form-mail/send-waiver-email",
+        `${API_BASE}/api/form-mail/send-waiver-email`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             formData: requestData.formData,
             requestId,

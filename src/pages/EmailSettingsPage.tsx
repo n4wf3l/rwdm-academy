@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import {
   Bold,
   Italic,
@@ -83,7 +84,7 @@ const EmailSettingsPage: React.FC = () => {
     const fetchTemplates = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/form-mail",
+          `${API_BASE}/api/form-mail`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -137,7 +138,7 @@ const EmailSettingsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/form-mail/${type}`,
+        `${API_BASE}/api/form-mail/${type}`,
         {
           method: "PATCH",
           headers: {

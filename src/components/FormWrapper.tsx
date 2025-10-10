@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactElement } from "react";
+import React, { useState, useEffect } from "react";
 import { FormType } from "./FormSelector";
 import AnimatedTransition from "./AnimatedTransition";
 import RegistrationForm from "./RegistrationForm";
@@ -28,11 +28,21 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
   }, [formType]);
 
   // Associer chaque type de formulaire à son composant
-  const formComponents: { [key in FormType]: ReactElement } = {
-    registration: <RegistrationForm />,
-    "selection-tests": <SelectionTestsForm />,
-    "accident-report": <AccidentReportForm />,
-    "responsibility-waiver": <ResponsibilityWaiverForm />,
+  const getFormComponent = (formType: FormType) => {
+    switch (formType) {
+      case "registration":
+        return <RegistrationForm formData={formData} onFormDataChange={onFormDataChange} />;
+      case "befa-registration":
+        return <RegistrationForm formData={formData} onFormDataChange={onFormDataChange} preselectedAcademy="Brussels Eagles Football Academy" disableAcademy={true} />;
+      case "selectionTests":
+        return <SelectionTestsForm formData={formData} onFormDataChange={onFormDataChange} />;
+      case "accidentReport":
+        return <AccidentReportForm formData={formData} onFormDataChange={onFormDataChange} />;
+      case "waiver":
+        return <ResponsibilityWaiverForm formData={formData} onFormDataChange={onFormDataChange} />;
+      default:
+        return <RegistrationForm formData={formData} onFormDataChange={onFormDataChange} />;
+    }
   };
 
   return (
@@ -42,10 +52,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
       animateOut="animate-fade-out"
       className="w-full py-8"
     >
-      {React.cloneElement(formComponents[formType], {
-        formData,
-        onFormDataChange,
-      })}
+      {getFormComponent(formType)}
     </AnimatedTransition>
   );
 };

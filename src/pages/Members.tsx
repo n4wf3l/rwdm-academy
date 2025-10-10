@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import OldMemberList from "@/components/members/OldMemberList";
 import { Plus } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 interface Member {
   id: number;
@@ -64,7 +65,7 @@ const Members: React.FC = () => {
     const fetchNewRequestsCount = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/requests",
+          `${API_BASE}/api/requests`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -109,7 +110,7 @@ const Members: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/admins",
+          `${API_BASE}/api/admins`,
           {
             method: "GET",
             headers: {
@@ -145,7 +146,7 @@ const Members: React.FC = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("https://daringbrusselsacademy.be/node/api/me", {
+    fetch(`${API_BASE}/api/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -177,7 +178,7 @@ const Members: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/admins/${encodeURIComponent(
+        `${API_BASE}/api/admins/${encodeURIComponent(
           member.email
         )}`,
         {
@@ -223,7 +224,7 @@ const Members: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/admins/${updatedMember.id}`,
+        `${API_BASE}/api/admins/${updatedMember.id}`,
         {
           method: "PUT",
           headers: {

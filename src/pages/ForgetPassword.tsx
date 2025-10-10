@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ const ForgetPassword = () => {
 
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/forget-password", // ✅ Bonne URL
+        `${API_BASE}/api/forget-password`, // ✅ Bonne URL
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

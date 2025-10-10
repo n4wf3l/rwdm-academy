@@ -17,6 +17,7 @@ import { Link, useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils"; // Added missing import
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
@@ -123,7 +124,7 @@ const Planning = () => {
     const fetchNewRequestsCount = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/requests",
+          `${API_BASE}/api/requests`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -146,7 +147,7 @@ const Planning = () => {
     const fetchAppointments = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/appointments",
+          `${API_BASE}/api/appointments`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -399,7 +400,7 @@ const Planning = () => {
     try {
       // 1. Supprimer en base
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/appointments/${appointmentId}`,
+        `${API_BASE}/api/appointments/${appointmentId}`,
         {
           method: "DELETE",
           headers: {
@@ -414,7 +415,7 @@ const Planning = () => {
       // 2. Envoi email si demandé
       if (sendEmail && appointmentToCancel) {
         const emailRes = await fetch(
-          "https://daringbrusselsacademy.be/node/api/form-mail/send-appointment-cancellation",
+          `${API_BASE}/api/form-mail/send-appointment-cancellation`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -497,7 +498,7 @@ const Planning = () => {
     const fetchUserRole = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,

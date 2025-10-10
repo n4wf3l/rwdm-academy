@@ -20,6 +20,12 @@ import {
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 
+/* ------------------------- CONFIG API (LOCAL/DEV) ------------------------- */
+// Vite: lire VITE_API_URL depuis ton .env; sinon fallback http://localhost:5000
+const API_BASE =
+  (typeof import.meta !== "undefined" && (import.meta as any)?.env?.VITE_API_URL) ||
+  `${window.location.protocol}//${window.location.hostname}:5000`;
+
 export interface Admin {
   id: string;
   name: string;
@@ -53,9 +59,10 @@ const updateStatus = async (requestId: string, newStatus: RequestStatus) => {
 
   try {
     const response = await fetch(
-      `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
+      `${API_BASE}/api/requests/${requestId}`,
       {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

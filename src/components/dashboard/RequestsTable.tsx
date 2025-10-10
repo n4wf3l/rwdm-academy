@@ -29,6 +29,12 @@ import {
 } from "lucide-react"; // Importer l'icône Calendar
 import { useToast } from "@/hooks/use-toast";
 import ConfirmationDialog from "../ui/ConfirmationDialog";
+
+/* ------------------------- CONFIG API (LOCAL/DEV) ------------------------- */
+// Vite: lire VITE_API_URL depuis ton .env; sinon fallback http://localhost:5000
+const API_BASE =
+  (typeof import.meta !== "undefined" && (import.meta as any)?.env?.VITE_API_URL) ||
+  `${window.location.protocol}//${window.location.hostname}:5000`;
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
@@ -367,12 +373,12 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
       console.log("📧 Type de template utilisé:", template);
 
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/form-mail/send-decision-email",
+        `${API_BASE}/api/form-mail/send-decision-email`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             formData: request.details,
@@ -661,7 +667,7 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
                                 e.stopPropagation();
                                 const mailtoLink = `mailto:${
                                   request.email
-                                }?subject=Daring Brussels Academy - ${translateRequestType(
+                                }?subject=RWDM Academy - ${translateRequestType(
                                   request.type,
                                   t
                                 )}`;

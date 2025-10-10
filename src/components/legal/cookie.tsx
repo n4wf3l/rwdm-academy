@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
-import axios from "axios";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const CookiesPolicy: React.FC = () => {
   const [emailClub, setEmailClub] = useState("");
@@ -10,9 +10,8 @@ const CookiesPolicy: React.FC = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const { data } = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/settings"
-        );
+        const res = await fetch(`${API_BASE}/api/settings`, fetchConfig);
+        const data = await res.json();
         setEmailClub(data.general.email || "");
       } catch (err) {
         console.error("Erreur fetch email settings:", err);
@@ -21,7 +20,7 @@ const CookiesPolicy: React.FC = () => {
     fetchSettings();
   }, []);
 
-  const displayEmail = emailClub || "privacy@daringbrussels-academy.be";
+  const displayEmail = emailClub || "privacy@rwdmacademy.be";
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">

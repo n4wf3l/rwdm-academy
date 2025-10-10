@@ -33,6 +33,7 @@ import {
   Appointment,
 } from "./planningUtils";
 import { useToast } from "@/hooks/use-toast";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -107,7 +108,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     const fetchAdmins = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/admins",
+          `${API_BASE}/api/admins`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -164,7 +165,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -200,7 +201,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   const sendAppointmentEmail = async (appointmentData) => {
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/form-mail/send-appointment-confirmation", // Changed from send-appointment-email
+        `${API_BASE}/api/form-mail/send-appointment-confirmation`, // Changed from send-appointment-email
         {
           method: "POST",
           headers: {
@@ -259,7 +260,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
       /* ───────── 3) Enregistrement en DB ───────── */
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/appointments",
+        `${API_BASE}/api/appointments`,
         {
           method: "POST",
           headers: {

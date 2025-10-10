@@ -13,6 +13,7 @@ import {
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Switch } from "@/components/ui/switch";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 type Lang = "FR" | "NL" | "EN";
 
@@ -100,8 +101,12 @@ const deleteOldImage = async (filePath: string) => {
   if (!filePath.startsWith("/uploads/")) return;
   const cleanPath = filePath.split("?")[0];
   try {
-    await axios.delete(`https://daringbrusselsacademy.be/node//api/upload/image`, {
+    await axios.delete(`${API_BASE}/api/upload/image`, {
       data: { filePath: cleanPath },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      withCredentials: true
     });
     console.log("✅ Ancienne image supprimée");
   } catch (err) {
@@ -116,10 +121,14 @@ const uploadImageFile = async (file: File): Promise<string | null> => {
 
   try {
     const response = await fetch(
-      "https://daringbrusselsacademy.be/node/api/upload",
+      `${API_BASE}/api/upload`,
       {
         method: "POST",
         body: formData,
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
       }
     );
 
@@ -137,12 +146,8 @@ const uploadImageFile = async (file: File): Promise<string | null> => {
     return null;
   }
 };
-/* -------------------------------------------------------- */
 
-const API_BASE =
-  process.env.NODE_ENV === "development"
-    ? "https://daringbrusselsacademy.be/node/"
-    : "/"; // Add a slash here
+/* -------------------------------------------------------- */
 
 const GeneralSettings: React.FC<Props> = ({
   language,
@@ -204,9 +209,8 @@ const GeneralSettings: React.FC<Props> = ({
 
     // Si c'est un chemin relatif commençant par /uploads/
     if (url && url.startsWith("/uploads/")) {
-      // Corriger l'URL en ajoutant le préfixe du backend en développement
-      const isLocalhost = window.location.hostname === "localhost";
-      return isLocalhost ? `https://daringbrusselsacademy.be/node${url}` : url;
+      // Utiliser l'API_BASE pour construire l'URL complète
+      return `${API_BASE}${url}`;
     }
 
     // Si c'est déjà une URL complète ou autre cas
@@ -366,33 +370,48 @@ const GeneralSettings: React.FC<Props> = ({
     const fetchLogo = async () => {
       try {
         const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/settings"
+          `${API_BASE}/api/settings`,
+          fetchConfig
         );
         const data = await res.json();
 
-        if (data.general?.logo?.startsWith("/uploads/")) {
-          const imageResponse = await fetch(
-            `https://daringbrusselsacademy.be/node/api/file-as-base64?path=${encodeURIComponent(
-              data.general.logo
-            )}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
+        if (data.general && data.general.logo) {
+          try {
+            // Récupérer l'image via fetch pour éviter les problèmes CORS
+            const imageResponse = await fetch(data.general.logo, {
+              credentials: 'omit' // Pas de credentials pour les images
+            });
+            
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              setLogoUrlNormalized(dataUrl);
+              console.log("✅ GeneralSettings: Logo chargé en Data URL");
+            } else {
+              console.log("❌ GeneralSettings: Échec du chargement de l'image");
+              setLogoUrlNormalized(null);
             }
-          );
-
-          if (imageResponse.ok) {
-            const base64Data = await imageResponse.text();
-            setLogoUrlNormalized(`data:image/png;base64,${base64Data}`);
+          } catch (imageError) {
+            console.error("❌ GeneralSettings: Erreur lors du chargement de l'image:", imageError);
+            setLogoUrlNormalized(null);
           }
+        } else {
+          setLogoUrlNormalized(null);
         }
       } catch (err) {
         console.error("Erreur chargement logo:", err);
+        setLogoUrlNormalized(null);
       }
     };
 
     fetchLogo();
+    
+    // Cleanup function pour libérer les blob URLs
+    return () => {
+      if (logoUrlNormalized && logoUrlNormalized.startsWith('blob:')) {
+        URL.revokeObjectURL(logoUrlNormalized);
+      }
+    };
   }, []); // S'exécute uniquement au montage
 
   // Fonction pour sauvegarder le logo dans la base de données
@@ -400,13 +419,40 @@ const GeneralSettings: React.FC<Props> = ({
     try {
       console.log("💾 Sauvegarde du logo dans la base de données:", logoPath);
 
-      // Utiliser l'endpoint API correct qui existe dans settingsRouter
+      // D'abord récupérer les settings actuels
+      const getCurrentSettings = await fetch(
+        `${API_BASE}/api/settings`,
+        fetchConfig
+      );
+      
+      if (!getCurrentSettings.ok) {
+        throw new Error("Impossible de récupérer les settings actuels");
+      }
+      
+      const currentSettings = await getCurrentSettings.json();
+      
+      // Modifier seulement le logo dans les settings généraux
+      const updatedGeneral = {
+        ...currentSettings.general,
+        logo: logoPath
+      };
+
+      // Sauvegarder avec les settings complets
       const response = await axios.put(
-        "https://daringbrusselsacademy.be/node/api/settings",
+        `${API_BASE}/api/settings`,
         {
-          category: "general",
-          key: "logo",
-          value: logoPath,
+          maintenanceMode: currentSettings.maintenanceMode,
+          language: currentSettings.language,
+          general: updatedGeneral,
+          about: currentSettings.about,
+          contact: currentSettings.contact,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true
         }
       );
 
@@ -523,14 +569,24 @@ const GeneralSettings: React.FC<Props> = ({
                         // Stocker le chemin relatif pour le backend
                         setLogo(filePath);
 
-                        // Normaliser aussi l'URL pour l'affichage immédiat
-                        const isLocalhost =
-                          window.location.hostname === "localhost";
-                        const logoPath = isLocalhost
-                          ? `https://daringbrusselsacademy.be/node${filePath}?v=${Date.now()}`
-                          : `${filePath}?v=${Date.now()}`;
-
-                        setLogoUrlNormalized(logoPath);
+                        // Récupérer et convertir le nouveau logo en blob URL
+                        try {
+                          const logoUrl = `${API_BASE}${filePath}`;
+                          const imageResponse = await fetch(logoUrl, {
+                            credentials: 'omit'
+                          });
+                          
+                          if (imageResponse.ok) {
+                            const blob = await imageResponse.blob();
+                            const dataUrl = URL.createObjectURL(blob);
+                            setLogoUrlNormalized(dataUrl);
+                          } else {
+                            setLogoUrlNormalized(`${API_BASE}${filePath}`);
+                          }
+                        } catch (error) {
+                          console.error("Erreur conversion blob logo:", error);
+                          setLogoUrlNormalized(`${API_BASE}${filePath}`);
+                        }
 
                         try {
                           // Sauvegarder le logo immédiatement dans la base de données
@@ -1067,8 +1123,14 @@ const GeneralSettings: React.FC<Props> = ({
                           formData.append("language", "FR");
 
                           const response = await axios.post(
-                            "https://daringbrusselsacademy.be/node/api/accident-forms/upload",
-                            formData
+                            `${API_BASE}/api/accident-forms/upload`,
+                            formData,
+                            {
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                              },
+                              withCredentials: true
+                            }
                           );
 
                           if (response.data?.filePath) {
@@ -1132,8 +1194,14 @@ const GeneralSettings: React.FC<Props> = ({
                           formData.append("language", "NL");
 
                           const response = await axios.post(
-                            "https://daringbrusselsacademy.be/node/api/accident-forms/upload",
-                            formData
+                            `${API_BASE}/api/accident-forms/upload`,
+                            formData,
+                            {
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                              },
+                              withCredentials: true
+                            }
                           );
 
                           if (response.data?.filePath) {

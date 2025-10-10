@@ -32,6 +32,12 @@ import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { useTranslation } from "@/hooks/useTranslation";
 
+/* ------------------------- CONFIG API (LOCAL/DEV) ------------------------- */
+// Vite: lire VITE_API_URL depuis ton .env; sinon fallback http://localhost:5000
+const API_BASE =
+  (typeof import.meta !== "undefined" && (import.meta as any)?.env?.VITE_API_URL) ||
+  `${window.location.protocol}//${window.location.hostname}:5000`;
+
 export interface Admin {
   id: string;
   name: string;
@@ -87,7 +93,8 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
     const fetchEmail = async () => {
       try {
         const response = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/email-recipients/accident-report"
+          `${API_BASE}/api/email-recipients/accident-report`,
+          { withCredentials: true }
         );
         setRecipientEmail(response.data.email);
         setNewEmail(response.data.email);
@@ -154,8 +161,9 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
                   onClick={async () => {
                     try {
                       await axios.put(
-                        "https://daringbrusselsacademy.be/node/api/email-recipients/accident-report",
-                        { email: newEmail }
+                        `${API_BASE}/api/email-recipients/accident-report`,
+                        { email: newEmail },
+                        { withCredentials: true }
                       );
                       setRecipientEmail(newEmail);
                       setEmailDialogOpen(false);
@@ -213,140 +221,147 @@ const PendingAccidentsCard: React.FC<PendingAccidentsCardProps> = ({
 
                 const duoBg = healing ? "bg-green-100" : "";
 
-                return (
-                  <React.Fragment key={code}>
-                    {/* Déclaration principale */}
-                    {declaration && (
-                      <TableRow
-                        onClick={() => onViewDetails(declaration)}
-                        className={`${duoBg} hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer`}
-                      >
-                        <TableCell>{formatRequestId(declaration.id)}</TableCell>
-                        <TableCell>
-                          {declaration.details?.accidentDate
-                            ? new Date(
-                                declaration.details.accidentDate
-                              ).toLocaleDateString("fr-BE")
-                            : ""}
-                        </TableCell>
-                        <TableCell>{declaration.name}</TableCell>
-                        <TableCell>
-                          <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
-                            {t("badge_label_in_progress")}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {admins?.find((a) => a.id === declaration.assignedTo)
-                            ?.name || "Non assigné"}
-                        </TableCell>
-                        <TableCell>
-                          {getDeadlineInfo(declaration.details?.accidentDate)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onViewDetails(declaration);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={isDeclarationSent}
-                              className={cn(
-                                "border-yellow-600",
-                                isDeclarationSent
-                                  ? "text-gray-400 cursor-not-allowed"
-                                  : "text-yellow-600 hover:bg-yellow-600"
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isDeclarationSent) {
-                                  setSelectedIdToSend(declaration.id);
-                                  // Set request type for email
-                                  declaration.type = "accident-report";
-                                }
-                              }}
-                            >
-                              {isDeclarationSent ? (
-                                "Déjà envoyé"
-                              ) : (
-                                <Send className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>{recipientEmail}</TableCell>
-                      </TableRow>
-                    )}
-                    {/* Certificat lié */}
-                    {healing && (
-                      <TableRow
-                        onClick={() => onViewDetails(healing)}
-                        className={`${duoBg} bg-opacity-50 dark:bg-opacity-50 text-sm`}
-                      >
-                        <TableCell>{formatRequestId(healing.id)}</TableCell>
-                        <TableCell></TableCell>
-                        <TableCell className="italic text-gray-500">
-                          {t("healing_certificate_received")}
-                        </TableCell>
-                        <TableCell />
-                        <TableCell />
-                        <TableCell />
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onViewDetails(healing);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                const elements = [];
+                
+                // Déclaration principale
+                if (declaration) {
+                  elements.push(
+                    <TableRow
+                      key={`${code}-declaration`}
+                      onClick={() => onViewDetails(declaration)}
+                      className={`${duoBg} hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer`}
+                    >
+                      <TableCell>{formatRequestId(declaration.id)}</TableCell>
+                      <TableCell>
+                        {declaration.details?.accidentDate
+                          ? new Date(
+                              declaration.details.accidentDate
+                            ).toLocaleDateString("fr-BE")
+                          : ""}
+                      </TableCell>
+                      <TableCell>{declaration.name}</TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-yellow-500 text-white">
+                          {t("badge_label_in_progress")}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {admins?.find((a) => a.id === declaration.assignedTo)
+                          ?.name || "Non assigné"}
+                      </TableCell>
+                      <TableCell>
+                        {getDeadlineInfo(declaration.details?.accidentDate)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewDetails(declaration);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isDeclarationSent}
+                            className={cn(
+                              "border-yellow-600",
+                              isDeclarationSent
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-yellow-600 hover:bg-yellow-600"
+                            )}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!isDeclarationSent) {
+                                setSelectedIdToSend(declaration.id);
+                                // Set request type for email
+                                declaration.type = "accident-report";
+                              }
+                            }}
+                          >
+                            {isDeclarationSent ? (
+                              "Déjà envoyé"
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{recipientEmail}</TableCell>
+                    </TableRow>
+                  );
+                }
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={isHealingSent}
-                              className={cn(
-                                "border-yellow-600",
-                                isHealingSent
-                                  ? "text-gray-400 cursor-not-allowed"
-                                  : "text-yellow-600 hover:bg-yellow-100"
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isHealingSent) {
-                                  setSelectedHealingIdToSend(healing.id);
-                                  // Type assertion pour contourner la vérification TypeScript
-                                  (healing as any).type = "healing-notify";
-                                  healing.details = {
-                                    ...healing.details,
-                                    documentLabel: "Certificat de guérison",
-                                  };
-                                }
-                              }}
-                            >
-                              {isHealingSent ? (
-                                "Déjà envoyé"
-                              ) : (
-                                <Send className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>{recipientEmail}</TableCell>
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                );
+                // Certificat lié
+                if (healing) {
+                  elements.push(
+                    <TableRow
+                      key={`${code}-healing`}
+                      onClick={() => onViewDetails(healing)}
+                      className={`${duoBg} bg-opacity-50 dark:bg-opacity-50 text-sm`}
+                    >
+                      <TableCell>{formatRequestId(healing.id)}</TableCell>
+                      <TableCell></TableCell>
+                      <TableCell className="italic text-gray-500">
+                        {t("healing_certificate_received")}
+                      </TableCell>
+                      <TableCell />
+                      <TableCell />
+                      <TableCell />
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewDetails(healing);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isHealingSent}
+                            className={cn(
+                              "border-yellow-600",
+                              isHealingSent
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-yellow-600 hover:bg-yellow-100"
+                            )}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!isHealingSent) {
+                                setSelectedHealingIdToSend(healing.id);
+                                // Type assertion pour contourner la vérification TypeScript
+                                (healing as any).type = "healing-notify";
+                                healing.details = {
+                                  ...healing.details,
+                                  documentLabel: "Certificat de guérison",
+                                };
+                              }
+                            }}
+                          >
+                            {isHealingSent ? (
+                              "Déjà envoyé"
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{recipientEmail}</TableCell>
+                    </TableRow>
+                  );
+                }
+
+                return elements;
               })}
             </TableBody>
           </Table>

@@ -11,6 +11,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast } from "@/hooks/use-toast";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 interface NavbarProps {
   className?: string;
@@ -71,7 +72,8 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     const fetchClubName = async () => {
       try {
         const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/settings"
+          `${API_BASE}/api/settings`,
+          fetchConfig
         );
         const data = await res.json();
         setClubName(data.general.clubName);
@@ -88,8 +90,10 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     setIsLoggedIn(!!token);
 
     if (token) {
-      fetch("https://daringbrusselsacademy.be/node/api/me", {
+      fetch(`${API_BASE}/api/me`, {
+        ...fetchConfig,
         headers: {
+          ...fetchConfig.headers,
           Authorization: `Bearer ${token}`,
         },
       })
@@ -115,38 +119,31 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
   useEffect(() => {
     const fetchLogo = async () => {
       try {
-        // 1. Récupérer les paramètres généraux (dont le chemin du logo)
+        // Récupérer les paramètres généraux
         const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/settings"
+          `${API_BASE}/api/settings`,
+          fetchConfig
         );
         const data = await res.json();
 
-        if (
-          data.general &&
-          data.general.logo &&
-          data.general.logo.startsWith("/uploads/")
-        ) {
-          console.log("✅ Logo trouvé dans les paramètres:", data.general.logo);
-
-          // 2. Récupérer l'image en Base64
-          const imageResponse = await fetch(
-            `https://daringbrusselsacademy.be/node/api/file-as-base64?path=${encodeURIComponent(
-              data.general.logo
-            )}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
+        if (data.general && data.general.logo) {
+          try {
+            // Récupérer l'image via fetch pour éviter les problèmes CORS
+            const imageResponse = await fetch(data.general.logo, {
+              credentials: 'omit' // Pas de credentials pour les images
+            });
+            
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              setLogoUrl(dataUrl);
+              console.log("✅ Logo chargé en Data URL");
+            } else {
+              console.log("❌ Échec du chargement de l'image, utilisation du placeholder");
+              setLogoUrl("/placeholder-logo.png");
             }
-          );
-
-          if (imageResponse.ok) {
-            const base64Data = await imageResponse.text();
-            // 3. Définir l'URL avec le contenu Base64
-            setLogoUrl(`data:image/png;base64,${base64Data}`);
-            console.log("✅ Logo chargé avec succès en Base64");
-          } else {
-            console.error("❌ Erreur lors du chargement du logo en Base64");
+          } catch (imageError) {
+            console.error("❌ Erreur lors du chargement de l'image:", imageError);
             setLogoUrl("/placeholder-logo.png");
           }
         } else {
@@ -159,6 +156,13 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
     };
 
     fetchLogo();
+    
+    // Cleanup function pour libérer les blob URLs
+    return () => {
+      if (logoUrl && logoUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(logoUrl);
+      }
+    };
   }, []); // ✅ N'exécute qu'une seule fois au montage du composant
 
   useEffect(() => {
@@ -243,7 +247,7 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
                 )}
               >
                 {clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
-                  "Daring Brussels Academy"}
+                  "RWDM Academy"}
               </span>
 
               {isMobile ? (

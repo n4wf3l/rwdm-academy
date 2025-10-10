@@ -31,6 +31,8 @@ import SpellCheckModal from "./ui/SpellCheckModal";
 import { useToast } from "@/hooks/use-toast";
 import BirthDatePicker from "./BirthDatePicker";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
+import { FormProps } from "@/types/form";
 
 interface FormSectionProps {
   title: string;
@@ -54,11 +56,6 @@ const FormSection: React.FC<FormSectionProps> = ({
     {children}
   </div>
 );
-
-interface FormProps {
-  formData: Record<string, any>;
-  onFormDataChange: (key: string, value: any) => void;
-}
 
 const SelectionTestsForm: React.FC<FormProps> = ({
   formData,
@@ -319,10 +316,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
 
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/requests",
+        `${API_BASE}/api/requests`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestData),
         }
       );
@@ -335,10 +332,10 @@ const SelectionTestsForm: React.FC<FormProps> = ({
 
       // ✅ Envoi de l'email de confirmation
       await fetch(
-        "https://daringbrusselsacademy.be/node/api/form-mail/send-selection-tests-email",
+        `${API_BASE}/api/form-mail/send-selection-tests-email`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             formData: requestData.formData,
             requestId,

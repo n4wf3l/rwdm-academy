@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const DesktopOnlyWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -14,19 +15,48 @@ const DesktopOnlyWrapper: React.FC<{ children: React.ReactNode }> = ({
     const fetchLogo = async () => {
       try {
         const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/settings"
+          `${API_BASE}/api/settings`,
+          fetchConfig
         );
         const data = await res.json();
-        if (data.general.logo && data.general.logo.startsWith("/uploads/")) {
-          setLogoUrl(data.general.logo);
+        
+        if (data.general && data.general.logo) {
+          try {
+            // Récupérer l'image via fetch pour éviter les problèmes CORS
+            const imageResponse = await fetch(data.general.logo, {
+              credentials: 'omit' // Pas de credentials pour les images
+            });
+            
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              setLogoUrl(dataUrl);
+              console.log("✅ DesktopOnlyWrapper: Logo chargé en Data URL");
+            } else {
+              console.log("❌ DesktopOnlyWrapper: Échec du chargement de l'image");
+              setLogoUrl(null);
+            }
+          } catch (imageError) {
+            console.error("❌ DesktopOnlyWrapper: Erreur lors du chargement de l'image:", imageError);
+            setLogoUrl(null);
+          }
         } else {
           setLogoUrl(null);
         }
       } catch (err) {
         console.error("Erreur chargement logo :", err);
+        setLogoUrl(null);
       }
     };
+    
     fetchLogo();
+    
+    // Cleanup function pour libérer les blob URLs
+    return () => {
+      if (logoUrl && logoUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(logoUrl);
+      }
+    };
   }, []);
 
   // Gestion du redimensionnement

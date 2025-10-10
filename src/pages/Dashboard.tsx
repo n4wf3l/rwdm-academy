@@ -31,6 +31,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { translations } from "@/lib/i18n";
+import { API_BASE, fetchConfig, getAxiosConfig } from "@/lib/api-config";
 
 // Définition locale du type Admin
 export interface Admin {
@@ -100,9 +101,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/appointments",
+        `${API_BASE}/api/appointments`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
       const data = await response.json();
@@ -130,10 +135,14 @@ const Dashboard = () => {
     const timeout = setTimeout(async () => {
       try {
         const response = await fetch(
-          `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
+          `${API_BASE}/api/requests/${requestId}`,
           {
+            ...fetchConfig,
             method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              ...fetchConfig.headers,
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
         if (response.ok) {
@@ -175,9 +184,13 @@ const Dashboard = () => {
       }
 
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/requests",
+        `${API_BASE}/api/requests`,
         {
-          headers,
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
         }
       );
       if (!response.ok) {
@@ -256,10 +269,14 @@ const Dashboard = () => {
             const timeout = setTimeout(async () => {
               try {
                 const res = await fetch(
-                  `https://daringbrusselsacademy.be/node/api/requests/${req.id}`,
+                  `${API_BASE}/api/requests/${req.id}`,
                   {
+                    ...fetchConfig,
                     method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {
+                      ...fetchConfig.headers,
+                      Authorization: `Bearer ${token}`,
+                    },
                   }
                 );
                 if (res.ok) {
@@ -280,10 +297,14 @@ const Dashboard = () => {
           } else {
             // 24h déjà passées, suppression immédiate
             fetch(
-              `https://daringbrusselsacademy.be/node/api/requests/${req.id}`,
+              `${API_BASE}/api/requests/${req.id}`,
               {
+                ...fetchConfig,
                 method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {
+                  ...fetchConfig.headers,
+                  Authorization: `Bearer ${token}`,
+                },
               }
             ).then((res) => {
               if (res.ok) {
@@ -316,9 +337,13 @@ const Dashboard = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/all-admins",
+        `${API_BASE}/api/all-admins`,
         {
-          headers,
+          ...fetchConfig,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
         }
       );
       if (!response.ok) {
@@ -349,9 +374,13 @@ const Dashboard = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            ...fetchConfig,
+            headers: {
+              ...fetchConfig.headers,
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
@@ -476,14 +505,16 @@ const Dashboard = () => {
       const newStatus: RequestStatus = adminId === "none" ? "new" : "assigned";
 
       const bodyToSend = { assignedTo: adminId === "none" ? null : adminId };
-      const headers: HeadersInit = { "Content-Type": "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
 
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
+        `${API_BASE}/api/requests/${requestId}`,
         {
+          ...fetchConfig,
           method: "PATCH",
-          headers,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
           body: JSON.stringify(bodyToSend),
         }
       );
@@ -537,10 +568,14 @@ const Dashboard = () => {
       // ✅ On attend que la réponse PATCH soit terminée
 
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/requests/${requestId}`,
+        `${API_BASE}/api/requests/${requestId}`,
         {
+          ...fetchConfig,
           method: "PATCH",
-          headers,
+          headers: {
+            ...fetchConfig.headers,
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
           body: JSON.stringify(bodyToSend),
         }
       );
@@ -576,7 +611,9 @@ const Dashboard = () => {
     try {
       // 1. Appel backend pour envoyer l'email
       const response = await axios.post(
-        `https://daringbrusselsacademy.be/node/api/email-recipients/send-request/${requestId}`
+        `${API_BASE}/api/email-recipients/send-request/${requestId}`,
+        {},
+        getAxiosConfig()
       );
 
       console.log("✅ Email envoyé:", response.data);
@@ -604,7 +641,9 @@ const Dashboard = () => {
   const sendAccidentDeclaration = async (requestId: string) => {
     try {
       await axios.post(
-        `https://daringbrusselsacademy.be/node/api/email-recipients/send-request/${requestId}`
+        `${API_BASE}/api/email-recipients/send-request/${requestId}`,
+        {},
+        getAxiosConfig()
       );
       toast({
         title: t("toast_accident_sent_title"),
@@ -625,16 +664,12 @@ const Dashboard = () => {
     try {
       // Envoyer le documentLabel et le type avec la requête
       await axios.post(
-        `https://daringbrusselsacademy.be/node/api/email-recipients/send-request/${requestId}`,
+        `${API_BASE}/api/email-recipients/send-request/${requestId}`,
         {
           documentLabel: "Certificat de guérison",
           type: "healing-notify",
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        getAxiosConfig()
       );
 
       // Trouver les deux demandes avec le même codeDossier
@@ -707,7 +742,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Créer la connexion WebSocket
-    const socket = io("https://daringbrusselsacademy.be/node/");
+    const socket = io(API_BASE);
 
     socket.on("connect", () => {
       console.log("Connecté au serveur WebSocket");

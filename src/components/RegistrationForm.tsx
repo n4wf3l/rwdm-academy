@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormProps } from "@/types/form";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 interface FormSectionProps {
   title: string;
@@ -73,6 +74,8 @@ const FormSection: React.FC<{
 const RegistrationForm: React.FC<FormProps> = ({
   formData,
   onFormDataChange,
+  preselectedAcademy,
+  disableAcademy = false,
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,7 +85,7 @@ const RegistrationForm: React.FC<FormProps> = ({
   const currentLang = lang.toUpperCase();
   // États pour les informations du joueur
   const [season, setSeason] = useState(SEASONS[1]);
-  const [academy, setAcademy] = useState("");
+  const [academy, setAcademy] = useState(preselectedAcademy || "");
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [birthDate, setBirthDate] = useState<Date | undefined>();
@@ -237,12 +240,10 @@ const RegistrationForm: React.FC<FormProps> = ({
     try {
       // 1. Envoi de la demande vers la DB
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/requests",
+        `${API_BASE}/api/requests`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(requestData),
         }
       );
@@ -255,12 +256,10 @@ const RegistrationForm: React.FC<FormProps> = ({
 
       // 2. Envoi de l'email directement avec le template
       await fetch(
-        "https://daringbrusselsacademy.be/node/api/form-mail/send-registration-email",
+        `${API_BASE}/api/form-mail/send-registration-email`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             formData: requestData.formData,
             requestId,
@@ -434,7 +433,7 @@ const RegistrationForm: React.FC<FormProps> = ({
         <Card className="glass-panel">
           <CardContent className="pt-6">
             <h2 className="text-2xl font-bold text-rwdm-blue dark:text-white mb-6">
-              {t("academy_registration")}
+              {preselectedAcademy === "Brussels Eagles Football Academy" ? "BEFA Registration Request" : t("academy_registration")}
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {/* Sélection de la saison */}
@@ -462,7 +461,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                 subtitle={t("academy_selection_desc")}
               >
                 {/* Sélecteur */}
-                <Select value={academy} onValueChange={setAcademy}>
+                <Select value={academy} onValueChange={setAcademy} disabled={disableAcademy}>
                   <SelectTrigger className="form-input-base">
                     <SelectValue
                       placeholder={t("select_academy_placeholder")}
@@ -475,8 +474,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                     <SelectItem value="Red For Ever Academy">
                       DB ForEver Academy
                     </SelectItem>
-                    <SelectItem value="Daring Brussels Academy">
-                      Daring Brussels Academy
+                    <SelectItem value="RWDM Academy">
+                      RWDM Academy
                     </SelectItem>
                   </SelectContent>
                 </Select>

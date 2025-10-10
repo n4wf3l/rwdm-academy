@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import ReCAPTCHA from "react-google-recaptcha";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -46,10 +47,12 @@ const Auth = () => {
         return;
       }
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/login",
+        `${API_BASE}/api/login`,
         {
+          ...fetchConfig,
           method: "POST",
           headers: {
+            ...fetchConfig.headers,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email, password, captcha: captchaToken }),

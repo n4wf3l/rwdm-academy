@@ -1,4 +1,4 @@
-# Daring Brussels Academy – Plateforme de Gestion Administrative
+# RWDM Brussels Academy – Plateforme de Gestion Administrative
 
 ## 📅 Période de développement
 
@@ -6,7 +6,7 @@
 
 ## 🎯 Objectif
 
-Faciliter la gestion et l'administration de la Daring Brussels Academy en dématérialisant les processus liés aux inscriptions, tests de sélection, déclarations d’accidents, certificats de guérison et décharges de responsabilité. Cette plateforme permet de gagner un temps précieux tout en structurant les processus de l'académie.
+Faciliter la gestion et l'administration de la RWDM Brussels Academy en dématérialisant les processus liés aux inscriptions, tests de sélection, déclarations d’accidents, certificats de guérison et décharges de responsabilité. Cette plateforme permet de gagner un temps précieux tout en structurant les processus de l'académie.
 
 ---
 
@@ -149,6 +149,6 @@ Plateforme disponible sur demande.
 
 ## 📎 À propos
 
-Développée pour le club Daring Brussels afin d'améliorer la gestion des flux administratifs et optimiser les interactions avec les membres, tout en respectant les normes modernes de sécurité, d’ergonomie et de protection des données.
+Développée pour le club RWDM Brussels afin d'améliorer la gestion des flux administratifs et optimiser les interactions avec les membres, tout en respectant les normes modernes de sécurité, d’ergonomie et de protection des données.
 
 ---

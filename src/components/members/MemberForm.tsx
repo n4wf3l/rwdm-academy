@@ -14,6 +14,7 @@ import {
   User2,
 } from "lucide-react";
 import FullScreenLoader from "@/components/FullScreenLoader";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import {
   Select,
   SelectContent,
@@ -86,7 +87,7 @@ const MemberForm: React.FC<MemberFormProps> = ({
 
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/admins",
+        `${API_BASE}/api/admins`,
         {
           method: "POST",
           headers: {

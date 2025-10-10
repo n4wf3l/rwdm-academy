@@ -8,33 +8,25 @@ import {
   Cookie,
   Facebook,
   Instagram,
-  MapPin,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { motion } from "framer-motion";
+import { API_BASE, resolveMediaUrl, fetchConfig } from "@/lib/api-config";
 
 interface FooterProps {
   className?: string;
 }
 
 const Footer: React.FC<FooterProps> = ({ className }) => {
-  const [logo, setLogo] = useState<string | null>("/logo.png");
-  const [clubName, setClubName] = useState<{
-    FR: string;
-    NL: string;
-    EN: string;
-  }>({
+  const [logo, setLogo] = useState<string>("/logo.png");
+  const [clubName, setClubName] = useState<{ FR: string; NL: string; EN: string }>({
     FR: "",
     NL: "",
     EN: "",
   });
-  const [clubAddress, setClubAddress] = useState<{
-    FR: string;
-    NL: string;
-    EN: string;
-  }>({
+  const [clubAddress, setClubAddress] = useState<{ FR: string; NL: string; EN: string }>({
     FR: "",
     NL: "",
     EN: "",
@@ -48,11 +40,6 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   const currentLang = localStorage.getItem("language")?.toUpperCase() || "FR";
   const { t } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
-
-  const apiBase =
-    process.env.NODE_ENV === "development"
-      ? "https://daringbrusselsacademy.be/node"
-      : "/node"; // Modifié: ajoute "/node" en production
 
   const getLocalizedValue = (
     field: { [key: string]: string } | undefined,
@@ -70,53 +57,48 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`${apiBase}/api/settings`);
+        const res = await fetch(`${API_BASE}/api/settings`, fetchConfig);
         const data = await res.json();
-        const general = data.general || {};
+        const general = data?.general || {};
 
-        // Logo: utiliser la méthode Base64 comme dans AdminLayout
-        if (general.logo && general.logo.startsWith("/uploads/")) {
+        // Logo - récupérer via fetch pour éviter les problèmes CORS
+        if (general.logo) {
           try {
-            // Récupérer l'image en Base64
-            const imageResponse = await fetch(
-              `${apiBase}/api/file-as-base64?path=${encodeURIComponent(
-                general.logo
-              )}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            );
-
+            const imageResponse = await fetch(general.logo, {
+              credentials: 'omit' // Pas de credentials pour les images
+            });
+            
             if (imageResponse.ok) {
-              const base64Data = await imageResponse.text();
-              setLogo(`data:image/png;base64,${base64Data}`);
-              console.log("✅ Footer: Logo chargé avec succès en Base64");
+              const blob = await imageResponse.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              setLogo(dataUrl);
+              console.log("✅ Footer: Logo chargé en Data URL");
             } else {
-              console.error(
-                "❌ Footer: Erreur lors du chargement du logo en Base64"
-              );
+              console.log("❌ Footer: Échec du chargement de l'image, utilisation du placeholder");
               setLogo("/logo.png");
             }
-          } catch (err) {
-            console.error(
-              "❌ Footer: Erreur lors de la conversion Base64:",
-              err
-            );
+          } catch (imageError) {
+            console.error("❌ Footer: Erreur lors du chargement de l'image:", imageError);
             setLogo("/logo.png");
           }
         } else {
-          setLogo("/logo.png"); // Logo par défaut
+          setLogo("/logo.png");
         }
 
         setClubName(general.clubName || { FR: "", NL: "", EN: "" });
         setClubAddress(general.clubAddress || { FR: "", NL: "", EN: "" });
         setPostalCode(general.postalCode || "");
+
         const communeEntries = Object.entries(general.commune || {})
           .filter(([key]) => isNaN(Number(key)))
           .map<[string, string]>(([key, value]) => [key, String(value)]);
         setCommune(Object.fromEntries(communeEntries));
+
+        const countryEntries = Object.entries(general.country || {})
+          .filter(([key]) => isNaN(Number(key)))
+          .map<[string, string]>(([key, value]) => [key, String(value)]);
+        setCountry(Object.fromEntries(countryEntries));
+
         setEmail(general.email || "");
         setFacebookUrl(general.facebookUrl || "");
         setInstagramUrl(general.instagramUrl || "");
@@ -130,6 +112,13 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
     };
 
     fetchSettings();
+    
+    // Cleanup function pour libérer les blob URLs
+    return () => {
+      if (logo && logo.startsWith('blob:')) {
+        URL.revokeObjectURL(logo);
+      }
+    };
   }, []);
 
   return (
@@ -144,7 +133,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           )}
         >
           <div className="container mx-auto min-h-[350px]">
-            {/* --- Votre motion.p centré en haut du footer --- */}
+            {/* Slogan motion centré */}
             <motion.p
               className="text-gray-600 text-3xl mt-2 text-center"
               style={{ fontFamily: "'Dancing Script', cursive" }}
@@ -159,11 +148,12 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             <Separator className="my-6" />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
+              {/* Bloc identité */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <motion.img
-                    key={logo || "/logo.png"}
-                    src={logo || "/logo.png"}
+                    key={logo}
+                    src={logo}
                     alt={clubName[currentLang] || "Logo"}
                     className="h-10 w-10 object-contain"
                     loading="lazy"
@@ -178,7 +168,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                     }}
                   />
                   <h3 className="font-bold text-xl text-rwdm-blue dark:text-white">
-                    {clubName[currentLang] || "Daring Brussels Academy"}
+                    {clubName[currentLang] || "RWDM Academy"}
                   </h3>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
@@ -186,6 +176,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 </p>
               </div>
 
+              {/* Bloc contact */}
               <div className="space-y-4">
                 <h3 className="font-bold text-lg text-rwdm-blue dark:text-white">
                   {t("contact")}
@@ -233,6 +224,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 </div>
               </div>
 
+              {/* Bloc légal */}
               <div className="space-y-4">
                 <h3 className="font-bold text-lg text-rwdm-blue dark:text-white">
                   {t("legal_info")}
@@ -281,7 +273,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             <Separator className="my-6" />
 
             <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} {clubName[currentLang]}.{" "}
+              &copy; {new Date().getFullYear()} {clubName[currentLang] || "RWDM Academy"}.{" "}
               {t("all_rights_reserved")}
             </div>
           </div>

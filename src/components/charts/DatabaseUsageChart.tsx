@@ -13,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Edit, Save, X } from "lucide-react";
 import axios from "axios"; // Assurez-vous d'installer axios si ce n'est pas déjà fait
 import { useToast } from "@/components/ui/use-toast";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const DatabaseUsageChart = () => {
   const { t } = useTranslation();
@@ -53,9 +54,11 @@ const DatabaseUsageChart = () => {
 
         // Récupérer les paramètres de stockage
         const storageResponse = await fetch(
-          "https://daringbrusselsacademy.be/node/api/storage-settings",
+          `${API_BASE}/api/storage-settings`,
           {
+            ...fetchConfig,
             headers: {
+              ...fetchConfig.headers,
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
@@ -75,9 +78,11 @@ const DatabaseUsageChart = () => {
 
         // Récupérer les statistiques de la base de données
         const statsResponse = await fetch(
-          "https://daringbrusselsacademy.be/node/api/database-stats",
+          `${API_BASE}/api/database-stats`,
           {
+            ...fetchConfig,
             headers: {
+              ...fetchConfig.headers,
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
@@ -104,11 +109,12 @@ const DatabaseUsageChart = () => {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/storage-settings",
+        `${API_BASE}/api/storage-settings`,
         {
+          ...fetchConfig,
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
+            ...fetchConfig.headers,
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
@@ -151,9 +157,11 @@ const DatabaseUsageChart = () => {
     const fetchUserRole = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
+            ...fetchConfig,
             headers: {
+              ...fetchConfig.headers,
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const style = document.createElement("style");
 style.innerHTML = `
@@ -17,6 +18,7 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
   onLanguageSelect,
 }) => {
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Show language selector after initial animation
   useEffect(() => {
@@ -24,6 +26,56 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
       setAnimationComplete(true);
     }, 2500); // délai augmenté à 4000 ms
     return () => clearTimeout(timer);
+  }, []);
+
+  // Fetch logo from database
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        // Récupérer les paramètres généraux
+        const res = await fetch(
+          `${API_BASE}/api/settings`,
+          fetchConfig
+        );
+        const data = await res.json();
+
+        if (data.general && data.general.logo) {
+          try {
+            // Récupérer l'image via fetch pour éviter les problèmes CORS
+            const imageResponse = await fetch(data.general.logo, {
+              credentials: 'omit' // Pas de credentials pour les images
+            });
+
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              setLogoUrl(dataUrl);
+              console.log("✅ Logo du splash chargé en Data URL");
+            } else {
+              console.log("❌ Échec du chargement du logo splash, utilisation du placeholder");
+              setLogoUrl("/logo.png");
+            }
+          } catch (imageError) {
+            console.error("❌ Erreur lors du chargement du logo splash:", imageError);
+            setLogoUrl("/logo.png");
+          }
+        } else {
+          setLogoUrl("/logo.png");
+        }
+      } catch (err) {
+        console.error("❌ Erreur chargement logo splash:", err);
+        setLogoUrl("/logo.png");
+      }
+    };
+
+    fetchLogo();
+
+    // Cleanup function pour libérer les blob URLs
+    return () => {
+      if (logoUrl && logoUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(logoUrl);
+      }
+    };
   }, []);
 
   return (
@@ -45,7 +97,18 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
           >
-            <img src="/logo.png" alt="RWDM Academy Logo" width="80px" />
+            {logoUrl && (
+              <motion.img
+                key={logoUrl}
+                src={logoUrl}
+                alt="RWDM Academy Logo"
+                width="80px"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1 }}
+              />
+            )}
           </motion.div>
 
           {/* Texte Animation */}
@@ -98,7 +161,17 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
                   animate={{ opacity: 1 }}
                   transition={{ duration: 1 }}
                 >
-                  <img src="/logo.png" alt="RWDM Academy Logo" width="55" />
+                  {logoUrl && (
+                    <motion.img
+                      key={logoUrl}
+                      src={logoUrl}
+                      alt="RWDM Academy Logo"
+                      width="55"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 1 }}
+                    />
+                  )}
                 </motion.div>
               </div>
             </div>

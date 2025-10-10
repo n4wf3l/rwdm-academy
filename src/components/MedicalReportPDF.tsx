@@ -12,6 +12,7 @@ import { Download, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import axios from "axios";
+import { API_BASE } from "@/lib/api-config";
 
 const MedicalReportPDF = () => {
   const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ const MedicalReportPDF = () => {
     const checkPdfAvailability = async () => {
       try {
         const response = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/accident-forms"
+          `${API_BASE}/api/accident-forms`
         );
 
         if (response.data?.forms) {
@@ -58,7 +59,7 @@ const MedicalReportPDF = () => {
   const handleDownload = async (lang: "fr" | "nl") => {
     try {
       const response = await axios({
-        url: `https://daringbrusselsacademy.be/node/api/accident-forms/download/${lang.toUpperCase()}`,
+        url: `${API_BASE}/api/accident-forms/download/${lang.toUpperCase()}`,
         method: "GET",
         responseType: "blob",
       });

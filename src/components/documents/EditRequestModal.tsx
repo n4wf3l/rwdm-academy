@@ -14,6 +14,7 @@ import { Request } from "@/components/RequestDetailsModal";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 interface RequestDetails {
   [key: string]: any;
@@ -180,7 +181,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
       const detailsToUpdate = { ...details };
 
       const res = await fetch(
-        `https://daringbrusselsacademy.be/node/api/requests/${request.id}`,
+        `${API_BASE}/api/requests/${request.id}`,
         {
           method: "PATCH",
           headers: {

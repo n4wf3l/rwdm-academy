@@ -19,6 +19,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useNavigate } from "react-router-dom";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
@@ -149,7 +150,7 @@ const Settings: React.FC = () => {
     const fetchCount = async () => {
       try {
         const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/requests",
+          `${API_BASE}/api/requests`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -173,13 +174,13 @@ const Settings: React.FC = () => {
       try {
         // Chargement des settings généraux
         const settingsRes = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/settings"
+          `${API_BASE}/api/settings`
         );
         const settingsData = settingsRes.data;
 
         // Chargement des états de maintenance
         const maintenanceRes = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/form-maintenance"
+          `${API_BASE}/api/form-maintenance`
         );
         const maintenanceData = maintenanceRes.data;
 
@@ -243,7 +244,7 @@ const Settings: React.FC = () => {
     setTogglingMaintenance(true);
     try {
       const res = await axios.put(
-        "https://daringbrusselsacademy.be/node/api/settings/maintenance",
+        `${API_BASE}/api/settings/maintenance`,
         {
           maintenanceMode: !maintenanceMode,
         }
@@ -321,7 +322,7 @@ const Settings: React.FC = () => {
       };
 
       await axios.put(
-        "https://daringbrusselsacademy.be/node/api/settings",
+        `${API_BASE}/api/settings`,
         settingsPayload
       );
 
@@ -333,7 +334,7 @@ const Settings: React.FC = () => {
         "waiver",
       ]) {
         await axios.put(
-          `https://daringbrusselsacademy.be/node/api/form-maintenance/${formType}`,
+          `${API_BASE}/api/form-maintenance/${formType}`,
           {
             maintenance_message: formMaintenanceMessages[formType],
           }
@@ -360,7 +361,7 @@ const Settings: React.FC = () => {
     const fetchAccidentForms = async () => {
       try {
         const response = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/accident-forms"
+          `${API_BASE}/api/accident-forms`
         );
         if (response.data?.forms) {
           const frForm = response.data.forms.find(

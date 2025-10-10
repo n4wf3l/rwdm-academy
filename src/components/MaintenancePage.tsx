@@ -3,6 +3,7 @@ import axios from "axios";
 import { Clock, MapPin } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { motion } from "framer-motion";
+import { API_BASE } from "@/lib/api-config";
 
 type Hours = { open: string; close: string };
 
@@ -41,7 +42,7 @@ export default function MaintenancePage() {
 
   useEffect(() => {
     axios
-      .get("https://daringbrusselsacademy.be/node/api/settings")
+      .get(`${API_BASE}/api/settings`)
       .then((res) => {
         const { general, contact } = res.data;
         setOpeningHours(contact.openingHours || {});

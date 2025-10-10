@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
-import axios from "axios";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Trans } from "react-i18next";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const LegalInfo: React.FC = () => {
   const [general, setGeneral] = useState<any>(null);
@@ -11,9 +11,8 @@ const LegalInfo: React.FC = () => {
   useEffect(() => {
     const fetchGeneral = async () => {
       try {
-        const { data } = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/settings"
-        );
+        const res = await fetch(`${API_BASE}/api/settings`, fetchConfig);
+        const data = await res.json();
         setGeneral(data.general);
       } catch (err) {
         console.error("Erreur fetch settings general:", err);
@@ -38,16 +37,6 @@ const LegalInfo: React.FC = () => {
   const emailClub = general.email || "";
   const country = display(general.country);
   const name = display(general.name);
-  const legalForm = display(general.legalForm);
-  const companyNumber = general.companyNumber || "";
-  const phone = general.phone || "";
-  const updatedAt = general.updatedAt;
-
-  const publicationResponsible = display(general.publicationResponsible);
-  const publicationTitle = display(general.publicationTitle);
-  const hostingProvider = display(general.hosting?.provider);
-  const hostingAddress = display(general.hosting?.address);
-  const hostingWebsite = display(general.hosting?.website);
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">

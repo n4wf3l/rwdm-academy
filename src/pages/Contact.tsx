@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Clock, Info } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
-import axios from "axios";
 import { translations } from "@/lib/i18n";
 import {
   Select,
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef } from "react";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -86,13 +86,12 @@ const Contact = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const { data } = await axios.get(
-          "https://daringbrusselsacademy.be/node/api/settings"
-        );
+        const response = await fetch(`${API_BASE}/api/settings`, fetchConfig);
+        const data = await response.json();
         updateFromGeneral(data.general);
         updateFromContact(data.contact); // ✅ ajoute ceci
       } catch (err) {
-        console.error("Erreur fetch settings avec axios:", err);
+        console.error("Erreur fetch settings:", err);
       }
     };
 
@@ -145,66 +144,66 @@ const Contact = () => {
         {/* SEO général */}
         <title>
           {lang === "fr"
-            ? "Contactez la Daring Brussels Academy – Coordonnées et formulaire"
+            ? "Contactez RWDM Academy – Coordonnées et formulaire"
             : lang === "nl"
-            ? "Contacteer Daring Brussels Academy – Contactgegevens en formulier"
-            : "Contact Daring Brussels Academy – Contact form and details"}
+            ? "Contacteer RWDM Academy – Contactgegevens en formulier"
+            : "Contact RWDM Academy – Contact form and details"}
         </title>
         <meta
           name="description"
           content={
             lang === "fr"
-              ? "Contactez-nous pour toute question sur l'académie Daring Brussels, les inscriptions, ou les événements."
+              ? "Contactez-nous pour toute question sur l'académie RWDM, les inscriptions, ou les événements."
               : lang === "nl"
-              ? "Neem contact op met Daring Brussels Academy voor vragen over inschrijvingen of evenementen."
-              : "Get in touch with Daring Brussels Academy for any inquiries about registration or events."
+              ? "Neem contact op met RWDM Academy voor vragen over inschrijvingen of evenementen."
+              : "Get in touch with RWDM Academy for any inquiries about registration or events."
           }
         />
         <meta
           name="keywords"
           content={
             lang === "fr"
-              ? "Daring Brussels, contact, académie, formulaire, football, inscription, test, Bruxelles"
+              ? "RWDM, contact, académie, formulaire, football, inscription, test, Bruxelles"
               : lang === "nl"
-              ? "Daring Brussels, contact, academie, formulier, voetbal, inschrijving, test, Brussel"
-              : "Daring Brussels, contact, academy, form, football, registration, test, Brussels"
+              ? "RWDM, contact, academie, formulier, voetbal, inschrijving, test, Brussel"
+              : "RWDM, contact, academy, form, football, registration, test, Brussels"
           }
         />
-        <meta name="author" content="Daring Brussels Academy" />
+        <meta name="author" content="RWDM Academy" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://daringbrusselsacademy.be/contact" />
+        <link rel="canonical" href="https://rwdmacademy.be/contact" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content="https://daringbrusselsacademy.be/contact"
+          content="https://rwdmacademy.be/contact"
         />
         <meta
           property="og:title"
           content={
             lang === "fr"
-              ? "Contactez la Daring Brussels Academy"
+              ? "Contactez RWDM Academy"
               : lang === "nl"
-              ? "Contacteer de Daring Brussels Academy"
-              : "Contact Daring Brussels Academy"
+              ? "Contacteer RWDM Academy"
+              : "Contact RWDM Academy"
           }
         />
         <meta
           property="og:description"
           content={
             lang === "fr"
-              ? "Formulaire de contact et coordonnées officielles de l'académie Daring Brussels."
+              ? "Formulaire de contact et coordonnées officielles de l'académie RWDM."
               : lang === "nl"
-              ? "Contactformulier en officiële gegevens van Daring Brussels Academy."
-              : "Official contact form and details of Daring Brussels Academy."
+              ? "Contactformulier en officiële gegevens van RWDM Academy."
+              : "Official contact form and details of RWDM Academy."
           }
         />
         <meta
           property="og:image"
-          content="https://daringbrusselsacademy.be/images/og-image.jpg"
+          content="https://rwdmacademy.be/images/og-image.jpg"
         />
-        <meta property="og:site_name" content="Daring Brussels Academy" />
+        <meta property="og:site_name" content="RWDM Academy" />
         <meta
           property="og:locale"
           content={lang === "nl" ? "nl_BE" : lang === "en" ? "en_US" : "fr_BE"}
@@ -304,10 +303,10 @@ const Contact = () => {
                     try {
                       setIsSending(true);
                       const res = await fetch(
-                        "https://daringbrusselsacademy.be/node/api/form-mail/send-contact-message",
+                        `${API_BASE}/api/form-mail/send-contact-message`,
                         {
                           method: "POST",
-                          headers: { "Content-Type": "application/json" },
+                          ...fetchConfig,
                           body: JSON.stringify({
                             name,
                             email,

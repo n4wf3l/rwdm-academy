@@ -1,0 +1,10 @@
+{
+  "name": "seeder-script",
+  "version": "1.0.0",
+  "scripts": {
+    "seed": "node seedUsers.js",
+    "seed:force": "node seedUsers.js --force",
+    "seed:create": "node seedUsers.js --create-user",
+    "seed:original": "node seed.js"
+  }
+}

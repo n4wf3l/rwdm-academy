@@ -4,9 +4,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { API_BASE } from "@/lib/api-config";
 
 interface MaintenancePage2Props {
-  formType: "registration" | "selectionTests" | "accidentReport" | "waiver";
+  formType: "registration" | "befa-registration" | "selectionTests" | "accidentReport" | "waiver";
 }
 
 const MaintenancePage2: React.FC<MaintenancePage2Props> = ({ formType }) => {
@@ -14,11 +15,6 @@ const MaintenancePage2: React.FC<MaintenancePage2Props> = ({ formType }) => {
   const [maintenanceMessages, setMaintenanceMessages] = useState<
     Record<string, Record<string, string>>
   >({});
-
-  const API_BASE =
-    process.env.NODE_ENV === "development"
-      ? "https://daringbrusselsacademy.be/node"
-      : "";
 
   useEffect(() => {
     // Récupérer les messages de maintenance du serveur
@@ -59,6 +55,8 @@ const MaintenancePage2: React.FC<MaintenancePage2Props> = ({ formType }) => {
     switch (formType) {
       case "registration":
         return t("academy_registration");
+      case "befa-registration":
+        return "BEFA Registration";
       case "selectionTests":
         return t("selection_tests");
       case "accidentReport":
@@ -75,6 +73,8 @@ const MaintenancePage2: React.FC<MaintenancePage2Props> = ({ formType }) => {
     switch (formType) {
       case "registration":
         return t("maintenance.default_message_registration");
+      case "befa-registration":
+        return "The BEFA registration form is currently under maintenance. Please try again later.";
       case "selectionTests":
         return t("maintenance.default_message_selection");
       case "accidentReport":

@@ -14,6 +14,7 @@ import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Trash } from "lucide-react";
 import RestoreMemberModal from "@/components/members/RestoreMemberModal";
 import { Badge } from "../ui/badge";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -48,7 +49,7 @@ const OldMemberList: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/deleted-admins",
+        `${API_BASE}/api/deleted-admins`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -94,7 +95,7 @@ const OldMemberList: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/admins/restore/${id}`,
+        `${API_BASE}/api/admins/restore/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -122,7 +123,7 @@ const OldMemberList: React.FC = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/admins/permanent/${id}`,
+        `${API_BASE}/api/admins/permanent/${id}`,
         {
           method: "DELETE",
           headers: {

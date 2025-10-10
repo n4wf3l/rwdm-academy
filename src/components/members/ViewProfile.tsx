@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import { translations } from "@/lib/i18n";
 
 interface ViewProfileProps {
@@ -56,7 +57,7 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
         if (!token) return;
 
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -104,8 +105,8 @@ const ViewProfile: React.FC<ViewProfileProps> = ({ open, onClose, user }) => {
     try {
       const token = localStorage.getItem("token");
       const endpoint = isSelf
-        ? "https://daringbrusselsacademy.be/node/api/change-password"
-        : `https://daringbrusselsacademy.be/node/api/users/${user.id}/reset-password`;
+        ? `${API_BASE}/api/change-password`
+        : `${API_BASE}/api/users/${user.id}/reset-password`;
 
       const response = await fetch(endpoint, {
         method: isSelf ? "PATCH" : "PUT",

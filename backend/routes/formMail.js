@@ -107,7 +107,7 @@ router.post("/send-registration-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parent1Email,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,
@@ -183,19 +183,19 @@ router.post("/send-selection-test-email", async (req, res) => {
   
 <br/>
 <p>Cordialement,</p>
-<p><strong>Daring Brussels Academy</strong><br/>Cellule détection</p>
+<p><strong>RWDM Academy</strong><br/>Cellule détection</p>
 
 <!-- Clause de non‑responsabilité -->
 <p style="font-size:0.85em; color:#555; margin-top:1.5em;">
-  La Daring Brussels décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords.  
+  La RWDM décline toute responsabilité en cas d'incidents, d'accidents, de vols survenus dans ses installations et aux abords.  
   En signant ce document, vous reconnaissez avoir pris connaissance de cette information.
 </p>
   `;
 
     await transporter.sendMail({
-      from: '"Daring Brussels Academy" <info@nainnovations.be>',
+      from: '"RWDM Academy" <info@nainnovations.be>',
       to: formData.parentEmail,
-      subject: `Demande de test reçue – Daring Brussels Academy (ref #${requestId})`,
+      subject: `Demande de test reçue – RWDM Academy (ref #${requestId})`,
       html,
     });
 
@@ -261,7 +261,7 @@ router.post("/send-accident-report-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: formData.email,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,
@@ -404,16 +404,14 @@ router.post("/send-contact-message", async (req, res) => {
       },
     });
 
-    // Test de connexion SMTP avant envoi
+    // Test de connexion SMTP avant envoi (non bloquant)
     console.log("🔄 Test de connexion SMTP...");
     try {
       await transporter.verify();
       console.log("✅ Connexion SMTP réussie");
     } catch (error) {
-      console.error("❌ Échec de connexion SMTP:", error);
-      return res
-        .status(500)
-        .json({ error: "Erreur de connexion au serveur mail" });
+      console.warn("⚠️ Avertissement SMTP:", error.message);
+      // Continuer quand même, le test peut parfois échouer même si l'envoi fonctionne
     }
 
     // Envoi de l'email
@@ -604,11 +602,11 @@ router.post("/send-decision-email", async (req, res) => {
       .replace(/{category}/g, formDataObj.category || formDataObj.noyau || "")
       .replace(/{codeDossier}/g, formDataObj.codeDossier || "")
       .replace(/{requestId}/g, requestId)
-      .replace(/{academy}/g, formDataObj.academy || "Daring Brussels Academy")
+      .replace(/{academy}/g, formDataObj.academy || "RWDM Academy")
       .replace(/{season}/g, formDataObj.season || "")
 
       // Variables spécifiques pour les accidents et guérisons - remplacements DIRECTS
-      .replace(/{clubName}/g, formDataObj.clubName || "Daring Brussels")
+      .replace(/{clubName}/g, formDataObj.clubName || "RWDM")
       .replace(
         /{playerFirstName}/g,
         formDataObj.playerFirstName || formDataObj.firstName || ""
@@ -672,7 +670,7 @@ router.post("/send-decision-email", async (req, res) => {
     );
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Academy" <${process.env.EMAIL_USER}>`,
       to: emailTo,
       cc: emailCc.length > 0 ? emailCc : undefined,
       subject: emailTemplate.subject

@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import axios from "axios";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const Confidentiality: React.FC = () => {
   const [emailClub, setEmailClub] = useState("");
   const { t, lang } = useTranslation();
 
   useEffect(() => {
-    axios
-      .get("https://daringbrusselsacademy.be/node/api/settings")
-      .then(({ data }) => setEmailClub(data.general.email || ""))
-      .catch((err) => console.error("Erreur fetch email :", err));
+    fetch(`${API_BASE}/api/settings`, fetchConfig)
+      .then((res) => res.json())
+      .then((data) => setEmailClub(data.general.email || ""))
+      .catch((err) => console.error("Erreur fetch email :", err));
   }, []);
 
-  const displayEmail = emailClub || "privacy@daringbrussels-academy.be";
+  const displayEmail = emailClub || "privacy@rwdmacademy.be";
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">

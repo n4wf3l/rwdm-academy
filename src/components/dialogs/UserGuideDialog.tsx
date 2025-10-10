@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlayCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 interface UserGuideDialogProps {
   open: boolean;
@@ -40,7 +41,7 @@ const UserGuideDialog: React.FC<UserGuideDialogProps> = ({
 
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/me",
+          `${API_BASE}/api/me`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

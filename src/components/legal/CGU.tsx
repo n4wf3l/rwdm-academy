@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
-import axios from "axios";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 const Cgu: React.FC = () => {
   const [emailClub, setEmailClub] = useState("");
   const { t, lang } = useTranslation();
 
   useEffect(() => {
-    axios
-      .get("https://daringbrusselsacademy.be/node/api/settings")
-      .then(({ data }) => {
+    fetch(`${API_BASE}/api/settings`, fetchConfig)
+      .then((res) => res.json())
+      .then((data) => {
         setEmailClub(data.general.email || "");
       })
-      .catch((err) => console.error("Erreur fetch email :", err));
+      .catch((err) => console.error("Erreur fetch email :", err));
   }, []);
 
-  const displayEmail = emailClub || "contact@daringbrusselsacademy.be";
+  const displayEmail = emailClub || "contact@rwdmacademy.be";
 
   return (
     <div className="space-y-6 text-gray-600 dark:text-gray-300">
@@ -129,11 +129,11 @@ const Cgu: React.FC = () => {
         <p>
           {t("cgu_section11_contact_intro")}
           <br />
-          Daring Brussels Academy
+          RWDM Academy
           <br />
-          Rue Charles Malis 61
+          Rue Charles Malis 61
           <br />
-          1080 Molenbeek‑Saint‑Jean
+          1080 Molenbeek‑Saint‑Jean
           <br />
           <a href={`mailto:${displayEmail}`} className="text-rwdm-blue">
             {displayEmail}

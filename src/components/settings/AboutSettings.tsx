@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { motion as m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE } from "@/lib/api-config";
 
 const AboutSettings = ({
   playersCount,
@@ -109,7 +110,7 @@ const AboutSettings = ({
 
     try {
       const response = await axios.post(
-        "https://daringbrusselsacademy.be/node/api/upload/image",
+        `${API_BASE}/api/upload/image`,
         formData
       );
       return response.data.filePath; // ex: "/uploads/1685678923-monimage.png"

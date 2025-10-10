@@ -27,6 +27,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 import { Badge } from "./ui/badge";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import ViewProfile from "@/components/members/ViewProfile"; // Nouvel import
@@ -84,36 +85,29 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       try {
         // 1. Récupérer les paramètres généraux (dont le chemin du logo)
         const res = await fetch(
-          "https://daringbrusselsacademy.be/node/api/settings"
+          `${API_BASE}/api/settings`,
+          fetchConfig
         );
         const data = await res.json();
 
-        if (
-          data.general &&
-          data.general.logo &&
-          data.general.logo.startsWith("/uploads/")
-        ) {
-          console.log("✅ Logo trouvé dans les paramètres:", data.general.logo);
-
-          // 2. Récupérer l'image en Base64
-          const imageResponse = await fetch(
-            `https://daringbrusselsacademy.be/node/api/file-as-base64?path=${encodeURIComponent(
-              data.general.logo
-            )}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
+        if (data.general && data.general.logo) {
+          try {
+            // Récupérer l'image via fetch pour éviter les problèmes CORS
+            const imageResponse = await fetch(data.general.logo, {
+              credentials: 'omit' // Pas de credentials pour les images
+            });
+            
+            if (imageResponse.ok) {
+              const blob = await imageResponse.blob();
+              const dataUrl = URL.createObjectURL(blob);
+              setLogoUrl(dataUrl);
+              console.log("✅ AdminLayout: Logo chargé en Data URL");
+            } else {
+              console.log("❌ AdminLayout: Échec du chargement de l'image, utilisation du placeholder");
+              setLogoUrl("/placeholder-logo.png");
             }
-          );
-
-          if (imageResponse.ok) {
-            const base64Data = await imageResponse.text();
-            // 3. Définir l'URL avec le contenu Base64
-            setLogoUrl(`data:image/png;base64,${base64Data}`);
-            console.log("✅ Logo chargé avec succès en Base64");
-          } else {
-            console.error("❌ Erreur lors du chargement du logo en Base64");
+          } catch (imageError) {
+            console.error("❌ AdminLayout: Erreur lors du chargement de l'image:", imageError);
             setLogoUrl("/placeholder-logo.png");
           }
         } else {
@@ -124,14 +118,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         setLogoUrl("/placeholder-logo.png");
       }
     };
+    
     fetchLogo();
+    
+    // Cleanup function pour libérer les blob URLs
+    return () => {
+      if (logoUrl && logoUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(logoUrl);
+      }
+    };
   }, []); // ✅ N'exécute qu'une seule fois au montage du composant
 
   // Récupération des infos utilisateur
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    fetch("https://daringbrusselsacademy.be/node/api/me", {
+    fetch(`${API_BASE}/api/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -139,7 +141,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         // Si l'URL de la photo est relative, le modifier
         let profilePictureUrl = data.profilePicture;
         if (profilePictureUrl && profilePictureUrl.startsWith("/uploads/")) {
-          profilePictureUrl = `https://daringbrusselsacademy.be/node${profilePictureUrl}`;
+          profilePictureUrl = `${API_BASE}${profilePictureUrl}`;
         }
         setUser({
           firstName: data.firstName,
@@ -162,7 +164,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
     const fetchTodayAppointments = async () => {
       try {
         const response = await fetch(
-          "https://daringbrusselsacademy.be/node/api/appointments",
+          `${API_BASE}/api/appointments`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,

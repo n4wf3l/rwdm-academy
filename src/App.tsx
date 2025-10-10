@@ -14,6 +14,7 @@ import {
 import SplashComponent from "@/components/SplashComponent"; // 👈 Ajoute ton Splash ici
 import axios from "axios";
 import MaintenancePage from "./components/MaintenancePage";
+import { API_BASE } from "@/lib/api-config";
 
 // Pages
 import Index from "./pages/Index";
@@ -120,7 +121,7 @@ function App() {
           const dashboardUrl =
             window.location.hostname === "localhost"
               ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}/dashboard`
-              : "https://daringbrusselsacademy.be/node/dashboard";
+              : `${API_BASE}/dashboard`;
 
           window.location.href = dashboardUrl;
         }
@@ -145,7 +146,7 @@ function App() {
   useEffect(() => {
     const checkMaintenanceStatus = async () => {
       try {
-        const response = await axios.get("/api/settings");
+        const response = await axios.get(`${API_BASE}/api/settings`);
         setIsGlobalMaintenance(Boolean(response.data.maintenanceMode));
       } catch (error) {
         console.error("Erreur lors de la vérification du mode maintenance:", error);

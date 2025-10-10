@@ -43,6 +43,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
+import { FormProps } from "@/types/form";
 
 interface FormSectionProps {
   title: string;
@@ -76,11 +78,6 @@ const FormSection: React.FC<FormSectionProps> = ({
     </div>
   );
 };
-
-interface FormProps {
-  formData: Record<string, any>;
-  onFormDataChange: (key: string, value: any) => void;
-}
 
 function alphaNumeric(input: string): string {
   return input.replace(/[^a-zA-Z0-9\s]/g, "");
@@ -237,7 +234,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
 
     try {
       const response = await fetch(
-        `https://daringbrusselsacademy.be/node/api/check-accident-code?code=${code}&email=${emailToMatch}`
+        `${API_BASE}/api/check-accident-code?code=${code}&email=${emailToMatch}`,
+        fetchConfig
       );
 
       if (!response.ok) {
@@ -285,8 +283,9 @@ const AccidentReportForm: React.FC<FormProps> = ({
       pdfFiles.forEach((file) => formData.append("pdfFiles", file));
 
       const response = await fetch(
-        "https://daringbrusselsacademy.be/node/api/upload",
+        `${API_BASE}/api/upload`,
         {
+          ...fetchConfig,
           method: "POST",
           body: formData,
         }
@@ -336,10 +335,10 @@ const AccidentReportForm: React.FC<FormProps> = ({
 
       // Envoi du formulaire
       const requestResponse = await fetch(
-        "https://daringbrusselsacademy.be/node/api/requests",
+        `${API_BASE}/api/requests`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(requestData),
         }
       );
@@ -351,10 +350,10 @@ const AccidentReportForm: React.FC<FormProps> = ({
 
       // Envoi de l'email de confirmation
       await fetch(
-        "https://daringbrusselsacademy.be/node/api/form-mail/send-accident-report-email",
+        `${API_BASE}/api/form-mail/send-accident-report-email`,
         {
+          ...fetchConfig,
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ formData: requestData.formData, requestId }),
         }
       );
@@ -794,7 +793,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Daring Brussels Academy">
-                            Daring Brussels Academy
+                            RWDM Brussels Academy
                           </SelectItem>
                         </SelectContent>
                       </Select>
