@@ -17,7 +17,7 @@ export const translationsEN = {
   academy_registration_desc: "Form to register and join the academy (U5-U9)",
   selection_tests: "Selection Tests",
   selection_tests_desc:
-    "Form to register for the Academy's selection tests (U5-U21)",
+    "Form to register for the Academy's selection tests (U10-U21)",
   accident_report: "Accident Report",
   accident_report_desc:
     "Form to report a club-related accident or submit a recovery certificate",

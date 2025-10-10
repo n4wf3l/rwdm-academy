@@ -18,7 +18,7 @@ export const translationsNL = {
     "Inschrijvingsformulier om lid te worden van de RWDM Brussels Academy (U5-U9)",
   selection_tests: "Selectietestaanvraag",
   selection_tests_desc:
-    "Inschrijving voor de selectietesten van de academie (U5-U21)",
+    "Inschrijving voor de selectietesten van de academie (U10-U21)",
   accident_report: "Ongevallenverklaring",
   accident_report_desc:
     "Formulier voor het melden van een clubgerelateerd ongeval of het indienen van een genezingsattest",
@@ -1807,7 +1807,27 @@ export const translationsNL = {
   "guide.api_docs": "API-documentatie",
   "guide.api_docs_desc":
     "Volledige API-documentatie is beschikbaar voor geautoriseerde ontwikkelaars in de Readme van de repository.",
+<<<<<<< HEAD
+  teamSingular: "team",
+  teamsPlural: "teams",
+  players: "spelers",
+  "pdf.generationError":
+    "Er is een fout opgetreden bij het genereren van de PDF.",
+  "pdf.generating": "PDF wordt gegenereerd…",
+  "pdf.export": "PDF exporteren",
+  "category.ebfa": "EBFA",
+  "category.db_forever": "RWDM ForEver",
   "category.daring_brussels_academy": "RWDM Brussels Academy",
+  "noElements.tryChangingFilters":
+    "Probeer de filters te wijzigen om meer resultaten te zien.",
+  "noElements.forSeason": "voor seizoen",
+  "noElements.noInvoices": "Geen facturen gevonden",
+  "noElements.found": "gevonden.",
+  "noElements.category": "Geen facturen gevonden voor categorie ",
+  "category.rwdm_brussels_academy_sub": "Elite teams en RWDM Brussels Academy",
+  "category.rwdm_forever_sub": "RWDM ForEver teams",
+  "category.ebfa_sub": "Eagles Brussels Football Academy",
+  "category.daring_brussels_academy": "Daring Brussels Academy",
   "category.daring_brussels_academy_sub": "Voorheen ELITE/RWDM Academy",
   "category.db_forever": "RWDM ForEver",
   "category.db_forever_sub": "Voorheen RF/RWDM ForEver",
@@ -1829,4 +1849,4 @@ export const translationsNL = {
   tagline: "Word lid van de Belgische voetbalelite",
   meta_description:
     "Krijg toegang tot de officiële formulieren van de RWDM Brussels Academy: registratie, selectietesten, vrijwaringsverklaring, ongevalaangifte en genezingscertificaat.",
-};
+}
