@@ -872,8 +872,8 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
             pendingAction?.type === "accept" ? "accepter" : "rejeter"
           } cette demande ? ${
             pendingAction?.type === "accept"
-              ? "Un email de confirmation sera envoyé au demandeur."
-              : "Un email de refus sera envoyé au demandeur."
+              ? "Vous pouvez choisir d'envoyer un email de confirmation au demandeur."
+              : "Vous pouvez choisir d'envoyer un email de refus au demandeur."
           }`}
           showEmailCheckbox
         />
