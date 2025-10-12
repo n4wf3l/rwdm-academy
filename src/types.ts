@@ -17,3 +17,43 @@ export interface Request {
     [key: string]: any;
   };
 }
+
+export interface SplashPublication {
+  id: number;
+  userId: number;
+  title: string;
+  description?: string;
+  image: string;
+  publishedAt: string;
+  updatedAt: string;
+  is_active: boolean;
+  // Joined fields
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface SplashPublicationForm {
+  title: string;
+  description: string;
+  image?: File;
+}
+
+export interface SplashPublicationListResponse {
+  publications: SplashPublication[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export interface ActiveSplashPublication {
+  id: number;
+  title: string;
+  description?: string;
+  image: string;
+  updatedAt: string;
+}
+
+export type ActiveSplashPublicationResponse = ActiveSplashPublication | { active: false };

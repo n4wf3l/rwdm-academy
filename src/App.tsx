@@ -12,6 +12,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import SplashComponent from "@/components/SplashComponent"; // 👈 Ajoute ton Splash ici
+import SplashPublicationPopup from "@/components/SplashPublicationPopup";
 import axios from "axios";
 import MaintenancePage from "./components/MaintenancePage";
 import { API_BASE } from "@/lib/api-config";
@@ -29,6 +30,7 @@ import Graphics from "./pages/Graphics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import EmailSettingsPage from "./pages/EmailSettingsPage";
+import SplashPublication from "./pages/SplashPublication";
 
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
@@ -58,6 +60,7 @@ function App() {
   const [language, setLanguage] = useState<string | null>(() =>
     localStorage.getItem("language")
   );
+  const [showPublicationPopup, setShowPublicationPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGlobalMaintenance, setIsGlobalMaintenance] = useState(false);
 
@@ -173,7 +176,17 @@ function App() {
         onLanguageSelect={(lang) => {
           localStorage.setItem("language", lang);
           setLanguage(lang);
+          setShowPublicationPopup(true);
         }}
+      />
+    );
+  }
+
+  // Show publication popup after language selection
+  if (showPublicationPopup) {
+    return (
+      <SplashPublicationPopup
+        onClose={() => setShowPublicationPopup(false)}
       />
     );
   }
@@ -264,6 +277,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["owner", "superadmin"]}>
                   <EmailSettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/splash-publications"
+              element={
+                <ProtectedRoute allowedRoles={["owner", "superadmin"]}>
+                  <DesktopOnlyWrapper>
+                    <SplashPublication />
+                  </DesktopOnlyWrapper>
                 </ProtectedRoute>
               }
             />

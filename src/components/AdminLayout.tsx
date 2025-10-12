@@ -16,6 +16,7 @@ import {
   Mail,
   CalendarCheck,
   HelpCircle,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -405,6 +406,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                 >
                   <Mail className="mr-2 h-5 w-5" />
                   Emails
+                </Button>
+              </Link>
+            )}
+            {["owner", "superadmin"].includes(user.role) && (
+              <Link to="/splash-publications">
+                <Button
+                  variant={isActive("/splash-publications") ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    isActive("/splash-publications")
+                      ? "bg-rwdm-blue hover:bg-rwdm-blue/90"
+                      : ""
+                  )}
+                >
+                  <Newspaper className="mr-2 h-5 w-5" />
+                  Splash Publications
                 </Button>
               </Link>
             )}

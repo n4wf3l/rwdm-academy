@@ -35,7 +35,10 @@ if (isProd) {
 }
 
 // Middleware pour gérer CORS et le JSON
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(
@@ -141,8 +144,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// CORRECTION: Assurez-vous que le middleware static est correctement configuré
-// Endpoint API pour servir les images avec CORS approprié
+// Endpoint pour servir les images avec CORS approprié
 app.get("/api/image/*", (req, res) => {
   const imagePath = req.params[0];
   const fullPath = path.join(uploadsDir, imagePath);
@@ -154,13 +156,38 @@ app.get("/api/image/*", (req, res) => {
     return res.status(404).json({ error: "Image non trouvée" });
   }
   
-  // Headers CORS appropriés
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  // Déterminer le type MIME
+  const ext = path.extname(imagePath).toLowerCase();
+  const mimeTypes = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp'
+  };
+  const contentType = mimeTypes[ext] || 'application/octet-stream';
   
-  // Servir l'image
-  res.sendFile(fullPath);
+  // Headers CORS appropriés (nécessaire car frontend et backend sur ports différents)
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  // Supprimer le cache pour éviter les problèmes
+  // res.header("Cache-Control", "public, max-age=31536000");
+  
+  // Définir le type de contenu
+  res.setHeader('Content-Type', contentType);
+  
+  // Servir l'image avec gestion d'erreur
+  res.sendFile(fullPath, (err) => {
+    if (err) {
+      console.error('Erreur lors de l\'envoi du fichier:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Erreur serveur' });
+      }
+    }
+  });
 });
 
 // Fallback pour les anciennes URLs /uploads/
@@ -577,6 +604,10 @@ app.get("/api/me", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
+// ====================
+// SPLASH PUBLICATIONS
+// ====================
 
 // Endpoint POST /api/requests
 // Pour POST : pas besoin d'authentification
@@ -1218,6 +1249,10 @@ app.use("/send-request", formMailRouter);
 
 const changeDataRoutes = require("./changeData");
 app.use("/api", changeDataRoutes);
+
+// Ajouter le router des splash publications
+const splashPublicationsRouter = require("./routes/splash-publications");
+app.use("/api/splash-publications", splashPublicationsRouter);
 
 // =========================================================
 // INTÉGRATION DES FONCTIONNALITÉS DU SERVEUR PROXY
