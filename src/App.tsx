@@ -12,6 +12,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import SplashComponent from "@/components/SplashComponent"; // 👈 Ajoute ton Splash ici
+import SplashPublicationPopup from "@/components/SplashPublicationPopup";
+import { ActiveSplashPublicationResponse } from "@/types";
 import axios from "axios";
 import MaintenancePage from "./components/MaintenancePage";
 import { API_BASE } from "@/lib/api-config";
@@ -29,6 +31,7 @@ import Graphics from "./pages/Graphics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import EmailSettingsPage from "./pages/EmailSettingsPage";
+import SplashPublication from "./pages/SplashPublication";
 
 import FormSubmissionSuccess from "./pages/FormSubmissionSuccess";
 import Legal from "./pages/Legal";
@@ -58,8 +61,37 @@ function App() {
   const [language, setLanguage] = useState<string | null>(() =>
     localStorage.getItem("language")
   );
+  const [showPublicationPopup, setShowPublicationPopup] = useState(false);
+  const [activePublication, setActivePublication] = useState<ActiveSplashPublicationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGlobalMaintenance, setIsGlobalMaintenance] = useState(false);
+
+  // Function to check and show splash publication
+  const checkAndShowSplashPublication = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/api/splash-publications/active`);
+      if (response.data && response.data.active !== false) {
+        // Check if user should see this publication
+        const lastCheckKey = 'splashPubLastCheck';
+        const lastCheckTime = sessionStorage.getItem(lastCheckKey);
+
+        const currentUpdatedAt = new Date(response.data.updatedAt).getTime();
+        const lastCheckTimestamp = lastCheckTime ? parseInt(lastCheckTime) : 0;
+
+        // Show publication if:
+        // 1. User has never checked before, OR
+        // 2. Publication was updated after user's last check
+        const shouldShow = !lastCheckTime || currentUpdatedAt > lastCheckTimestamp;
+
+        if (shouldShow) {
+          setActivePublication(response.data);
+          setShowPublicationPopup(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking splash publication:', error);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -158,6 +190,23 @@ function App() {
     checkMaintenanceStatus();
   }, []);
 
+  // Check for splash publication when language is selected OR when app loads
+  useEffect(() => {
+    if (language) {
+      checkAndShowSplashPublication();
+    }
+  }, [language]);
+
+  // Also check when user navigates to main pages
+  useEffect(() => {
+    if (language && (window.location.pathname === '/' || window.location.pathname === '/dashboard')) {
+      const timer = setTimeout(() => {
+        checkAndShowSplashPublication();
+      }, 500); // Small delay after navigation
+      return () => clearTimeout(timer);
+    }
+  });
+
   if (isLoading) {
     return <div>Chargement...</div>; // Ou votre composant de chargement
   }
@@ -173,6 +222,7 @@ function App() {
         onLanguageSelect={(lang) => {
           localStorage.setItem("language", lang);
           setLanguage(lang);
+          // Don't set showPublicationPopup here - it will be checked in useEffect
         }}
       />
     );
@@ -267,6 +317,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/splash-publications"
+              element={
+                <ProtectedRoute allowedRoles={["owner", "superadmin"]}>
+                  <DesktopOnlyWrapper>
+                    <SplashPublication />
+                  </DesktopOnlyWrapper>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/legal" element={<Legal />} />
             <Route
               path="/success/responsibilityWaiver"
@@ -291,6 +351,17 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
+        
+        {/* Splash Publication Popup Overlay */}
+        {showPublicationPopup && activePublication && (
+          <SplashPublicationPopup
+            publication={activePublication}
+            onClose={() => {
+              setShowPublicationPopup(false);
+              setActivePublication(null);
+            }}
+          />
+        )}
       </TooltipProvider>
     </QueryClientProvider>
   );
