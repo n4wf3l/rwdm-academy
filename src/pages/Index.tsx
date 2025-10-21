@@ -386,44 +386,42 @@ const Index: React.FC = () => {
               duration={600}
               className="mb-8"
             >
-              <div className="flex justify-end">
-                <div className={`bg-gradient-to-r from-gray-50 to-red-50 dark:from-gray-900/20 dark:to-red-900/20 rounded-xl p-6 border shadow-lg transition-all duration-300 ${
-                  currentForm === "befa-registration"
-                    ? "border-black shadow-2xl ring-2 ring-rwdm-blue"
-                    : "border-gray-200 dark:border-gray-800"
-                }`}>
-                  <div className="flex items-center justify-center gap-4">
-                    <Button
-                      onClick={() => handleFormChange("befa-registration")}
-                      className="flex items-center gap-3 bg-gradient-to-r from-black to-red-600 hover:from-gray-800 hover:to-red-700 text-white px-8 py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
-                      size="lg"
-                    >
-                      <GraduationCap className="w-6 h-6" />
-                      <span className="font-semibold text-lg">{t("befa_registration_request")}</span>
-                    </Button>
+              <div className="flex justify-center md:justify-end">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-3 rounded-full hover:bg-white/50 dark:hover:bg-gray-800/50"
+                      >
+                        <Info className="w-12 h-12 text-rwdm-blue dark:text-rwdm-blue" />
+                      </Button>
+                    </PopoverTrigger>
+                      <PopoverContent className="w-96 p-4 z-40" side="top">
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-lg text-rwdm-blue dark:text-rwdm-blue">
+                          {status.aboutData?.academyNames2?.[currentLang] || "About BEFA"}
+                        </h4>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                          {status.aboutData?.academyDescriptions2?.[currentLang] || "The Brussels Eagles Football Academy, an initiative of RWDM, offers children from U9 to U12 two extra training sessions a week on Wednesday and Sunday afternoons. Supervised by professional coaches, these training sessions aim to complement the training received at club level and offer a structured, inclusive and demanding framework. The programme focuses on technical development, coordination, speed, understanding the game and personality. More than just an academy, BEFA imparts essential values such as respect, inclusion and education, to develop well-rounded young footballers both on and off the pitch. Open from February to April 2025, BEFA welcomes 12 players per category. Registration is by complete cycle only, at the club secretariat (Tribune Écluse, Stade Edmond Machtens). The fee is €320 for non-members of the RWDM (equipment included) and €240 for members (equipment not included)."}
+                        </p>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
 
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="p-2 rounded-full hover:bg-white/50 dark:hover:bg-gray-800/50"
-                        >
-                          <Info className="w-10 h-10 text-rwdm-blue dark:text-rwdm-blue" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-96 p-4" side="top">
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-lg text-rwdm-blue dark:text-rwdm-blue">
-                            {status.aboutData?.academyNames2?.[currentLang] || "About BEFA"}
-                          </h4>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                            {status.aboutData?.academyDescriptions2?.[currentLang] || "The Brussels Eagles Football Academy, an initiative of RWDM, offers children from U9 to U12 two extra training sessions a week on Wednesday and Sunday afternoons. Supervised by professional coaches, these training sessions aim to complement the training received at club level and offer a structured, inclusive and demanding framework. The programme focuses on technical development, coordination, speed, understanding the game and personality. More than just an academy, BEFA imparts essential values such as respect, inclusion and education, to develop well-rounded young footballers both on and off the pitch. Open from February to April 2025, BEFA welcomes 12 players per category. Registration is by complete cycle only, at the club secretariat (Tribune Écluse, Stade Edmond Machtens). The fee is €320 for non-members of the RWDM (equipment included) and €240 for members (equipment not included)."}
-                          </p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                  <Button
+                    onClick={() => handleFormChange("befa-registration")}
+                    className={`flex items-center gap-3 px-8 py-4 rounded-lg shadow-lg transition-all duration-200 hover:ring-1 hover:ring-rwdm-blue/30 ${
+                      currentForm === "befa-registration"
+                        ? "bg-rwdm-blue text-white"
+                        : "bg-white text-rwdm-blue border-transparent hover:border-rwdm-blue hover:bg-rwdm-blue/10"
+                    }`}
+                    size="lg"
+                  >
+                    <GraduationCap className="w-6 h-6" />
+                    <span className="text-lg">{t("befa_registration_request")}</span>
+                  </Button>
                 </div>
               </div>
             </AnimatedTransition>

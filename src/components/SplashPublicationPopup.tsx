@@ -4,7 +4,18 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SplashPublicationService } from "@/lib/splash-publication";
 import { ActiveSplashPublicationResponse } from "@/types";
-import { API_BASE } from "@/lib/api-config";
+
+// Helper function to convert image paths to URLs
+const toImageUrl = (raw?: string | null) => {
+  if (!raw) return "/placeholder-logo.png";
+  if (raw.startsWith("blob:") || raw.startsWith("data:")) return raw;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("/uploads/")) {
+    // ✅ same-origin request through Vite proxy
+    return `/api/image/${raw.replace("/uploads/", "")}`;
+  }
+  return `/api/image/${raw}`;
+};
 
 interface SplashPublicationPopupProps {
   onClose: () => void;
@@ -129,7 +140,7 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
             <img
-              src={`${API_BASE}/api/image/${pub.image}`}
+              src={toImageUrl(pub.image)}
               alt={pub.title}
               className="w-full h-full object-cover"
               onError={(e) => {
