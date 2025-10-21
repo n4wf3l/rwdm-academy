@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 import { SplashPublicationService } from "@/lib/splash-publication";
 import { ActiveSplashPublicationResponse } from "@/types";
 
@@ -24,6 +25,7 @@ interface SplashPublicationPopupProps {
 const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [publication, setPublication] = useState<ActiveSplashPublicationResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -171,7 +173,7 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
                 onClick={handleClose}
                 className="bg-rwdm-blue hover:bg-rwdm-blue/90"
               >
-                Continuer
+                {t("continue")}
               </Button>
             </div>
           </div>

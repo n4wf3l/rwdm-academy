@@ -128,7 +128,7 @@ const SplashPublication: React.FC = () => {
     if (!selectedImageFile && !selectedPublication) {
       toast({
         title: "Erreur",
-        description: "Une image est requise",
+        description: t("image_required_error"),
         variant: "destructive",
       });
       return;
@@ -291,15 +291,15 @@ const SplashPublication: React.FC = () => {
         >
           <div>
             <h1 className="text-3xl font-bold text-rwdm-blue dark:text-white">
-              Splash Publications
+              {t("splash_publications")}
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              Gérez les publications qui s'affichent au lancement du site
+              {t("splash_publications_desc")}
             </p>
           </div>
           <Button onClick={openCreateDialog} className="bg-rwdm-blue">
             <Plus className="mr-2 h-4 w-4" />
-            Nouvelle Publication
+            {t("new_publication")}
           </Button>
         </motion.div>
 
@@ -311,11 +311,11 @@ const SplashPublication: React.FC = () => {
           <Card>
             <CardHeader>
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                <CardTitle>Publications ({pagination.total})</CardTitle>
+                <CardTitle>{t("publications_count").replace("{{count}}", pagination.total.toString())}</CardTitle>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Rechercher par titre..."
+                    placeholder={t("search_publications")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 w-64"
@@ -333,18 +333,18 @@ const SplashPublication: React.FC = () => {
                   <div className="text-gray-400 dark:text-gray-600 mb-4">
                     <File className="h-16 w-16 mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      Aucune publication trouvée
+                      {t("no_publications_found")}
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400">
                       {searchQuery
-                        ? "Aucune publication ne correspond à votre recherche."
-                        : "Il n'y a actuellement aucune publication créée. Créez-en une pour commencer."}
+                        ? t("no_publications_match")
+                        : t("no_publications_created")}
                     </p>
                   </div>
                   {!searchQuery && (
                     <Button onClick={openCreateDialog} className="bg-rwdm-blue">
                       <Plus className="mr-2 h-4 w-4" />
-                      Créer la première publication
+                      {t("create_first_publication")}
                     </Button>
                   )}
                 </div>
@@ -353,10 +353,10 @@ const SplashPublication: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Titre</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Publié le</TableHead>
-                        <TableHead>Dernière modif</TableHead>
+                        <TableHead>{t("title_required").replace(" *", "")}</TableHead>
+                        <TableHead>{t("status").replace(":", "")}</TableHead>
+                        <TableHead>{t("published_at").replace(":", "")}</TableHead>
+                        <TableHead>{t("updated_at").replace(":", "")}</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -372,7 +372,7 @@ const SplashPublication: React.FC = () => {
                                 publication.is_active ? "default" : "secondary"
                               }
                             >
-                              {publication.is_active ? "Active" : "Inactive"}
+                              {publication.is_active ? t("active") : t("inactive")}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -486,11 +486,11 @@ const SplashPublication: React.FC = () => {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
-            <DialogTitle>Nouvelle Publication</DialogTitle>
+            <DialogTitle>{t("new_publication")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Titre *</label>
+              <label className="block text-sm font-medium mb-1">{t("title_required")}</label>
               <Input
                 value={formData.title}
                 onChange={(e) =>
@@ -501,7 +501,7 @@ const SplashPublication: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Description
+                {t("publication_description")}
               </label>
               <Textarea
                 value={formData.description}
@@ -512,7 +512,7 @@ const SplashPublication: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Image *</label>
+              <label className="block text-sm font-medium mb-1">{t("image_required")}</label>
               <Input
                 type="file"
                 accept="image/*"
@@ -540,10 +540,10 @@ const SplashPublication: React.FC = () => {
                 variant="outline"
                 onClick={() => setCreateDialogOpen(false)}
               >
-                Annuler
+                {t("cancel")}
               </Button>
               <Button type="submit" className="bg-rwdm-blue">
-                Créer
+                {t("create_publication")}
               </Button>
             </div>
           </form>
@@ -554,11 +554,11 @@ const SplashPublication: React.FC = () => {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
-            <DialogTitle>Modifier la Publication</DialogTitle>
+            <DialogTitle>{t("edit_publication_title")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Titre *</label>
+              <label className="block text-sm font-medium mb-1">{t("title_required")}</label>
               <Input
                 value={formData.title}
                 onChange={(e) =>
@@ -569,7 +569,7 @@ const SplashPublication: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Description
+                {t("publication_description")}
               </label>
               <Textarea
                 value={formData.description}
@@ -599,7 +599,7 @@ const SplashPublication: React.FC = () => {
                     }}
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Laissez vide pour conserver l'image actuelle
+                    {t("keep_current_image")}
                   </p>
                 </div>
               )}
@@ -610,10 +610,10 @@ const SplashPublication: React.FC = () => {
                 variant="outline"
                 onClick={() => setEditDialogOpen(false)}
               >
-                Annuler
+                {t("cancel")}
               </Button>
               <Button type="submit" className="bg-rwdm-blue">
-                Mettre à jour
+                {t("update_publication")}
               </Button>
             </div>
           </form>
@@ -640,38 +640,38 @@ const SplashPublication: React.FC = () => {
                 />
               </div>
               <div>
-                <h3 className="font-semibold">Description</h3>
+                <h3 className="font-semibold">{t("publication_description")}</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  {selectedPublication.description || "Aucune description"}
+                  {selectedPublication.description || t("no_description")}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium">Statut:</span>{" "}
+                  <span className="font-medium">{t("status")}</span>{" "}
                   <Badge
                     variant={
                       selectedPublication.is_active ? "default" : "secondary"
                     }
                   >
-                    {selectedPublication.is_active ? "Active" : "Inactive"}
+                    {selectedPublication.is_active ? t("active") : t("inactive")}
                   </Badge>
                 </div>
                 <div>
-                  <span className="font-medium">Publié le:</span>{" "}
+                  <span className="font-medium">{t("published_at")}</span>{" "}
                   {format(
                     new Date(selectedPublication.publishedAt),
                     "dd/MM/yyyy HH:mm"
                   )}
                 </div>
                 <div>
-                  <span className="font-medium">Modifié le:</span>{" "}
+                  <span className="font-medium">{t("updated_at")}</span>{" "}
                   {format(
                     new Date(selectedPublication.updatedAt),
                     "dd/MM/yyyy HH:mm"
                   )}
                 </div>
                 <div>
-                  <span className="font-medium">Auteur:</span>{" "}
+                  <span className="font-medium">{t("author")}</span>{" "}
                   {selectedPublication.firstName} {selectedPublication.lastName}
                 </div>
               </div>

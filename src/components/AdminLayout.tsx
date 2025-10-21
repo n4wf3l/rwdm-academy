@@ -421,7 +421,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
                   )}
                 >
                   <Newspaper className="mr-2 h-5 w-5" />
-                  Splash Publications
+                  {t("splash_publications_sidebar")}
                 </Button>
               </Link>
             )}
