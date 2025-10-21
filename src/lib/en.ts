@@ -1815,4 +1815,5 @@ export const translationsEN = {
   continue: "Continue",
   edit_publication_title: "Edit Publication",
   splash_publications_sidebar: "Splash Publications",
+  published_by_admin: "Published by the administration",
 };

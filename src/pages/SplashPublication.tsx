@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { SplashPublicationService } from "@/lib/splash-publication";
 import {
@@ -67,7 +68,7 @@ const toImageUrl = (raw?: string | null) => {
 };
 
 const SplashPublication: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, lang: currentLanguage } = useTranslation();
   const { toast } = useToast();
 
   // State
@@ -90,8 +91,8 @@ const SplashPublication: React.FC = () => {
 
   // Form state
   const [formData, setFormData] = useState<SplashPublicationForm>({
-    title: "",
-    description: "",
+    title: { fr: "", en: "", nl: "" },
+    description: { fr: "", en: "", nl: "" },
     image: undefined,
   });
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
@@ -125,10 +126,27 @@ const SplashPublication: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('Form submission started');
+    console.log('Form data:', formData);
+    console.log('Selected image file:', selectedImageFile);
+    console.log('Selected publication (for edit):', selectedPublication);
+
     if (!selectedImageFile && !selectedPublication) {
+      console.log('Validation failed: no image file for creation');
       toast({
         title: "Erreur",
         description: t("image_required_error"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate title in French
+    if (!formData.title.fr || formData.title.fr.trim() === '') {
+      console.log('Validation failed: missing French title');
+      toast({
+        title: "Erreur",
+        description: "Le titre en français est requis",
         variant: "destructive",
       });
       return;
@@ -141,8 +159,11 @@ const SplashPublication: React.FC = () => {
         image: selectedImageFile || undefined,
       };
 
+      console.log('Data to send:', dataToSend);
+
       if (selectedPublication) {
         // Update
+        console.log('Updating publication:', selectedPublication.id);
         await SplashPublicationService.update(selectedPublication.id, dataToSend);
         toast({
           title: "Succès",
@@ -151,18 +172,19 @@ const SplashPublication: React.FC = () => {
         setEditDialogOpen(false);
       } else {
         // Create
+        console.log('Creating new publication');
         await SplashPublicationService.create(dataToSend);
         toast({
           title: "Succès",
-          description: "Publication créée avec succès",
+          description: "Publication créée avec succès (inactive)",
         });
         setCreateDialogOpen(false);
       }
 
       // Reset form
       setFormData({
-        title: "",
-        description: "",
+        title: { fr: "", en: "", nl: "" },
+        description: { fr: "", en: "", nl: "" },
         image: undefined,
       });
       setSelectedImageFile(null);
@@ -236,10 +258,51 @@ const SplashPublication: React.FC = () => {
 
   // Open edit dialog
   const openEditDialog = async (publication: SplashPublication) => {
+    // Parse title and description if they are JSON strings
+    const rawTitle = publication.title;
+    let parsedTitle: any = rawTitle;
+
+    if (typeof rawTitle === 'string') {
+      try {
+        parsedTitle = JSON.parse(rawTitle);
+      } catch (e) {
+        parsedTitle = { fr: rawTitle, en: '', nl: '' };
+      }
+    } else if (typeof parsedTitle === 'object' && parsedTitle) {
+      // Ensure all language keys exist
+      parsedTitle = {
+        fr: parsedTitle.fr || '',
+        en: parsedTitle.en || '',
+        nl: parsedTitle.nl || ''
+      };
+    } else {
+      parsedTitle = { fr: '', en: '', nl: '' };
+    }
+
+    const rawDescription = publication.description;
+    let parsedDescription: any = rawDescription;
+
+    if (typeof rawDescription === 'string') {
+      try {
+        parsedDescription = JSON.parse(rawDescription);
+      } catch (e) {
+        parsedDescription = { fr: rawDescription || '', en: '', nl: '' };
+      }
+    } else if (typeof parsedDescription === 'object' && parsedDescription) {
+      // Ensure all language keys exist
+      parsedDescription = {
+        fr: parsedDescription.fr || '',
+        en: parsedDescription.en || '',
+        nl: parsedDescription.nl || ''
+      };
+    } else {
+      parsedDescription = { fr: '', en: '', nl: '' };
+    }
+
     setSelectedPublication(publication);
     setFormData({
-      title: publication.title,
-      description: publication.description || "",
+      title: parsedTitle as { fr: string; en: string; nl: string },
+      description: parsedDescription as { fr: string; en: string; nl: string },
       image: undefined, // On ne pré-remplit pas l'image pour l'édition
     });
     setSelectedImageFile(null);
@@ -257,8 +320,8 @@ const SplashPublication: React.FC = () => {
   const openCreateDialog = () => {
     setSelectedPublication(null);
     setFormData({
-      title: "",
-      description: "",
+      title: { fr: "", en: "", nl: "" },
+      description: { fr: "", en: "", nl: "" },
       image: undefined,
     });
     setSelectedImageFile(null);
@@ -270,6 +333,29 @@ const SplashPublication: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const maxSize = 20 * 1024 * 1024; // 20MB
+      const recommendedSize = 5 * 1024 * 1024; // 5MB recommandé
+
+      if (file.size > maxSize) {
+        toast({
+          title: "Image trop volumineuse",
+          description: `L'image sélectionnée fait ${(file.size / 1024 / 1024).toFixed(1)}MB. La taille maximum autorisée est de 20MB.`,
+          variant: "destructive",
+        });
+        // Reset le input file
+        e.target.value = '';
+        return;
+      }
+
+      if (file.size > recommendedSize) {
+        toast({
+          title: "Image volumineuse",
+          description: `L'image fait ${(file.size / 1024 / 1024).toFixed(1)}MB. Pour de meilleures performances, privilégiez des images de moins de 5MB.`,
+          variant: "default",
+        });
+      }
+
+      console.log(`Image sélectionnée: ${file.name}, taille: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
       setSelectedImageFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
@@ -355,6 +441,7 @@ const SplashPublication: React.FC = () => {
                       <TableRow>
                         <TableHead>{t("title_required").replace(" *", "")}</TableHead>
                         <TableHead>{t("status").replace(":", "")}</TableHead>
+                        <TableHead>{t("author").replace(":", "")}</TableHead>
                         <TableHead>{t("published_at").replace(":", "")}</TableHead>
                         <TableHead>{t("updated_at").replace(":", "")}</TableHead>
                         <TableHead>Actions</TableHead>
@@ -364,28 +451,83 @@ const SplashPublication: React.FC = () => {
                       {publications.map((publication) => (
                         <TableRow key={publication.id}>
                           <TableCell className="font-medium">
-                            {publication.title}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                publication.is_active ? "default" : "secondary"
+                            {(() => {
+                              const rawTitle = publication.title;
+                              let parsedTitle: any = rawTitle;
+
+                              if (typeof rawTitle === 'string') {
+                                try {
+                                  parsedTitle = JSON.parse(rawTitle);
+                                } catch (e) {
+                                  return rawTitle;
+                                }
                               }
-                            >
-                              {publication.is_active ? t("active") : t("inactive")}
-                            </Badge>
+
+                              if (typeof parsedTitle === 'object' && parsedTitle) {
+                                return String(parsedTitle[currentLanguage] || parsedTitle.fr || '');
+                              }
+
+                              return String(parsedTitle || '');
+                            })()}
                           </TableCell>
                           <TableCell>
-                            {format(
-                              new Date(publication.publishedAt),
-                              "dd/MM/yyyy HH:mm"
-                            )}
+                            <div className="flex items-center gap-2">
+                              {publication.is_active ? (
+                                <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  {t("active")}
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200 flex items-center gap-1 cursor-pointer hover:bg-orange-200 transition-colors" onClick={() => handleToggleActive(publication)}>
+                                  <Power className="h-3 w-3 text-orange-600" />
+                                  {t("inactive")}
+                                </Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
-                            {format(
-                              new Date(publication.updatedAt),
-                              "dd/MM/yyyy HH:mm"
-                            )}
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 bg-rwdm-blue rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                {publication.firstName?.[0]}{publication.lastName?.[0]}
+                              </div>
+                              <div>
+                                <div className="font-medium text-sm">
+                                  {publication.firstName} {publication.lastName}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div className="font-medium">
+                                {format(
+                                  new Date(publication.publishedAt),
+                                  "dd/MM/yyyy"
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {format(
+                                  new Date(publication.publishedAt),
+                                  "HH:mm"
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div className="font-medium">
+                                {format(
+                                  new Date(publication.updatedAt),
+                                  "dd/MM/yyyy"
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {format(
+                                  new Date(publication.updatedAt),
+                                  "HH:mm"
+                                )}
+                              </div>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
@@ -484,33 +626,95 @@ const SplashPublication: React.FC = () => {
 
       {/* Create Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
+        <DialogContent className="max-w-4xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{t("new_publication")}</DialogTitle>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              La nouvelle publication sera créée inactive. Utilisez le bouton toggle pour l'activer.
+            </p>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">{t("title_required")}</label>
-              <Input
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t("publication_description")}
-              </label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={4}
-              />
-            </div>
+            <Tabs defaultValue="fr" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="fr">Français</TabsTrigger>
+                <TabsTrigger value="en">English</TabsTrigger>
+                <TabsTrigger value="nl">Nederlands</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="fr" className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t("title_required")} (FR)</label>
+                  <Input
+                    value={formData.title.fr}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: { ...formData.title, fr: e.target.value } })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t("publication_description")} (FR)
+                  </label>
+                  <Textarea
+                    value={formData.description.fr}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: { ...formData.description, fr: e.target.value } })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="en" className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t("title_required")} (EN)</label>
+                  <Input
+                    value={formData.title.en}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: { ...formData.title, en: e.target.value } })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t("publication_description")} (EN)
+                  </label>
+                  <Textarea
+                    value={formData.description.en}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: { ...formData.description, en: e.target.value } })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="nl" className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t("title_required")} (NL)</label>
+                  <Input
+                    value={formData.title.nl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: { ...formData.title, nl: e.target.value } })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t("publication_description")} (NL)
+                  </label>
+                  <Textarea
+                    value={formData.description.nl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: { ...formData.description, nl: e.target.value } })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+            
             <div>
               <label className="block text-sm font-medium mb-1">{t("image_required")}</label>
               <Input
@@ -518,7 +722,7 @@ const SplashPublication: React.FC = () => {
                 accept="image/*"
                 onChange={handleImageChange}
                 required={!selectedPublication}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rwdm-blue file:text-white hover:file:bg-rwdm-blue/90"
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rwdm-blue file:text-white hover:file:bg-rwdm-blue/90 mb-4"
               />
               {imagePreview && (
                 <div className="mt-2">
@@ -552,40 +756,99 @@ const SplashPublication: React.FC = () => {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
+        <DialogContent className="max-w-4xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{t("edit_publication_title")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">{t("title_required")}</label>
-              <Input
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t("publication_description")}
-              </label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={4}
-              />
-            </div>
+            <Tabs defaultValue="fr" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="fr">Français</TabsTrigger>
+                <TabsTrigger value="en">English</TabsTrigger>
+                <TabsTrigger value="nl">Nederlands</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="fr" className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t("title_required")} (FR)</label>
+                  <Input
+                    value={formData.title.fr}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: { ...formData.title, fr: e.target.value } })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t("publication_description")} (FR)
+                  </label>
+                  <Textarea
+                    value={formData.description.fr}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: { ...formData.description, fr: e.target.value } })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="en" className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t("title_required")} (EN)</label>
+                  <Input
+                    value={formData.title.en}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: { ...formData.title, en: e.target.value } })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t("publication_description")} (EN)
+                  </label>
+                  <Textarea
+                    value={formData.description.en}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: { ...formData.description, en: e.target.value } })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="nl" className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">{t("title_required")} (NL)</label>
+                  <Input
+                    value={formData.title.nl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: { ...formData.title, nl: e.target.value } })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t("publication_description")} (NL)
+                  </label>
+                  <Textarea
+                    value={formData.description.nl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: { ...formData.description, nl: e.target.value } })
+                    }
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+            
             <div>
               <label className="block text-sm font-medium mb-1">Image</label>
               <Input
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rwdm-blue file:text-white hover:file:bg-rwdm-blue/90"
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-rwdm-blue file:text-white hover:file:bg-rwdm-blue/90 mb-4"
               />
               {imagePreview && (
                 <div className="mt-2">
@@ -624,14 +887,50 @@ const SplashPublication: React.FC = () => {
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
-            <DialogTitle>{selectedPublication?.title}</DialogTitle>
+            <DialogTitle>
+              {(() => {
+                const rawTitle = selectedPublication?.title;
+                let parsedTitle: any = rawTitle;
+
+                if (typeof rawTitle === 'string') {
+                  try {
+                    parsedTitle = JSON.parse(rawTitle);
+                  } catch (e) {
+                    return rawTitle;
+                  }
+                }
+
+                if (typeof parsedTitle === 'object' && parsedTitle) {
+                  return String(parsedTitle[currentLanguage] || parsedTitle.fr || '');
+                }
+
+                return String(parsedTitle || '');
+              })()}
+            </DialogTitle>
           </DialogHeader>
           {selectedPublication && (
             <div className="space-y-4">
               <div>
                 <img
                   src={toImageUrl(selectedPublication.image)}
-                  alt={selectedPublication.title}
+                  alt={(() => {
+                    const rawTitle = selectedPublication.title;
+                    let parsedTitle: any = rawTitle;
+
+                    if (typeof rawTitle === 'string') {
+                      try {
+                        parsedTitle = JSON.parse(rawTitle);
+                      } catch (e) {
+                        return rawTitle;
+                      }
+                    }
+
+                    if (typeof parsedTitle === 'object' && parsedTitle) {
+                      return String(parsedTitle[currentLanguage] || parsedTitle.fr || 'Publication');
+                    }
+
+                    return String(parsedTitle || 'Publication');
+                  })()}
                   className="w-full h-48 object-cover rounded-lg"
                   onError={(e) => {
                     console.error("Erreur de chargement de l'image:", selectedPublication.image);
@@ -642,37 +941,77 @@ const SplashPublication: React.FC = () => {
               <div>
                 <h3 className="font-semibold">{t("publication_description")}</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  {selectedPublication.description || t("no_description")}
+                  {(() => {
+                    const rawDescription = selectedPublication.description;
+                    let parsedDescription: any = rawDescription;
+
+                    if (typeof rawDescription === 'string') {
+                      try {
+                        parsedDescription = JSON.parse(rawDescription);
+                      } catch (e) {
+                        return rawDescription;
+                      }
+                    }
+
+                    if (typeof parsedDescription === 'object' && parsedDescription) {
+                      return String(parsedDescription[currentLanguage] || parsedDescription.fr || t("no_description"));
+                    }
+
+                    return parsedDescription || t("no_description");
+                  })()}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">{t("status")}</span>{" "}
-                  <Badge
-                    variant={
-                      selectedPublication.is_active ? "default" : "secondary"
-                    }
-                  >
-                    {selectedPublication.is_active ? t("active") : t("inactive")}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="font-medium">{t("published_at")}</span>{" "}
-                  {format(
-                    new Date(selectedPublication.publishedAt),
-                    "dd/MM/yyyy HH:mm"
-                  )}
-                </div>
-                <div>
-                  <span className="font-medium">{t("updated_at")}</span>{" "}
-                  {format(
-                    new Date(selectedPublication.updatedAt),
-                    "dd/MM/yyyy HH:mm"
-                  )}
-                </div>
-                <div>
-                  <span className="font-medium">{t("author")}</span>{" "}
-                  {selectedPublication.firstName} {selectedPublication.lastName}
+
+              {/* Publication Info Card */}
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h4 className="font-semibold text-sm mb-3 text-gray-900 dark:text-white">
+                  Informations de publication
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-rwdm-blue rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                      {selectedPublication.firstName?.[0]}{selectedPublication.lastName?.[0]}
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {selectedPublication.firstName} {selectedPublication.lastName}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        selectedPublication.is_active ? "default" : "secondary"
+                      }
+                      className="flex-shrink-0"
+                    >
+                      {selectedPublication.is_active ? t("active") : t("inactive")}
+                    </Badge>
+                    <span className="text-xs text-gray-500">
+                      {selectedPublication.is_active ? "Visible aux utilisateurs" : "Masquée aux utilisateurs"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">Créée le</div>
+                    <div className="text-gray-600 dark:text-gray-300">
+                      {format(
+                        new Date(selectedPublication.publishedAt),
+                        "dd/MM/yyyy 'à' HH:mm"
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">Modifiée le</div>
+                    <div className="text-gray-600 dark:text-gray-300">
+                      {format(
+                        new Date(selectedPublication.updatedAt),
+                        "dd/MM/yyyy 'à' HH:mm"
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

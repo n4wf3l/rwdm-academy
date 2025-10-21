@@ -21,8 +21,8 @@ export interface Request {
 export interface SplashPublication {
   id: number;
   userId: number;
-  title: string;
-  description?: string;
+  title: { [key: string]: string }; // { fr: "Titre FR", en: "Title EN", nl: "Titel NL" }
+  description?: { [key: string]: string };
   image: string;
   publishedAt: string;
   updatedAt: string;
@@ -33,8 +33,8 @@ export interface SplashPublication {
 }
 
 export interface SplashPublicationForm {
-  title: string;
-  description: string;
+  title: { [key: string]: string };
+  description: { [key: string]: string };
   image?: File;
 }
 
@@ -50,10 +50,13 @@ export interface SplashPublicationListResponse {
 
 export interface ActiveSplashPublication {
   id: number;
-  title: string;
-  description?: string;
+  title: { [key: string]: string }; // { fr: "Titre FR", en: "Title EN", nl: "Titel NL" }
+  description?: { [key: string]: string };
   image: string;
   updatedAt: string;
+  firstName?: string;
+  lastName?: string;
+  userId?: number;
 }
 
 export type ActiveSplashPublicationResponse = ActiveSplashPublication | { active: false };

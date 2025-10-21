@@ -42,29 +42,63 @@ export class SplashPublicationService {
   }
 
   static async create(data: SplashPublicationForm): Promise<{ id: number }> {
+    console.log('SplashPublicationService.create called with data:', data);
+
+    const token = localStorage.getItem("token");
+    console.log('Token from localStorage:', token ? 'present' : 'null/empty');
+
+    if (!token) {
+      throw new Error("Token d'authentification manquant");
+    }
+
     const formData = new FormData();
-    formData.append("title", data.title);
-    if (data.description) {
-      formData.append("description", data.description);
+    const titleJson = JSON.stringify(data.title);
+    const descriptionJson = data.description ? JSON.stringify(data.description) : null;
+
+    console.log('Title JSON:', titleJson);
+    console.log('Description JSON:', descriptionJson);
+
+    formData.append("title", titleJson);
+    if (descriptionJson) {
+      formData.append("description", descriptionJson);
     }
     if (data.image) {
+      console.log('Image file:', data.image.name, 'size:', data.image.size);
       formData.append("image", data.image);
+    } else {
+      console.log('No image provided');
     }
+
+    console.log('Sending request to:', `${API_BASE}/api/splash-publications`);
 
     const response = await fetch(`${API_BASE}/api/splash-publications`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Erreur lors de la création");
+      let errorMessage = "Erreur lors de la création";
+      try {
+        const error = await response.json();
+        console.log('Error response:', error);
+        errorMessage = error.error || error.message || errorMessage;
+      } catch (e) {
+        console.log('Could not parse error response');
+        const text = await response.text();
+        console.log('Error response text:', text);
+      }
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log('Success response:', result);
+    return result;
   }
 
   static async getById(id: number): Promise<SplashPublication> {
@@ -87,9 +121,9 @@ export class SplashPublicationService {
     data: Partial<SplashPublicationForm>
   ): Promise<void> {
     const formData = new FormData();
-    formData.append("title", data.title || "");
+    formData.append("title", JSON.stringify(data.title));
     if (data.description) {
-      formData.append("description", data.description);
+      formData.append("description", JSON.stringify(data.description));
     }
     if (data.image) {
       formData.append("image", data.image);

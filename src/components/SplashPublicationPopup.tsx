@@ -20,81 +20,43 @@ const toImageUrl = (raw?: string | null) => {
 
 interface SplashPublicationPopupProps {
   onClose: () => void;
+  publication?: ActiveSplashPublicationResponse;
 }
 
 const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
   onClose,
+  publication: initialPublication,
 }) => {
-  const { t } = useTranslation();
-  const [publication, setPublication] = useState<ActiveSplashPublicationResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { t, lang: currentLanguage } = useTranslation();
+  const [publication, setPublication] = useState<ActiveSplashPublicationResponse | null>(initialPublication || null);
+  const [loading, setLoading] = useState(!initialPublication);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    const checkAndShowPublication = async () => {
-      try {
-        const activePublication = await SplashPublicationService.getActivePublication();
-
-        if (activePublication && typeof activePublication === 'object' && 'active' in activePublication && activePublication.active === false) {
-          // No active publication
-          onClose();
-          return;
-        }
-
-        // Check if user has already seen this version
-        const seenKey = 'splashPubSeen:v1';
-        const seenData = localStorage.getItem(seenKey);
-
-        if (seenData) {
-          try {
-            const parsed = JSON.parse(seenData);
-            // Check if the publication ID and updatedAt match
-            if (
-              activePublication &&
-              typeof activePublication === 'object' &&
-              'id' in activePublication &&
-              'updatedAt' in activePublication &&
-              parsed.id === activePublication.id &&
-              parsed.updatedAt === activePublication.updatedAt
-            ) {
-              // User has already seen this version
-              onClose();
-              return;
-            }
-          } catch (e) {
-            // Invalid stored data, show the publication
-          }
-        }
-
-        // Show the publication
-        setPublication(activePublication);
-      } catch (error) {
-        console.error('Error loading splash publication:', error);
-        onClose();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAndShowPublication();
-  }, [onClose]);
+    if (initialPublication) {
+      setPublication(initialPublication);
+      setLoading(false);
+      // Delay popup display by 1 second
+      setTimeout(() => {
+        setShowPopup(true);
+      }, 1000);
+    }
+  }, [initialPublication]);
 
   const handleClose = () => {
-    // Store that user has seen this publication
-    if (publication && typeof publication === 'object' && 'id' in publication && 'updatedAt' in publication) {
-      const seenData = {
-        id: publication.id,
-        updatedAt: publication.updatedAt,
-      };
-      localStorage.setItem('splashPubSeen:v1', JSON.stringify(seenData));
-    }
+    // Store the current timestamp as last check time
+    const now = Date.now().toString();
+    sessionStorage.setItem('splashPubLastCheck', now);
+    console.log('SplashPublicationPopup: stored lastCheckTime:', new Date(parseInt(now)).toISOString());
 
     onClose();
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      handleClose();
-    }
+    // Removed Escape key handling to prevent easy closing
+    // if (e.key === 'Escape') {
+    //   handleClose();
+    // }
   };
 
   useEffect(() => {
@@ -104,7 +66,7 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
     };
   }, []);
 
-  if (loading || !publication || (typeof publication === 'object' && 'active' in publication && publication.active === false)) {
+  if (loading || !publication || !showPopup || (typeof publication === 'object' && 'active' in publication && publication.active === false)) {
     return null;
   }
 
@@ -116,8 +78,8 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-        onClick={handleClose}
+        className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/30"
+        onClick={handleClose} // Keep backdrop click to close for accessibility
         role="dialog"
         aria-modal="true"
         aria-labelledby="splash-publication-title"
@@ -130,20 +92,37 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
           className="relative max-w-md w-full mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
-          <button
+          {/* Close button - REMOVED */}
+          {/* <button
             onClick={handleClose}
             className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-700 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
             aria-label="Fermer"
           >
             <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-          </button>
+          </button> */}
 
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
             <img
               src={toImageUrl(pub.image)}
-              alt={pub.title}
+              alt={(() => {
+                const rawTitle = pub.title;
+                let parsedTitle: any = rawTitle;
+
+                if (typeof rawTitle === 'string') {
+                  try {
+                    parsedTitle = JSON.parse(rawTitle);
+                  } catch (e) {
+                    return rawTitle;
+                  }
+                }
+
+                if (typeof parsedTitle === 'object' && parsedTitle) {
+                  return String(parsedTitle[currentLanguage] || parsedTitle.fr || 'Publication');
+                }
+
+                return String(parsedTitle || 'Publication');
+              })()}
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.currentTarget as HTMLImageElement;
@@ -158,14 +137,81 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
               id="splash-publication-title"
               className="text-xl font-bold text-gray-900 dark:text-white mb-3"
             >
-              {pub.title}
+              {(() => {
+                const rawTitle = pub.title;
+                let parsedTitle: any = rawTitle;
+
+                if (typeof rawTitle === 'string') {
+                  try {
+                    parsedTitle = JSON.parse(rawTitle);
+                  } catch (e) {
+                    return rawTitle;
+                  }
+                }
+
+                if (typeof parsedTitle === 'object' && parsedTitle) {
+                  return String(parsedTitle[currentLanguage] || parsedTitle.fr || 'Publication');
+                }
+
+                return String(parsedTitle || 'Publication');
+              })()}
             </h2>
 
             {pub.description && (
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                {pub.description}
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                {(() => {
+                  const rawDescription = pub.description;
+                  let parsedDescription: any = rawDescription;
+
+                  if (typeof rawDescription === 'string') {
+                    try {
+                    parsedDescription = JSON.parse(rawDescription);
+                  } catch (e) {
+                    return rawDescription;
+                  }
+                }
+
+                if (typeof parsedDescription === 'object' && parsedDescription) {
+                  return String(parsedDescription[currentLanguage] || parsedDescription.fr);
+                }
+
+                return parsedDescription;
+              })()}
               </p>
             )}
+
+            {/* Publication Info */}
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-rwdm-blue rounded-full flex items-center justify-center text-white text-xs font-medium">
+                    {pub.firstName && pub.lastName ? 
+                      `${pub.firstName[0]}${pub.lastName[0]}`.toUpperCase() : 
+                      'A'
+                    }
+                  </div>
+                  <span>
+                    {pub.firstName && pub.lastName ? 
+                      `Par ${pub.firstName} ${pub.lastName}` : 
+                      t("published_by_admin")
+                    }
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div>{new Date(pub.updatedAt).toLocaleDateString(currentLanguage === 'fr' ? 'fr-FR' : currentLanguage === 'nl' ? 'nl-NL' : 'en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  })}</div>
+                  <div className="text-xs opacity-75">
+                    {new Date(pub.updatedAt).toLocaleTimeString(currentLanguage === 'fr' ? 'fr-FR' : currentLanguage === 'nl' ? 'nl-NL' : 'en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Optional: Add a "Learn More" button or just keep it as info */}
             <div className="mt-6 flex justify-end">

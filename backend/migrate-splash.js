@@ -21,7 +21,7 @@ async function migrateSplashPublication() {
         CREATE TABLE splash_publication (
           id INT AUTO_INCREMENT PRIMARY KEY,
           userId INT NOT NULL,
-          title VARCHAR(255) NOT NULL,
+          title TEXT NOT NULL,
           description TEXT,
           image VARCHAR(500),
           publishedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -33,6 +33,26 @@ async function migrateSplashPublication() {
       console.log('✅ Table splash_publication created successfully');
     } else {
       console.log('Table splash_publication already exists');
+
+      // Check if title column is VARCHAR and change to TEXT if needed
+      const [titleColumns] = await connection.execute(
+        "SHOW COLUMNS FROM splash_publication LIKE 'title'"
+      );
+
+      if (titleColumns.length > 0) {
+        const columnType = titleColumns[0].Type;
+        console.log('Current title column type:', columnType);
+
+        if (columnType.toLowerCase().includes('varchar')) {
+          console.log('Changing title column from VARCHAR to TEXT...');
+          await connection.execute(
+            'ALTER TABLE splash_publication MODIFY COLUMN title TEXT NOT NULL'
+          );
+          console.log('✅ Title column changed to TEXT successfully');
+        } else {
+          console.log('Title column is already TEXT');
+        }
+      }
 
       // Check if is_active column exists
       const [columns] = await connection.execute(

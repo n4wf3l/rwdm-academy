@@ -1860,4 +1860,5 @@ export const translationsNL = {
   continue: "Doorgaan",
   edit_publication_title: "Publicatie bewerken",
   splash_publications_sidebar: "Splash Publicaties",
+  published_by_admin: "Gepubliceerd door de administratie",
 }

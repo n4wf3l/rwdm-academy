@@ -1936,4 +1936,5 @@ export const translationsFR = {
   continue: "Continuer",
   edit_publication_title: "Modifier la Publication",
   splash_publications_sidebar: "Publications Splash",
+  published_by_admin: "Publié par l'administration",
 }
