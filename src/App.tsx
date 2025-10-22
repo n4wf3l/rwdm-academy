@@ -63,7 +63,7 @@ function App() {
   );
   const [showPublicationPopup, setShowPublicationPopup] = useState(false);
   const [activePublication, setActivePublication] = useState<ActiveSplashPublicationResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isGlobalMaintenance, setIsGlobalMaintenance] = useState(false);
 
   // Function to check and show splash publication
@@ -206,10 +206,6 @@ function App() {
       return () => clearTimeout(timer);
     }
   });
-
-  if (isLoading) {
-    return <div>Chargement...</div>; // Ou votre composant de chargement
-  }
 
   // Si le site est en mode maintenance globale et l'utilisateur n'est pas connecté en tant qu'admin
   if (isGlobalMaintenance && !localStorage.getItem("token")) {

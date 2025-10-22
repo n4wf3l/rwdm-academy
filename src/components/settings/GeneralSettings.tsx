@@ -235,7 +235,7 @@ const GeneralSettings: React.FC<Props> = ({
       try {
         const postUrl =
           process.env.NODE_ENV === "development"
-            ? `${API_BASE}api/form-maintenance/${key}`
+            ? `${API_BASE}/api/form-maintenance/${key}`
             : `/api/form-maintenance/${key}`;
 
         console.log(`Trying POST request to: ${postUrl}`);
@@ -249,7 +249,7 @@ const GeneralSettings: React.FC<Props> = ({
         try {
           const getUrl =
             process.env.NODE_ENV === "development"
-              ? `${API_BASE}api/form-maintenance/${key}/toggle?enabled=${checked}`
+              ? `${API_BASE}/api/form-maintenance/${key}/toggle?enabled=${checked}`
               : `/api/form-maintenance/${key}/toggle?enabled=${checked}`;
 
           console.log(`Trying GET fallback: ${getUrl}`);
@@ -303,7 +303,7 @@ const GeneralSettings: React.FC<Props> = ({
           // Try POST first
           const postUrl =
             process.env.NODE_ENV === "development"
-              ? `${API_BASE}api/form-maintenance/${key}`
+              ? `${API_BASE}/api/form-maintenance/${key}`
               : `/api/form-maintenance/${key}`;
 
           try {
@@ -328,7 +328,7 @@ const GeneralSettings: React.FC<Props> = ({
 
             const getUrl =
               process.env.NODE_ENV === "development"
-                ? `${API_BASE}api/form-maintenance/${key}/message?content=${encodedMessage}`
+                ? `${API_BASE}/api/form-maintenance/${key}/message?content=${encodedMessage}`
                 : `/api/form-maintenance/${key}/message?content=${encodedMessage}`;
 
             await axios.get(getUrl);
