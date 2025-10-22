@@ -233,10 +233,7 @@ const GeneralSettings: React.FC<Props> = ({
 
       // First try: POST method (most likely to work)
       try {
-        const postUrl =
-          process.env.NODE_ENV === "development"
-            ? `${API_BASE}/api/form-maintenance/${key}`
-            : `/api/form-maintenance/${key}`;
+        const postUrl = `${API_BASE}/api/form-maintenance/${key}`;
 
         console.log(`Trying POST request to: ${postUrl}`);
         response = await axios.post(postUrl, { is_maintenance: checked });
@@ -247,10 +244,7 @@ const GeneralSettings: React.FC<Props> = ({
 
         // Second try: GET method as fallback (less likely to be blocked)
         try {
-          const getUrl =
-            process.env.NODE_ENV === "development"
-              ? `${API_BASE}/api/form-maintenance/${key}/toggle?enabled=${checked}`
-              : `/api/form-maintenance/${key}/toggle?enabled=${checked}`;
+          const getUrl = `${API_BASE}/api/form-maintenance/${key}/toggle?enabled=${checked}`;
 
           console.log(`Trying GET fallback: ${getUrl}`);
           response = await axios.get(getUrl);
@@ -301,10 +295,7 @@ const GeneralSettings: React.FC<Props> = ({
       saveMessageTimeoutRef.current = setTimeout(async () => {
         try {
           // Try POST first
-          const postUrl =
-            process.env.NODE_ENV === "development"
-              ? `${API_BASE}/api/form-maintenance/${key}`
-              : `/api/form-maintenance/${key}`;
+          const postUrl = `${API_BASE}/api/form-maintenance/${key}`;
 
           try {
             const response = await axios.post(postUrl, {
@@ -326,10 +317,7 @@ const GeneralSettings: React.FC<Props> = ({
               })
             );
 
-            const getUrl =
-              process.env.NODE_ENV === "development"
-                ? `${API_BASE}/api/form-maintenance/${key}/message?content=${encodedMessage}`
-                : `/api/form-maintenance/${key}/message?content=${encodedMessage}`;
+            const getUrl = `${API_BASE}/api/form-maintenance/${key}/message?content=${encodedMessage}`;
 
             await axios.get(getUrl);
           }

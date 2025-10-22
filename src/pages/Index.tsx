@@ -1,6 +1,7 @@
 // src/pages/Index.tsx
 import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Helmet } from "react-helmet";
+import { useTranslation } from "@/hooks/useTranslation";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import FormSelector, { FormType } from "../components/FormSelector";
@@ -14,7 +15,7 @@ import { HelpCircle, Info, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import UserGuideDialog from "@/components/dialogs/UserGuideDialog";
-import { useTranslation } from "@/hooks/useTranslation";
+import { API_BASE, fetchConfig } from "@/lib/api-config";
 
 // Lazy load des formulaires volumineux
 const RegistrationForm = lazy(() => import("@/components/RegistrationForm"));
@@ -42,12 +43,6 @@ const LoadingSkeleton = () => (
     <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
   </div>
 );
-
-// URL de base de l'API
-const API_BASE =
-  process.env.NODE_ENV === "production"
-    ? "" // En production, utilisez des chemins relatifs
-    : "http://localhost:5000"; // En développement
 
 const Index: React.FC = () => {
   // États
@@ -83,8 +78,7 @@ const Index: React.FC = () => {
   const [guideModalOpen, setGuideModalOpen] = useState(false);
 
   // Translation hook
-  const { t } = useTranslation();
-  const currentLang = localStorage.getItem("language")?.toUpperCase() || "FR";
+  const { t, lang: currentLang } = useTranslation();
 
   // Charger les données initiales en parallèle
   useEffect(() => {
@@ -337,7 +331,7 @@ const Index: React.FC = () => {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <h1 className="text-3xl md:text-4xl font-bold text-rwdm-blue dark:text-white mb-3 inline-block relative">
-                  {status.clubName[currentLang as "FR" | "NL" | "EN"] ||
+                  {status.clubName[currentLang.toUpperCase() as "FR" | "NL" | "EN"] ||
                     "RWDM Brussels Academy"}
                   <motion.div
                     className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
@@ -401,10 +395,10 @@ const Index: React.FC = () => {
                       <PopoverContent className="w-96 p-4 z-40" side="top">
                       <div className="space-y-3">
                         <h4 className="font-semibold text-lg text-rwdm-blue dark:text-rwdm-blue">
-                          {status.aboutData?.academyNames2?.[currentLang] || "About BEFA"}
+                          {status.aboutData?.academyNames2?.[currentLang.toUpperCase() as "FR" | "NL" | "EN"] || "About BEFA"}
                         </h4>
                         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                          {status.aboutData?.academyDescriptions2?.[currentLang] || "The Brussels Eagles Football Academy, an initiative of RWDM, offers children from U9 to U12 two extra training sessions a week on Wednesday and Sunday afternoons. Supervised by professional coaches, these training sessions aim to complement the training received at club level and offer a structured, inclusive and demanding framework. The programme focuses on technical development, coordination, speed, understanding the game and personality. More than just an academy, BEFA imparts essential values such as respect, inclusion and education, to develop well-rounded young footballers both on and off the pitch. Open from February to April 2025, BEFA welcomes 12 players per category. Registration is by complete cycle only, at the club secretariat (Tribune Écluse, Stade Edmond Machtens). The fee is €320 for non-members of the RWDM (equipment included) and €240 for members (equipment not included)."}
+                          {status.aboutData?.academyDescriptions2?.[currentLang.toUpperCase() as "FR" | "NL" | "EN"] || "The Brussels Eagles Football Academy, an initiative of RWDM, offers children from U9 to U12 two extra training sessions a week on Wednesday and Sunday afternoons. Supervised by professional coaches, these training sessions aim to complement the training received at club level and offer a structured, inclusive and demanding framework. The programme focuses on technical development, coordination, speed, understanding the game and personality. More than just an academy, BEFA imparts essential values such as respect, inclusion and education, to develop well-rounded young footballers both on and off the pitch. Open from February to April 2025, BEFA welcomes 12 players per category. Registration is by complete cycle only, at the club secretariat (Tribune Écluse, Stade Edmond Machtens). The fee is €320 for non-members of the RWDM (equipment included) and €240 for members (equipment not included)."}
                         </p>
                       </div>
                     </PopoverContent>
