@@ -29,9 +29,10 @@ const allowedOrigins = [
 const isLocal = (origin) => /^http:\/\/(localhost|127\.0\.0\.1):\d+$/i.test(origin || "");
 const isProd = process.env.NODE_ENV === "production";
 
-// Trust proxy en production pour les cookies sécurisés
+// Trust proxy en production pour les cookies sécurisés ET le rate limiting
 if (isProd) {
   app.set("trust proxy", 1);
+  app.set('etag', 'strong'); // cache sémantique propre
 }
 
 // Middleware pour gérer CORS et le JSON
@@ -66,6 +67,18 @@ const loginLimiter = rateLimit({
   max: process.env.NODE_ENV === "production" ? 10 : 1000, // Beaucoup plus en dev
   message: { message: "Trop de tentatives, veuillez réessayer plus tard." },
 });
+
+// Rate limiter général pour toutes les routes API
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === "production" ? 300 : 10000, // Ajusté pour prod
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Trop de requêtes, veuillez réessayer plus tard." },
+});
+
+// Appliquer le rate limiter général à toutes les routes API
+app.use("/api/", generalLimiter);
 
 app.use("/api/login", loginLimiter);
 
@@ -1258,6 +1271,31 @@ app.use("/api/splash-publications", splashPublicationsRouter);
 // INTÉGRATION DES FONCTIONNALITÉS DU SERVEUR PROXY
 // =========================================================
 
+// Cache pour les appels API Prosoccerdata
+let teamsCache = { data: null, ts: 0 };
+let membersDuesCache = { data: null, ts: 0 };
+let playerCountsCache = { data: null, ts: 0 };
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+// Fonction utilitaire pour les appels API avec retry et backoff
+async function apiCallWithRetry(url, config, maxRetries = 3) {
+  let delay = 1000;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await axios.get(url, config);
+      return response;
+    } catch (e) {
+      if (e.response?.status === 429 && i < maxRetries - 1) {
+        console.log(`⚠️ Rate limit atteint, retry dans ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2; // backoff exponentiel
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
 // Fonction pour récupérer les paramètres API de la base de données
 async function getApiSettings() {
   try {
@@ -1283,12 +1321,17 @@ async function getApiSettings() {
 }
 
 async function fetchAllInvoices(baseUrl, clubKey, apiKey, apiSecret, teamIds) {
+  const now = Date.now();
+  if (membersDuesCache.data && now - membersDuesCache.ts < CACHE_TTL) {
+    return membersDuesCache.data;
+  }
+
   let allInvoices = [];
   let currentPage = 1;
   let totalPages = 1;
 
   do {
-    const response = await axios.get(
+    const response = await apiCallWithRetry(
       `${baseUrl}/finances/overview/memberduesinvoices`,
       {
         headers: {
@@ -1299,7 +1342,7 @@ async function fetchAllInvoices(baseUrl, clubKey, apiKey, apiSecret, teamIds) {
         },
         params: {
           statuses: ["not_sent", "paid", "open", "too_late", "credited"],
-          teamIds: teamIds, // ou commentez cette ligne pour tester sans filtrage sur teamIds
+          teamIds: teamIds,
           page: currentPage,
           size: 100,
         },
@@ -1333,6 +1376,7 @@ async function fetchAllInvoices(baseUrl, clubKey, apiKey, apiSecret, teamIds) {
     currentPage++;
   } while (currentPage <= totalPages);
 
+  membersDuesCache = { data: allInvoices, ts: now };
   return allInvoices;
 }
 
@@ -1343,7 +1387,7 @@ app.get("/api/members-dues", async (req, res) => {
     const settings = await getApiSettings();
 
     // Récupérer toutes les équipes
-    const teamsResponse = await axios.get(`${settings.base_url}/teams/all`, {
+    const teamsResponse = await apiCallWithRetry(`${settings.base_url}/teams/all`, {
       headers: {
         "Accept-Language": "fr-FR",
         "x-api-club": settings.club_key,
@@ -1351,6 +1395,7 @@ app.get("/api/members-dues", async (req, res) => {
         Authorization: settings.api_secret,
         "Content-Type": "application/json",
       },
+      timeout: 8000,
     });
 
     // Extraction des équipes
@@ -1373,8 +1418,14 @@ app.get("/api/members-dues", async (req, res) => {
   } catch (error) {
     console.error("Erreur lors de l'appel API:", error);
     
-    // Si c'est un problème de rate limiting (429), retourner un tableau vide
-    if (error.status === 429 || error.response?.status === 429) {
+    // Si rate limiting et cache disponible, retourner le cache
+    if (error.response?.status === 429 && membersDuesCache.data) {
+      console.log("⚠️ Rate limit atteint, retour du cache pour members-dues");
+      return res.json(membersDuesCache.data);
+    }
+    
+    // Sinon retourner tableau vide
+    if (error.response?.status === 429) {
       console.log("⚠️ Rate limiting détecté, retour d'un tableau vide");
       res.json([]);
     } else {
@@ -1388,11 +1439,16 @@ app.get("/api/members-dues", async (req, res) => {
 // Endpoint pour le comptage des joueurs par équipe
 app.get("/api/teams/player-counts", async (req, res) => {
   try {
+    const now = Date.now();
+    if (playerCountsCache.data && now - playerCountsCache.ts < CACHE_TTL) {
+      return res.json(playerCountsCache.data);
+    }
+
     // Récupérer les paramètres API
     const settings = await getApiSettings();
 
     // Récupérer toutes les équipes
-    const teamsRes = await axios.get(`${settings.base_url}/teams/all`, {
+    const teamsRes = await apiCallWithRetry(`${settings.base_url}/teams/all`, {
       headers: {
         "Accept-Language": "fr-FR",
         "x-api-club": settings.club_key,
@@ -1400,6 +1456,7 @@ app.get("/api/teams/player-counts", async (req, res) => {
         Authorization: settings.api_secret,
         "Content-Type": "application/json",
       },
+      timeout: 8000,
     });
 
     const teams = teamsRes.data.items || teamsRes.data;
@@ -1408,7 +1465,7 @@ app.get("/api/teams/player-counts", async (req, res) => {
     const results = await Promise.all(
       teams.map(async (team) => {
         try {
-          const membersRes = await axios.get(
+          const membersRes = await apiCallWithRetry(
             `${settings.base_url}/teams/${team.id}/members`,
             {
               headers: {
@@ -1417,6 +1474,7 @@ app.get("/api/teams/player-counts", async (req, res) => {
                 Authorization: settings.api_secret,
                 "Content-Type": "application/json",
               },
+              timeout: 8000,
             }
           );
 
@@ -1439,19 +1497,20 @@ app.get("/api/teams/player-counts", async (req, res) => {
       })
     );
 
+    playerCountsCache = { data: results, ts: now };
     res.json(results);
   } catch (error) {
     console.error("Erreur récupération des équipes/membres :", error);
     
-    // Si c'est un problème de rate limiting (429), retourner un tableau vide
-    if (error.status === 429 || error.response?.status === 429) {
-      console.log("⚠️ Rate limiting détecté pour les équipes, retour d'un tableau vide");
-      res.json([]);
-    } else {
-      res.status(500).json({
-        message: "Erreur serveur lors du comptage des joueurs par équipe",
-      });
+    // Si rate limiting, retourner le cache même s'il est expiré
+    if (error.response?.status === 429 && playerCountsCache.data) {
+      console.log("⚠️ Rate limit atteint, retour du cache expiré pour player-counts");
+      return res.json(playerCountsCache.data);
     }
+    
+    res.status(500).json({
+      message: "Erreur serveur lors du comptage des joueurs par équipe",
+    });
   }
 });
 
@@ -1462,7 +1521,7 @@ app.get("/api/teams/:id/members", async (req, res) => {
     // Récupérer les paramètres API
     const settings = await getApiSettings();
 
-    const membersRes = await axios.get(
+    const membersRes = await apiCallWithRetry(
       `${settings.base_url}/teams/${teamId}/members`,
       {
         headers: {
@@ -1471,6 +1530,7 @@ app.get("/api/teams/:id/members", async (req, res) => {
           Authorization: settings.api_secret,
           "Content-Type": "application/json",
         },
+        timeout: 8000,
       }
     );
 
@@ -1485,8 +1545,8 @@ app.get("/api/teams/:id/members", async (req, res) => {
   } catch (err) {
     console.error(`Erreur membres équipe ${teamId}:`, err);
     
-    // Si c'est un problème de rate limiting (429), retourner un tableau vide
-    if (err.status === 429 || err.response?.status === 429) {
+    // Si rate limiting, retourner un tableau vide
+    if (err.response?.status === 429) {
       console.log(`⚠️ Rate limiting détecté pour l'équipe ${teamId}, retour d'un tableau vide`);
       res.json([]);
     } else {
@@ -1498,10 +1558,15 @@ app.get("/api/teams/:id/members", async (req, res) => {
 // Endpoint pour récupérer toutes les équipes
 app.get("/api/teams/all", async (req, res) => {
   try {
+    const now = Date.now();
+    if (teamsCache.data && now - teamsCache.ts < CACHE_TTL) {
+      return res.json(teamsCache.data);
+    }
+
     // Récupérer les paramètres API
     const settings = await getApiSettings();
 
-    const response = await axios.get(`${settings.base_url}/teams/all`, {
+    const response = await apiCallWithRetry(`${settings.base_url}/teams/all`, {
       headers: {
         "Accept-Language": "fr-FR",
         "x-api-club": settings.club_key,
@@ -1509,11 +1574,20 @@ app.get("/api/teams/all", async (req, res) => {
         Authorization: settings.api_secret,
         "Content-Type": "application/json",
       },
+      timeout: 8000,
     });
 
+    teamsCache = { data: response.data, ts: now };
     res.json(response.data);
   } catch (error) {
     console.error("Erreur lors de l'appel API (teams/all):", error);
+    
+    // Si rate limiting, retourner le cache même s'il est expiré
+    if (error.response?.status === 429 && teamsCache.data) {
+      console.log("⚠️ Rate limit atteint, retour du cache expiré");
+      return res.json(teamsCache.data);
+    }
+    
     res
       .status(error.response?.status || 500)
       .json({ message: "Erreur serveur lors de la récupération des équipes" });
