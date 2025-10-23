@@ -598,7 +598,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                     onChange={(e) =>
                       setCurrentClub(alphaNumeric(e.target.value))
                     }
-                    placeholder="Daring Brussels"
+                    placeholder="RWDM Brussels"
                   />
                 </div>
                 <div className="space-y-2">
