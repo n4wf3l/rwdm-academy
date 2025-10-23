@@ -21,47 +21,81 @@ const { Server } = require("socket.io");
 const axios = require("axios"); // Ajout de axios pour les fonctionnalités du proxy
 const db = require("./db"); // Ajout du module db manquant
 
+// ============================================
+// 3) INTERCEPTEUR AXIOS - NE PAS LOGGER LES SECRETS
+// ============================================
+axios.interceptors.response.use(
+  r => r,
+  err => {
+    const code = err?.response?.status || err?.code || 'ERR';
+    const url = err?.config?.url;
+    console.error('Axios error:', code, url); // pas de headers/tokens
+    return Promise.reject(err);
+  }
+);
+
 // Configuration CORS et environnement
 const allowedOrigins = [
   "https://rwdmacademy.be",
-  "https://daringbrusselsacademy.be"
+  "https://www.rwdmacademy.be",
+  "https://daringbrusselsacademy.be",
+  "https://www.daringbrusselsacademy.be",
 ];
+
 const isLocal = (origin) => /^http:\/\/(localhost|127\.0\.0\.1):\d+$/i.test(origin || "");
 const isProd = process.env.NODE_ENV === "production";
 
-// Trust proxy en production pour les cookies sécurisés ET le rate limiting
-if (isProd) {
-  app.set("trust proxy", 1);
-  app.set('etag', 'strong'); // cache sémantique propre
-}
+const corsOptions = {
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // ex: curl, Postman
 
-// Middleware pour gérer CORS et le JSON
+    // Autoriser rwdmacademy.be (avec ou sans www) + domaine secondaire
+    const ok =
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/(www\.)?rwdmacademy\.be$/i.test(origin) ||
+      /^https:\/\/(www\.)?daringbrusselsacademy\.be$/i.test(origin) ||
+      (!isProd && isLocal(origin));
+
+    if (ok) return cb(null, true);
+
+    console.error("❌ CORS refusé pour origin:", origin);
+    return cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+// ============================================
+// 1) TRUST PROXY - DOIT ÊTRE EN PREMIER
+// ============================================
+app.set('trust proxy', 1); // Express derrière un seul proxy (Nginx)
+app.set('etag', 'strong'); // cache sémantique
+console.log('✅ trust proxy ACTIVÉ (avant rate-limit)');
+
+// ============================================
+// 2) PARSERS ET MIDDLEWARES DE BASE
+// ============================================
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   crossOriginEmbedderPolicy: false,
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-app.use(
-  cors({
-    origin(origin, cb) {
-      if (!origin) return cb(null, true); // Permettre les requêtes sans origin (ex: Postman)
-      if (isProd) {
-        return allowedOrigins.includes(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS"));
-      }
-      return isLocal(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
 
-// Gérer explicitement les requêtes preflight OPTIONS
-app.options("*", cors());
+// place ce middleware AVANT tes routes API
+app.use(cors(corsOptions));
+// préflight avec la même config
+app.options("*", cors(corsOptions));
 
-app.use(express.static(path.join(__dirname, "../public")));
+// Servez des fichiers statiques uniquement en DEV
+if (process.env.NODE_ENV !== "production") {
+  app.use(express.static(path.join(__dirname, "../public")));
+}
 
+// ============================================
+// 3) RATE LIMITERS (APRÈS TRUST PROXY)
+// ============================================
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === "production" ? 10 : 1000, // Beaucoup plus en dev
@@ -81,6 +115,13 @@ const generalLimiter = rateLimit({
 app.use("/api/", generalLimiter);
 
 app.use("/api/login", loginLimiter);
+
+// ============================================
+// 4) ENDPOINTS SANTÉ ET ADMIN (AVANT LES ROUTES PRINCIPALES)
+// ============================================
+
+// Endpoint santé
+app.get("/health", (req, res) => res.status(200).json({ ok: true, t: Date.now() }));
 
 const settingsRouter = require("./routes/settings");
 app.use("/api/settings", settingsRouter);
@@ -136,6 +177,18 @@ const ownerOrSuperAdmin = (req, res, next) => {
   }
   next();
 };
+
+// ============================================
+// 5) ROUTE ADMIN POUR PURGE CACHE (APRÈS DÉFINITION DES MIDDLEWARES)
+// ============================================
+
+// Purge cache (protéger cette route si exposée)
+app.post("/admin/cache/flush", authMiddleware, ownerOrSuperAdmin, (req, res) => {
+  teamsCache = { data: null, ts: 0 };
+  membersDuesCache = { data: null, ts: 0 };
+  playerCountsCache = { data: null, ts: 0 };
+  res.json({ flushed: true, timestamp: Date.now() });
+});
 
 // Configuration de la BDD MySQL à partir des variables d'environnement
 const dbConfig = {
@@ -1622,10 +1675,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Erreur serveur interne" });
 });
 
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
-
 // Route d'accueil
 app.get("/", (req, res) => {
   res.json({
@@ -1642,6 +1691,12 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
+  if (process.env.NODE_ENV === "production") {
+    // En prod, Nginx sert le frontend → on ne renvoie rien depuis Node
+    return res.status(404).json({ error: "Not found" });
+  }
+  
+  // En dev seulement, on sert le index.html local
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 

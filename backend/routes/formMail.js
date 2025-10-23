@@ -4,7 +4,6 @@ const nodemailer = require("nodemailer");
 const { format } = require("date-fns");
 const { fr } = require("date-fns/locale");
 const fetch = require("node-fetch");
-const authMiddleware = require("../middleware/auth");
 const db = require("../db"); // Changez cette ligne
 
 function getLabelFromType(type) {
