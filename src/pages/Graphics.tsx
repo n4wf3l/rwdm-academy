@@ -42,12 +42,13 @@ import ApiKeyModal from "@/components/ApiKeyModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import OverduePaymentsModal from "@/components/graphics/OverduePaymentsModal";
 import ApiSettingsModal from "@/components/graphics/ApiSettingsModal";
+import { API_BASE } from "@/lib/api-config";
 
 /* ------------------------- CONFIG API (LOCAL/DEV) ------------------------- */
-// Vite: lire VITE_API_URL depuis ton .env; sinon fallback http://localhost:5000
-const API_BASE =
-  (typeof import.meta !== "undefined" && (import.meta as any)?.env?.VITE_API_URL) ||
-  `${window.location.protocol}//${window.location.hostname}:5000`;
+// Utilise la même logique que dans api-config.ts pour la cohérence
+// const API_BASE =
+//   (typeof import.meta !== "undefined" && (import.meta as any)?.env?.VITE_API_URL) ||
+//   `${window.location.protocol}//${window.location.hostname}:5000`;
 
 // Normalise "Eagles ... Academy" → "BEFA …"
 function normalizeBEFA(raw: string): string {
@@ -96,6 +97,7 @@ const extractSeasonFromInvoiceNumber = (
 };
 
 const Graphics: React.FC = () => {
+  const { t } = useTranslation();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterPlayer, setFilterPlayer] = useState("");
@@ -106,7 +108,6 @@ const Graphics: React.FC = () => {
   const [selCatInvs, setSelCatInvs] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"stats" | "categories">("stats");
   const [newReqCount, setNewReqCount] = useState(0);
-  const { t } = useTranslation();
   const API = `${API_BASE}/api/members-dues`;
 
   useEffect(() => {

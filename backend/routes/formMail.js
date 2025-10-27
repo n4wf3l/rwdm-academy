@@ -4,7 +4,6 @@ const nodemailer = require("nodemailer");
 const { format } = require("date-fns");
 const { fr } = require("date-fns/locale");
 const fetch = require("node-fetch");
-const authMiddleware = require("../middleware/auth");
 const db = require("../db"); // Changez cette ligne
 
 function getLabelFromType(type) {
@@ -330,7 +329,7 @@ router.post("/send-waiver-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parentEmail,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,
@@ -769,7 +768,7 @@ router.post("/send-appointment-confirmation", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: appointment.email,
       subject: template.subject,
       html: htmlContent,
@@ -838,7 +837,7 @@ router.post("/send-appointment-cancellation", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: appointment.email,
       subject: template.subject,
       html: htmlContent,
@@ -997,7 +996,7 @@ router.post("/send-selection-tests-email", async (req, res) => {
       .replace(/\n/g, "<br/>");
 
     const mailOptions = {
-      from: `"Daring Brussels Academy" <${process.env.EMAIL_USER}>`,
+      from: `"RWDM Brussels Academy" <${process.env.EMAIL_USER}>`,
       to: formData.parentEmail,
       subject: template.subject.replace(/{requestId}/g, requestId),
       html: htmlContent,

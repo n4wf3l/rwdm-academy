@@ -1,19 +1,14 @@
-﻿// API Configuration - Hybride DEV/PROD
-//
-// Configuration automatique des appels API :
-// - Développement : utilise http://localhost:5000
-// - Production : utilise VITE_API_URL si définie, sinon chemins relatifs (/api/...)
-//
-// Cela permet de déployer le frontend et backend sur le même domaine (chemins relatifs)
-// ou sur des domaines différents (via variable d'environnement).
+﻿// ✅ Vite expose import.meta.env.PROD et import.meta.env.VITE_*
+const IS_PROD = import.meta.env.PROD;
 
-// API configuration for the application
-export const API_BASE =
-  process.env.NODE_ENV === "production"
-    ? (import.meta.env.VITE_API_URL || "") // Utilise la variable d'environnement ou chemins relatifs par défaut
-    : "http://localhost:5000"; // En développement
+// Met ton backend si tu l’héberges ailleurs ;
+// si front+back sont sur le même domaine, laisse vide ("") pour chemins relatifs.
+const PROD_BASE = import.meta.env.VITE_API_URL || "";
 
-// Fetch configuration with authorization
+// ✅ Base API correcte pour Vite
+export const API_BASE = IS_PROD ? PROD_BASE : "http://localhost:5000";
+
+// ✅ Headers communs (inchangé)
 export const fetchConfig = {
   headers: {
     "Content-Type": "application/json",
@@ -21,7 +16,7 @@ export const fetchConfig = {
   },
 };
 
-// Axios configuration (if needed)
+// ✅ Pour axios si besoin
 export const getAxiosConfig = () => ({
   headers: {
     "Content-Type": "application/json",

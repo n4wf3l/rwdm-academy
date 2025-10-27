@@ -3,19 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SplashPublicationService } from "@/lib/splash-publication";
+import { resolveMediaUrl } from "@/lib/api-config";
 import { ActiveSplashPublicationResponse } from "@/types";
 
 // Helper function to convert image paths to URLs
 const toImageUrl = (raw?: string | null) => {
-  if (!raw) return "/placeholder-logo.png";
-  if (raw.startsWith("blob:") || raw.startsWith("data:")) return raw;
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (raw.startsWith("/uploads/")) {
-    // ✅ same-origin request through Vite proxy
-    return `/api/image/${raw.replace("/uploads/", "")}`;
-  }
-  return `/api/image/${raw}`;
+  return resolveMediaUrl(raw);
 };
 
 interface SplashPublicationPopupProps {

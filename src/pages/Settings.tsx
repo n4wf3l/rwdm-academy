@@ -550,7 +550,7 @@ const Settings: React.FC = () => {
                 approachDescription={approachDescription}
                 setApproachDescription={setApproachDescription}
                 approachPhoto={approachPhoto}
-                setApproachPhoto={setAcademyPhotos3}
+                setApproachPhoto={setApproachPhoto}
                 valueTitle1={valueTitle1}
                 setValueTitle1={setValueTitle1}
                 valueDesc1={valueDesc1}
