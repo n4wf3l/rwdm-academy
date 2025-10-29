@@ -13,7 +13,7 @@ export const translationsNL = {
   choose_language: "Kies uw taal",
   cancel: "Annuleren",
   academy_registration: "Inschrijvingsaanvraag voor RWDM",
-  befa_registration_request: "Inschrijvingsaanvraag voor BEFA",
+  befa_registration_request: "Inschrijvingsaanvraag voor Eagles Brussels",
   academy_registration_desc:
     "Inschrijvingsformulier om lid te worden van de RWDM Brussels Academy (U5-U9)",
   selection_tests: "Selectietestaanvraag",
