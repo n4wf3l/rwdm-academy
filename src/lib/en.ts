@@ -13,7 +13,7 @@ export const translationsEN = {
   choose_language: "Choose your language",
   cancel: "Cancel",
   academy_registration: "RWDM Registration Request",
-  befa_registration_request: "BEFA Registration Request",
+  befa_registration_request: "Eagles Brussels Registration Request",
   academy_registration_desc: "Form to register and join the academy (U5-U9)",
   selection_tests: "Selection Tests",
   selection_tests_desc:

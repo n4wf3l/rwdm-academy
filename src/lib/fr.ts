@@ -13,7 +13,7 @@ export const translationsFR = {
   choose_language: "Choisissez votre langue",
   cancel: "Annuler",
   academy_registration: "Demande d'inscription au RWDM",
-  befa_registration_request: "Demande d'inscription BEFA",
+  befa_registration_request: "Demande d'inscription Eagles Brussels",
   academy_registration_desc:
     "Formulaire d'inscription pour rejoindre l'académie RWDM Brussels (U5-U9)",
   selection_tests: "Demande de test de sélection",
