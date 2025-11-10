@@ -276,13 +276,26 @@ app.use((req, res, next) => {
 // Mettre à jour multer pour utiliser ce dossier
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    console.log('📁 Multer destination - uploadsDir:', uploadsDir);
+    console.log('📁 uploadsDir exists:', fs.existsSync(uploadsDir));
+    if (!fs.existsSync(uploadsDir)) {
+      console.log('📁 Creating uploadsDir...');
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
     cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+    const filename = Date.now() + "-" + file.originalname;
+    console.log('📄 Multer filename generated:', filename);
+    cb(null, filename);
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 20 * 1024 * 1024 // 20MB max
+  }
+});
 
 // ---------------------
 // Endpoint de connexion
@@ -946,17 +959,34 @@ app.get("/api/check-code/:code", async (req, res) => {
   }
 });
 
-app.post("/api/upload", upload.array("pdfFiles", 2), (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    console.error("❌ Aucun fichier reçu !");
-    return res.status(400).json({ error: "Aucun fichier téléchargé" });
-  }
+app.post("/api/upload", (req, res) => {
+  console.log('📤 Upload request received');
+  
+  upload.array("pdfFiles", 2)(req, res, (err) => {
+    if (err) {
+      console.error('❌ Multer error:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ error: 'Fichier trop volumineux (max 20MB)' });
+      }
+      return res.status(500).json({ error: 'Erreur lors de l\'upload: ' + err.message });
+    }
+    
+    console.log('📤 Files:', req.files);
+    console.log('📤 Body:', req.body);
+    
+    if (!req.files || req.files.length === 0) {
+      console.error("❌ Aucun fichier reçu !");
+      return res.status(400).json({ error: "Aucun fichier téléchargé" });
+    }
 
-  console.log("✅ Fichiers reçus :", req.files);
+    console.log("✅ Fichiers reçus :", req.files);
 
-  const filePaths = req.files.map((file) => `/uploads/${file.filename}`);
+    const filePaths = req.files.map((file) => `/uploads/${file.filename}`);
+    
+    console.log("✅ File paths generated:", filePaths);
 
-  res.json({ filePaths }); // On renvoie un tableau des chemins
+    res.json({ filePaths }); // On renvoie un tableau des chemins
+  });
 });
 
 // Endpoint pour ajouter un rendez-vous
