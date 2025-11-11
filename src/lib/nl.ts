@@ -14,6 +14,8 @@ export const translationsNL = {
   cancel: "Annuleren",
   academy_registration: "Inschrijvingsaanvraag voor RWDM",
   befa_registration_request: "Inschrijvingsaanvraag voor Eagles Brussels",
+  befa_registration_desc:
+    "Extra trainingen voor kinderen van U9 tot U12 op woensdagen en zondagen 's middags",
   academy_registration_desc:
     "Inschrijvingsformulier om lid te worden van de RWDM Brussels Academy (U5-U9)",
   selection_tests: "Selectietestaanvraag",
@@ -1836,6 +1838,7 @@ export const translationsNL = {
   // Splash Publications
   splash_publications: "Splash Publicaties",
   splash_publications_desc: "Beheer publicaties die verschijnen bij het opstarten van de site",
+  splash_edit_disabled_notice: "⚠️ De bewerkingsfunctie is tijdelijk uitgeschakeld en zal beschikbaar zijn in een toekomstige update. U kunt nog steeds bekijken, aanmaken, activeren/deactiveren en verwijderen van publicaties. Let op: er treedt een fout op als de afbeelding te groot is.",
   new_publication: "Nieuwe Publicatie",
   publications_count: "Publicaties ({{count}})",
   search_publications: "Zoeken op titel...",
