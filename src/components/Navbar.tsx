@@ -239,6 +239,19 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
               )}
             </Link>
 
+            {/* Logo Brussels - visible uniquement sur desktop */}
+            <motion.img
+              src="/logo_bruxelles_transparent.png"
+              alt="Logo Bruxelles"
+              className="hidden md:block h-10 w-10 object-contain"
+              loading="lazy"
+              width={40}
+              height={40}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            />
+
             <div className="flex flex-col items-start space-y-1">
               <span
                 className={cn(
