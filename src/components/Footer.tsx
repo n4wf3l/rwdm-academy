@@ -167,6 +167,17 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                       e.currentTarget.src = "/logo.png";
                     }}
                   />
+                  <motion.img
+                    src="/logo_bruxelles_transparent.png"
+                    alt="Logo Bruxelles"
+                    className="h-10 w-10 object-contain"
+                    loading="lazy"
+                    width={40}
+                    height={40}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                  />
                   <h3 className="font-bold text-xl text-rwdm-blue dark:text-white">
                     {clubName[currentLang] || "RWDM Academy"}
                   </h3>
