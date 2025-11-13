@@ -45,6 +45,12 @@ const FormSelector: React.FC<FormSelectorProps> = ({
       icon: ClipboardCheck,
     },
     {
+      id: "befa-registration",
+      name: t("befa_registration_request"),
+      description: t("befa_registration_desc"),
+      icon: GraduationCap,
+    },
+    {
       id: "selectionTests",
       name: t("selection_tests"),
       description: t("selection_tests_desc"),
@@ -72,8 +78,8 @@ const FormSelector: React.FC<FormSelectorProps> = ({
   ];
 
   return (
-    <div className={cn("w-full max-w-4xl mx-auto", className)}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+    <div className={cn("w-full max-w-5xl mx-auto", className)}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
         {formOptions.map((option) => {
           const isActive = currentForm === option.id;
           const Icon = option.icon;

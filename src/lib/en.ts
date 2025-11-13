@@ -14,6 +14,8 @@ export const translationsEN = {
   cancel: "Cancel",
   academy_registration: "RWDM Registration Request",
   befa_registration_request: "Eagles Brussels Registration Request",
+  befa_registration_desc:
+    "Additional training for children from U9 to U12 on Wednesdays and Sundays afternoons",
   academy_registration_desc: "Form to register and join the academy (U5-U9)",
   selection_tests: "Selection Tests",
   selection_tests_desc:
@@ -1791,6 +1793,7 @@ export const translationsEN = {
   // Splash Publications
   splash_publications: "Splash Publications",
   splash_publications_desc: "Manage publications that appear on site launch",
+  splash_edit_disabled_notice: "⚠️ The edit feature is temporarily disabled and will be available in an upcoming update. You can still view, create, activate/deactivate and delete publications. Note: an error occurs if the image is too large.",
   new_publication: "New Publication",
   publications_count: "Publications ({{count}})",
   search_publications: "Search by title...",

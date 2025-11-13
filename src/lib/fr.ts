@@ -14,6 +14,8 @@ export const translationsFR = {
   cancel: "Annuler",
   academy_registration: "Demande d'inscription au RWDM",
   befa_registration_request: "Demande d'inscription Eagles Brussels",
+  befa_registration_desc:
+    "Entraînements supplémentaires aux enfants de U9 à U12 les mercredis et dimanches après-midi",
   academy_registration_desc:
     "Formulaire d'inscription pour rejoindre l'académie RWDM Brussels (U5-U9)",
   selection_tests: "Demande de test de sélection",
@@ -1912,6 +1914,7 @@ export const translationsFR = {
   // Splash Publications
   splash_publications: "Publications Splash",
   splash_publications_desc: "Gérez les publications qui s'affichent au lancement du site",
+  splash_edit_disabled_notice: "⚠️ La fonctionnalité de modification est temporairement désactivée et sera disponible dans une prochaine mise à jour. Vous pouvez toujours voir, créer, activer/désactiver et supprimer les publications. Note: une erreur se produit si l'image est trop grande.",
   new_publication: "Nouvelle Publication",
   publications_count: "Publications ({{count}})",
   search_publications: "Rechercher par titre...",

@@ -51,9 +51,11 @@ import {
   ChevronLeft,
   ChevronRight,
   File,
+  AlertCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 import { API_BASE } from "@/lib/api-config";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // 👇 replace the whole toImageUrl with this version
 const toImageUrl = (raw?: string | null) => {
@@ -389,6 +391,20 @@ const SplashPublication: React.FC = () => {
           </Button>
         </motion.div>
 
+        {/* Notice de désactivation de la fonction d'édition */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <Alert className="bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-900">
+            <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-500" />
+            <AlertDescription className="text-orange-800 dark:text-orange-300 text-sm">
+              {t("splash_edit_disabled_notice")}
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -541,7 +557,9 @@ const SplashPublication: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => openEditDialog(publication)}
+                                disabled
+                                className="opacity-50 cursor-not-allowed"
+                                title={t("splash_edit_disabled_notice")}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>

@@ -285,8 +285,10 @@ const AccidentReportForm: React.FC<FormProps> = ({
       const response = await fetch(
         `${API_BASE}/api/upload`,
         {
-          ...fetchConfig,
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
           body: formData,
         }
       );
