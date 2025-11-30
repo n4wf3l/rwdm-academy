@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MedicalReportPDF from "./MedicalReportPDF";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -577,6 +578,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="playerLastName"
+                    name="playerLastName"
+                    autoComplete="family-name"
                     value={playerLastName}
                     onChange={(e) =>
                       setPlayerLastName(lettersOnly(e.target.value))
@@ -592,6 +595,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="playerFirstName"
+                    name="playerFirstName"
+                    autoComplete="given-name"
                     value={playerFirstName}
                     onChange={(e) =>
                       setPlayerFirstName(lettersOnly(e.target.value))
@@ -605,6 +610,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
                   <Label htmlFor="email">{t("label_email")}</Label>
                   <Input
                     id="email"
+                    name="email"
+                    autoComplete="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value.toLowerCase())}
@@ -645,6 +652,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
                           </Label>
                           <Input
                             id="accidentCode"
+                            name="accidentCode"
                             value={accidentCode}
                             readOnly
                             placeholder={t("placeholder_accident_code")}
@@ -668,25 +676,22 @@ const AccidentReportForm: React.FC<FormProps> = ({
                   <TabsContent value="healing-certificate">
                     {/* Section certificat de guérison */}
                     <div className="space-y-4">
-                      <div className="flex items-start gap-2">
-                        <input
-                          type="checkbox"
-                          id="confirmSent"
-                          checked={hasSentDeclaration}
-                          onChange={(e) =>
-                            setHasSentDeclaration(e.target.checked)
-                          }
-                          className="mt-1"
-                        />
-                        <label
-                          htmlFor="confirmSent"
-                          className="text-sm text-gray-700 dark:text-gray-300"
-                        >
-                          {t("checkbox_healing_sent")}
-                        </label>
-                      </div>
-
-                      {hasSentDeclaration && (
+                          <div className="flex items-start gap-2">
+                            <Checkbox
+                              id="confirmSent"
+                              checked={hasSentDeclaration}
+                              onCheckedChange={(checked) =>
+                                setHasSentDeclaration(!!checked)
+                              }
+                              className="mt-1"
+                            />
+                            <Label
+                              htmlFor="confirmSent"
+                              className="text-sm text-gray-700 dark:text-gray-300"
+                            >
+                              {t("checkbox_healing_sent")}
+                            </Label>
+                          </div>                      {hasSentDeclaration && (
                         <>
                           <div className="space-y-4">
                             <div>
@@ -695,6 +700,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
                               </Label>
                               <Input
                                 id="healingCode"
+                                name="healingCode"
                                 value={healingCode}
                                 onChange={(e) => {
                                   const val = e.target.value.toUpperCase();
@@ -744,9 +750,13 @@ const AccidentReportForm: React.FC<FormProps> = ({
                 <div className="space-y-6 mt-6">
                   {/* Date de l'accident */}
                   <div className="space-y-2">
-                    <Label htmlFor="accidentDate">
-                      {t("label_accident_date")}
-                    </Label>
+                    <Label htmlFor="accidentDate"> {t("label_accident_date")}</Label>
+                    <input
+                      type="hidden"
+                      id="accidentDate"
+                      name="accidentDate"
+                      value={accidentDate ? accidentDate.toISOString().slice(0, 10) : ""}
+                    />
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -790,7 +800,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
                         onValueChange={setAcademy}
                         required
                       >
-                        <SelectTrigger className="form-input-base">
+                        <SelectTrigger id="academy" name="academy" className="form-input-base">
                           <SelectValue placeholder={t("academy")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -804,7 +814,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
                     <div className="space-y-2">
                       <Label htmlFor="category">{t("label_category")}</Label>
                       <Select onValueChange={setCategory} required>
-                        <SelectTrigger className="form-input-base">
+                        <SelectTrigger id="category" name="category" className="form-input-base">
                           <SelectValue placeholder={t("category")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -823,6 +833,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
                     <Label htmlFor="phone">{t("label_phone")}</Label>
                     <Input
                       id="phone"
+                      name="phone"
+                      autoComplete="tel"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(numbersOnly(e.target.value))}
@@ -839,6 +851,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
                     </Label>
                     <Textarea
                       id="accidentDescription"
+                      name="accidentDescription"
                       value={accidentDescription}
                       onChange={(e) => setAccidentDescription(e.target.value)}
                       placeholder={t("placeholder_accident_description")}
@@ -882,22 +895,21 @@ const AccidentReportForm: React.FC<FormProps> = ({
         </Card>
 
         <div className="flex items-start space-x-3">
-          <input
-            type="checkbox"
+          <Checkbox
             id="privacyPolicy"
             checked={hasAcceptedPolicy}
-            onChange={(e) => setHasAcceptedPolicy(e.target.checked)}
+            onCheckedChange={(checked) => setHasAcceptedPolicy(!!checked)}
             className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
             required
           />
-          <label
+          <Label
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
           >
             <div
               dangerouslySetInnerHTML={{ __html: t("accept_policy_html") }}
             />
-          </label>
+          </Label>
         </div>
 
         <div className="flex justify-center">

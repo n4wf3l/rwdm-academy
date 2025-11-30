@@ -15,7 +15,7 @@ const LegalInfo: React.FC = () => {
         const data = await res.json();
         setGeneral(data.general);
       } catch (err) {
-        console.error("Erreur fetch settings general:", err);
+        // Silent error handling
       }
     };
     fetchGeneral();

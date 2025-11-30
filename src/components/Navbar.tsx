@@ -137,7 +137,6 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
               const blob = await imageResponse.blob();
               const dataUrl = URL.createObjectURL(blob);
               setLogoUrl(dataUrl);
-              console.log("✅ Logo chargé en Data URL");
             } else {
               console.log("❌ Échec du chargement de l'image, utilisation du placeholder");
               setLogoUrl("/placeholder-logo.png");

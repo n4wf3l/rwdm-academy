@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -319,6 +320,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="playerLastName"
+                    name="playerLastName"
+                    autoComplete="family-name"
                     className="form-input-base"
                     value={playerLastName}
                     onChange={(e) =>
@@ -335,6 +338,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="playerFirstName"
+                    name="playerFirstName"
+                    autoComplete="given-name"
                     className="form-input-base"
                     value={playerFirstName}
                     onChange={(e) =>
@@ -359,6 +364,9 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                       }}
                       onCalendarOpen={() => setIsCalendarOpen(true)}
                       onCalendarClose={() => setIsCalendarOpen(false)}
+                      required
+                      id="playerBirthDate"
+                      name="playerBirthDate"
                     />
                   </div>
                 </div>
@@ -367,6 +375,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   <Label htmlFor="currentClub">{t("label_current_club")}</Label>
                   <Input
                     id="currentClub"
+                    name="currentClub"
+                    autoComplete="organization"
                     className="form-input-base"
                     value={currentClub}
                     onChange={(e) =>
@@ -394,6 +404,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="parentLastName"
+                    name="parentLastName"
+                    autoComplete="family-name"
                     className="form-input-base"
                     value={parentLastName}
                     onChange={(e) =>
@@ -410,6 +422,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="parentFirstName"
+                    name="parentFirstName"
+                    autoComplete="given-name"
                     className="form-input-base"
                     value={parentFirstName}
                     onChange={(e) =>
@@ -424,6 +438,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   <Label htmlFor="parentPhone">{t("label_parent_phone")}</Label>
                   <Input
                     id="parentPhone"
+                    name="parentPhone"
+                    autoComplete="tel"
                     type="tel"
                     className="form-input-base"
                     value={parentPhone}
@@ -440,6 +456,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                   <Label htmlFor="parentEmail">{t("label_parent_email")}</Label>
                   <Input
                     id="parentEmail"
+                    name="parentEmail"
+                    autoComplete="email"
                     type="email"
                     className="form-input-base"
                     value={parentEmail}
@@ -512,7 +530,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
                     {t("label_approval_text")}
                   </Label>
                   <Select onValueChange={setApprovalText} required>
-                    <SelectTrigger className="form-input-base">
+                    <SelectTrigger id="approvalText" name="approvalText" className="form-input-base">
                       <SelectValue
                         placeholder={t("placeholder_approval_text")}
                       />
@@ -542,15 +560,14 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
         </Card>
 
         <div className="flex items-start space-x-3">
-          <input
-            type="checkbox"
+          <Checkbox
             id="privacyPolicy"
             checked={hasAcceptedPolicy}
-            onChange={(e) => setHasAcceptedPolicy(e.target.checked)}
+            onCheckedChange={(checked) => setHasAcceptedPolicy(!!checked)}
             className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
             required
           />
-          <label
+          <Label
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
           >
@@ -558,7 +575,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
               className="inline"
               dangerouslySetInnerHTML={{ __html: t("accept_policy_html") }}
             />
-          </label>
+          </Label>
         </div>
 
         <div className="flex justify-center">

@@ -10,6 +10,8 @@ export interface BirthDatePickerProps {
   onCalendarOpen?: () => void;
   onCalendarClose?: () => void;
   required?: boolean;
+  id?: string;
+  name?: string;
 }
 
 const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
@@ -18,6 +20,8 @@ const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
   onCalendarOpen,
   onCalendarClose,
   required = false,
+  id,
+  name,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobilePicker, setIsMobilePicker] = useState(false);
@@ -43,6 +47,8 @@ const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
     return (
       <input
         type="date"
+        id={id}
+        name={name}
         required={required}
         className="form-input-base w-full text-sm"
         value={selectedDate ? selectedDate.toISOString().slice(0, 10) : ""}
@@ -86,6 +92,8 @@ const BirthDatePicker: React.FC<BirthDatePickerProps> = ({
       }}
       open={isOpen}
       required={required}
+      id={id}
+      name={name}
     />
   );
 };

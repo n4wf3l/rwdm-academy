@@ -76,8 +76,6 @@ const Auth = () => {
       // Rediriger vers le dashboard
       navigate("/dashboard");
     } catch (error: any) {
-      console.error("Erreur de connexion:", error);
-
       // Déclencher les effets de vibration et de surlignage rouge
       setErrorShake(true);
       setErrorHighlight(true);
@@ -127,7 +125,9 @@ const Auth = () => {
                   <Label htmlFor="email">{t("auth_email_label")}</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
                     placeholder={t("auth_email_placeholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -151,7 +151,9 @@ const Auth = () => {
                   <div className="relative">
                     <Input
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

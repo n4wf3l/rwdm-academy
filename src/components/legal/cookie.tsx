@@ -14,7 +14,7 @@ const CookiesPolicy: React.FC = () => {
         const data = await res.json();
         setEmailClub(data.general.email || "");
       } catch (err) {
-        console.error("Erreur fetch email settings:", err);
+        // Silent error handling
       }
     };
     fetchSettings();

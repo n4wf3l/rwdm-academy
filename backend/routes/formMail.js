@@ -35,7 +35,11 @@ router.post("/send-registration-email", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     // Ajouter la configuration du transporter ici
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -51,12 +55,13 @@ router.post("/send-registration-email", async (req, res) => {
       },
     });
 
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       ["registration"]
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
@@ -117,9 +122,14 @@ router.post("/send-registration-email", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur détaillée:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       error: "Erreur lors de l'envoi de l'email",
       details: err.message,
@@ -217,7 +227,11 @@ router.post("/send-accident-report-email", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST, // Changé de SMTP_HOST
       port: +process.env.EMAIL_PORT, // Changé de SMTP_PORT
@@ -233,7 +247,7 @@ router.post("/send-accident-report-email", async (req, res) => {
     });
 
     // Récupérer le template depuis la base de données
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       [
         formData.documentLabel === "Certificat de guérison"
@@ -243,6 +257,7 @@ router.post("/send-accident-report-email", async (req, res) => {
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
@@ -269,9 +284,14 @@ router.post("/send-accident-report-email", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur détaillée:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       error: "Erreur lors de l'envoi de l'email",
       details: err.message,
@@ -291,7 +311,11 @@ router.post("/send-waiver-email", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST, // Changé de SMTP_HOST
       port: +process.env.EMAIL_PORT, // Changé de SMTP_PORT
@@ -307,12 +331,13 @@ router.post("/send-waiver-email", async (req, res) => {
     });
 
     // Récupérer le template depuis la base de données
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       ["waiver"]
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
@@ -338,9 +363,14 @@ router.post("/send-waiver-email", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur détaillée:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       error: "Erreur lors de l'envoi de l'email",
       details: err.message,
@@ -469,7 +499,11 @@ router.post("/send-decision-email", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes" });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     console.log(
       "📝 Données formData reçues:",
       JSON.stringify(formData, null, 2)
@@ -527,6 +561,7 @@ router.post("/send-decision-email", async (req, res) => {
         "❌ Aucun email valide trouvé dans les données :",
         formDataObj
       );
+      connection.release();
       return res
         .status(400)
         .json({ error: "Adresse email du destinataire non trouvée" });
@@ -547,12 +582,13 @@ router.post("/send-decision-email", async (req, res) => {
     });
 
     // Récupérer le template de confirmation/refus
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       [template]
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({
         message: "Template d'email non trouvé",
         template: template,
@@ -568,7 +604,7 @@ router.post("/send-decision-email", async (req, res) => {
     // Pour les emails vers l'Union Belge, ajouter l'adresse de l'Union
     if (template.includes("-notify")) {
       // Récupérer l'adresse email de l'Union Belge depuis la base de données
-      const [unionEmails] = await db.execute(
+      const [unionEmails] = await connection.execute(
         "SELECT * FROM email_recipients WHERE type = 'union_belge'"
       );
 
@@ -703,12 +739,17 @@ router.post("/send-decision-email", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({
       message: "Email envoyé avec succès",
       messageId: info.messageId,
     });
   } catch (err) {
     console.error("❌ Erreur détaillée:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       error: "Erreur lors de l'envoi de l'email",
       details: err.message,
@@ -723,7 +764,11 @@ router.post("/send-appointment-confirmation", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: +process.env.EMAIL_PORT,
@@ -739,12 +784,13 @@ router.post("/send-appointment-confirmation", async (req, res) => {
     });
 
     // Get template from database
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       ["appointment_scheduled"]
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
@@ -777,9 +823,14 @@ router.post("/send-appointment-confirmation", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur envoi rendez‑vous :", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({ error: "Erreur lors de l'envoi de l'email." });
   }
 });
@@ -796,7 +847,11 @@ router.post("/send-appointment-cancellation", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST, // Changed from SMTP_HOST
       port: process.env.EMAIL_PORT, // Changed from SMTP_PORT
@@ -808,12 +863,13 @@ router.post("/send-appointment-cancellation", async (req, res) => {
     });
 
     // Get template from database
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       ["appointment_cancelled"]
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
@@ -846,21 +902,36 @@ router.post("/send-appointment-cancellation", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email d'annulation envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email d'annulation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur envoi email d'annulation:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({ error: "Erreur lors de l'envoi de l'email." });
   }
 });
 
 // Get all email templates - Mettre ces routes AU DÉBUT
 router.get("/", async (req, res) => {
+  let connection;
   try {
-    const [templates] = await db.execute("SELECT * FROM emails");
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
+    const [templates] = await connection.execute("SELECT * FROM emails");
     console.log("Templates trouvés:", templates);
+
+    // Libérer la connexion
+    connection.release();
+
     res.json(templates);
   } catch (err) {
     console.error("Erreur récupération templates:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -870,7 +941,11 @@ router.patch("/:type", async (req, res) => {
   const { type } = req.params;
   const { subject, body } = req.body;
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     // Log pour débugger
     console.log("📝 Mise à jour du template:", {
       type,
@@ -879,35 +954,43 @@ router.patch("/:type", async (req, res) => {
     });
 
     // Vérifier d'abord si le template existe
-    const [existing] = await db.execute("SELECT * FROM emails WHERE type = ?", [
+    const [existing] = await connection.execute("SELECT * FROM emails WHERE type = ?", [
       type,
     ]);
 
     if (existing.length === 0) {
       // Si le template n'existe pas, on le crée
-      const [result] = await db.execute(
+      const [result] = await connection.execute(
         "INSERT INTO emails (type, subject, body) VALUES (?, ?, ?)",
         [type, subject, body]
       );
       console.log("✅ Nouveau template créé");
+      connection.release();
       return res.json({ message: "Template d'email créé avec succès" });
     }
 
     // Sinon, on met à jour le template existant
-    const [result] = await db.execute(
+    const [result] = await connection.execute(
       "UPDATE emails SET subject = ?, body = ?, updated_at = NOW() WHERE type = ?",
       [subject, body, type]
     );
 
     if (result.affectedRows === 0) {
       console.error("❌ Aucune ligne mise à jour pour le type:", type);
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
     console.log("✅ Template mis à jour avec succès");
+
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Template d'email mis à jour avec succès" });
   } catch (error) {
     console.error("❌ Erreur mise à jour template:", error);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       message: "Erreur serveur",
       details: error.message,
@@ -929,7 +1012,11 @@ router.post("/send-selection-tests-email", async (req, res) => {
     return res.status(400).json({ error: "Données manquantes." });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
@@ -940,12 +1027,13 @@ router.post("/send-selection-tests-email", async (req, res) => {
       },
     });
 
-    const [templates] = await db.execute(
+    const [templates] = await connection.execute(
       "SELECT * FROM emails WHERE type = ?",
       ["selection"]
     );
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Template d'email non trouvé" });
     }
 
@@ -1007,9 +1095,14 @@ router.post("/send-selection-tests-email", async (req, res) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("✅ Email envoyé:", info.messageId);
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email de confirmation envoyé avec succès." });
   } catch (err) {
     console.error("❌ Erreur détaillée:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       error: "Erreur lors de l'envoi de l'email",
       details: err.message,

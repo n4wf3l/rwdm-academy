@@ -40,7 +40,6 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
     // Store the current timestamp as last check time
     const now = Date.now().toString();
     sessionStorage.setItem('splashPubLastCheck', now);
-    console.log('SplashPublicationPopup: stored lastCheckTime:', new Date(parseInt(now)).toISOString());
 
     onClose();
   };

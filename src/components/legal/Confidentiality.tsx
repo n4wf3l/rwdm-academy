@@ -11,7 +11,7 @@ const Confidentiality: React.FC = () => {
     fetch(`${API_BASE}/api/settings`, fetchConfig)
       .then((res) => res.json())
       .then((data) => setEmailClub(data.general.email || ""))
-      .catch((err) => console.error("Erreur fetch email :", err));
+      .catch(() => {});
   }, []);
 
   const displayEmail = emailClub || "privacy@rwdmacademy.be";

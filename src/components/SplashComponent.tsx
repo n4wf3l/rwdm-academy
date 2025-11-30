@@ -50,7 +50,6 @@ const SplashComponent: React.FC<SplashComponentProps> = ({
               const blob = await imageResponse.blob();
               const dataUrl = URL.createObjectURL(blob);
               setLogoUrl(dataUrl);
-              console.log("✅ Logo du splash chargé en Data URL");
             } else {
               console.log("❌ Échec du chargement du logo splash, utilisation du placeholder");
               setLogoUrl("/logo.png");

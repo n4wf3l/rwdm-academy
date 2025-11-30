@@ -4,10 +4,17 @@ const db = require("../db");
 
 // GET - Récupérer les paramètres API
 router.get("/", async (req, res) => {
+  let connection;
   try {
-    const [rows] = await db.execute(
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
+    const [rows] = await connection.execute(
       "SELECT id, base_url, club_key, api_key, created_at, updated_at FROM api_settings ORDER BY id DESC LIMIT 1"
     );
+
+    // Libérer la connexion
+    connection.release();
 
     if (rows.length === 0) {
       return res.json({
@@ -20,6 +27,8 @@ router.get("/", async (req, res) => {
     return res.json(rows[0]);
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres API:", error);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       message: "Erreur serveur lors de la récupération des paramètres",
     });
@@ -36,9 +45,13 @@ router.put("/", async (req, res) => {
     });
   }
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     // Tester si une entrée existe déjà
-    const [existingRows] = await db.execute(
+    const [existingRows] = await connection.execute(
       "SELECT id FROM api_settings LIMIT 1"
     );
 
@@ -52,18 +65,21 @@ router.put("/", async (req, res) => {
         ? [base_url, club_key, api_key, api_secret]
         : [base_url, club_key, api_key];
 
-      await db.execute(query, params);
+      await connection.execute(query, params);
     } else {
       // Création
       const query =
         "INSERT INTO api_settings (base_url, club_key, api_key, api_secret, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
-      await db.execute(query, [
+      await connection.execute(query, [
         base_url,
         club_key,
         api_key,
         api_secret || null,
       ]);
     }
+
+    // Libérer la connexion
+    connection.release();
 
     return res.json({
       success: true,
@@ -72,6 +88,8 @@ router.put("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Erreur lors de la mise à jour des paramètres API:", error);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       message: "Erreur serveur lors de la mise à jour des paramètres",
     });

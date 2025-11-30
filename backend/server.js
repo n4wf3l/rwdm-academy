@@ -148,8 +148,12 @@ const dbPool = mysql.createPool({
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 20,
   queueLimit: 0,
+  acquireTimeout: 60000,
+  timeout: 60000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
 });
 
 // Clé secrète pour signer les tokens JWT à partir du .env
@@ -882,10 +886,12 @@ app.patch("/:id", async (req, res) => {
 
   try {
     // On stringify le JSON et on met à jour la colonne `data`
-    await db.execute(
+    const connection = await dbPool.getConnection();
+    await connection.execute(
       "UPDATE requests SET data = ?, updated_at = NOW() WHERE id = ?",
       [JSON.stringify(details), id]
     );
+    connection.release();
 
     res.json({ message: "Mise à jour réussie" });
   } catch (err) {
@@ -1089,7 +1095,9 @@ app.post("/appointments", async (req, res) => {
         INSERT INTO appointments (date, time, type, person_name, email, admin_id, notes) 
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
-    await db.query(sql, [date, time, type, personName, email, adminId, notes]);
+    const connection = await dbPool.getConnection();
+    await connection.query(sql, [date, time, type, personName, email, adminId, notes]);
+    connection.release();
 
     res.status(201).json({ message: "Rendez-vous ajouté avec succès" });
   } catch (error) {
@@ -1705,13 +1713,40 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Erreur serveur interne" });
 });
 
-// Route d'accueil
-app.get("/", (req, res) => {
-  res.json({
-    message: "RWDM Academy API",
-    status: "online",
-    version: "1.0",
-  });
+// Endpoint de santé pour surveiller l'état du pool de connexions
+app.get("/api/health", async (req, res) => {
+  try {
+    const connection = await dbPool.getConnection();
+    const poolInfo = {
+      totalConnections: dbPool.pool?.size || 0,
+      activeConnections: dbPool.pool?.used || 0,
+      idleConnections: dbPool.pool?.available || 0,
+      pendingConnections: dbPool.pool?.pending || 0,
+      borrowedConnections: dbPool.pool?.borrowed || 0,
+    };
+    connection.release();
+
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      database: {
+        connected: true,
+        pool: poolInfo,
+      },
+      uptime: process.uptime(),
+    });
+  } catch (error) {
+    console.error("Health check failed:", error);
+    res.status(503).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      database: {
+        connected: false,
+        error: error.message,
+      },
+      uptime: process.uptime(),
+    });
+  }
 });
 
 // Route catch-all pour servir index.html (SPA)

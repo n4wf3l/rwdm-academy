@@ -5,6 +5,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -661,7 +662,7 @@ const SplashPublication: React.FC = () => {
               
               <TabsContent value="fr" className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">{t("title_required")} (FR)</label>
+                  <Label className="block text-sm font-medium mb-1">{t("title_required")} (FR)</Label>
                   <Input
                     value={formData.title.fr}
                     onChange={(e) =>
@@ -671,9 +672,9 @@ const SplashPublication: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <Label className="block text-sm font-medium mb-1">
                     {t("publication_description")} (FR)
-                  </label>
+                  </Label>
                   <Textarea
                     value={formData.description.fr}
                     onChange={(e) =>
