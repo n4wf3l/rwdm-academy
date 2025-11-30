@@ -361,7 +361,7 @@ const Contact = () => {
                         name="name"
                         autoComplete="name"
                         className="form-input-base"
-                        placeholder="Votre nom"
+                        placeholder={t("contact_name_placeholder")}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                       />
@@ -379,7 +379,7 @@ const Contact = () => {
                         name="email"
                         autoComplete="email"
                         className="form-input-base"
-                        placeholder="Votre email"
+                        placeholder={t("contact_email_placeholder")}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                       />
@@ -444,7 +444,7 @@ const Contact = () => {
                       autoComplete="off"
                       rows={5}
                       className="form-input-base resize-none"
-                      placeholder="Votre message"
+                      placeholder={t("contact_message_placeholder")}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     ></textarea>

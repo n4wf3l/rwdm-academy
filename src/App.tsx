@@ -348,8 +348,8 @@ function App() {
           </Routes>
         </Router>
         
-        {/* Splash Publication Popup Overlay */}
-        {showPublicationPopup && activePublication && (
+        {/* Splash Publication Popup Overlay - Only show on public pages */}
+        {showPublicationPopup && activePublication && !window.location.pathname.startsWith('/dashboard') && !window.location.pathname.startsWith('/members') && !window.location.pathname.startsWith('/planning') && !window.location.pathname.startsWith('/documents') && !window.location.pathname.startsWith('/graphics') && !window.location.pathname.startsWith('/settings') && !window.location.pathname.startsWith('/emails') && !window.location.pathname.startsWith('/splash-publications') && (
           <SplashPublicationPopup
             publication={activePublication}
             onClose={() => {
