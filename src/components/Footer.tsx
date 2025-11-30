@@ -72,7 +72,6 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               const blob = await imageResponse.blob();
               const dataUrl = URL.createObjectURL(blob);
               setLogo(dataUrl);
-              console.log("✅ Footer: Logo chargé en Data URL");
             } else {
               console.log("❌ Footer: Échec du chargement de l'image, utilisation du placeholder");
               setLogo("/logo.png");

@@ -7,11 +7,18 @@ const path = require("path"); // ✅ Important
 
 // ✅ GET l'email enregistré
 router.get("/accident-report", async (req, res) => {
+  let connection;
   try {
-    const [rows] = await db.query(
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
+    const [rows] = await connection.query(
       "SELECT email FROM email_recipients WHERE type = ? LIMIT 1",
       ["accident-report"]
     );
+
+    // Libérer la connexion
+    connection.release();
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Email non trouvé" });
@@ -20,6 +27,8 @@ router.get("/accident-report", async (req, res) => {
     res.json({ email: rows[0].email });
   } catch (err) {
     console.error("❌ Erreur récupération email:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -30,17 +39,26 @@ router.put("/accident-report", async (req, res) => {
 
   if (!email) return res.status(400).json({ error: "Email requis." });
 
+  let connection;
   try {
-    await db.execute(
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
+    await connection.execute(
       `INSERT INTO email_recipients (type, email, created_at, updated_at)
        VALUES (?, ?, NOW(), NOW())
        ON DUPLICATE KEY UPDATE email = VALUES(email), updated_at = NOW()`,
       ["accident-report", email]
     );
 
+    // Libérer la connexion
+    connection.release();
+
     res.json({ message: "Email mis à jour avec succès." });
   } catch (err) {
     console.error("❌ Erreur mise à jour email:", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({ error: "Erreur serveur." });
   }
 });
@@ -50,10 +68,14 @@ router.post("/send-request/:id", async (req, res) => {
   const { id } = req.params;
   console.log("📩 Envoi d'un email pour la demande ID :", id);
 
+  let connection;
   try {
+    // Obtenir une connexion du pool
+    connection = await db.getConnection();
+
     // 1. Récupération de la demande
-    const [requests] = await db.query(
-      `SELECT r.*, 
+    const [requests] = await connection.query(
+      `SELECT r.*,
         CONCAT(u.firstName, ' ', u.lastName) as admin_name
       FROM requests r
       LEFT JOIN users u ON r.assigned_to = u.id
@@ -63,6 +85,7 @@ router.post("/send-request/:id", async (req, res) => {
 
     if (requests.length === 0) {
       console.log("❌ Demande non trouvée:", id);
+      connection.release();
       return res.status(404).json({
         message: "Demande non trouvée",
         requestId: id,
@@ -107,11 +130,12 @@ router.post("/send-request/:id", async (req, res) => {
     });
 
     // 3. Récupération du template d'email
-    const [templates] = await db.query("SELECT * FROM emails WHERE type = ?", [
+    const [templates] = await connection.query("SELECT * FROM emails WHERE type = ?", [
       emailType,
     ]);
 
     if (templates.length === 0) {
+      connection.release();
       return res.status(404).json({
         message: `Template d'email non trouvé pour le type ${emailType}`,
       });
@@ -122,12 +146,13 @@ router.post("/send-request/:id", async (req, res) => {
     // 4. Récupération de l'adresse email du destinataire
     // AVANT: const recipientType = ...
     // MODIFIÉ: Utilisation du même type de destinataire pour les deux types d'emails
-    const [emails] = await db.query(
+    const [emails] = await connection.query(
       "SELECT email FROM email_recipients WHERE type = ?",
       ["accident-report"] // Toujours utiliser accident-report comme destinataire
     );
 
     if (emails.length === 0) {
+      connection.release();
       return res.status(404).json({ message: "Email destinataire non trouvé" });
     }
 
@@ -201,16 +226,19 @@ router.post("/send-request/:id", async (req, res) => {
     console.log("✅ Email bien envoyé :", info.messageId);
 
     // 8. Mettre à jour le champ sent_at
-    await db.query("UPDATE requests SET sent_at = NOW() WHERE id = ?", [id]);
+    await connection.query("UPDATE requests SET sent_at = NOW() WHERE id = ?", [id]);
+
+    // Libérer la connexion
+    connection.release();
 
     res.json({ message: "Email envoyé avec succès !" });
   } catch (err) {
     console.error("❌ Erreur pendant l'envoi :", err);
+    // Libérer la connexion même en cas d'erreur
+    if (connection) connection.release();
     res.status(500).json({
       message: "Erreur lors de l'envoi de l'email.",
       error: err.message,
     });
   }
-});
-
-module.exports = router;
+});module.exports = router;

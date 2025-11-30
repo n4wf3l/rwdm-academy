@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Info, CalendarIcon } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, CalendarIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -421,7 +422,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     value={noyau}
                     required
                   >
-                    <SelectTrigger className="form-input-base">
+                    <SelectTrigger id="noyau" name="noyau" className="form-input-base">
                       <SelectValue
                         placeholder={t("selection_placeholder_category")}
                       />
@@ -454,7 +455,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     {t("selection_label_academy")}
                   </Label>
                   <Select onValueChange={setAcademy} value={academy} required>
-                    <SelectTrigger className="form-input-base">
+                    <SelectTrigger id="academy" name="academy" className="form-input-base">
                       <SelectValue
                         placeholder={t("selection_placeholder_academy")}
                       />
@@ -490,6 +491,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="lastName"
+                    name="lastName"
+                    autoComplete="family-name"
                     className="form-input-base"
                     value={lastName}
                     onChange={(e) => setLastName(lettersOnly(e.target.value))}
@@ -504,6 +507,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="firstName"
+                    name="firstName"
+                    autoComplete="given-name"
                     className="form-input-base"
                     value={firstName}
                     onChange={(e) => setFirstName(lettersOnly(e.target.value))}
@@ -520,6 +525,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     selectedDate={playerBirthDate}
                     onChange={setPlayerBirthDate}
                     required
+                    id="playerBirthDate"
+                    name="playerBirthDate"
                   />
                 </div>
 
@@ -527,6 +534,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   <Label htmlFor="phone">{t("selection_label_phone")}</Label>
                   <Input
                     id="phone"
+                    name="phone"
+                    autoComplete="tel"
                     type="tel"
                     className="form-input-base"
                     value={phone}
@@ -540,6 +549,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   <Label htmlFor="email">{t("selection_label_email")}</Label>
                   <Input
                     id="email"
+                    name="email"
+                    autoComplete="email"
                     type="email"
                     className="form-input-base"
                     value={email}
@@ -565,6 +576,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="currentClub"
+                    name="currentClub"
+                    autoComplete="organization"
                     className="form-input-base"
                     value={currentClub}
                     onChange={(e) =>
@@ -591,6 +604,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="previousClub"
+                    name="previousClub"
+                    autoComplete="organization"
                     className="form-input-base"
                     value={previousClub}
                     onChange={(e) =>
@@ -619,7 +634,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                       }}
                       value={position} // Ne pas transformer ici, assurez-vous plutôt que position est toujours undefined ou valide
                     >
-                      <SelectTrigger id="position" className="form-input-base">
+                      <SelectTrigger id="position" name="position" className="form-input-base">
                         {/* Approche directe pour forcer l'affichage du placeholder */}
                         {position ? (
                           <SelectValue>{position}</SelectValue>
@@ -658,6 +673,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="parentLastName"
+                    name="parentLastName"
+                    autoComplete="family-name"
                     className="form-input-base"
                     value={parentLastName}
                     onChange={(e) =>
@@ -674,6 +691,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="parentFirstName"
+                    name="parentFirstName"
+                    autoComplete="given-name"
                     className="form-input-base"
                     value={parentFirstName}
                     onChange={(e) =>
@@ -690,6 +709,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="parentPhone"
+                    name="parentPhone"
+                    autoComplete="tel"
                     type="tel"
                     className="form-input-base"
                     value={parentPhone}
@@ -708,6 +729,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                   </Label>
                   <Input
                     id="parentEmail"
+                    name="parentEmail"
+                    autoComplete="email"
                     type="email"
                     className="form-input-base"
                     value={parentEmail}
@@ -728,7 +751,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
                     value={parentRelation}
                     required
                   >
-                    <SelectTrigger className="form-input-base">
+                    <SelectTrigger id="parentRelation" name="parentRelation" className="form-input-base">
                       <SelectValue
                         placeholder={t("selection_placeholder_parent_relation")}
                       />
@@ -773,21 +796,23 @@ const SelectionTestsForm: React.FC<FormProps> = ({
 
         {/* Politique de confidentialité */}
         <div className="flex items-start space-x-3">
-          <input
-            type="checkbox"
+          <Checkbox
             id="privacyPolicy"
             checked={hasAcceptedPolicy}
-            onChange={(e) => setHasAcceptedPolicy(e.target.checked)}
+            onCheckedChange={(checked) => setHasAcceptedPolicy(!!checked)}
             className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
             required
           />
-          <label
+          <Label
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
-            dangerouslySetInnerHTML={{
-              __html: t("selection_accept_policy_html"),
-            }}
-          />
+          >
+            <div
+              dangerouslySetInnerHTML={{
+                __html: t("selection_accept_policy_html"),
+              }}
+            />
+          </Label>
         </div>
 
         <div className="flex justify-center">

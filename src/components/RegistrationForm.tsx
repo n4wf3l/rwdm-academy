@@ -442,7 +442,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                 subtitle={t("season_selection_desc")}
               >
                 <Select value={season} onValueChange={setSeason}>
-                  <SelectTrigger className="form-input-base">
+                  <SelectTrigger id="season" name="season" className="form-input-base">
                     <SelectValue placeholder={t("select_season_placeholder")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -462,7 +462,7 @@ const RegistrationForm: React.FC<FormProps> = ({
               >
                 {/* Sélecteur */}
                 <Select value={academy} onValueChange={setAcademy} disabled={disableAcademy}>
-                  <SelectTrigger className="form-input-base">
+                  <SelectTrigger id="academy" name="academy" className="form-input-base">
                     <SelectValue
                       placeholder={t("select_academy_placeholder")}
                     />
@@ -501,6 +501,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Label htmlFor="lastName">{t("label_last_name")}</Label>
                   <Input
                     id="lastName"
+                    name="lastName"
+                    autoComplete="family-name"
                     className="form-input-base"
                     value={lastName}
                     onChange={(e) => setLastName(lettersOnly(e.target.value))}
@@ -512,6 +514,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Label htmlFor="firstName">{t("label_first_name")}</Label>
                   <Input
                     id="firstName"
+                    name="firstName"
+                    autoComplete="given-name"
                     className="form-input-base"
                     value={firstName}
                     onChange={(e) => setFirstName(lettersOnly(e.target.value))}
@@ -526,12 +530,17 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <BirthDatePicker
                     selectedDate={birthDate ?? null}
                     onChange={handleBirthDateChange}
+                    required
+                    id="birthDate"
+                    name="birthDate"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="birthPlace">{t("label_birth_place")}</Label>
                   <Input
                     id="birthPlace"
+                    name="birthPlace"
+                    autoComplete="address-level2"
                     className="form-input-base"
                     value={birthPlace}
                     onChange={(e) => setBirthPlace(lettersOnly(e.target.value))}
@@ -543,6 +552,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Label htmlFor="address"> {t("label_address")}</Label>
                   <Input
                     id="address"
+                    name="address"
+                    autoComplete="address-line1"
                     className="form-input-base"
                     value={address}
                     onChange={(e) => setAddress(alphaNumeric(e.target.value))}
@@ -554,6 +565,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Label htmlFor="postalCode">{t("label_postal_code")}</Label>
                   <Input
                     id="postalCode"
+                    name="postalCode"
+                    autoComplete="postal-code"
                     className="form-input-base"
                     value={postalCode}
                     onChange={(e) => setPostalCode(numbersOnly(e.target.value))}
@@ -566,6 +579,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                   <Label htmlFor="city"> {t("label_city")}</Label>
                   <Input
                     id="city"
+                    name="city"
+                    autoComplete="address-level2"
                     className="form-input-base"
                     value={city}
                     onChange={(e) => setCity(lettersOnly(e.target.value))}
@@ -593,6 +608,8 @@ const RegistrationForm: React.FC<FormProps> = ({
 
                   <Input
                     id="currentClub"
+                    name="currentClub"
+                    autoComplete="organization"
                     className="form-input-base"
                     value={currentClub}
                     onChange={(e) =>
@@ -604,7 +621,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                 <div className="space-y-2">
                   <Label htmlFor="category"> {t("label_category")}</Label>
                   <Select onValueChange={setCategory} value={category}>
-                    <SelectTrigger className="form-input-base">
+                    <SelectTrigger id="category" name="category" className="form-input-base">
                       <SelectValue
                         placeholder={t("select_category_placeholder")}
                       />
@@ -643,7 +660,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                         onValueChange={setParent1Type}
                         value={parent1Type}
                       >
-                        <SelectTrigger className="form-input-base">
+                        <SelectTrigger id="parent1Type" name="parent1Type" className="form-input-base">
                           <SelectValue
                             placeholder={t("select_type_placeholder")}
                           />
@@ -668,6 +685,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent1LastName"
+                          name="parent1LastName"
+                          autoComplete="family-name"
                           className="form-input-base"
                           value={parent1LastName}
                           onChange={(e) =>
@@ -683,6 +702,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent1FirstName"
+                          name="parent1FirstName"
+                          autoComplete="given-name"
                           className="form-input-base"
                           value={parent1FirstName}
                           onChange={(e) =>
@@ -699,6 +720,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                       </Label>
                       <Input
                         id="parent1Phone"
+                        name="parent1Phone"
+                        autoComplete="tel"
                         className="form-input-base"
                         type="tel"
                         value={parent1Phone}
@@ -716,6 +739,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                       </Label>
                       <Input
                         id="parent1Email"
+                        name="parent1Email"
+                        autoComplete="email"
                         className="form-input-base"
                         type="email"
                         value={parent1Email}
@@ -733,6 +758,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                       <div className="relative">
                         <Input
                           id="parent1Address"
+                          name="parent1Address"
+                          autoComplete="address-line1"
                           className="form-input-base pr-8"
                           value={parent1Address}
                           onChange={(e) => {
@@ -762,6 +789,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                       <div className="relative">
                         <Input
                           id="parent1PostalCode"
+                          name="parent1PostalCode"
+                          autoComplete="postal-code"
                           className="form-input-base pr-8"
                           value={parent1PostalCode}
                           onChange={(e) => {
@@ -792,6 +821,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                       </Label>
                       <Input
                         id="parent1Gsm"
+                        name="parent1Gsm"
+                        autoComplete="tel"
                         className="form-input-base"
                         type="tel"
                         value={parent1Gsm}
@@ -839,7 +870,7 @@ const RegistrationForm: React.FC<FormProps> = ({
                           value={parent2Type}
                           onValueChange={setParent2Type}
                         >
-                          <SelectTrigger className="form-input-base">
+                          <SelectTrigger id="parent2Type" name="parent2Type" className="form-input-base">
                             <SelectValue
                               placeholder={t("select_type_placeholder")}
                             />
@@ -864,6 +895,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                           </Label>
                           <Input
                             id="parent2LastName"
+                            name="parent2LastName"
+                            autoComplete="family-name"
                             className="form-input-base"
                             value={parent2LastName}
                             onChange={(e) =>
@@ -878,6 +911,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                           </Label>
                           <Input
                             id="parent2FirstName"
+                            name="parent2FirstName"
+                            autoComplete="given-name"
                             className="form-input-base"
                             value={parent2FirstName}
                             onChange={(e) =>
@@ -894,6 +929,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent2Phone"
+                          name="parent2Phone"
+                          autoComplete="tel"
                           className="form-input-base"
                           type="tel"
                           value={parent2Phone}
@@ -911,6 +948,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent2Email"
+                          name="parent2Email"
+                          autoComplete="email"
                           className="form-input-base"
                           type="email"
                           value={parent2Email}
@@ -927,6 +966,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent2Address"
+                          name="parent2Address"
+                          autoComplete="address-line1"
                           className="form-input-base"
                           value={parent2Address}
                           onChange={(e) =>
@@ -942,6 +983,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent2PostalCode"
+                          name="parent2PostalCode"
+                          autoComplete="postal-code"
                           className="form-input-base"
                           value={parent2PostalCode}
                           onChange={(e) =>
@@ -958,6 +1001,8 @@ const RegistrationForm: React.FC<FormProps> = ({
                         </Label>
                         <Input
                           id="parent2Gsm"
+                          name="parent2Gsm"
+                          autoComplete="tel"
                           className="form-input-base"
                           type="tel"
                           value={parent2Gsm}
@@ -1023,7 +1068,7 @@ const RegistrationForm: React.FC<FormProps> = ({
             onCheckedChange={(checked) => setHasAcceptedPolicy(!!checked)}
             className="w-5 h-5 text-rwdm-blue border-gray-300 rounded focus:ring-rwdm-blue"
           />
-          <label
+          <Label
             htmlFor="privacyPolicy"
             className="text-sm text-gray-700 dark:text-gray-300"
             dangerouslySetInnerHTML={{ __html: t("accept_policy_html") }}

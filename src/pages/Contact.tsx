@@ -91,7 +91,7 @@ const Contact = () => {
         updateFromGeneral(data.general);
         updateFromContact(data.contact); // ✅ ajoute ceci
       } catch (err) {
-        console.error("Erreur fetch settings:", err);
+        // Error handled silently for production
       }
     };
 
@@ -337,7 +337,6 @@ const Contact = () => {
                         Date.now().toString()
                       );
                     } catch (error) {
-                      console.error(error);
                       toast({
                         title: t("toast.sendErrorTitle"),
                         description: t("toast.sendErrorDescription"),
@@ -359,6 +358,8 @@ const Contact = () => {
                       <input
                         type="text"
                         id="name"
+                        name="name"
+                        autoComplete="name"
                         className="form-input-base"
                         placeholder="Votre nom"
                         value={name}
@@ -375,6 +376,8 @@ const Contact = () => {
                       <input
                         type="email"
                         id="email"
+                        name="email"
+                        autoComplete="email"
                         className="form-input-base"
                         placeholder="Votre email"
                         value={email}
@@ -384,11 +387,17 @@ const Contact = () => {
                   </div>
 
                   <div>
+                    <label
+                      htmlFor="subject"
+                      className="block text-sm font-medium mb-1"
+                    >
+                      {t("contact_subject")}
+                    </label>
                     <Select
                       value={subject}
                       onValueChange={(value) => setSubject(value)}
                     >
-                      <SelectTrigger id="subject" className="form-input-base">
+                      <SelectTrigger id="subject" name="subject" className="form-input-base">
                         <SelectValue
                           placeholder={t("contact_select_subject")}
                         />
@@ -431,6 +440,8 @@ const Contact = () => {
                     </label>
                     <textarea
                       id="message"
+                      name="message"
+                      autoComplete="off"
                       rows={5}
                       className="form-input-base resize-none"
                       placeholder="Votre message"

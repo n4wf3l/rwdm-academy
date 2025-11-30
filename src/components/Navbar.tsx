@@ -12,6 +12,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast } from "@/hooks/use-toast";
 import { API_BASE, fetchConfig } from "@/lib/api-config";
+import MobileMenu from "./MobileMenu";
 
 interface NavbarProps {
   className?: string;
@@ -137,7 +138,6 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
               const blob = await imageResponse.blob();
               const dataUrl = URL.createObjectURL(blob);
               setLogoUrl(dataUrl);
-              console.log("✅ Logo chargé en Data URL");
             } else {
               console.log("❌ Échec du chargement de l'image, utilisation du placeholder");
               setLogoUrl("/placeholder-logo.png");
@@ -354,75 +354,13 @@ const Navbar: React.FC<NavbarProps> = ({ className }) => {
             <Menu size={28} />
           </button>
         </div>
-
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {isMobileMenuModalOpen && (
-            <motion.div
-              key="mobile-links-modal"
-              onClick={() => setIsMobileMenuModalOpen(false)}
-              className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {/* ❌ Croix toujours tout en haut à droite de l'écran */}
-              <button
-                onClick={() => setIsMobileMenuModalOpen(false)}
-                className="absolute top-5 right-5 text-white hover:text-rwdm-red transition z-[10000]"
-                aria-label="Fermer"
-              >
-                <X size={30} />
-              </button>
-
-              <motion.div
-                onClick={(e) => e.stopPropagation()}
-                initial={{ y: 40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 40, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center justify-center space-y-10 text-white text-[22px] font-light tracking-wider w-full px-8"
-              >
-                {[
-                  { to: "/", label: t("home"), icon: <Home size={22} /> },
-                  { to: "/about", label: t("about"), icon: <Info size={22} /> },
-                  {
-                    to: "/contact",
-                    label: t("contact"),
-                    icon: <Mail size={22} />,
-                  },
-                ].map(({ to, label, icon }) => {
-                  const isActive = location.pathname === to;
-                  return (
-                    <Link
-                      key={to}
-                      to={to}
-                      onClick={() => setIsMobileMenuModalOpen(false)}
-                      className="relative flex items-center justify-center gap-3"
-                    >
-                      {icon}
-                      <span>{label}</span>
-
-                      {isActive && (
-                        <motion.div
-                          className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-1 rounded-full"
-                          style={{
-                            background:
-                              "linear-gradient(to right, white 0%, white 50%, red 50%, red 100%)",
-                          }}
-                          initial={{ width: 0 }}
-                          animate={{ width: "100%" }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
-                        />
-                      )}
-                    </Link>
-                  );
-                })}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.header>
+
+      {/* Mobile menu - rendu en dehors du header pour éviter les conflits d'animation */}
+      <MobileMenu
+        isOpen={isMobileMenuModalOpen}
+        onClose={() => setIsMobileMenuModalOpen(false)}
+      />
 
       {/* Bloc utilisateur + bouton de déconnexion côte à côte en bas à droite */}
       {isLoggedIn && (

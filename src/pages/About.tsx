@@ -138,7 +138,6 @@ const About = () => {
         const data = await res.json();
         setAboutData(data.about || aboutData);
       } catch (err) {
-        console.error("Erreur fetch settings:", err);
         toast({
           title: "Erreur",
           description: "Impossible de charger les informations de la page (local).",
@@ -175,7 +174,6 @@ const About = () => {
           });
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des membres d'équipe:", error);
         toast({
           title: "Erreur",
           description: "Erreur lors de la récupération des membres d'équipe.",

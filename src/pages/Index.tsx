@@ -160,9 +160,6 @@ const Index: React.FC = () => {
       const maintenanceData = await maintenanceRes.json();
       const formMaintenanceData = await formMaintenanceRes.json();
 
-      // Debug the shape of the data
-      console.log("Raw maintenance data:", formMaintenanceData);
-
       // Map database form_type keys to frontend keys if needed
       const formMaintenance = formMaintenanceData.states || {};
 
@@ -215,13 +212,6 @@ const Index: React.FC = () => {
 
   // Rendu du formulaire avec Suspense pour le lazy loading
   const renderForm = () => {
-    // Ajouter ces logs au début
-    console.log("Current form maintenance states:", status.formMaintenance);
-    console.log(
-      `Should ${currentForm} be in maintenance?`,
-      status.formMaintenance[currentForm]
-    );
-
     // Vérifier l'état de maintenance du formulaire actuel
     if (status.formMaintenance[currentForm]) {
       return (

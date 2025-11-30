@@ -13,7 +13,7 @@ const Cgu: React.FC = () => {
       .then((data) => {
         setEmailClub(data.general.email || "");
       })
-      .catch((err) => console.error("Erreur fetch email :", err));
+      .catch(() => {});
   }, []);
 
   const displayEmail = emailClub || "contact@rwdmacademy.be";
