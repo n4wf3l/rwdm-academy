@@ -455,7 +455,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               type="email"
               value={newAppointmentEmail}
               onChange={(e) => setNewAppointmentEmail(e.target.value)}
-              placeholder={t("contact_email_placeholder")}
+              placeholder={t("appointment_contact_email_placeholder")}
             />
           </div>
 

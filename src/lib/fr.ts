@@ -101,6 +101,10 @@ export const translationsFR = {
   contact_subject_incident: "Incident",
   contact_subject_technical: "Problème technique",
   contact_subject_other: "Autre",
+  contact_name_placeholder: "Votre nom complet",
+  contact_email_placeholder: "Votre adresse email",
+  contact_subject_placeholder: "Sélectionnez un sujet",
+  contact_message_placeholder: "Votre message...",
   inbox: "Boîte de réception",
   auth_title: "Authentification",
   auth_subtitle: "Accès réservé au personnel autorisé",
@@ -385,7 +389,7 @@ export const translationsFR = {
     <br/><br/>
     À la fin de la blessure, vous devrez téléverser sur cette page
     votre certificat de guérison ainsi que les frais transmis par
-    votre médecin. Ces documents seront également approuvés par le
+    votre médecin. Veuillez également joindre en annexe votre dossier accident reçu par notre secrétariat par mail, rempli et signé. Ces documents seront également approuvés par le
     club avant d’être envoyés à l’Union belge pour un éventuel
     remboursement.
     <br/><br/>
@@ -951,7 +955,7 @@ export const translationsFR = {
   person_name_label: "Nom de la personne",
   person_name_placeholder: "Entrez le nom complet",
   contact_email_label: "Email de contact",
-  contact_email_placeholder: "exemple@email.com",
+  appointment_contact_email_placeholder: "exemple@email.com",
   select_time_placeholder: "Sélectionnez une heure",
   assigned_admin_label: "Administrateur assigné",
   select_admin_placeholder: "Sélectionnez un administrateur",

@@ -100,6 +100,10 @@ export const translationsNL = {
   contact_subject_incident: "Incident",
   contact_subject_technical: "Technisch probleem",
   contact_subject_other: "Anders",
+  contact_name_placeholder: "Uw volledige naam",
+  contact_email_placeholder: "Uw e-mailadres",
+  contact_subject_placeholder: "Selecteer een onderwerp",
+  contact_message_placeholder: "Uw bericht...",
   inbox: "Inbox",
   auth_title: "Authenticatie",
   auth_subtitle: "Toegang voorbehouden aan gemachtigd personeel",
@@ -357,7 +361,7 @@ export const translationsNL = {
       <br/><br/>
       De verklaring wordt eerst goedgekeurd door de club en vervolgens door de KBVB verwerkt. De medische kosten zijn in eerste instantie voor uw eigen rekening.
       <br/><br/>
-      Na genezing moet u op deze pagina uw genezingscertificaat en de kosten van uw arts uploaden. Deze documenten worden ook door de club goedgekeurd voordat ze naar de KBVB worden gestuurd voor eventuele terugbetaling.
+      Na genezing moet u op deze pagina uw genezingscertificaat en de kosten van uw arts uploaden. Voeg ook uw door ons secretariaat per e-mail ontvangen ongevalsdossier bij, ingevuld en ondertekend. Deze documenten worden ook door de club goedgekeurd voordat ze naar de KBVB worden gestuurd voor eventuele terugbetaling.
       <br/><br/>
       <span class="font-semibold text-gray-700 dark:text-gray-300">
         Download ook de PDF hieronder, laat uw arts deze invullen en voeg hem toe als PDF-bestand bij de ongevalsaangifte.
@@ -889,7 +893,7 @@ export const translationsNL = {
   person_name_label: "Naam van de persoon",
   person_name_placeholder: "Volledige naam invoeren",
   contact_email_label: "Contact e-mail",
-  contact_email_placeholder: "voorbeeld@email.com",
+  appointment_contact_email_placeholder: "voorbeeld@email.com",
   select_time_placeholder: "Selecteer een tijd",
   assigned_admin_label: "Toegewezen beheerder",
   select_admin_placeholder: "Selecteer een beheerder",

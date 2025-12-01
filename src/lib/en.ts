@@ -99,6 +99,10 @@ export const translationsEN = {
   contact_subject_incident: "Incident",
   contact_subject_technical: "Technical issue",
   contact_subject_other: "Other",
+  contact_name_placeholder: "Your full name",
+  contact_email_placeholder: "Your email address",
+  contact_subject_placeholder: "Select a subject",
+  contact_message_placeholder: "Your message...",
   inbox: "Inbox",
   auth_title: "Authentication",
   auth_subtitle: "Access restricted to authorized personnel",
@@ -352,7 +356,7 @@ export const translationsEN = {
       <br/><br/>
       The report is first validated by the club and then forwarded to the Belgian FA. Medical expenses are initially at your own charge.
       <br/><br/>
-      At the end of your recovery, you must upload your healing certificate and your doctor's fees on this page. These documents will also be approved by the club before being sent to the Belgian FA for possible reimbursement.
+      At the end of your recovery, you must upload your healing certificate and your doctor's fees on this page. Please also attach your accident report received by our secretariat via email, completed and signed. These documents will also be approved by the club before being sent to the Belgian FA for possible reimbursement.
       <br/><br/>
       <span class="font-semibold text-gray-700 dark:text-gray-300">
         Please also download the PDF below, have your doctor complete it, then attach it as a PDF when reporting the accident.
@@ -860,7 +864,7 @@ export const translationsEN = {
   person_name_label: "Person’s name",
   person_name_placeholder: "Enter full name",
   contact_email_label: "Contact email",
-  contact_email_placeholder: "example@email.com",
+  appointment_contact_email_placeholder: "example@email.com",
   select_time_placeholder: "Select a time",
   assigned_admin_label: "Assigned administrator",
   select_admin_placeholder: "Select an administrator",

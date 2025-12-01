@@ -37,11 +37,8 @@ interface FormSectionProps {
 
 const CURRENT_DATE = new Date();
 const CURRENT_YEAR = CURRENT_DATE.getFullYear();
-const NEXT_YEAR = CURRENT_YEAR + 1;
 
-const AFTER_JULY_31 = CURRENT_DATE.getMonth() >= 7;
-
-const BASE_YEAR = AFTER_JULY_31 ? NEXT_YEAR : CURRENT_YEAR - 1;
+const BASE_YEAR = CURRENT_YEAR;
 
 const SEASONS = [
   `${BASE_YEAR}/${BASE_YEAR + 1}`,
