@@ -361,7 +361,7 @@ export const translationsNL = {
       <br/><br/>
       De verklaring wordt eerst goedgekeurd door de club en vervolgens door de KBVB verwerkt. De medische kosten zijn in eerste instantie voor uw eigen rekening.
       <br/><br/>
-      Na genezing moet u op deze pagina uw genezingscertificaat en de kosten van uw arts uploaden. Deze documenten worden ook door de club goedgekeurd voordat ze naar de KBVB worden gestuurd voor eventuele terugbetaling.
+      Na genezing moet u op deze pagina uw genezingscertificaat en de kosten van uw arts uploaden. Voeg ook uw door ons secretariaat per e-mail ontvangen ongevalsdossier bij, ingevuld en ondertekend. Deze documenten worden ook door de club goedgekeurd voordat ze naar de KBVB worden gestuurd voor eventuele terugbetaling.
       <br/><br/>
       <span class="font-semibold text-gray-700 dark:text-gray-300">
         Download ook de PDF hieronder, laat uw arts deze invullen en voeg hem toe als PDF-bestand bij de ongevalsaangifte.

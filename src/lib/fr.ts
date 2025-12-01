@@ -389,7 +389,7 @@ export const translationsFR = {
     <br/><br/>
     À la fin de la blessure, vous devrez téléverser sur cette page
     votre certificat de guérison ainsi que les frais transmis par
-    votre médecin. Ces documents seront également approuvés par le
+    votre médecin. Veuillez également joindre en annexe votre dossier accident reçu par notre secrétariat par mail, rempli et signé. Ces documents seront également approuvés par le
     club avant d’être envoyés à l’Union belge pour un éventuel
     remboursement.
     <br/><br/>

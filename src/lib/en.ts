@@ -356,7 +356,7 @@ export const translationsEN = {
       <br/><br/>
       The report is first validated by the club and then forwarded to the Belgian FA. Medical expenses are initially at your own charge.
       <br/><br/>
-      At the end of your recovery, you must upload your healing certificate and your doctor's fees on this page. These documents will also be approved by the club before being sent to the Belgian FA for possible reimbursement.
+      At the end of your recovery, you must upload your healing certificate and your doctor's fees on this page. Please also attach your accident report received by our secretariat via email, completed and signed. These documents will also be approved by the club before being sent to the Belgian FA for possible reimbursement.
       <br/><br/>
       <span class="font-semibold text-gray-700 dark:text-gray-300">
         Please also download the PDF below, have your doctor complete it, then attach it as a PDF when reporting the accident.
