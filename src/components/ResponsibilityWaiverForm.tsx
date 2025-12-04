@@ -142,8 +142,10 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
         const uploadResponse = await fetch(
           `${API_BASE}/api/upload`,
           {
-            ...fetchConfig,
             method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
             body: signatureFormData,
           }
         );
