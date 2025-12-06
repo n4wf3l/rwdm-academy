@@ -321,7 +321,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
           </div>
 
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             <Link to="/dashboard">
               <Button
                 variant={isActive("/dashboard") ? "default" : "ghost"}
