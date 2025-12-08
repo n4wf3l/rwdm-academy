@@ -198,6 +198,17 @@ export const translationsFR = {
   spellcheck_field_parent1_last_name: "Nom du parent principal",
   spellcheck_field_parent1_first_name: "Prénom du parent principal",
   spellcheck_field_parent1_email: "Email du parent principal",
+  
+  // Time translations
+  time_just_now: "À l'instant",
+  time_minutes_ago: "Il y a {{count}} minute{{plural}}",
+  time_hours_ago: "Il y a {{count}} heure{{plural}}",
+  time_days_ago: "Il y a {{count}} jour{{plural}}",
+  time_rejected_few_minutes: "Rejeté il y a quelques minutes",
+  time_rejected_hours_ago: "Rejeté il y a {{count}} heure{{plural}}",
+  time_deleted_hours_ago: "Supprimé il y a {{hours}} heure{{hoursPlural}}{{minutes}}",
+  time_deleted_minutes_ago: "Supprimé il y a {{count}} minute{{plural}}",
+  time_deleted_and_minutes: " et {{count}} minute{{plural}}",
   spellcheck_field_parent2_last_name: "Nom du parent secondaire",
   spellcheck_field_parent2_first_name: "Prénom du parent secondaire",
   spellcheck_field_parent2_email: "Email du parent secondaire",

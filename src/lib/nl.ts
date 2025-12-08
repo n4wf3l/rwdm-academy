@@ -309,6 +309,17 @@ export const translationsNL = {
   selection_spellcheck_field_parent_last_name: "Achternaam ouder",
   selection_spellcheck_field_parent_first_name: "Voornaam ouder",
   selection_spellcheck_field_parent_email: "E-mail ouder",
+  
+  // Time translations
+  time_just_now: "Zojuist",
+  time_minutes_ago: "{{count}} min{{plural}} geleden",
+  time_hours_ago: "{{count}} uur geleden",
+  time_days_ago: "{{count}} dag{{plural}} geleden",
+  time_rejected_few_minutes: "Een paar minuten geleden afgewezen",
+  time_rejected_hours_ago: "{{count}} uur geleden afgewezen",
+  time_deleted_hours_ago: "{{hours}} uur geleden verwijderd{{minutes}}",
+  time_deleted_minutes_ago: "{{count}} min{{plural}} geleden verwijderd",
+  time_deleted_and_minutes: " en {{count}} min{{plural}}",
 
   selection_error_birthdate_missing_title: "Fout",
   selection_error_birthdate_missing_desc:

@@ -304,6 +304,17 @@ export const translationsEN = {
   selection_spellcheck_field_parent_last_name: "Parent's last name",
   selection_spellcheck_field_parent_first_name: "Parent's first name",
   selection_spellcheck_field_parent_email: "Parent's email",
+  
+  // Time translations
+  time_just_now: "Just now",
+  time_minutes_ago: "{{count}} minute{{plural}} ago",
+  time_hours_ago: "{{count}} hour{{plural}} ago",
+  time_days_ago: "{{count}} day{{plural}} ago",
+  time_rejected_few_minutes: "Rejected a few minutes ago",
+  time_rejected_hours_ago: "Rejected {{count}} hour{{plural}} ago",
+  time_deleted_hours_ago: "Deleted {{hours}} hour{{hoursPlural}} ago{{minutes}}",
+  time_deleted_minutes_ago: "Deleted {{count}} minute{{plural}} ago",
+  time_deleted_and_minutes: " and {{count}} minute{{plural}}",
 
   selection_error_birthdate_missing_title: "Error",
   selection_error_birthdate_missing_desc:

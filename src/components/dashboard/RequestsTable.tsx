@@ -216,13 +216,22 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    if (seconds < 60) return "À l’instant";
+    if (seconds < 60) return t("time_just_now");
     if (minutes < 60)
-      return `Il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
-    if (hours < 24) return `Il y a ${hours} heure${hours > 1 ? "s" : ""}`;
-    if (days < 3) return `Il y a ${days} jour${days > 1 ? "s" : ""}`;
+      return t("time_minutes_ago")
+        .replace("{{count}}", minutes.toString())
+        .replace("{{plural}}", minutes > 1 ? "s" : "");
+    if (hours < 24)
+      return t("time_hours_ago")
+        .replace("{{count}}", hours.toString())
+        .replace("{{plural}}", hours > 1 ? "s" : "");
+    if (days < 3)
+      return t("time_days_ago")
+        .replace("{{count}}", days.toString())
+        .replace("{{plural}}", days > 1 ? "s" : "");
 
-    return past.toLocaleDateString("fr-BE");
+    const locale = lang === "fr" ? "fr-BE" : lang === "nl" ? "nl-BE" : "en-GB";
+    return past.toLocaleDateString(locale);
   }
 
   const assignedValue = "none"; // Define a default value for assignedValue
@@ -237,16 +246,18 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
   }
 
   function formatRejectedTime(rejectedAt: Date | undefined, now: Date): string {
-    if (!rejectedAt || isNaN(rejectedAt.getTime())) return "Rejeté";
+    if (!rejectedAt || isNaN(rejectedAt.getTime())) return t("status_rejected");
 
     const diffMs = now.getTime() - rejectedAt.getTime();
     const totalMinutes = Math.floor(diffMs / 60000);
 
     if (totalMinutes < 59) {
-      return "Rejeté il y a quelques minutes";
+      return t("time_rejected_few_minutes");
     } else {
       const hours = Math.floor(totalMinutes / 60);
-      return `Rejeté il y a ${hours} heure${hours > 1 ? "s" : ""}`;
+      return t("time_rejected_hours_ago")
+        .replace("{{count}}", hours.toString())
+        .replace("{{plural}}", hours > 1 ? "s" : "");
     }
   }
 
@@ -269,11 +280,19 @@ const RequestsTable: React.FC<RequestsTableProps> = ({
 
       // Exemple de format : "Supprimé il y a 3 heures et 15 minutes"
       if (hours > 0) {
-        return `Supprimé il y a ${hours} heure${hours > 1 ? "s" : ""}${
-          minutes > 0 ? ` et ${minutes} minute${minutes > 1 ? "s" : ""}` : ""
-        }`;
+        const minutesPart = minutes > 0
+          ? t("time_deleted_and_minutes")
+              .replace("{{count}}", minutes.toString())
+              .replace("{{plural}}", minutes > 1 ? "s" : "")
+          : "";
+        return t("time_deleted_hours_ago")
+          .replace("{{hours}}", hours.toString())
+          .replace("{{hoursPlural}}", hours > 1 ? "s" : "")
+          .replace("{{minutes}}", minutesPart);
       } else {
-        return `Supprimé il y a ${minutes} minute${minutes > 1 ? "s" : ""}`;
+        return t("time_deleted_minutes_ago")
+          .replace("{{count}}", minutes.toString())
+          .replace("{{plural}}", minutes > 1 ? "s" : "");
       }
     }
 
