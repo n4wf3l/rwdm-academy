@@ -139,6 +139,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState<boolean>(false);
   const [isCooldown, setIsCooldown] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
   // Gestion des dates avec vérification
   const handleStartDateChange = (date: Date | undefined) => {
@@ -282,6 +283,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
   };
 
   const finalSubmit = async () => {
+    setIsSubmitting(true);
     // S'assurer que noyau est bien le code court (U15, U19, etc.)
     const categoryCode = noyau.split(" ")[0];
 
@@ -363,6 +365,8 @@ const SelectionTestsForm: React.FC<FormProps> = ({
         description: t("selection_error_submission_description"),
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -860,6 +864,7 @@ const SelectionTestsForm: React.FC<FormProps> = ({
           { label: "Email du parent", value: parentEmail },
         ]}
         title="Vérification des informations pour les tests"
+        loading={isSubmitting}
       />
     </>
   );

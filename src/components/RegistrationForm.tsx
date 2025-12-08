@@ -119,6 +119,7 @@ const RegistrationForm: React.FC<FormProps> = ({
   const [signature, setSignature] = useState<string | null>(null);
   const [isSpellCheckOpen, setIsSpellCheckOpen] = useState(false);
   const [hasAcceptedPolicy, setHasAcceptedPolicy] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const currentDate = format(new Date(), "dd/MM/yyyy");
 
   const spellCheckFields = [
@@ -197,6 +198,7 @@ const RegistrationForm: React.FC<FormProps> = ({
   }
 
   const finalSubmit = async () => {
+    setIsSubmitting(true);
     const requestData = {
       type: "registration",
       formData: {
@@ -279,6 +281,8 @@ const RegistrationForm: React.FC<FormProps> = ({
         description: t("toast_error_description"),
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1103,6 +1107,7 @@ const RegistrationForm: React.FC<FormProps> = ({
         onConfirm={finalSubmit}
         fields={spellCheckFields}
         title={t("spellcheck_title")}
+        loading={isSubmitting}
       />
     </>
   );

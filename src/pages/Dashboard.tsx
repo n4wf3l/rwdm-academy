@@ -205,24 +205,40 @@ const Dashboard = () => {
         let nameFromData = "inconnu";
         let emailFromData = "Non spécifié";
 
+        // Helper function to capitalize names properly
+        const capitalizeName = (name: string): string => {
+          return name
+            .split(' ')
+            .map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            )
+            .join(' ');
+        };
+
         switch (req.type) {
           case "registration":
           case "selection-tests":
             if (dataParsed.lastName && dataParsed.firstName) {
-              nameFromData = `${dataParsed.lastName} ${dataParsed.firstName}`;
+              const lastName = capitalizeName(dataParsed.lastName);
+              const firstName = capitalizeName(dataParsed.firstName);
+              nameFromData = `${lastName} ${firstName}`;
             }
             emailFromData =
               dataParsed.parent1Email || dataParsed.email || "Non spécifié";
             break;
           case "accident-report":
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
-              nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
+              const lastName = capitalizeName(dataParsed.playerLastName);
+              const firstName = capitalizeName(dataParsed.playerFirstName);
+              nameFromData = `${lastName} ${firstName}`;
             }
             emailFromData = dataParsed.email || "Non spécifié";
             break;
           case "responsibility-waiver":
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
-              nameFromData = `${dataParsed.playerLastName} ${dataParsed.playerFirstName}`;
+              const lastName = capitalizeName(dataParsed.playerLastName);
+              const firstName = capitalizeName(dataParsed.playerFirstName);
+              nameFromData = `${lastName} ${firstName}`;
             }
             emailFromData = dataParsed.parentEmail || "Non spécifié";
             break;

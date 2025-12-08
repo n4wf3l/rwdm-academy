@@ -140,6 +140,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
   const [category, setCategory] = useState<string>(""); // État pour la catégorie
   const [isCooldown, setIsCooldown] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [hasSentDeclaration, setHasSentDeclaration] = useState<boolean>(false);
@@ -252,6 +253,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
   };
 
   const finalSubmit = async () => {
+    setIsSubmitting(true);
     // Vérification du nombre de fichiers
     if (
       (documentType === "healing-certificate" && pdfFiles.length === 0) ||
@@ -392,6 +394,8 @@ const AccidentReportForm: React.FC<FormProps> = ({
             : t("toast_general_error_desc"),
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -965,6 +969,7 @@ const AccidentReportForm: React.FC<FormProps> = ({
         onConfirm={finalSubmit}
         fields={spellCheckFields}
         title={t("spellcheck_title_2")}
+        loading={isSubmitting}
       />
     </>
   );

@@ -93,6 +93,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
   const [approvalText, setApprovalText] = useState("");
   const [isCooldown, setIsCooldown] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -108,6 +109,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
   }
 
   const finalSubmit = async () => {
+    setIsSubmitting(true);
     try {
       // 1️⃣ Vérification des champs obligatoires
       if (
@@ -231,6 +233,8 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
         description: t("toast_error_generic_description"),
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -618,6 +622,7 @@ const ResponsibilityWaiverForm: React.FC<FormProps> = ({
         onConfirm={finalSubmit}
         fields={spellCheckFields}
         title={t("spellcheck_title_waiver")}
+        loading={isSubmitting}
       />
     </>
   );
