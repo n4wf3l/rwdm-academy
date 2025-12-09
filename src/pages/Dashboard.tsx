@@ -221,7 +221,7 @@ const Dashboard = () => {
             if (dataParsed.lastName && dataParsed.firstName) {
               const lastName = capitalizeName(dataParsed.lastName);
               const firstName = capitalizeName(dataParsed.firstName);
-              nameFromData = `${lastName} ${firstName}`;
+              nameFromData = `${firstName} ${lastName}`;
             }
             emailFromData =
               dataParsed.parent1Email || dataParsed.email || "Non spécifié";
@@ -230,7 +230,7 @@ const Dashboard = () => {
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
               const lastName = capitalizeName(dataParsed.playerLastName);
               const firstName = capitalizeName(dataParsed.playerFirstName);
-              nameFromData = `${lastName} ${firstName}`;
+              nameFromData = `${firstName} ${lastName}`;
             }
             emailFromData = dataParsed.email || "Non spécifié";
             break;
@@ -238,7 +238,7 @@ const Dashboard = () => {
             if (dataParsed.playerLastName && dataParsed.playerFirstName) {
               const lastName = capitalizeName(dataParsed.playerLastName);
               const firstName = capitalizeName(dataParsed.playerFirstName);
-              nameFromData = `${lastName} ${firstName}`;
+              nameFromData = `${firstName} ${lastName}`;
             }
             emailFromData = dataParsed.parentEmail || "Non spécifié";
             break;
