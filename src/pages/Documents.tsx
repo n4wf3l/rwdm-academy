@@ -406,55 +406,73 @@ const Documents = () => {
       return;
     }
 
-    const input = modalRef.current;
-    const originalMaxHeight = input.style.maxHeight;
-    const originalOverflow = input.style.overflow;
-    input.style.maxHeight = "none";
-    input.style.overflow = "visible";
+    try {
+      const input = modalRef.current;
+      const originalMaxHeight = input.style.maxHeight;
+      const originalOverflow = input.style.overflow;
+      input.style.maxHeight = "none";
+      input.style.overflow = "visible";
 
-    const canvas = await html2canvas(input, {
-      scale: 2,
-      backgroundColor: "#ffffff",
-      useCORS: true,
-      ignoreElements: (element) => {
-        return element.hasAttribute("data-ignore-pdf");
-      },
-    });
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false, // Désactiver les logs pour de meilleures performances
+        allowTaint: false,
+        ignoreElements: (element) => {
+          return element.hasAttribute("data-ignore-pdf");
+        },
+      });
 
-    const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/png");
 
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Ajoute l'image qui prend toute la page
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+      // Ajoute l'image qui prend toute la page
+      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
 
-    // Charge et ajoute le logo centré en haut
-    const logo = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.src = "/logo.png";
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-    });
+      // Charge et ajoute le logo centré en haut
+      try {
+        const logo = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.src = "/logo.png";
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          // Timeout pour éviter de bloquer indéfiniment
+          setTimeout(() => reject(new Error("Timeout logo")), 5000);
+        });
 
-    const logoWidth = 15; // deux fois plus petit que 30
-    const logoHeight = (logo.height / logo.width) * logoWidth;
-    const logoX = (pageWidth - logoWidth) / 2;
-    const logoY = 3; // marge en haut
+        const logoWidth = 15; // deux fois plus petit que 30
+        const logoHeight = (logo.height / logo.width) * logoWidth;
+        const logoX = (pageWidth - logoWidth) / 2;
+        const logoY = 3; // marge en haut
 
-    pdf.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
+        pdf.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
+      } catch (logoError) {
+        console.warn("Impossible de charger le logo, génération du PDF sans logo", logoError);
+        // Continue sans le logo
+      }
 
-    // Génère et télécharge le PDF
-    pdf.save(`Demande_${selectedRequest.id}.pdf`);
+      // Génère et télécharge le PDF
+      pdf.save(`Demande_${selectedRequest.id}.pdf`);
 
-    toast({
-      title: "PDF généré",
-      description: `Le PDF de la demande ${selectedRequest.id} a été généré.`,
-    });
+      toast({
+        title: "PDF généré",
+        description: `Le PDF de la demande ${selectedRequest.id} a été généré.`,
+      });
 
-    input.style.maxHeight = originalMaxHeight;
-    input.style.overflow = originalOverflow;
+      input.style.maxHeight = originalMaxHeight;
+      input.style.overflow = originalOverflow;
+    } catch (error) {
+      console.error("Erreur détaillée lors de la génération du PDF:", error);
+      toast({
+        title: "Erreur",
+        description: `Impossible de générer le PDF: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+        variant: "destructive",
+      });
+    }
   };
 
   // Fonction utilitaire pour convertir le status en RequestStatus (exemple de mapping)
