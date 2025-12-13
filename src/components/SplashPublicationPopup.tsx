@@ -24,6 +24,7 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
   const [publication, setPublication] = useState<ActiveSplashPublicationResponse | null>(initialPublication || null);
   const [loading, setLoading] = useState(!initialPublication);
   const [showPopup, setShowPopup] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
     if (initialPublication) {
@@ -58,11 +59,43 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
     };
   }, []);
 
+  // Helper to parse localized fields which can be stored as JSON strings or raw strings
+  const parseLocalized = (raw: any, fallback?: string) => {
+    let parsed: any = raw;
+    if (typeof raw === 'string') {
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        parsed = raw;
+      }
+    }
+
+    if (typeof parsed === 'object' && parsed) {
+      return String(parsed[currentLanguage] || parsed.fr || fallback || '');
+    }
+
+    return String(parsed || fallback || '');
+  };
+
   if (loading || !publication || !showPopup || (typeof publication === 'object' && 'active' in publication && publication.active === false)) {
     return null;
   }
 
   const pub = publication as Exclude<ActiveSplashPublicationResponse, { active: false }>;
+
+  // Precompute localized title and description so we can measure length and toggle clamp
+  const titleText = pub ? parseLocalized(pub.title, 'Publication') : '';
+  const descriptionText = pub && pub.description ? parseLocalized(pub.description, '') : '';
+  const readMoreLabel = (() => {
+    const key = t('read_more');
+    if (key && key !== 'read_more') return key;
+    return currentLanguage === 'fr' ? 'Lire la suite' : currentLanguage === 'nl' ? 'Lees meer' : 'Read more';
+  })();
+  const readLessLabel = (() => {
+    const key = t('read_less');
+    if (key && key !== 'read_less') return key;
+    return currentLanguage === 'fr' ? 'Voir moins' : currentLanguage === 'nl' ? 'Minder' : 'Show less';
+  })();
 
   return (
     <AnimatePresence>
@@ -81,7 +114,7 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative max-w-md w-full mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden"
+          className="relative max-w-md w-full mx-4 my-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button - REMOVED */}
@@ -94,7 +127,7 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
           </button> */}
 
           {/* Image */}
-          <div className="relative h-48 overflow-hidden">
+          <div className="relative h-32 sm:h-40 md:h-48 overflow-hidden flex-shrink-0">
             <img
               src={toImageUrl(pub.image)}
               alt={(() => {
@@ -124,56 +157,37 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1">
             <h2
               id="splash-publication-title"
-              className="text-xl font-bold text-gray-900 dark:text-white mb-3"
+              className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3"
             >
-              {(() => {
-                const rawTitle = pub.title;
-                let parsedTitle: any = rawTitle;
-
-                if (typeof rawTitle === 'string') {
-                  try {
-                    parsedTitle = JSON.parse(rawTitle);
-                  } catch (e) {
-                    return rawTitle;
-                  }
-                }
-
-                if (typeof parsedTitle === 'object' && parsedTitle) {
-                  return String(parsedTitle[currentLanguage] || parsedTitle.fr || 'Publication');
-                }
-
-                return String(parsedTitle || 'Publication');
-              })()}
+              {titleText}
             </h2>
 
             {pub.description && (
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {(() => {
-                  const rawDescription = pub.description;
-                  let parsedDescription: any = rawDescription;
+              <>
+                <p className={`text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap mb-3 sm:mb-4 ${showFullDescription ? '' : 'line-clamp-6'} sm:line-clamp-none`}>
+                  {descriptionText}
+                </p>
 
-                  if (typeof rawDescription === 'string') {
-                    try {
-                    parsedDescription = JSON.parse(rawDescription);
-                  } catch (e) {
-                    return rawDescription;
-                  }
-                }
-
-                if (typeof parsedDescription === 'object' && parsedDescription) {
-                  return String(parsedDescription[currentLanguage] || parsedDescription.fr);
-                }
-
-                return parsedDescription;
-              })()}
-              </p>
+                {/* Toggle button ONLY on mobile, only if description is long */}
+                {descriptionText && descriptionText.length > 180 && (
+                  <div className="mb-2 sm:hidden">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowFullDescription((s) => !s); }}
+                      className="text-sm text-rwdm-blue hover:underline"
+                      aria-expanded={showFullDescription}
+                    >
+                      {showFullDescription ? readLessLabel : readMoreLabel}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Publication Info */}
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-rwdm-blue rounded-full flex items-center justify-center text-white text-xs font-medium">
@@ -206,10 +220,10 @@ const SplashPublicationPopup: React.FC<SplashPublicationPopupProps> = ({
             </div>
 
             {/* Optional: Add a "Learn More" button or just keep it as info */}
-            <div className="mt-6 flex justify-end">
+            <div className="mt-4 sm:mt-6 flex justify-end">
               <Button
                 onClick={handleClose}
-                className="bg-rwdm-blue hover:bg-rwdm-blue/90"
+                className="bg-rwdm-blue hover:bg-rwdm-blue/90 w-full sm:w-auto"
               >
                 {t("continue")}
               </Button>

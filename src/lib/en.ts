@@ -1831,6 +1831,8 @@ export const translationsEN = {
   inactive: "Inactive",
   no_description: "No description",
   continue: "Continue",
+  read_more: "Read more",
+  read_less: "Show less",
   edit_publication_title: "Edit Publication",
   splash_publications_sidebar: "Splash Publications",
   published_by_admin: "Published by the administration",

@@ -1952,6 +1952,8 @@ export const translationsFR = {
   inactive: "Inactive",
   no_description: "Aucune description",
   continue: "Continuer",
+  read_more: "Lire la suite",
+  read_less: "Voir moins",
   edit_publication_title: "Modifier la Publication",
   splash_publications_sidebar: "Publications Splash",
   published_by_admin: "Publié par l'administration",

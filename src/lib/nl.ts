@@ -1876,6 +1876,8 @@ export const translationsNL = {
   inactive: "Inactief",
   no_description: "Geen beschrijving",
   continue: "Doorgaan",
+  read_more: "Lees meer",
+  read_less: "Toon minder",
   edit_publication_title: "Publicatie bewerken",
   splash_publications_sidebar: "Splash Publicaties",
   published_by_admin: "Gepubliceerd door de administratie",
