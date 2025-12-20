@@ -46,7 +46,8 @@ const SEASONS = [
   `${BASE_YEAR + 2}/${BASE_YEAR + 3}`,
 ];
 
-const CATEGORIES = ["U5", "U6", "U7", "U8", "U9"];
+const CATEGORIES_RWDM = ["U5", "U6", "U7", "U8", "U9"];
+const CATEGORIES_EAGLES = ["U5", "U6", "U7", "U8", "U9", "U10", "U11", "U12"];
 
 const TEN_MINUTES_MS = 10 * 60 * 1000;
 
@@ -628,7 +629,10 @@ const RegistrationForm: React.FC<FormProps> = ({
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map((cat) => (
+                      {(academy === "Brussels Eagles Football Academy" 
+                        ? CATEGORIES_EAGLES 
+                        : CATEGORIES_RWDM
+                      ).map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
